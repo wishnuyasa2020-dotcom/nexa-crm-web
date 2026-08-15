@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Plus, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
 import { AddSiswaModal } from '@/components/AddSiswaModal';
 import { EditSiswaModal } from '@/components/EditSiswaModal';
+import { ImportSiswaModal } from '@/components/ImportSiswaModal';
 
 interface Siswa {
   idRecord: string;
@@ -39,6 +41,7 @@ const PRIORITY_BADGE: Record<string, string> = {
 };
 
 export default function SiswaPage() {
+  const router = useRouter();
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -47,6 +50,7 @@ export default function SiswaPage() {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterKelas, setFilterKelas] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSiswaId, setSelectedSiswaId] = useState<string | null>(null);
   const pageSize = 20;
@@ -89,13 +93,21 @@ export default function SiswaPage() {
             <p className="text-xs text-muted-foreground">{total} siswa ditemukan</p>
           </div>
         </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
-        >
-          <Plus size={15} />
-          Tambah Siswa
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border"
+          >
+            Import Excel
+          </button>
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
+          >
+            <Plus size={15} />
+            Tambah Siswa
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -168,10 +180,7 @@ export default function SiswaPage() {
                 siswaList.map((s) => (
                   <tr
                     key={s.idRecord}
-                    onClick={() => {
-                      setSelectedSiswaId(s.id);
-                      setIsEditModalOpen(true);
-                    }}
+                    onClick={() => router.push(`/siswa/${s.id}`)}
                     className="border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer"
                   >
                     <td className="px-4 py-3 font-medium text-foreground">{s.nama}</td>
@@ -237,6 +246,14 @@ export default function SiswaPage() {
         onClose={() => setIsEditModalOpen(false)}
         idSiswa={selectedSiswaId}
         onSuccess={() => loadSiswa()}
+      />
+
+      <ImportSiswaModal
+        isOpen={isImportModalOpen}
+        onClose={() => {
+          setIsImportModalOpen(false);
+          loadSiswa();
+        }}
       />
     </div>
   );
