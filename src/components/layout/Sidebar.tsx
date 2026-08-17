@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, School, CheckSquare, Calendar,
-  Home, TrendingUp, Radio, FileText, LogOut, ChevronLeft, ChevronRight, Zap
+  Home, TrendingUp, Radio, FileText, LogOut, ChevronLeft, ChevronRight, Zap, Clock, MessageSquare
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
@@ -13,11 +13,15 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Data Siswa', href: '/siswa', icon: Users },
-  { label: 'Data Sekolah', href: '/sekolah', icon: School },
   { label: 'Task List', href: '/tasks', icon: CheckSquare },
   { label: 'Weekly Planning', href: '/weekly', icon: Calendar },
+  { label: 'Data Sekolah', href: '/sekolah', icon: School },
+  { label: 'Data Siswa', href: '/siswa', icon: Users },
   { label: 'Home Visit', href: '/home-visit', icon: Home },
+  { label: 'Broadcast WA', href: '/broadcast', icon: Radio },
+  { label: 'Nurturing (Aktif)', href: '/nurturing', icon: TrendingUp },
+  { label: 'Snooze Campaign', href: '/snooze-campaign', icon: Clock },
+  { label: 'Live Chat', href: '/live-chat', icon: MessageSquare },
   { label: 'Template Admin', href: '/templates', icon: FileText },
 ];
 

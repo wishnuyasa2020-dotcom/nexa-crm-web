@@ -8,7 +8,7 @@ import { TundaTaskModal } from '@/components/sekolah/TundaTaskModal';
 import { InputAktivitasModal } from '@/components/sekolah/InputAktivitasModal';
 import { getMockSekolahList, MockSekolah } from '@/lib/mock/sekolah';
 
-type TabKey = 'overdue' | 'today' | 'upcoming';
+type TabKey = 'overdue' | 'today' | 'tomorrow' | 'upcoming' | 'completed';
 
 export default function TasksPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('overdue');
@@ -31,20 +31,24 @@ export default function TasksPage() {
   }, []);
 
   const todayStr = '2026-08-14'; // Mock today date
+  const tomorrowStr = '2026-08-15'; // Mock tomorrow date
 
   const tasks = useMemo(() => {
     const overdue: MockSekolah[] = [];
     const today: MockSekolah[] = [];
+    const tomorrow: MockSekolah[] = [];
     const upcoming: MockSekolah[] = [];
+    const completed: MockSekolah[] = [];
 
     sekolahList.forEach(s => {
       if (!s.dueDate) return;
       if (s.dueDate < todayStr) overdue.push(s);
       else if (s.dueDate === todayStr) today.push(s);
+      else if (s.dueDate === tomorrowStr) tomorrow.push(s);
       else upcoming.push(s);
     });
 
-    return { overdue, today, upcoming };
+    return { overdue, today, tomorrow, upcoming, completed };
   }, [sekolahList]);
 
   const currentList = tasks[activeTab];
@@ -71,43 +75,28 @@ export default function TasksPage() {
       </div>
 
       {/* ── Top Tabs ── */}
-      <div className="flex bg-card border border-border p-1 rounded-xl">
-        <button
-          onClick={() => setActiveTab('overdue')}
-          className={cn(
-            "flex-1 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2",
-            activeTab === 'overdue' ? "bg-rose-500/10 text-rose-500" : "text-muted-foreground hover:bg-secondary/50"
-          )}
-        >
-          <Clock size={14} /> Overdue
-          <span className={cn("px-1.5 py-0.5 rounded text-[10px]", activeTab === 'overdue' ? "bg-rose-500/20" : "bg-secondary")}>
-            {tasks.overdue.length}
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('today')}
-          className={cn(
-            "flex-1 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2",
-            activeTab === 'today' ? "bg-amber-500/10 text-amber-500" : "text-muted-foreground hover:bg-secondary/50"
-          )}
-        >
-          <Calendar size={14} /> Hari Ini
-          <span className={cn("px-1.5 py-0.5 rounded text-[10px]", activeTab === 'today' ? "bg-amber-500/20" : "bg-secondary")}>
-            {tasks.today.length}
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('upcoming')}
-          className={cn(
-            "flex-1 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2",
-            activeTab === 'upcoming' ? "bg-emerald-500/10 text-emerald-500" : "text-muted-foreground hover:bg-secondary/50"
-          )}
-        >
-          <Calendar size={14} /> Mendatang
-          <span className={cn("px-1.5 py-0.5 rounded text-[10px]", activeTab === 'upcoming' ? "bg-emerald-500/20" : "bg-secondary")}>
-            {tasks.upcoming.length}
-          </span>
-        </button>
+      <div className="flex bg-card border border-border p-1 rounded-xl overflow-x-auto hide-scrollbar">
+        {[
+          { id: 'overdue', label: 'Overdue', icon: Clock, count: tasks.overdue.length, activeCls: 'bg-rose-500/10 text-rose-500', badgeCls: 'bg-rose-500/20' },
+          { id: 'today', label: 'Hari Ini', icon: Calendar, count: tasks.today.length, activeCls: 'bg-amber-500/10 text-amber-500', badgeCls: 'bg-amber-500/20' },
+          { id: 'tomorrow', label: 'Besok', icon: Calendar, count: tasks.tomorrow.length, activeCls: 'bg-blue-500/10 text-blue-500', badgeCls: 'bg-blue-500/20' },
+          { id: 'upcoming', label: 'Mendatang', icon: Calendar, count: tasks.upcoming.length, activeCls: 'bg-emerald-500/10 text-emerald-500', badgeCls: 'bg-emerald-500/20' },
+          { id: 'completed', label: 'Selesai', icon: CheckSquare, count: tasks.completed.length, activeCls: 'bg-slate-500/10 text-slate-500', badgeCls: 'bg-slate-500/20' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as TabKey)}
+            className={cn(
+              "flex-1 min-w-[100px] py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap",
+              activeTab === tab.id ? tab.activeCls : "text-muted-foreground hover:bg-secondary/50"
+            )}
+          >
+            <tab.icon size={14} /> {tab.label}
+            <span className={cn("px-1.5 py-0.5 rounded text-[10px]", activeTab === tab.id ? tab.badgeCls : "bg-secondary")}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
       </div>
 
       {/* ── Card List ── */}
@@ -134,7 +123,9 @@ export default function TasksPage() {
                 <span className={cn(
                   "text-xs font-bold px-2 py-1 rounded-md",
                   activeTab === 'overdue' ? "bg-rose-500/10 text-rose-500" :
-                  activeTab === 'today' ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"
+                  activeTab === 'today' ? "bg-amber-500/10 text-amber-500" : 
+                  activeTab === 'tomorrow' ? "bg-blue-500/10 text-blue-500" :
+                  activeTab === 'completed' ? "bg-slate-500/10 text-slate-500" : "bg-emerald-500/10 text-emerald-500"
                 )}>
                   📅 {task.dueDate}
                 </span>
@@ -151,20 +142,22 @@ export default function TasksPage() {
               </div>
 
               {/* Card Footer Actions */}
-              <div className="flex items-center gap-2 pt-3 border-t border-border">
-                <button 
-                  onClick={() => setSelectedSekolahForTunda(task)}
-                  className="flex-1 py-2.5 rounded-lg border border-border text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Calendar size={14} /> Tunda
-                </button>
-                <button 
-                  onClick={() => setSelectedSekolahForInput(task)}
-                  className="flex-1 py-2.5 rounded-lg gradient-primary text-xs font-semibold text-white hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20"
-                >
-                  <CheckSquare size={14} /> Eksekusi
-                </button>
-              </div>
+              {activeTab !== 'completed' && (
+                <div className="flex items-center gap-2 pt-3 border-t border-border">
+                  <button 
+                    onClick={() => setSelectedSekolahForTunda(task)}
+                    className="flex-1 py-2.5 rounded-lg border border-border text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Calendar size={14} /> Tunda
+                  </button>
+                  <button 
+                    onClick={() => setSelectedSekolahForInput(task)}
+                    className="flex-1 py-2.5 rounded-lg gradient-primary text-xs font-semibold text-white hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20"
+                  >
+                    <CheckSquare size={14} /> Eksekusi
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}

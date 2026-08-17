@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, School, CheckSquare, TrendingUp, Activity, ArrowUpRight } from 'lucide-react';
+import { Users, School, CheckSquare, TrendingUp, Activity, ArrowUpRight, Trophy, Medal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<Record<string, number>>({});
   const [funnels, setFunnels] = useState<{ name: string; value: number }[]>([]);
   const [tasks, setTasks] = useState<{ idTarget: string; namaTarget: string; statusTerkini: string; nextAction: string; dueDate: string }[]>([]);
+  const [leaderboard, setLeaderboard] = useState<{ id: string; name: string; closing: number; target: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +42,11 @@ export default function DashboardPage() {
         setTasks([
           { idTarget: '1', namaTarget: 'SMA N 1 Kota', statusTerkini: 'Follow Up', nextAction: 'Visit Awal', dueDate: 'Hari ini' },
           { idTarget: '2', namaTarget: 'Budi Santoso', statusTerkini: 'Konsultasi', nextAction: 'Telepon Ortu', dueDate: 'Besok' },
+        ]);
+        setLeaderboard([
+          { id: '1', name: 'Budi Santoso (Anda)', closing: 42, target: 50 },
+          { id: '2', name: 'Andi Wijaya', closing: 38, target: 50 },
+          { id: '3', name: 'Siti Aminah', closing: 35, target: 50 },
         ]);
         // ==============================
       } catch (e) {
@@ -97,7 +103,7 @@ export default function DashboardPage() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {/* Funnel Chart */}
         <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px]">
           <div className="flex items-center gap-2 mb-4 flex-shrink-0">
@@ -159,6 +165,38 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Leaderboard */}
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] lg:col-span-3 xl:col-span-1">
+          <div className="flex items-center gap-2 mb-4 flex-shrink-0">
+            <Trophy size={16} className="text-amber-500" />
+            <h2 className="text-sm font-semibold text-foreground">Top CRO Bulan Ini</h2>
+          </div>
+          <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2">
+            {leaderboard.length > 0 ? (
+              leaderboard.map((cro, index) => (
+                <div key={cro.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-secondary/20 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 bottom-0 w-1 bg-amber-500/50" />
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-xs font-bold text-muted-foreground border border-border">
+                    {index === 0 ? <Medal size={16} className="text-amber-500" /> : index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{cro.name}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-[10px] text-muted-foreground">{cro.closing} / {cro.target} Closing</p>
+                      <p className="text-xs font-bold text-emerald-400">{Math.round((cro.closing / cro.target) * 100)}%</p>
+                    </div>
+                    <div className="w-full bg-secondary h-1.5 rounded-full mt-1.5 overflow-hidden">
+                      <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${Math.min((cro.closing / cro.target) * 100, 100)}%` }} />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Tidak ada data leaderboard</div>
+            )}
+          </div>
         </div>
       </div>
 

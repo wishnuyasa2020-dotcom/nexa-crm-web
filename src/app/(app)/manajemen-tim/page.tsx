@@ -1,24 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Search, Map } from 'lucide-react';
-import { AssignKecamatanModal } from '@/components/manajemen-tim/AssignKecamatanModal';
+import { Users, Search, Map, Plus, Edit2, KeyRound, UserX, MoreVertical } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+
+// Modals
+import { AssignKecamatanModal } from '@/components/manajemen-tim/AssignKecamatanModal';
+import { AddUserModal } from '@/components/manajemen-tim/AddUserModal';
+import { EditUserModal } from '@/components/manajemen-tim/EditUserModal';
+import { ResetPasswordModal } from '@/components/manajemen-tim/ResetPasswordModal';
+import { DeleteUserModal } from '@/components/manajemen-tim/DeleteUserModal';
 
 // Mock data for users
 const MOCK_USERS = [
   { id: '1', username: 'budi_cro', nama: 'Budi Santoso', role: 'CRO', status: 'Aktif' },
   { id: '2', username: 'andi_chief', nama: 'Andi M', role: 'Chief CRO', status: 'Aktif', kecamatan_list: ['Cibeunying Kidul', 'Coblong'] },
-  { id: '3', username: 'siti_cro', nama: 'Siti Aminah', role: 'CRO', status: 'Aktif' },
+  { id: '3', username: 'siti_cro', nama: 'Siti Aminah', role: 'CRO', status: 'Nonaktif' },
   { id: '4', username: 'faisal_chief', nama: 'Ahmad Faisal', role: 'Chief CRO', status: 'Aktif', kecamatan_list: [] },
+  { id: '5', username: 'admin_r', nama: 'Rina Admin', role: 'Admin', status: 'Aktif' },
 ];
 
 export default function ManajemenTimPage() {
   const [users, setUsers] = useState(MOCK_USERS);
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<typeof MOCK_USERS[0] | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Modal States
+  const [isAssignAreaOpen, setIsAssignAreaOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<string | null>(null);
   
   const router = useRouter();
   const { user } = useAuthStore();
@@ -37,95 +53,171 @@ export default function ManajemenTimPage() {
 
   const filteredUsers = users.filter(u => 
     u.nama.toLowerCase().includes(search.toLowerCase()) || 
+    u.username.toLowerCase().includes(search.toLowerCase()) || 
     u.role.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleOpenModal = (user: typeof MOCK_USERS[0]) => {
-    setSelectedUser(user);
-    setIsModalOpen(true);
+  // Helper to open specific actions
+  const openAction = (action: 'edit' | 'reset' | 'delete' | 'area', u: typeof MOCK_USERS[0]) => {
+    setSelectedUser(u);
+    setMobileMenuOpen(null);
+    if (action === 'edit') setIsEditOpen(true);
+    if (action === 'reset') setIsResetOpen(true);
+    if (action === 'delete') setIsDeleteOpen(true);
+    if (action === 'area') setIsAssignAreaOpen(true);
+  };
+
+  const getRoleColor = (role: string) => {
+    switch(role) {
+      case 'Admin': return 'bg-blue-500/15 text-blue-500';
+      case 'Manager': return 'bg-purple-500/15 text-purple-500';
+      case 'Chief CRO': return 'bg-amber-500/15 text-amber-500';
+      case 'CRO': return 'bg-emerald-500/15 text-emerald-500';
+      default: return 'bg-secondary text-foreground';
+    }
   };
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 flex-shrink-0">
-          <Users size={17} className="text-white" />
+    <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto pb-20 sm:pb-8">
+      {/* Header Mobile-First */}
+      <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg text-white">
+            <Users size={20} />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">Manajemen Tim</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Kelola pengguna, hak akses, dan area tugas</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Manajemen Tim</h1>
-          <p className="text-xs text-muted-foreground">Kelola role dan area tanggung jawab Chief CRO</p>
-        </div>
+
+        {/* Sticky-like Button for Mobile/Desktop */}
+        <Button 
+          onClick={() => setIsAddOpen(true)}
+          className="w-full sm:w-auto gradient-primary text-white shadow-lg shadow-primary/20 h-11 sm:h-10 rounded-xl"
+        >
+          <Plus size={18} className="mr-2" /> Tambah Staf Baru
+        </Button>
       </div>
 
-      {/* Filter */}
-      <div className="relative w-full md:w-80">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      {/* Sticky Search */}
+      <div className="relative w-full sticky top-14 sm:top-0 z-10 bg-background/95 backdrop-blur-sm py-2 sm:py-0">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Cari nama atau role..."
+          placeholder="Cari nama, username atau role..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full pl-9 pr-4 py-2.5 sm:py-2 bg-card border border-border rounded-xl sm:rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      {/* Mobile Card View (Hidden on sm and up) */}
+      <div className="sm:hidden space-y-3 mt-2">
+        {filteredUsers.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground text-sm">Tidak ada staf ditemukan.</div>
+        ) : (
+          filteredUsers.map(u => (
+            <div key={u.id} className="bg-card border border-border rounded-xl p-4 flex gap-3 relative">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-sm font-bold text-muted-foreground">
+                {u.nama.split(' ').map(n => n[0]).join('').substring(0,2)}
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-sm truncate">{u.nama}</h3>
+                  <button onClick={() => setMobileMenuOpen(mobileMenuOpen === u.id ? null : u.id)} className="p-1 -mr-1 text-muted-foreground hover:text-foreground">
+                    <MoreVertical size={16} />
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground mb-2">@{u.username}</p>
+                
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${getRoleColor(u.role)}`}>
+                    {u.role}
+                  </span>
+                  <span className={`text-[10px] font-medium flex items-center gap-1 ${u.status === 'Aktif' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'Aktif' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                    {u.status}
+                  </span>
+                </div>
+
+                {/* More Menu Dropdown for Mobile */}
+                {mobileMenuOpen === u.id && (
+                  <div className="absolute right-4 top-12 bg-background border border-border rounded-lg shadow-xl z-20 w-40 flex flex-col py-1 overflow-hidden">
+                    <button onClick={() => openAction('edit', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Edit2 size={14} /> Edit Staf</button>
+                    {u.role === 'Chief CRO' && (
+                      <button onClick={() => openAction('area', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Map size={14} /> Atur Area</button>
+                    )}
+                    <button onClick={() => openAction('reset', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-amber-500 text-left hover:bg-amber-500/10 transition-colors"><KeyRound size={14} /> Reset Pass</button>
+                    <div className="h-px bg-border my-1" />
+                    <button onClick={() => openAction('delete', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-rose-500 text-left hover:bg-rose-500/10 transition-colors"><UserX size={14} /> {u.status === 'Aktif' ? 'Nonaktifkan' : 'Hapus Permanen'}</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (Hidden on mobile) */}
+      <div className="hidden sm:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary/30">
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Nama</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Username</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Role</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Area Kecamatan</th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground">Aksi</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Info Staf</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Role</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-48">Area Kecamatan</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                    Tidak ada tim ditemukan.
-                  </td>
+                  <td colSpan={5} className="py-12 text-center text-muted-foreground">Tidak ada tim ditemukan.</td>
                 </tr>
               ) : (
-                filteredUsers.map(user => (
-                  <tr key={user.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">{user.nama}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{user.username}</td>
+                filteredUsers.map(u => (
+                  <tr key={u.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
                     <td className="px-4 py-3">
-                      <span className="text-xs px-2 py-0.5 rounded bg-secondary text-foreground">
-                        {user.role}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">
+                          {u.nama.split(' ').map(n => n[0]).join('').substring(0,2)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{u.nama}</p>
+                          <p className="text-xs text-muted-foreground">@{u.username}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${getRoleColor(u.role)}`}>{u.role}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium flex items-center gap-1.5 ${u.status === 'Aktif' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'Aktif' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                        {u.status}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-emerald-400">● {user.status}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {user.role === 'Chief CRO' ? (
-                        <div className="text-xs text-muted-foreground flex flex-col gap-0.5">
-                          {user.kecamatan_list && user.kecamatan_list.length > 0 ? (
-                            <span>{user.kecamatan_list.join(', ')}</span>
-                          ) : (
-                            <span className="text-amber-400 italic">Belum di-assign</span>
-                          )}
+                      {u.role === 'Chief CRO' ? (
+                        <div className="text-xs text-muted-foreground truncate max-w-[150px]">
+                          {u.kecamatan_list?.length ? u.kecamatan_list.join(', ') : <span className="text-amber-500 italic">Belum diatur</span>}
                         </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/50">—</span>
-                      )}
+                      ) : <span className="text-xs text-muted-foreground/30">—</span>}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {user.role === 'Chief CRO' && (
-                        <button
-                          onClick={() => handleOpenModal(user)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors"
-                        >
-                          <Map size={13} /> Atur Area
-                        </button>
-                      )}
+                      <div className="flex items-center justify-end gap-1.5">
+                        {u.role === 'Chief CRO' && (
+                          <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('area', u)} title="Atur Area"><Map size={14} /></Button>
+                        )}
+                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('edit', u)} title="Edit Profil"><Edit2 size={14} /></Button>
+                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-amber-500/20 text-amber-500 hover:bg-amber-500/10" onClick={() => openAction('reset', u)} title="Reset Password"><KeyRound size={14} /></Button>
+                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-rose-500/20 text-rose-500 hover:bg-rose-500/10" onClick={() => openAction('delete', u)} title="Nonaktifkan"><UserX size={14} /></Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -135,15 +227,18 @@ export default function ManajemenTimPage() {
         </div>
       </div>
 
+      {/* Render All Modals */}
+      <AddUserModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+      <EditUserModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} user={selectedUser} />
+      <ResetPasswordModal isOpen={isResetOpen} onClose={() => setIsResetOpen(false)} user={selectedUser} />
+      <DeleteUserModal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} user={selectedUser} />
       <AssignKecamatanModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        userToAssign={selectedUser}
-        onSuccess={() => {
-          setIsModalOpen(false);
-          // TODO: reload users from API
-        }}
+        isOpen={isAssignAreaOpen}
+        onClose={() => setIsAssignAreaOpen(false)}
+        userToAssign={selectedUser as any} // Using as any since MOCK_USERS typing differs slightly from what AssignKecamatanModal expects
+        onSuccess={() => setIsAssignAreaOpen(false)}
       />
+
     </div>
   );
 }

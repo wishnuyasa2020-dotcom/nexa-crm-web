@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Search, Users, Radio, TrendingUp, LogOut } from 'lucide-react';
+import { Bell, Search, Users, Radio, TrendingUp, LogOut, Clock, FileText } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
@@ -43,7 +43,7 @@ export default function Header({ title }: { title?: string }) {
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-background/95 backdrop-blur-sm flex-shrink-0 z-50">
+    <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-background/95 backdrop-blur-sm flex-shrink-0 z-[100]">
       {/* Title */}
       <h1 className="text-base font-semibold text-foreground">{title || 'Dashboard'}</h1>
 
@@ -71,7 +71,7 @@ export default function Header({ title }: { title?: string }) {
 
           {/* Popup Menu */}
           {showMenu && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col py-1 z-50">
+            <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col py-1 z-[100]">
               <div className="px-3 py-2 border-b border-border sm:hidden">
                 <p className="text-sm font-medium text-foreground truncate">{user?.nama || user?.username}</p>
                 <p className="text-xs text-muted-foreground">{user?.role}</p>
@@ -87,6 +87,12 @@ export default function Header({ title }: { title?: string }) {
               </Link>
               <Link href="/nurturing" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
                 <TrendingUp size={16} /> Nurturing
+              </Link>
+              <Link href="/snooze-campaign" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
+                <Clock size={16} /> Snooze Campaign
+              </Link>
+              <Link href="/templates" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors md:hidden" onClick={() => setShowMenu(false)}>
+                <FileText size={16} /> Template Admin
               </Link>
               <div className="h-px bg-border my-1" />
               <button 

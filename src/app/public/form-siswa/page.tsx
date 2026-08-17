@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, User, Phone, School, BookOpen, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getMockSekolahList } from '@/lib/mock/sekolah';
 
 export default function FormSosialisasiPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,20 @@ export default function FormSosialisasiPage() {
     rencanaLulus: '',
     minatAwal: '',
   });
+  const [namaSekolah, setNamaSekolah] = useState('');
+
+  useEffect(() => {
+    // Simulasi pengambilan nama sekolah berdasarkan ID di URL
+    const params = new URLSearchParams(window.location.search);
+    const sekolahId = params.get('sekolahId');
+    if (sekolahId) {
+      const res = getMockSekolahList({ search: '', page: 1, pageSize: 100 });
+      const sekolah = res.data.find(s => s.id === sekolahId);
+      if (sekolah) {
+        setNamaSekolah(sekolah.nama);
+      }
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,8 +54,13 @@ export default function FormSosialisasiPage() {
           <div className="w-16 h-16 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
             <School size={32} className="text-primary" />
           </div>
-          <h1 className="text-2xl font-bold mb-1">Form Pendaftaran</h1>
-          <p className="text-white/80 text-sm">Isi biodata kamu untuk informasi lebih lanjut.</p>
+          <h1 className="text-2xl font-bold mb-1">
+            Konfirmasi Kehadiran
+          </h1>
+          {namaSekolah ? (
+            <p className="text-white/90 text-sm font-medium mb-1">{namaSekolah}</p>
+          ) : null}
+          <p className="text-white/80 text-sm mt-1">Silakan isi biodata kamu sebagai bukti kehadiran sosialisasi.</p>
         </div>
 
         {/* Form Card */}
@@ -48,7 +68,7 @@ export default function FormSosialisasiPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Nama Lengkap</label>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Nama Lengkap <span className="text-rose-500">*</span></label>
               <div className="relative">
                 <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
@@ -81,7 +101,7 @@ export default function FormSosialisasiPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Kelas</label>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Kelas <span className="text-rose-500">*</span></label>
               <div className="relative">
                 <School size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
@@ -96,21 +116,29 @@ export default function FormSosialisasiPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Rencana Setelah Lulus</label>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Rencana Setelah Lulus <span className="text-rose-500">*</span></label>
               <div className="relative">
                 <BookOpen size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input 
-                  type="text"
-                  placeholder="Misal: Kuliah, Kerja, dsb"
+                <select 
+                  required
                   value={formData.rencanaLulus}
                   onChange={e => setFormData({ ...formData, rencanaLulus: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-                />
+                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all appearance-none"
+                >
+                  <option value="" disabled>Pilih rencana...</option>
+                  <option value="Kerja">Kerja</option>
+                  <option value="Kuliah">Kuliah</option>
+                  <option value="Bisnis">Bisnis</option>
+                  <option value="Belum Tahu">Belum Tahu</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
               </div>
             </div>
 
             <div className="space-y-2.5 pt-2">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Minat Mendaftar?</label>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Minat Kerja ke Jepang? <span className="text-rose-500">*</span></label>
               <div className="grid grid-cols-3 gap-2">
                 {['Ya', 'Ragu', 'Tidak'].map((opt) => (
                   <button
@@ -139,7 +167,7 @@ export default function FormSosialisasiPage() {
                 Kirim & Konfirmasi via WhatsApp
               </button>
               <p className="text-center text-[10px] text-muted-foreground mt-4 leading-relaxed px-4">
-                Dengan menekan tombol di atas, Anda akan dialihkan ke aplikasi WhatsApp untuk menyelesaikan pendaftaran secara otomatis.
+                Dengan menekan tombol di atas, Anda akan dialihkan ke aplikasi WhatsApp untuk menyelesaikan konfirmasi kehadiran secara otomatis.
               </p>
             </div>
 

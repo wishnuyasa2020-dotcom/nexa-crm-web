@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, MessageCircle, Plus, Edit2, Trash2, 
+import {
+  ArrowLeft, MessageCircle, Plus, Edit2, Trash2,
   Calendar, User, Phone, MapPin, School, AlertCircle, Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { InputAktivitasModal } from '@/components/InputAktivitasModal';
-import { EditAktivitasModal } from '@/components/EditAktivitasModal';
-import { DeleteSiswaModal } from '@/components/DeleteSiswaModal';
+import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
+import { EditAktivitasModal } from '@/components/siswa/EditAktivitasModal';
+import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
 
 // Data Mock
 const mockSiswaDetail = {
@@ -61,7 +61,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
     <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 sm:pb-8">
       {/* HEADER NAV */}
       <div className="flex items-center gap-3">
-        <button 
+        <button
           onClick={() => router.back()}
           className="p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-secondary transition-colors"
         >
@@ -99,7 +99,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
         {/* Kolom Kiri: Kontak & Info Transisi BSUID */}
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
           <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">Informasi Kontak</h2>
-          
+
           <div className="space-y-3">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Nomor WhatsApp</p>
@@ -140,7 +140,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
         {/* Kolom Kanan: Info Akademik & Minat */}
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
           <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">Informasi Lanjutan</h2>
-          
+
           <div className="grid grid-cols-2 gap-y-4 gap-x-3">
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Rencana Lulus</p>
@@ -168,7 +168,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
           <span className="hidden sm:inline">Chat Siswa</span>
           <span className="sm:hidden">Chat</span>
         </button>
-        <button 
+        <button
           onClick={() => setIsInputAktivitasOpen(true)}
           className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 gradient-primary text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
         >
@@ -176,12 +176,12 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
           <span className="hidden sm:inline">Input Aktivitas</span>
           <span className="sm:hidden">Aktivitas</span>
         </button>
-        
+
         <div className="hidden sm:flex items-center gap-2 ml-auto">
           <button className="flex items-center gap-2 px-4 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground border border-border rounded-lg text-sm font-medium transition-colors">
             <Edit2 size={16} /> Edit Data
           </button>
-          <button 
+          <button
             onClick={() => setIsDeleteModalOpen(true)}
             className="flex items-center justify-center p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors"
           >
@@ -193,7 +193,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
       {/* TIMELINE AKTIVITAS */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5 mt-4 sm:mt-0">
         <h2 className="text-sm font-semibold text-foreground border-b border-border pb-3 mb-4">Riwayat Aktivitas</h2>
-        
+
         <div className="space-y-6">
           {mockAktivitas.map((act, idx) => (
             <div key={act.id} className="relative flex gap-4">
@@ -201,7 +201,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
               {idx !== mockAktivitas.length - 1 && (
                 <div className="absolute left-[11px] top-6 bottom-[-24px] w-px bg-border z-0" />
               )}
-              
+
               {/* Ikon bulat */}
               <div className="relative z-10 w-6 h-6 flex-shrink-0 rounded-full bg-secondary border-2 border-background flex items-center justify-center">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -226,7 +226,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <User size={12} /> {act.pj}
                   </p>
-                  <button 
+                  <button
                     onClick={() => {
                       setSelectedAktivitas(act.id);
                       setIsEditAktivitasOpen(true);
@@ -245,10 +245,10 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
       {/* MODALS */}
       <InputAktivitasModal isOpen={isInputAktivitasOpen} onClose={() => setIsInputAktivitasOpen(false)} />
       <EditAktivitasModal isOpen={isEditAktivitasOpen} onClose={() => setIsEditAktivitasOpen(false)} aktivitasId={selectedAktivitas} />
-      <DeleteSiswaModal 
-        isOpen={isDeleteModalOpen} 
-        onClose={() => setIsDeleteModalOpen(false)} 
-        siswaName={mockSiswaDetail.nama} 
+      <DeleteSiswaModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        siswaName={mockSiswaDetail.nama}
       />
     </div>
   );

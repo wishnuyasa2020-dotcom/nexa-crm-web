@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Search, Plus, ChevronLeft, ChevronRight, Users, X, UserPlus, Link as LinkIcon } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
-import { AddSiswaModal } from '@/components/AddSiswaModal';
-import { EditSiswaModal } from '@/components/EditSiswaModal';
-import { ImportSiswaModal } from '@/components/ImportSiswaModal';
+import { AddSiswaModal } from '@/components/siswa/AddSiswaModal';
+import { EditSiswaModal } from '@/components/siswa/EditSiswaModal';
+import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
 
 interface Siswa {
   idRecord: string;
@@ -53,6 +53,7 @@ export default function SiswaPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSiswaId, setSelectedSiswaId] = useState<string | null>(null);
+  const [isFabOpen, setIsFabOpen] = useState(false);
   const pageSize = 20;
 
   const loadSiswa = useCallback(async () => {
@@ -232,7 +233,7 @@ export default function SiswaPage() {
         )}
       </div>
 
-      <AddSiswaModal 
+      <AddSiswaModal  
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
         onSuccess={() => {
