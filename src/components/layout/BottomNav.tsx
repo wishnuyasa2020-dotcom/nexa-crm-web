@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, CheckSquare, School, User, Users, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, School, Users, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -12,7 +12,6 @@ const navItems = [
   { label: 'Tasks', href: '/tasks', icon: CheckSquare },
   { label: 'Live Chat', href: '/live-chat', icon: MessageSquare },
   { label: 'Sekolah', href: '/sekolah', icon: School },
-  { label: 'Profil', href: '/profil', icon: User },
 ];
 
 export function BottomNav() {

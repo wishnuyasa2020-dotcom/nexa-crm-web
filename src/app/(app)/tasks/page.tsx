@@ -75,7 +75,7 @@ export default function TasksPage() {
       </div>
 
       {/* ── Top Tabs ── */}
-      <div className="flex bg-card border border-border p-1 rounded-xl overflow-x-auto hide-scrollbar">
+      <div className="flex flex-wrap gap-1.5 p-1.5 bg-card border border-border rounded-xl shadow-sm w-full">
         {[
           { id: 'overdue', label: 'Overdue', icon: Clock, count: tasks.overdue.length, activeCls: 'bg-rose-500/10 text-rose-500', badgeCls: 'bg-rose-500/20' },
           { id: 'today', label: 'Hari Ini', icon: Calendar, count: tasks.today.length, activeCls: 'bg-amber-500/10 text-amber-500', badgeCls: 'bg-amber-500/20' },
@@ -87,12 +87,12 @@ export default function TasksPage() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as TabKey)}
             className={cn(
-              "flex-1 min-w-[100px] py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap",
+              "flex-1 min-w-[100px] px-2 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5",
               activeTab === tab.id ? tab.activeCls : "text-muted-foreground hover:bg-secondary/50"
             )}
           >
-            <tab.icon size={14} /> {tab.label}
-            <span className={cn("px-1.5 py-0.5 rounded text-[10px]", activeTab === tab.id ? tab.badgeCls : "bg-secondary")}>
+            <tab.icon size={14} className="shrink-0" /> <span className="truncate">{tab.label}</span>
+            <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0", activeTab === tab.id ? tab.badgeCls : "bg-secondary text-muted-foreground")}>
               {tab.count}
             </span>
           </button>
@@ -133,11 +133,14 @@ export default function TasksPage() {
               
               {/* Card Body */}
               <div className="mb-4">
-                <h3 className="text-lg font-bold text-foreground mb-1">{task.nama}</h3>
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  <span className="font-semibold text-primary">{task.nextAction}</span>
-                  <span>•</span>
-                  <span>PJ: {task.pjCro}</span>
+                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1.5 leading-tight break-words">{task.nama}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">{task.nextAction}</span>
+                  <span className="hidden sm:inline text-muted-foreground/50">•</span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-[10px] uppercase tracking-wider font-semibold opacity-70">PJ:</span> 
+                    {task.pjCro}
+                  </span>
                 </p>
               </div>
 

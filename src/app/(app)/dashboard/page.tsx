@@ -77,13 +77,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto w-full min-w-0">
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.label} className="bg-card border border-border rounded-xl p-4 card-hover">
+            <div key={card.label} className="bg-card border border-border rounded-xl p-4 card-hover min-w-0">
               <div className="flex items-start justify-between mb-3">
                 <div className={cn('p-2 rounded-lg bg-secondary', card.color)}>
                   <Icon size={16} />
@@ -105,12 +105,12 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {/* Funnel Chart */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px]">
+        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] min-w-0">
           <div className="flex items-center gap-2 mb-4 flex-shrink-0">
             <Activity size={16} className="text-primary" />
             <h2 className="text-sm font-semibold text-foreground">Funnel Siswa</h2>
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 min-w-0">
             {funnels.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={funnels} barSize={28}>
@@ -134,9 +134,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Funnel Donut */}
-        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px]">
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] min-w-0">
           <h2 className="text-sm font-semibold text-foreground mb-4 flex-shrink-0">Distribusi Status</h2>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 min-w-0">
             {funnels.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Leaderboard */}
-        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] lg:col-span-3 xl:col-span-1">
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] lg:col-span-3 xl:col-span-1 min-w-0">
           <div className="flex items-center gap-2 mb-4 flex-shrink-0">
             <Trophy size={16} className="text-amber-500" />
             <h2 className="text-sm font-semibold text-foreground">Top CRO Bulan Ini</h2>
@@ -201,7 +201,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Task Table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden min-w-0">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
             <CheckSquare size={16} className="text-primary" />

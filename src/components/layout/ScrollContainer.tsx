@@ -19,7 +19,7 @@ export function ScrollContainer({ children, className, ...props }: ScrollContain
       ref={scrollRef}
       id="main-scroll-container"
       className={cn(
-        'flex-1 flex flex-col overflow-y-auto scrollbar-thin', 
+        'flex-1 flex flex-col overflow-y-auto overflow-x-hidden scrollbar-thin', 
         className,
         isNoPaddingRoute && '!p-0 !pb-16 md:!p-0'
       )}
