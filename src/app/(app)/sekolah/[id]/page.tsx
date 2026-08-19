@@ -7,13 +7,13 @@ import {
   ArrowLeft, Edit2, UserCheck, Plus, Play, Trash2,
   Phone, MapPin, Users, Calendar, Clock,
   RotateCcw, CheckCircle, XCircle, AlertCircle,
-  MessageSquare, PhoneCall, Handshake
+  MessageSquare, PhoneCall, Handshake, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   StatusBadge, AgingBadge, InputAktivitasModal,
   AktivitasEkstraModal, ReassignCROModal, DeleteSekolahModal,
-  EditSekolahModal
+  EditSekolahModal, EditAktivitasModal
 } from '@/components/sekolah';
 import { getMockSekolahById, type MockSekolah, type MockAktivitas, type MockAktivitasEkstra } from '@/lib/mock/sekolah';
 import { isManagerOrAdmin } from '@/lib/constants/sekolah';
@@ -76,6 +76,7 @@ export default function SekolahDetailPage() {
   const [sekolah, setSekolah] = useState<MockSekolah | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [userRole, setUserRole] = useState<string>('CRO');
+  const [userName, setUserName] = useState<string>('');
 
   // Modals
   const [showInputAktivitas, setShowInputAktivitas]   = useState(false);
@@ -83,6 +84,15 @@ export default function SekolahDetailPage() {
   const [showReassign, setShowReassign]               = useState(false);
   const [showDelete, setShowDelete]                   = useState(false);
   const [showEdit, setShowEdit]                       = useState(false);
+
+  // Edit aktivitas
+  const [editingAktivitas, setEditingAktivitas] = useState<MockAktivitas | null>(null);
+
+  // Konfirmasi Selesai / Batalkan ekstra
+  const [confirmEkstra, setConfirmEkstra] = useState<{
+    ae: MockAktivitasEkstra;
+    action: 'selesai' | 'batal';
+  } | null>(null);
 
   // Drag to scroll logic for Tabs
   const scrollContainerRef = useDragScroll<HTMLDivElement>();
@@ -96,6 +106,7 @@ export default function SekolahDetailPage() {
       if (userStr) {
         const user = JSON.parse(userStr);
         setUserRole(user.role ?? 'CRO');
+        setUserName(user.nama ?? user.username ?? '');
       }
     } catch {}
   }, [id]);
@@ -262,9 +273,25 @@ export default function SekolahDetailPage() {
               </div>
             </div>
           )}
-          {activeTab === 'aktivitas' && <TabAktivitas aktivitas={sekolah.aktivitas} isManager={isManager} isCRO={isCRO} />}
+          {activeTab === 'aktivitas' && (
+            <TabAktivitas
+              aktivitas={sekolah.aktivitas}
+              isManager={isManager}
+              isCRO={isCRO}
+              onEdit={ak => setEditingAktivitas(ak)}
+            />
+          )}
           {activeTab === 'siswa'     && <TabSiswa />}
-          {activeTab === 'ekstra'    && <TabEkstra ekstra={sekolah.aktivitasEkstra} canAdd={canEkstra} isCRO={isCRO} onAdd={() => setShowAktivitasEkstra(true)} />}
+          {activeTab === 'ekstra'    && (
+            <TabEkstra
+              ekstra={sekolah.aktivitasEkstra}
+              canAdd={canEkstra}
+              isCRO={isCRO}
+              onAdd={() => setShowAktivitasEkstra(true)}
+              onSelesai={ae => setConfirmEkstra({ ae, action: 'selesai' })}
+              onBatalkan={ae => setConfirmEkstra({ ae, action: 'batal' })}
+            />
+          )}
         </div>
       </div>
 
@@ -273,19 +300,33 @@ export default function SekolahDetailPage() {
         isOpen={showInputAktivitas}
         onClose={() => setShowInputAktivitas(false)}
         sekolah={sekolah}
-        onSuccess={() => { setShowInputAktivitas(false); setActiveTab('aktivitas'); }}
+        onSuccess={() => {
+          setShowInputAktivitas(false);
+          setActiveTab('aktivitas');
+          // Optimistic: reload mock data to reflect new aktivitas
+          const refreshed = getMockSekolahById(id);
+          if (refreshed) setSekolah(refreshed);
+        }}
       />
       <AktivitasEkstraModal
         isOpen={showAktivitasEkstra}
         onClose={() => setShowAktivitasEkstra(false)}
         sekolah={sekolah}
-        onSuccess={() => { setShowAktivitasEkstra(false); setActiveTab('ekstra'); }}
+        onSuccess={() => {
+          setShowAktivitasEkstra(false);
+          setActiveTab('ekstra');
+          const refreshed = getMockSekolahById(id);
+          if (refreshed) setSekolah(refreshed);
+        }}
       />
       <ReassignCROModal
         isOpen={showReassign}
         onClose={() => setShowReassign(false)}
         sekolah={sekolah}
-        onSuccess={() => setShowReassign(false)}
+        onSuccess={(newCro?: string) => {
+          setShowReassign(false);
+          if (newCro) setSekolah(prev => prev ? { ...prev, pjCro: newCro } : prev);
+        }}
       />
       <DeleteSekolahModal
         isOpen={showDelete}
@@ -297,8 +338,51 @@ export default function SekolahDetailPage() {
         isOpen={showEdit}
         onClose={() => setShowEdit(false)}
         sekolah={sekolah}
-        onSuccess={() => setShowEdit(false)}
+        onSuccess={(updated?: Partial<MockSekolah>) => {
+          setShowEdit(false);
+          if (updated) setSekolah(prev => prev ? { ...prev, ...updated } : prev);
+        }}
       />
+
+      {/* ── Edit Aktivitas Modal ── */}
+      <EditAktivitasModal
+        isOpen={!!editingAktivitas}
+        onClose={() => setEditingAktivitas(null)}
+        aktivitas={editingAktivitas}
+        isManager={isManager}
+        userName={userName}
+        onSuccess={updated => {
+          setEditingAktivitas(null);
+          setSekolah(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              aktivitas: prev.aktivitas.map(a => a.id === updated.id ? updated : a),
+            };
+          });
+        }}
+      />
+
+      {/* ── Konfirmasi Selesai / Batalkan Ekstra ── */}
+      {confirmEkstra && (
+        <KonfirmasiEkstraModal
+          ae={confirmEkstra.ae}
+          action={confirmEkstra.action}
+          onClose={() => setConfirmEkstra(null)}
+          onSuccess={updated => {
+            setConfirmEkstra(null);
+            setSekolah(prev => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                aktivitasEkstra: prev.aktivitasEkstra.map(a =>
+                  a.id === updated.id ? updated : a
+                ),
+              };
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -383,7 +467,14 @@ function TabDetail({ sekolah }: { sekolah: MockSekolah }) {
   );
 }
 
-function TabAktivitas({ aktivitas, isManager, isCRO }: { aktivitas: MockAktivitas[]; isManager: boolean; isCRO: boolean }) {
+function TabAktivitas({
+  aktivitas, isManager, isCRO, onEdit,
+}: {
+  aktivitas: MockAktivitas[];
+  isManager: boolean;
+  isCRO: boolean;
+  onEdit: (ak: MockAktivitas) => void;
+}) {
   if (aktivitas.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground text-sm">
@@ -423,7 +514,10 @@ function TabAktivitas({ aktivitas, isManager, isCRO }: { aktivitas: MockAktivita
                 <span className="text-xs text-muted-foreground">PJ: {ak.pjCro}</span>
               </div>
               {!isCRO && canEdit && (
-                <button className="flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary transition-colors px-2 py-0.5 rounded border border-primary/20 hover:border-primary/40">
+                <button
+                  onClick={() => onEdit(ak)}
+                  className="flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary transition-colors px-2 py-0.5 rounded border border-primary/20 hover:border-primary/40"
+                >
                   ✏️ Edit
                 </button>
               )}
@@ -522,7 +616,16 @@ function TabSiswa() {
   );
 }
 
-function TabEkstra({ ekstra, canAdd, onAdd, isCRO }: { ekstra: MockAktivitasEkstra[]; canAdd: boolean; onAdd: () => void; isCRO: boolean }) {
+function TabEkstra({
+  ekstra, canAdd, onAdd, isCRO, onSelesai, onBatalkan,
+}: {
+  ekstra: MockAktivitasEkstra[];
+  canAdd: boolean;
+  onAdd: () => void;
+  isCRO: boolean;
+  onSelesai: (ae: MockAktivitasEkstra) => void;
+  onBatalkan: (ae: MockAktivitasEkstra) => void;
+}) {
   return (
     <div className="space-y-3">
       {canAdd && (
@@ -574,10 +677,16 @@ function TabEkstra({ ekstra, canAdd, onAdd, isCRO }: { ekstra: MockAktivitasEkst
             {/* Actions */}
             {!isCRO && ae.statusAktivitas === 'Direncanakan' && (
               <div className="flex gap-2 pt-1">
-                <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 transition-colors">
+                <button
+                  onClick={() => onSelesai(ae)}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 transition-colors"
+                >
                   <CheckCircle size={12} /> Selesaikan
                 </button>
-                <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-400 border border-rose-500/20 hover:bg-rose-500/10 transition-colors">
+                <button
+                  onClick={() => onBatalkan(ae)}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-400 border border-rose-500/20 hover:bg-rose-500/10 transition-colors"
+                >
                   <XCircle size={12} /> Batalkan
                 </button>
               </div>
@@ -585,6 +694,158 @@ function TabEkstra({ ekstra, canAdd, onAdd, isCRO }: { ekstra: MockAktivitasEkst
           </div>
         ))
       )}
+    </div>
+  );
+}
+
+// ════════ KONFIRMASI EKSTRA MODAL ════════
+function KonfirmasiEkstraModal({
+  ae,
+  action,
+  onClose,
+  onSuccess,
+}: {
+  ae: MockAktivitasEkstra;
+  action: 'selesai' | 'batal';
+  onClose: () => void;
+  onSuccess: (updated: MockAktivitasEkstra) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [tanggalRealisasi, setTanggalRealisasi] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
+  const [catatanHasil, setCatatanHasil] = useState('');
+  const [alasanBatal, setAlasanBatal] = useState('');
+
+  const isSelesai = action === 'selesai';
+  const formValid = isSelesai ? true : alasanBatal.trim().length >= 5;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formValid) return;
+    setLoading(true);
+    try {
+      // TODO: apiClient.patch(`/api/aktivitas-ekstra/${ae.id}`, payload)
+      await new Promise(r => setTimeout(r, 600));
+      const updated: MockAktivitasEkstra = isSelesai
+        ? { ...ae, statusAktivitas: 'Selesai', tanggalRealisasi, catatanHasil: catatanHasil || undefined }
+        : { ...ae, statusAktivitas: 'Dibatalkan', alasanBatal };
+      onSuccess(updated);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      alert(e?.response?.data?.message || 'Gagal memperbarui aktivitas ekstra');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl shadow-xl border border-border flex flex-col">
+
+        {/* Header */}
+        <div className={cn(
+          'flex items-center gap-3 p-4 sm:p-5 border-b border-border',
+          isSelesai ? 'bg-emerald-500/5' : 'bg-rose-500/5'
+        )}>
+          {isSelesai
+            ? <CheckCircle size={18} className="text-emerald-400 flex-shrink-0" />
+            : <XCircle size={18} className="text-rose-400 flex-shrink-0" />
+          }
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-foreground">
+              {isSelesai ? 'Selesaikan Aktivitas' : 'Batalkan Aktivitas'}
+            </h2>
+            <p className="text-xs text-muted-foreground truncate">{ae.jenisAktivitas} · {ae.pjAktivitas}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="ml-auto w-7 h-7 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+          >
+            <XCircle size={14} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <form id="konfirmasiEkstraForm" onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4">
+
+          {/* Tujuan readonly */}
+          <div className="p-3 bg-secondary/30 rounded-xl text-xs text-muted-foreground space-y-0.5">
+            <p className="font-medium text-foreground text-sm">{ae.jenisAktivitas}</p>
+            <p>Tujuan: {ae.tujuanCatatan}</p>
+          </div>
+
+          {isSelesai ? (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Tanggal Realisasi *</label>
+                <input
+                  required
+                  type="date"
+                  value={tanggalRealisasi}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={e => setTanggalRealisasi(e.target.value)}
+                  className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Catatan Hasil <span className="text-muted-foreground/60">(opsional)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={catatanHasil}
+                  onChange={e => setCatatanHasil(e.target.value)}
+                  placeholder="Ringkasan hasil aktivitas ekstra..."
+                  className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors resize-none placeholder:text-muted-foreground"
+                />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                Alasan Pembatalan * <span className="text-rose-500 text-[10px]">min 5 karakter</span>
+              </label>
+              <textarea
+                required
+                rows={3}
+                value={alasanBatal}
+                onChange={e => setAlasanBatal(e.target.value)}
+                placeholder="Jelaskan alasan pembatalan..."
+                className={cn(
+                  'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors resize-none placeholder:text-muted-foreground',
+                  !formValid && alasanBatal.length > 0 && 'border-rose-500 ring-1 ring-rose-500'
+                )}
+              />
+            </div>
+          )}
+        </form>
+
+        {/* Footer */}
+        <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            form="konfirmasiEkstraForm"
+            disabled={loading || !formValid}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all',
+              isSelesai
+                ? 'bg-emerald-500 shadow-emerald-500/20'
+                : 'bg-rose-500 shadow-rose-500/20'
+            )}
+          >
+            {loading && <Loader2 size={14} className="animate-spin" />}
+            {isSelesai ? '✅ Selesaikan' : '❌ Batalkan'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
