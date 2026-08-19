@@ -19,24 +19,15 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      // ===== BYPASS LOGIN MOCK =====
-      // Karena backend (nexa-os) MySQL sedang mati/timeout, 
-      // kita mock langsung token dan role nya.
-      const mockToken = "mock_token_admin_" + Date.now();
-      const mockUser = {
-        id: "USR-MOCK-1",
-        nama: "Mock Admin",
-        username: username || "admin",
-        role: "Admin",
-        kantor_cabang: "Pusat"
-      };
-
-      await new Promise(r => setTimeout(r, 600)); // fake delay
-      
-      Cookies.set('nexa_token', mockToken, { expires: 1 });
-      Cookies.set('nexa_user', JSON.stringify(mockUser), { expires: 1 });
-      router.push('/dashboard');
-      // ==============================
+      const res = await axios.post(`${API_BASE}/auth/login`, { username, password });
+      if (res.data.status === 'ok') {
+        const { token, user } = res.data.data;
+        Cookies.set('nexa_token', token, { expires: 1 });
+        Cookies.set('nexa_user', JSON.stringify(user), { expires: 1 });
+        router.push('/dashboard');
+      } else {
+        setError(res.data.message || 'Login gagal.');
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       setError(axiosErr?.response?.data?.message || 'Login gagal. Periksa username & password.');
