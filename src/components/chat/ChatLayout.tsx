@@ -1,33 +1,93 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ConversationList } from './ConversationList';
 import { ChatRoom } from './ChatRoom';
-import { mockConversations } from '@/lib/mockChatData';
+import { fetchConversations, Conversation } from '@/lib/chatApi';
+
+const POLLING_INTERVAL_MS = 5000; // 5 detik
 
 export function ChatLayout() {
-  const [activeContactId, setActiveContactId] = useState<string | null>(null);
-  const activeContact = mockConversations.find(c => c.id === activeContactId) || null;
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConvId, setActiveConvId]   = useState<number | null>(null);
+  const [tab, setTab]                     = useState<'all' | 'unread' | 'waiting'>('all');
+  const [search, setSearch]               = useState('');
+  const [isLoading, setIsLoading]         = useState(true);
+
+  // Ref agar polling tidak ter-trigger ulang saat state berubah
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  const activeContact = conversations.find(c => c.conv_id === activeConvId) ?? null;
+
+  // ── Fetch conversations ──────────────────────────────────────────────────
+  const loadConversations = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    try {
+      const result = await fetchConversations({ tab, search });
+      setConversations(result.data || []);
+    } catch (err) {
+      console.error('[ChatLayout] Gagal memuat percakapan:', err);
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
+  }, [tab, search]);
+
+  // ── Initial load ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
+
+  // ── Long Polling (silent refresh setiap 5 detik) ─────────────────────────
+  useEffect(() => {
+    // Bersihkan polling lama sebelum mulai yang baru
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    pollingRef.current = setInterval(() => {
+      loadConversations(true); // silent = tidak tampil loading spinner
+    }, POLLING_INTERVAL_MS);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [loadConversations]);
+
+  // ── Handler ──────────────────────────────────────────────────────────────
+  const handleSelectConversation = (convId: number) => {
+    setActiveConvId(convId);
+  };
+
+  // Dipanggil oleh ChatRoom ketika pesan baru berhasil dikirim
+  // agar list conversation langsung diperbarui tanpa tunggu polling
+  const handleMessageSent = useCallback(() => {
+    loadConversations(true);
+  }, [loadConversations]);
 
   return (
     <div className="flex h-full flex-1 w-full overflow-hidden bg-[#111b21] text-[#e9edef]">
       {/* List Pane */}
-      <div 
-        className={`w-full md:w-[350px] lg:w-[400px] flex-shrink-0 border-r border-[#222d34] ${activeContactId ? 'hidden md:flex' : 'flex'}`}
+      <div
+        className={`w-full md:w-[350px] lg:w-[400px] flex-shrink-0 border-r border-[#222d34] ${
+          activeConvId ? 'hidden md:flex' : 'flex'
+        }`}
       >
-        <ConversationList 
-          activeContactId={activeContactId} 
-          onSelectContact={(id) => setActiveContactId(id)} 
+        <ConversationList
+          conversations={conversations}
+          activeConvId={activeConvId}
+          isLoading={isLoading}
+          tab={tab}
+          search={search}
+          onTabChange={setTab}
+          onSearchChange={setSearch}
+          onSelectConversation={handleSelectConversation}
         />
       </div>
 
       {/* Chat Room Pane */}
-      <div 
-        className={`flex-1 min-w-0 h-full ${!activeContactId ? 'hidden md:flex' : 'flex'}`}
-      >
-        <ChatRoom 
-          contact={activeContact} 
-          onBack={() => setActiveContactId(null)} 
+      <div className={`flex-1 min-w-0 h-full ${!activeConvId ? 'hidden md:flex' : 'flex'}`}>
+        <ChatRoom
+          conversation={activeContact}
+          onBack={() => setActiveConvId(null)}
+          onMessageSent={handleMessageSent}
         />
       </div>
     </div>

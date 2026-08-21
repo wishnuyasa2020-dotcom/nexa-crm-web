@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import apiClient from '@/lib/apiClient';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -17,12 +20,21 @@ interface DeleteUserModalProps {
 }
 
 export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUserModalProps) {
-  
-  const handleConfirm = () => {
-    // TODO: Connect to actual API
-    console.log("Deactivate/Delete user:", user?.id);
-    if (onSuccess) onSuccess();
-    onClose();
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      await apiClient.delete(`/users/${user.id}`);
+      toast.success('Staf berhasil dinonaktifkan');
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Gagal menonaktifkan staf');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,8 +57,10 @@ export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUser
         </div>
 
         <DialogFooter className="mt-4 flex flex-row gap-2 justify-end sm:justify-end">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11">Batal</Button>
-          <Button type="button" variant="destructive" onClick={handleConfirm} className="flex-1 sm:flex-none h-11">Ya, Nonaktifkan</Button>
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
+          <Button type="button" variant="destructive" onClick={handleConfirm} className="flex-1 sm:flex-none h-11" disabled={loading}>
+            {loading ? 'Memproses...' : 'Ya, Nonaktifkan'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

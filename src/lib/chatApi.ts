@@ -1,0 +1,149 @@
+/**
+ * chatApi.ts
+ * API client functions untuk modul Chat & Template Manager
+ * Menggunakan apiClient (axios instance) yang sudah ada.
+ */
+
+import apiClient from './apiClient';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+export type ServiceWindowStatus = 'OPEN' | 'CLOSED';
+export type MessageDirection    = 'incoming' | 'outgoing';
+export type MetaStatus          = 'APPROVED' | 'PENDING' | 'REJECTED' | 'LOCAL_ONLY';
+
+export interface Conversation {
+  conv_id:           number;
+  id_siswa:          number | null;
+  wa_number:         string;
+  student_name:      string;
+  status:            string;
+  window_status:     ServiceWindowStatus;
+  window_opened_at:  string | null;
+  window_expires_at: string | null;
+  last_message_type: string;
+  last_message_prev: string;
+  last_sender:       string;
+  last_msg_ts:       string;
+  pipeline_status:   string | null;
+  unread_count:      number;
+}
+
+export interface ChatMessage {
+  message_id:  number;
+  conv_id:     number;
+  timestamp:   number;
+  datetime:    string;
+  direction:   MessageDirection;
+  from_phone:  string;
+  from_name:   string;
+  type:        string;
+  body:        string | null;
+  media_id:    string | null;
+  media_url:   string | null;
+  mime_type:   string | null;
+  caption:     string | null;
+  status:      string | null;
+}
+
+export interface WaTemplate {
+  id_template:           number;
+  pipeline:              string | null;
+  nama_template:         string;
+  template_name_api:     string;
+  language_code:         string;
+  body_text:             string;
+  kategori:              string;
+  urutan:                number;
+  status_crm:            string;
+  meta_status:           MetaStatus;
+  meta_template_id:      string | null;
+  meta_status_updated_at: string | null;
+  meta_quality_rating:   string | null;
+  parameters:            string; // JSON string
+  created_date:          string;
+  last_updated:          string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHAT API
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Daftar percakapan aktif (dipakai untuk polling) */
+export async function fetchConversations(params: {
+  tab?:    'all' | 'unread' | 'waiting';
+  search?: string;
+  page?:   number;
+  limit?:  number;
+} = {}): Promise<{ data: Conversation[]; total: number }> {
+  const res = await apiClient.get('/api/v1/chats', { params });
+  return res.data;
+}
+
+/** Riwayat pesan dalam satu percakapan */
+export async function fetchMessages(
+  convId: number,
+  params: { limit?: number; before?: number } = {}
+): Promise<ChatMessage[]> {
+  const res = await apiClient.get(`/api/v1/chats/${convId}/messages`, { params });
+  return res.data.data;
+}
+
+/** Kirim pesan — teks biasa atau template (Smart Routing di backend) */
+export async function sendMessage(
+  convId: number,
+  payload: { text?: string; templateId?: number }
+): Promise<{ success: boolean; sentAs: 'free_text' | 'meta_template'; body: string }> {
+  const res = await apiClient.post(`/api/v1/chats/${convId}/send`, payload);
+  return res.data;
+}
+
+/** Tandai semua pesan dalam percakapan sudah dibaca */
+export async function markConversationAsRead(convId: number): Promise<void> {
+  await apiClient.patch(`/api/v1/chats/${convId}/read`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPLATE API
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** List semua template dari wa_templates */
+export async function fetchTemplates(params: {
+  status?:   MetaStatus;
+  pipeline?: string;
+  search?:   string;
+} = {}): Promise<WaTemplate[]> {
+  const res = await apiClient.get('/api/v1/templates', { params });
+  return res.data.data;
+}
+
+/** Buat template baru */
+export async function createTemplate(data: {
+  nama_template:     string;
+  body_text:         string;
+  template_name_api?: string;
+  language_code?:    string;
+  kategori?:         string;
+  urutan?:           number;
+  pipeline?:         string;
+  parameters?:       string;
+  submitToMeta?:     boolean;
+}): Promise<{ id_template: number; meta_status: MetaStatus }> {
+  const res = await apiClient.post('/api/v1/templates', data);
+  return res.data;
+}
+
+/** Update template yang sudah ada */
+export async function updateTemplate(
+  id: number,
+  data: Partial<Pick<WaTemplate, 'nama_template' | 'body_text' | 'kategori' | 'urutan' | 'status_crm'>>
+): Promise<void> {
+  await apiClient.put(`/api/v1/templates/${id}`, data);
+}
+
+/** Sinkronisasi status template dari Meta */
+export async function syncTemplatesFromMeta(): Promise<{ synced: number; total_from_meta: number }> {
+  const res = await apiClient.post('/api/v1/templates/sync');
+  return res.data;
+}

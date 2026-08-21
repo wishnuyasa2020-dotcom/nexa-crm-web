@@ -49,7 +49,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
   const isNoWaHidden = !siswaDetail.no_wa;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 sm:pb-8">
+    <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-8">
       {/* HEADER NAV */}
       <div className="flex items-center gap-3">
         <button

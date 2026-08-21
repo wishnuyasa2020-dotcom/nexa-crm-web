@@ -189,7 +189,7 @@ export default function SnoozeCampaignPage() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4 md:space-y-6 pb-20 w-full min-w-0">
+    <div className="space-y-4 md:space-y-6 pb-20 w-full min-w-0">
 
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">

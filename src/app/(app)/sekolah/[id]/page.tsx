@@ -153,7 +153,7 @@ export default function SekolahDetailPage() {
   const hasEkstraActive = sekolah.aktivitasEkstra.some(a => a.statusAktivitas === 'Direncanakan');
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5">
+    <div className="space-y-5">
 
       {/* ── Breadcrumb / Back ── */}
       <button

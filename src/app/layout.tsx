@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit, Roboto_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="id" className="dark">
       <body className={`${outfit.variable} ${robotoMono.variable} antialiased bg-background text-foreground font-sans`}>
         {children}
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

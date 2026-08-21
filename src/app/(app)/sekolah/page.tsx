@@ -180,7 +180,7 @@ export default function SekolahPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-4">
+    <div className="w-full space-y-4">
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between gap-3">

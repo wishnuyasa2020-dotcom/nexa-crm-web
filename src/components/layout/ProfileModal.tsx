@@ -218,7 +218,7 @@ function PasswordField({
           value={value}
           onChange={e => onChange(e.target.value)}
           className="w-full px-3 pr-10 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
-          placeholder="••••••••"
+          placeholder="Masukkan password"
         />
         <button
           type="button"

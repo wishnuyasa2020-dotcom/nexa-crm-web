@@ -2,7 +2,7 @@ import { Home } from 'lucide-react';
 
 export default function HomeVisitPage() {
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Home size={18} className="text-pink-400" />
         <h1 className="text-lg font-bold text-foreground">Home Visit</h1>

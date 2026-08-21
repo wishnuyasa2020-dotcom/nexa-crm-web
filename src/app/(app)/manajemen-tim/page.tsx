@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, Search, Map, Plus, Edit2, KeyRound, UserX, MoreVertical } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import apiClient from '@/lib/apiClient';
+import { toast } from 'sonner';
 
 // Modals
 import { AssignKecamatanModal } from '@/components/manajemen-tim/AssignKecamatanModal';
@@ -13,19 +15,11 @@ import { EditUserModal } from '@/components/manajemen-tim/EditUserModal';
 import { ResetPasswordModal } from '@/components/manajemen-tim/ResetPasswordModal';
 import { DeleteUserModal } from '@/components/manajemen-tim/DeleteUserModal';
 
-// Mock data for users
-const MOCK_USERS = [
-  { id: '1', username: 'budi_cro', nama: 'Budi Santoso', role: 'CRO', status: 'Aktif' },
-  { id: '2', username: 'andi_chief', nama: 'Andi M', role: 'Chief CRO', status: 'Aktif', kecamatan_list: ['Cibeunying Kidul', 'Coblong'] },
-  { id: '3', username: 'siti_cro', nama: 'Siti Aminah', role: 'CRO', status: 'Nonaktif' },
-  { id: '4', username: 'faisal_chief', nama: 'Ahmad Faisal', role: 'Chief CRO', status: 'Aktif', kecamatan_list: [] },
-  { id: '5', username: 'admin_r', nama: 'Rina Admin', role: 'Admin', status: 'Aktif' },
-];
-
 export default function ManajemenTimPage() {
-  const [users, setUsers] = useState(MOCK_USERS);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedUser, setSelectedUser] = useState<typeof MOCK_USERS[0] | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
   
   // Modal States
   const [isAssignAreaOpen, setIsAssignAreaOpen] = useState(false);
@@ -39,6 +33,24 @@ export default function ManajemenTimPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const isFullAdmin = user?.role === 'Admin' || user?.role === 'Manager';
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient.get('/users');
+      setUsers(res.data.data || []);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Gagal memuat daftar staf');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isFullAdmin) {
+      fetchUsers();
+    }
+  }, [isFullAdmin]);
 
   if (!isFullAdmin) {
     return (
@@ -58,7 +70,7 @@ export default function ManajemenTimPage() {
   );
 
   // Helper to open specific actions
-  const openAction = (action: 'edit' | 'reset' | 'delete' | 'area', u: typeof MOCK_USERS[0]) => {
+  const openAction = (action: 'edit' | 'reset' | 'delete' | 'area', u: any) => {
     setSelectedUser(u);
     setMobileMenuOpen(null);
     if (action === 'edit') setIsEditOpen(true);
@@ -78,7 +90,7 @@ export default function ManajemenTimPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto pb-20 sm:pb-8">
+    <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-8">
       {/* Header Mobile-First */}
       <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
         <div className="flex items-center gap-3">
@@ -121,7 +133,7 @@ export default function ManajemenTimPage() {
             <div key={u.id} className="bg-card border border-border rounded-xl p-4 flex gap-3 relative">
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-sm font-bold text-muted-foreground">
-                {u.nama.split(' ').map(n => n[0]).join('').substring(0,2)}
+                {u.nama.split(' ').map((n: string) => n[0]).join('').substring(0,2)}
               </div>
               
               <div className="flex-1 min-w-0">
@@ -185,7 +197,7 @@ export default function ManajemenTimPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">
-                          {u.nama.split(' ').map(n => n[0]).join('').substring(0,2)}
+                          {u.nama.split(' ').map((n: string) => n[0]).join('').substring(0,2)}
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{u.nama}</p>
@@ -228,14 +240,14 @@ export default function ManajemenTimPage() {
       </div>
 
       {/* Render All Modals */}
-      <AddUserModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
-      <EditUserModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} user={selectedUser} />
-      <ResetPasswordModal isOpen={isResetOpen} onClose={() => setIsResetOpen(false)} user={selectedUser} />
-      <DeleteUserModal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} user={selectedUser} />
+      <AddUserModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} onSuccess={fetchUsers} />
+      <EditUserModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} user={selectedUser} onSuccess={fetchUsers} />
+      <ResetPasswordModal isOpen={isResetOpen} onClose={() => setIsResetOpen(false)} user={selectedUser} onSuccess={fetchUsers} />
+      <DeleteUserModal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} user={selectedUser} onSuccess={fetchUsers} />
       <AssignKecamatanModal 
         isOpen={isAssignAreaOpen}
         onClose={() => setIsAssignAreaOpen(false)}
-        userToAssign={selectedUser as any} // Using as any since MOCK_USERS typing differs slightly from what AssignKecamatanModal expects
+        userToAssign={selectedUser as any} 
         onSuccess={() => setIsAssignAreaOpen(false)}
       />
 

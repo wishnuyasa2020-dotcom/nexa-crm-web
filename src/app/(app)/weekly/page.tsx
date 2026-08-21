@@ -304,10 +304,10 @@ export default function WeeklyPage() {
 
       {/* ── Board ── */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex-1 flex gap-4 overflow-hidden">
+        <div className="flex-1 flex flex-col sm:flex-row gap-4 overflow-hidden">
 
           {/* ── Sidebar Backlog ── */}
-          <div className="w-64 flex-shrink-0 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
+          <div className="w-full sm:w-64 h-56 sm:h-auto flex-shrink-0 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
             <div className="p-3 border-b border-border bg-secondary/30">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-foreground text-sm">Belum Terjadwal</h2>

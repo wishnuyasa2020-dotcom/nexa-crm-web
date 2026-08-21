@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import apiClient from '@/lib/apiClient';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -30,12 +32,22 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
     }
   }, [user, isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to actual API
-    console.log("Edit user:", { id: user?.id, nama, role, status });
-    if (onSuccess) onSuccess();
-    onClose();
+    if (!user) return;
+    try {
+      setLoading(true);
+      await apiClient.put(`/users/${user.id}`, { nama, role, status_aktif: status });
+      toast.success('Data staf berhasil diperbarui');
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Gagal mengubah staf');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,8 +110,10 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
           </div>
 
           <DialogFooter className="mt-4 flex flex-row gap-2 justify-end sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11">Batal</Button>
-            <Button type="submit" className="flex-1 sm:flex-none h-11 gradient-primary text-white">Simpan Perubahan</Button>
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
+            <Button type="submit" className="flex-1 sm:flex-none h-11 gradient-primary text-white" disabled={loading}>
+              {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

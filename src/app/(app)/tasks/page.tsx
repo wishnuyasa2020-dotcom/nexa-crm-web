@@ -137,7 +137,7 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="space-y-5 max-w-3xl mx-auto">
+    <div className="space-y-5">
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between">

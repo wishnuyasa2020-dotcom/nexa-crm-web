@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Users, School, CheckSquare, TrendingUp, Activity, ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle } from 'lucide-react';
+import { Users, School, CheckSquare, TrendingUp, Activity, ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle, ShieldCheck } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
 import apiClient from '@/lib/apiClient';
@@ -16,6 +16,16 @@ interface DashboardStats {
   prospekAktif: number;
   konsultasi: number;
   siapDaftar: number;
+}
+
+interface QuotaInfo {
+  tier: string;
+  limitSiswa: number;
+  usedSiswa: number;
+  limitSekolah: number;
+  usedSekolah: number;
+  limitUser: number;
+  usedUser: number;
 }
 
 interface FunnelItem {
@@ -61,6 +71,7 @@ const FUNNEL_COLORS = [
 
 export default function DashboardPage() {
   const [stats, setStats]             = useState<DashboardStats | null>(null);
+  const [quota, setQuota]             = useState<QuotaInfo | null>(null);
   const [funnels, setFunnels]         = useState<FunnelItem[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [tasks, setTasks]             = useState<TaskItem[]>([]);
@@ -91,6 +102,18 @@ export default function DashboardPage() {
         konsultasi:     s.stats.konsultasi      ?? 0,
         siapDaftar:     s.stats.siapDaftar      ?? 0,
       });
+
+      if (s.quota) {
+        setQuota({
+          tier: s.quota.tier ?? 'Free',
+          limitSiswa: s.quota.limitSiswa ?? 300,
+          usedSiswa: s.quota.usedSiswa ?? 0,
+          limitSekolah: s.quota.limitSekolah ?? 10,
+          usedSekolah: s.quota.usedSekolah ?? 0,
+          limitUser: s.quota.limitUser ?? 4,
+          usedUser: s.quota.usedUser ?? 0,
+        });
+      }
 
       // ── Charts (funnel siswa) ──
       const c = chartsRes.data.data;
@@ -158,7 +181,7 @@ export default function DashboardPage() {
   // ── Loading skeleton ──
   if (loading) {
     return (
-      <div className="space-y-6 max-w-7xl mx-auto w-full min-w-0 animate-pulse">
+      <div className="space-y-6 w-full min-w-0 animate-pulse">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="bg-card border border-border rounded-xl p-4 h-28">
@@ -197,12 +220,25 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto w-full min-w-0">
+    <div className="space-y-6 w-full min-w-0">
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-foreground">Dashboard CRO</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-bold text-foreground">Dashboard CRO</h1>
+            {quota && (
+              <span className={cn(
+                "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                quota.tier.toLowerCase() === 'free' ? "bg-slate-500/10 text-slate-500 border-slate-500/20" :
+                quota.tier.toLowerCase() === 'pro' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
+                quota.tier.toLowerCase() === 'business' ? "bg-violet-500/10 text-violet-500 border-violet-500/20" :
+                "bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+              )}>
+                {quota.tier}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             Data real-time dari database · Diperbarui {lastRefresh.toLocaleTimeString('id-ID')}
           </p>
@@ -215,6 +251,131 @@ export default function DashboardPage() {
           <RefreshCw size={15} />
         </button>
       </div>
+
+      {/* ── Quota Progress ── */}
+      {quota && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {/* Kuota Siswa */}
+          <div className="bg-card border border-border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
+            <div className="flex items-center gap-4 min-w-48">
+              <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500">
+                <Users size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Kuota Siswa Baru</p>
+                <p className="text-xs text-muted-foreground">Periode Tagihan Aktif</p>
+              </div>
+            </div>
+            
+            <div className="flex-1 w-full relative">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-foreground font-medium">
+                  {quota.usedSiswa.toLocaleString('id-ID')} terpakai
+                </span>
+                <span className="text-muted-foreground">
+                  {quota.limitSiswa.toLocaleString('id-ID')} limit
+                </span>
+              </div>
+              
+              <div className="h-2 w-full bg-secondary/60 rounded-full overflow-hidden">
+                <div 
+                  className={cn(
+                    "h-full rounded-full transition-all duration-1000 ease-out",
+                    (quota.usedSiswa / quota.limitSiswa) > 0.95 ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
+                    (quota.usedSiswa / quota.limitSiswa) > 0.80 ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" :
+                    "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                  )}
+                  style={{ width: `${Math.min(Math.max((quota.usedSiswa / quota.limitSiswa) * 100, 0), 100)}%` }}
+                />
+              </div>
+              
+              <p className="text-[10px] mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
+                {(quota.usedSiswa / quota.limitSiswa) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
+              </p>
+            </div>
+          </div>
+
+          {/* Kuota Sekolah */}
+          <div className="bg-card border border-border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
+            <div className="flex items-center gap-4 min-w-48">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                <School size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Kuota Sekolah Baru</p>
+                <p className="text-xs text-muted-foreground">Periode Tagihan Aktif</p>
+              </div>
+            </div>
+            
+            <div className="flex-1 w-full relative">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-foreground font-medium">
+                  {quota.usedSekolah.toLocaleString('id-ID')} terpakai
+                </span>
+                <span className="text-muted-foreground">
+                  {quota.limitSekolah.toLocaleString('id-ID')} limit
+                </span>
+              </div>
+              
+              <div className="h-2 w-full bg-secondary/60 rounded-full overflow-hidden">
+                <div 
+                  className={cn(
+                    "h-full rounded-full transition-all duration-1000 ease-out",
+                    (quota.usedSekolah / quota.limitSekolah) > 0.95 ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
+                    (quota.usedSekolah / quota.limitSekolah) > 0.80 ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" :
+                    "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                  )}
+                  style={{ width: `${Math.min(Math.max((quota.usedSekolah / quota.limitSekolah) * 100, 0), 100)}%` }}
+                />
+              </div>
+              
+              <p className="text-[10px] mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
+                {(quota.usedSekolah / quota.limitSekolah) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
+              </p>
+            </div>
+          </div>
+
+          {/* Kuota User */}
+          <div className="bg-card border border-border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
+            <div className="flex items-center gap-4 min-w-48">
+              <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Kuota User Aktif</p>
+                <p className="text-xs text-muted-foreground">Admin, Manager & CRO</p>
+              </div>
+            </div>
+            
+            <div className="flex-1 w-full relative">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-foreground font-medium">
+                  {quota.usedUser.toLocaleString('id-ID')} terpakai
+                </span>
+                <span className="text-muted-foreground">
+                  {quota.limitUser.toLocaleString('id-ID')} limit
+                </span>
+              </div>
+              
+              <div className="h-2 w-full bg-secondary/60 rounded-full overflow-hidden">
+                <div 
+                  className={cn(
+                    "h-full rounded-full transition-all duration-1000 ease-out",
+                    (quota.usedUser / quota.limitUser) > 0.95 ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
+                    (quota.usedUser / quota.limitUser) > 0.80 ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" :
+                    "bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]"
+                  )}
+                  style={{ width: `${Math.min(Math.max((quota.usedUser / quota.limitUser) * 100, 0), 100)}%` }}
+                />
+              </div>
+              
+              <p className="text-[10px] mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
+                {(quota.usedUser / quota.limitUser) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
