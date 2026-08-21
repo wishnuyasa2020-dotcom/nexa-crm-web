@@ -36,9 +36,13 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
 
     setLoading(true);
     try {
-      // TODO: ganti dengan apiClient.post('/api/sekolah', { ... }) saat API siap
-      // Simulasi delay
-      await new Promise(r => setTimeout(r, 600));
+      const { tambahSekolah } = await import('@/lib/api/sekolah.api');
+      await tambahSekolah({
+        namaSekolah: form.namaSekolah,
+        tingkat: form.tingkat,
+        kecamatan: form.kecamatan,
+        alamat: form.alamat || undefined,
+      });
       setForm({ namaSekolah: '', tingkat: '', kecamatan: '', alamat: '' });
       onSuccess();
       onClose();

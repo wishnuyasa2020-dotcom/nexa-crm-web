@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, Trash2, AlertCircle, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { MockSekolah } from '@/lib/mock/sekolah';
+import type { SekolahDetail } from '@/lib/types/sekolah.types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  sekolah: MockSekolah;
+  sekolah: SekolahDetail;
   onSuccess: () => void;
 }
 
@@ -48,8 +48,9 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
     
     setLoading(true);
     try {
-      // TODO: apiClient.delete(`/api/sekolah/${sekolah.id}`, { data: { alasan: ... } })
-      await new Promise(r => setTimeout(r, 800));
+      const { hapusSekolah } = await import('@/lib/api/sekolah.api');
+      const finalAlasan = alasan === 'Lainnya' ? catatanAlasan : alasan;
+      await hapusSekolah(sekolah.id, finalAlasan);
       onSuccess(); // should redirect to /sekolah list after success
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };

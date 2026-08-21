@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { JENIS_AKTIVITAS_EKSTRA } from '@/lib/constants/sekolah';
-import type { MockSekolah } from '@/lib/mock/sekolah';
+import type { SekolahDetail } from '@/lib/types/sekolah.types';
 import Cookies from 'js-cookie';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  sekolah: MockSekolah;
+  sekolah: SekolahDetail;
   onSuccess: () => void;
 }
 
@@ -21,7 +21,6 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-const CRO_LIST = ['Budi Santoso', 'Sari Dewi', 'Andi Pratama']; // Mock CRO list
 
 export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
@@ -32,6 +31,8 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
   const [tanggalRencana, setTanggalRencana] = useState(today());
   const [pjAktivitas, setPjAktivitas] = useState('');
   const [tujuan, setTujuan] = useState('');
+  
+  const [croList, setCroList] = useState<string[]>([]);
 
   const canAccessEkstra = ['Sudah Sosialisasi', 'Lead Captured'].includes(sekolah.status);
 
@@ -44,9 +45,12 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
           const mgr = ['Manager', 'Admin'].includes(user.role ?? '');
           setIsManager(mgr);
           setMyName(user.nama ?? user.username ?? '');
-          // CRO: paksa PJ = nama sendiri
-          if (!mgr) setPjAktivitas(user.nama ?? user.username ?? '');
-          else setPjAktivitas('');
+          if (!mgr) {
+            setPjAktivitas(user.nama ?? user.username ?? '');
+          } else {
+            setPjAktivitas('');
+            import('@/lib/api/sekolah.api').then(api => api.getCROList().then(setCroList).catch(console.error));
+          }
         }
       } catch {}
       setJenisAktivitas('');
@@ -64,8 +68,13 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
     if (!isValid) return;
     setLoading(true);
     try {
-      // TODO: apiClient.post(`/api/sekolah/${sekolah.id}/aktivitas-ekstra`, { ... })
-      await new Promise(r => setTimeout(r, 600));
+      const { buatAktivitasEkstra } = await import('@/lib/api/sekolah.api');
+      await buatAktivitasEkstra(sekolah.id, {
+        jenisAktivitas: jenisAktivitas as any,
+        tanggalRencana,
+        pjAktivitas: isManager ? pjAktivitas : undefined,
+        tujuanCatatan: tujuan,
+      });
       onSuccess();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
@@ -167,7 +176,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
                       className={INPUT_CLASS}
                     >
                       <option value="">— Pilih CRO —</option>
-                      {CRO_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+                      {croList.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   ) : (
                     <div className={cn(INPUT_CLASS, 'bg-secondary/20 opacity-70 cursor-not-allowed')}>

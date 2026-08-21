@@ -29,7 +29,7 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
 
   useEffect(() => {
     if (isOpen) {
-      apiClient.get('/utils/sekolah-dropdown')
+      apiClient.get('/api/crm/utils/sekolah-dropdown')
         .then(res => {
           const raw = res.data?.data || res.data || [];
           setSekolahList(Array.isArray(raw) ? raw : []);
@@ -50,7 +50,20 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
     
     setLoading(true);
     try {
-      await apiClient.post('/siswa/add', formData);
+      const payload = {
+        nama_lengkap: formData.nama,
+        id_sekolah: formData.idSekolah,
+        kelas: formData.kelas,
+        no_wa: formData.wa,
+        email: formData.email,
+        alamat: formData.alamat,
+        minat_awal: formData.minatAwal,
+        rencana_lulus: formData.rencanaLulus,
+        orangtua_tahu: formData.orangtuaTahu,
+        due_date: formData.dueDate,
+        catatan: formData.catatan
+      };
+      await apiClient.post('/api/v1/siswa', payload);
       setFormData({
         nama: '', idSekolah: '', kelas: '', wa: '', email: '', alamat: '',
         minatAwal: '', rencanaLulus: '', orangtuaTahu: '', dueDate: '', catatan: ''

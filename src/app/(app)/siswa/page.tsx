@@ -59,16 +59,17 @@ export default function SiswaPage() {
   const loadSiswa = useCallback(async () => {
     setLoading(true);
     try {
-      // ===== BYPASS BACKEND MOCK =====
-      await new Promise(r => setTimeout(r, 400));
-      const mockData: Siswa[] = [
-        { idRecord: '1', id: 'S-001', nama: 'Ahmad Faisal', kelas: 'XII-IPA-1', cro: 'Budi Santoso', status: 'Calon Prospek', nextAction: 'Telepon perkenalan', prioritas: 'B', dueDate: '2026-08-15', namaSekolah: 'SMA N 1 Kota' },
-        { idRecord: '2', id: 'S-002', nama: 'Siti Aminah', kelas: 'XII-IPS-2', cro: 'Andi M', status: 'Konsultasi', nextAction: 'Undang kampus', prioritas: 'A', dueDate: '2026-08-16', namaSekolah: 'SMK Bisa' },
-        { idRecord: '3', id: 'S-003', nama: 'Bagus Prakoso', kelas: 'XII-IPA-1', cro: 'Budi Santoso', status: 'Siap Daftar', nextAction: 'Follow up pendaftaran', prioritas: 'A', dueDate: '2026-08-14', namaSekolah: 'SMA N 2 Kota' },
-      ];
-      setSiswaList(mockData);
-      setTotal(mockData.length);
-      // ==============================
+      const query = new URLSearchParams();
+      if (page > 1) query.append('page', page.toString());
+      if (search) query.append('search', search);
+      if (filterStatus) query.append('status', filterStatus);
+      if (filterKelas) query.append('kelas', filterKelas);
+      
+      const res = await apiClient.get(`/api/v1/siswa?${query.toString()}`);
+      if (res.data?.status === 'ok') {
+        setSiswaList(res.data.data.data);
+        setTotal(res.data.data.total);
+      }
     } catch (e) {
       console.error('Error loading siswa:', e);
     } finally {

@@ -30,7 +30,7 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
 
   useEffect(() => {
     if (isOpen) {
-      apiClient.get('/utils/sekolah-dropdown')
+      apiClient.get('/api/crm/utils/sekolah-dropdown')
         .then(res => {
           const raw = res.data?.data || res.data || [];
           setSekolahList(Array.isArray(raw) ? raw : []);
@@ -42,23 +42,23 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
   useEffect(() => {
     if (isOpen && idSiswa) {
       setFetching(true);
-      apiClient.post('/siswa/detail', { args: [idSiswa] })
+      apiClient.get(`/api/v1/siswa/${idSiswa}`)
         .then(res => {
-          const detail = res.data?.data || res.data || {};
+          const detail = res.data?.data || {};
           let parsedDueDate = '';
-          if (detail.dueDateISO) {
-             parsedDueDate = new Date(detail.dueDateISO).toISOString().slice(0,16);
+          if (detail.due_date) {
+             parsedDueDate = new Date(detail.due_date).toISOString().slice(0,16);
           }
           setFormData({
-            nama: detail.nama || '',
-            idSekolah: detail.idSekolah || '',
+            nama: detail.nama_lengkap || '',
+            idSekolah: detail.id_sekolah || '',
             kelas: detail.kelas || '',
-            wa: detail.wa || '',
+            wa: detail.no_wa || '',
             email: detail.email || '',
             alamat: detail.alamat || '',
-            minatAwal: detail.minatAwal || '',
-            rencanaLulus: detail.rencanaLulus || '',
-            orangtuaTahu: detail.orangtuaTahu || '',
+            minatAwal: detail.minat_awal || '',
+            rencanaLulus: detail.rencana_lulus || '',
+            orangtuaTahu: detail.orangtua_tahu || '',
             dueDate: parsedDueDate || '',
             catatan: detail.catatan || ''
           });
@@ -85,7 +85,20 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
     
     setLoading(true);
     try {
-      await apiClient.post('/siswa/update', { id: idSiswa, ...formData });
+      const payload = {
+        nama_lengkap: formData.nama,
+        id_sekolah: formData.idSekolah,
+        kelas: formData.kelas,
+        no_wa: formData.wa,
+        email: formData.email,
+        alamat: formData.alamat,
+        minat_awal: formData.minatAwal,
+        rencana_lulus: formData.rencanaLulus,
+        orangtua_tahu: formData.orangtuaTahu,
+        due_date: formData.dueDate,
+        catatan: formData.catatan
+      };
+      await apiClient.put(`/api/v1/siswa/${idSiswa}`, payload);
       onSuccess();
       onClose();
     } catch (err: any) {

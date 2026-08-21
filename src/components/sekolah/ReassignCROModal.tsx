@@ -3,36 +3,35 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, UserCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { MockSekolah } from '@/lib/mock/sekolah';
+import type { SekolahDetail } from '@/lib/types/sekolah.types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  sekolah: MockSekolah;
+  sekolah: SekolahDetail;
   onSuccess: () => void;
 }
 
 const INPUT_CLASS =
   'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
-// Mock CRO list — ganti dengan API call saat backend siap
-const CRO_LIST = ['Budi Santoso', 'Sari Dewi', 'Andi Pratama', 'Rini Kusuma'];
-
 export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [croBaru, setCroBaru] = useState('');
   const [alasan, setAlasan] = useState('');
+  const [croList, setCroList] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       setCroBaru('');
       setAlasan('');
+      import('@/lib/api/sekolah.api').then(api => api.getCROList().then(setCroList).catch(console.error));
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const croOptions = CRO_LIST.filter(c => c !== sekolah.pjCro);
+  const croOptions = croList.filter(c => c !== sekolah.pjCro);
   const isValid = croBaru && croBaru !== sekolah.pjCro;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,8 +39,8 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
     if (!isValid) return;
     setLoading(true);
     try {
-      // TODO: apiClient.patch(`/api/sekolah/${sekolah.id}/reassign`, { cro_baru: croBaru, alasan })
-      await new Promise(r => setTimeout(r, 600));
+      const { reassignCRO } = await import('@/lib/api/sekolah.api');
+      await reassignCRO(sekolah.id, croBaru, alasan || undefined);
       onSuccess();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };

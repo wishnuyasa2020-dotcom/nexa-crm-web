@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, AlertCircle, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { MockAktivitas } from '@/lib/mock/sekolah';
+import type { Aktivitas } from '@/lib/types/sekolah.types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  aktivitas: MockAktivitas | null;
+  aktivitas: Aktivitas | null;
   isManager: boolean;
   userName: string;
-  onSuccess: (updated: MockAktivitas) => void;
+  onSuccess: () => void;
 }
 
 const INPUT_CLASS =
@@ -70,31 +70,14 @@ export function EditAktivitasModal({
   }
 
   const isTerminal = !aktivitas.dueDate && !aktivitas.nextAction;
-  const isDowngrade = aktivitas.isDowngrade;
-  const catatanOk = !isDowngrade || catatan.trim().length >= 10;
-  const formValid = catatan.trim().length > 0 && catatanOk && (isTerminal || !!dueDate);
+  // Backend doesn't support downgrade detection or edit yet
+  const formValid = catatan.trim().length > 0 && (isTerminal || !!dueDate);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formValid) return;
-    setLoading(true);
-    try {
-      // TODO: apiClient.patch(`/api/aktivitas/${aktivitas.id}`, { catatan, dueDate })
-      await new Promise(r => setTimeout(r, 600));
-      const updated: MockAktivitas = {
-        ...aktivitas,
-        catatan,
-        dueDate: dueDate || null,
-        editedBy: userName || 'Unknown',
-        editedAt: new Date().toISOString(),
-      };
-      onSuccess(updated);
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } };
-      alert(e?.response?.data?.message || 'Gagal menyimpan perubahan');
-    } finally {
-      setLoading(false);
-    }
+    alert('Edit aktivitas belum didukung oleh backend.');
+    setLoading(false);
   };
 
   return (
@@ -109,7 +92,7 @@ export function EditAktivitasModal({
             </div>
             <div>
               <h2 className="text-base font-bold text-foreground">Edit Aktivitas</h2>
-              <p className="text-xs text-muted-foreground">{aktivitas.jenisAktivitas} · {new Date(aktivitas.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+              <p className="text-xs text-muted-foreground">{aktivitas.jenisAktivitas} · {new Date(aktivitas.tanggal || aktivitas.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
           <button
@@ -135,18 +118,12 @@ export function EditAktivitasModal({
             </div>
           </div>
 
-          {isDowngrade && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs text-orange-400">
-              <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
-              <span>Aktivitas ini adalah <strong>downgrade</strong> — catatan wajib minimal 10 karakter.</span>
-            </div>
-          )}
+
 
           {/* Catatan */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
               Catatan *
-              {isDowngrade && <span className="text-rose-500 text-[10px]">↩️ min 10 karakter</span>}
             </label>
             <textarea
               required
@@ -154,17 +131,8 @@ export function EditAktivitasModal({
               value={catatan}
               onChange={e => setCatatan(e.target.value)}
               placeholder="Catatan aktivitas..."
-              className={cn(
-                INPUT_CLASS,
-                'resize-none',
-                isDowngrade && !catatanOk && catatan.length > 0 && 'border-rose-500 ring-1 ring-rose-500'
-              )}
+              className={cn(INPUT_CLASS, 'resize-none')}
             />
-            {isDowngrade && (
-              <p className={cn('text-[10px]', catatanOk ? 'text-emerald-500' : 'text-muted-foreground')}>
-                {catatan.trim().length}/10 karakter minimum
-              </p>
-            )}
           </div>
 
           {/* Due Date */}

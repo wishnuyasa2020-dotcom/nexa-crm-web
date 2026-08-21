@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, Edit2 } from 'lucide-react';
 import { TINGKAT_OPTIONS } from '@/lib/constants/sekolah';
-import { type MockSekolah } from '@/lib/mock/sekolah';
+import type { SekolahDetail } from '@/lib/types/sekolah.types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  sekolah: MockSekolah;
+  sekolah: SekolahDetail;
 }
 
 const FIELD_CLASS =
@@ -57,8 +57,15 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
 
     setLoading(true);
     try {
-      // TODO: ganti dengan apiClient.put(`/api/sekolah/${sekolah.id}`, { ... }) saat API siap
-      await new Promise(r => setTimeout(r, 600));
+      const { editSekolah } = await import('@/lib/api/sekolah.api');
+      await editSekolah(sekolah.id, {
+        namaSekolah: form.namaSekolah,
+        tingkat: form.tingkat,
+        kecamatan: form.kecamatan,
+        alamat: form.alamat || undefined,
+        statusAktif: form.statusAktif || undefined,
+        jumlahSiswaKelas12: form.jumlahSiswaKelas12 || undefined,
+      });
       onSuccess();
       onClose();
     } catch (err: unknown) {

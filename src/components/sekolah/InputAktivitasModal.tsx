@@ -7,12 +7,12 @@ import {
   MASTER_HASIL_SEKOLAH, JENIS_AKTIVITAS, ALASAN_TIDAK_BISA,
   type HasilAktivitas,
 } from '@/lib/constants/sekolah';
-import type { MockSekolah } from '@/lib/mock/sekolah';
+import type { SekolahDetail } from '@/lib/types/sekolah.types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  sekolah: MockSekolah;
+  sekolah: SekolahDetail;
   onSuccess: () => void;
   forceVisitAwal?: boolean;
 }
@@ -95,7 +95,22 @@ export function InputAktivitasModal({ isOpen, onClose, sekolah, onSuccess, force
     if (!formValid) return;
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 700));
+      const { inputAktivitas } = await import('@/lib/api/sekolah.api');
+      await inputAktivitas(sekolah.id, {
+        jenisAktivitas,
+        tanggalAktivitas,
+        hasilAktivitas: hasil as string,
+        catatan,
+        dueDateNextAction: dueDate || null,
+        statusAktif: isVisitAwal ? statusAktif : undefined,
+        alamatLengkap: isVisitAwal ? alamat : undefined,
+        jumlahSiswaKelas12: isVisitAwal ? parseInt(jumlahSiswa, 10) : undefined,
+        namaPic: isVisitAwal ? namaPic : undefined,
+        jabatanPic: isVisitAwal ? jabatanPic : undefined,
+        noWaPic: isVisitAwal ? noWaPic : undefined,
+        alasanTidakBisa: requiresAlasan ? alasanTidakBisa : undefined,
+        catatanAlasan: requiresAlasan && alasanTidakBisa === 'Alasan lainnya' ? catatanAlasan : undefined,
+      });
       onSuccess();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };

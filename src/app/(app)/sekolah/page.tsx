@@ -1,36 +1,59 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search, Plus, School, Download, Upload,
-  ChevronLeft, ChevronRight, X
+  ChevronLeft, ChevronRight, X, Loader2, AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   StatusBadge, AgingBadge,
-  AddSekolahModal, ImportMassalModal
+  AddSekolahModal, ImportMassalModal,
 } from '@/components/sekolah';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
-  getMockSekolahList,
-  getMockKecamatanList,
-  getMockCROList,
-  getMockStatSummary,
-  type MockSekolah,
-} from '@/lib/mock/sekolah';
+  getSekolahList,
+  getSekolahStats,
+  getKecamatanList,
+  getCROList,
+} from '@/lib/api/sekolah.api';
+import type { Sekolah, SekolahStatsResponse } from '@/lib/types/sekolah.types';
 
-const PAGE_SIZE = 20;
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-border/50 animate-pulse">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <td key={i} className="px-4 py-3">
+          <div className="h-3 bg-secondary rounded w-full max-w-[120px]" />
+        </td>
+      ))}
+    </tr>
+  );
+}
 
+function SkeletonCard() {
+  return (
+    <div className="bg-card border border-border rounded-xl p-3.5 animate-pulse space-y-2">
+      <div className="h-3.5 bg-secondary rounded w-3/4" />
+      <div className="flex gap-2"><div className="h-5 bg-secondary rounded w-24" /><div className="h-5 bg-secondary rounded w-16" /></div>
+      <div className="h-3 bg-secondary rounded w-1/2" />
+    </div>
+  );
+}
+
+// ── StatCard ──────────────────────────────────────────────────────────────────
 interface StatCardProps {
   label: string;
   value: number;
   color: string;
   onClick: () => void;
   active: boolean;
+  loading?: boolean;
 }
 
-function StatCard({ label, value, color, onClick, active }: StatCardProps) {
+function StatCard({ label, value, color, onClick, active, loading }: StatCardProps) {
   return (
     <button
       onClick={onClick}
@@ -41,7 +64,11 @@ function StatCard({ label, value, color, onClick, active }: StatCardProps) {
           : 'bg-card border-border hover:border-primary/20 hover:bg-card/80',
       )}
     >
-      <span className={cn('text-xl font-bold tabular-nums', color)}>{value}</span>
+      {loading ? (
+        <div className="h-6 w-10 bg-secondary rounded animate-pulse" />
+      ) : (
+        <span className={cn('text-xl font-bold tabular-nums', color)}>{value}</span>
+      )}
       <span className="text-[10px] text-muted-foreground leading-tight">{label}</span>
     </button>
   );
@@ -49,42 +76,107 @@ function StatCard({ label, value, color, onClick, active }: StatCardProps) {
 
 export default function SekolahPage() {
   const router = useRouter();
-
-  const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterKecamatan, setFilterKecamatan] = useState('');
-  const [filterCro, setFilterCro] = useState('');
-  const [page, setPage] = useState(1);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-
   const { user } = useAuthStore();
   const isCRO = user?.role === 'CRO';
 
-  const kecamatanList = useMemo(() => getMockKecamatanList(), []);
-  const croList = useMemo(() => getMockCROList(), []);
-  const stats = useMemo(() => getMockStatSummary(), []);
+  // ── Filter state ─────────────────────────────────────────────────────────────
+  const [search, setSearch]               = useState('');
+  const [filterStatus, setFilterStatus]   = useState('');
+  const [filterKecamatan, setFilterKecamatan] = useState('');
+  const [filterCro, setFilterCro]         = useState('');
+  const [page, setPage]                   = useState(1);
 
-  const { data: sekolahList, total } = useMemo(() =>
-    getMockSekolahList({ search, filterStatus, filterKecamatan, filterCro, page, pageSize: PAGE_SIZE }),
-    [search, filterStatus, filterKecamatan, filterCro, page]
-  );
+  // ── Modal state ──────────────────────────────────────────────────────────────
+  const [isAddModalOpen, setIsAddModalOpen]       = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  // ── Data state ───────────────────────────────────────────────────────────────
+  const [sekolahList, setSekolahList]   = useState<Sekolah[]>([]);
+  const [total, setTotal]               = useState(0);
+  const [totalPages, setTotalPages]     = useState(0);
+  const [stats, setStats]               = useState<SekolahStatsResponse | null>(null);
+  const [kecamatanList, setKecamatanList] = useState<string[]>([]);
+  const [croList, setCroList]           = useState<string[]>([]);
 
-  const resetFilters = useCallback(() => {
+  // ── Loading / Error ──────────────────────────────────────────────────────────
+  const [loadingList, setLoadingList]   = useState(true);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [error, setError]               = useState<string | null>(null);
+
+  // ── Debounce search ──────────────────────────────────────────────────────────
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(1);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => setDebouncedSearch(val), 400);
+  };
+
+  // ── Fetch list ───────────────────────────────────────────────────────────────
+  const fetchList = useCallback(async () => {
+    setLoadingList(true);
+    setError(null);
+    try {
+      const res = await getSekolahList({
+        page,
+        status:    filterStatus    || undefined,
+        kecamatan: filterKecamatan || undefined,
+        pjCro:     filterCro       || undefined,
+        search:    debouncedSearch || undefined,
+      });
+      setSekolahList(res.data);
+      setTotal(res.total);
+      setTotalPages(res.totalPages);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(e?.response?.data?.message || e?.message || 'Gagal memuat data sekolah.');
+      setSekolahList([]);
+    } finally {
+      setLoadingList(false);
+    }
+  }, [page, filterStatus, filterKecamatan, filterCro, debouncedSearch]);
+
+  // ── Fetch stats + utils (sekali mount) ──────────────────────────────────────
+  useEffect(() => {
+    setLoadingStats(true);
+    Promise.all([
+      getSekolahStats(),
+      getKecamatanList(),
+      getCROList(),
+    ]).then(([s, kec, cro]) => {
+      setStats(s);
+      setKecamatanList(kec);
+      setCroList(cro);
+    }).catch(console.error).finally(() => setLoadingStats(false));
+  }, []);
+
+  // Refetch list setiap kali filter / page berubah
+  useEffect(() => { fetchList(); }, [fetchList]);
+
+  const resetFilters = () => {
     setSearch('');
+    setDebouncedSearch('');
     setFilterStatus('');
     setFilterKecamatan('');
     setFilterCro('');
     setPage(1);
-  }, []);
+  };
 
   const hasFilters = search || filterStatus || filterKecamatan || filterCro;
 
   const handleStatClick = (status: string) => {
     setFilterStatus(prev => prev === status ? '' : status);
     setPage(1);
+  };
+
+  // Dipanggil setelah tambah berhasil
+  const handleAddSuccess = () => {
+    setIsAddModalOpen(false);
+    fetchList();
+    // Refresh stats juga
+    getSekolahStats().then(setStats).catch(console.error);
   };
 
   return (
@@ -98,7 +190,10 @@ export default function SekolahPage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-base sm:text-lg font-bold text-foreground truncate">Master Sekolah</h1>
-            <p className="text-[11px] text-muted-foreground truncate">{stats.total} sekolah · 2026/2027</p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              {loadingStats ? '…' : `${stats?.total ?? 0} sekolah`}
+              {user?.selectedPeriod ? ` · ${user.selectedPeriod}` : ''}
+            </p>
           </div>
         </div>
 
@@ -131,24 +226,30 @@ export default function SekolahPage() {
 
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-        <StatCard label="Total" value={stats.total} color="text-foreground"
+        <StatCard label="Total" value={stats?.total ?? 0} color="text-foreground"
           onClick={() => handleStatClick('')}
-          active={filterStatus === '' && !hasFilters} />
-        <StatCard label="Belum Visit" value={stats.belumVisit} color="text-slate-400"
+          active={filterStatus === '' && !hasFilters}
+          loading={loadingStats} />
+        <StatCard label="Belum Visit" value={stats?.belumVisit ?? 0} color="text-slate-400"
           onClick={() => handleStatClick('Belum Visit')}
-          active={filterStatus === 'Belum Visit'} />
-        <StatCard label="Dalam Proses" value={stats.proses} color="text-amber-400"
+          active={filterStatus === 'Belum Visit'}
+          loading={loadingStats} />
+        <StatCard label="Dalam Proses" value={stats?.proses ?? 0} color="text-amber-400"
           onClick={() => { setFilterStatus(''); setPage(1); }}
-          active={false} />
-        <StatCard label="Sosialisasi" value={stats.sosialisasi} color="text-emerald-400"
+          active={false}
+          loading={loadingStats} />
+        <StatCard label="Sosialisasi" value={stats?.sosialisasi ?? 0} color="text-emerald-400"
           onClick={() => handleStatClick('Sudah Sosialisasi')}
-          active={filterStatus === 'Sudah Sosialisasi'} />
-        <StatCard label="Lead 🎯" value={stats.leadCaptured} color="text-emerald-300"
+          active={filterStatus === 'Sudah Sosialisasi'}
+          loading={loadingStats} />
+        <StatCard label="Lead 🎯" value={stats?.leadCaptured ?? 0} color="text-emerald-300"
           onClick={() => handleStatClick('Lead Captured')}
-          active={filterStatus === 'Lead Captured'} />
-        <StatCard label="Tidak Bisa" value={stats.tidakBisa} color="text-rose-400"
+          active={filterStatus === 'Lead Captured'}
+          loading={loadingStats} />
+        <StatCard label="Tidak Bisa" value={stats?.tidakBisa ?? 0} color="text-rose-400"
           onClick={() => handleStatClick('Tidak Bisa Sosialisasi')}
-          active={filterStatus === 'Tidak Bisa Sosialisasi'} />
+          active={filterStatus === 'Tidak Bisa Sosialisasi'}
+          loading={loadingStats} />
       </div>
 
       {/* ── Search ── */}
@@ -158,9 +259,12 @@ export default function SekolahPage() {
           type="text"
           placeholder="Cari nama sekolah, ID, kecamatan..."
           value={search}
-          onChange={e => { setSearch(e.target.value); setPage(1); }}
+          onChange={e => handleSearchChange(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         />
+        {loadingList && search && (
+          <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground animate-spin" />
+        )}
       </div>
 
       {/* ── Filter Bar ── */}
@@ -189,14 +293,16 @@ export default function SekolahPage() {
           <option value="">Semua Kecamatan</option>
           {kecamatanList.map(k => <option key={k} value={k}>{k}</option>)}
         </select>
-        <select
-          value={filterCro}
-          onChange={e => { setFilterCro(e.target.value); setPage(1); }}
-          className="w-full px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
-        >
-          <option value="">Semua CRO</option>
-          {croList.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+        {!isCRO && (
+          <select
+            value={filterCro}
+            onChange={e => { setFilterCro(e.target.value); setPage(1); }}
+            className="w-full px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          >
+            <option value="">Semua CRO</option>
+            {croList.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        )}
         {hasFilters && (
           <button
             onClick={resetFilters}
@@ -207,9 +313,16 @@ export default function SekolahPage() {
         )}
       </div>
 
-      {/* ── Table (desktop) / Card List (mobile) ── */}
+      {/* ── Error ── */}
+      {error && !loadingList && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
+          <AlertCircle size={15} />
+          <span>{error}</span>
+          <button onClick={fetchList} className="ml-auto text-xs underline hover:no-underline">Coba lagi</button>
+        </div>
+      )}
 
-      {/* Desktop Table */}
+      {/* ── Desktop Table ── */}
       <div className="hidden sm:block bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -226,7 +339,9 @@ export default function SekolahPage() {
               </tr>
             </thead>
             <tbody>
-              {sekolahList.length === 0 ? (
+              {loadingList ? (
+                Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
+              ) : sekolahList.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-16 text-center text-muted-foreground text-sm">
                     <div className="flex flex-col items-center gap-2">
@@ -264,7 +379,7 @@ export default function SekolahPage() {
                     <td className="px-4 py-3 whitespace-nowrap">
                       <AgingBadge dueDate={s.dueDate} />
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{s.pjCro}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{s.pjCro || '—'}</td>
                   </tr>
                 ))
               )}
@@ -280,14 +395,14 @@ export default function SekolahPage() {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
+                disabled={page === 1 || loadingList}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
               >
                 <ChevronLeft size={15} />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
+                disabled={page === totalPages || loadingList}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
               >
                 <ChevronRight size={15} />
@@ -297,9 +412,11 @@ export default function SekolahPage() {
         )}
       </div>
 
-      {/* Mobile Card List */}
+      {/* ── Mobile Card List ── */}
       <div className="sm:hidden space-y-2">
-        {sekolahList.length === 0 ? (
+        {loadingList ? (
+          Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+        ) : sekolahList.length === 0 ? (
           <div className="bg-card border border-border rounded-xl py-16 text-center text-muted-foreground text-sm">
             <div className="flex flex-col items-center gap-2">
               <School size={32} className="opacity-20" />
@@ -318,21 +435,16 @@ export default function SekolahPage() {
               onClick={() => router.push(`/sekolah/${s.id}`)}
               className="w-full text-left bg-card border border-border rounded-xl p-3.5 hover:border-primary/30 hover:bg-card/80 active:scale-[0.99] transition-all"
             >
-              {/* Row 1: Nama + Jenjang badge */}
               <div className="flex items-start justify-between gap-2 mb-2">
-                <span className="font-medium text-sm text-foreground leading-snug flex-1">
-                  {s.nama}
-                </span>
+                <span className="font-medium text-sm text-foreground leading-snug flex-1">{s.nama}</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground flex-shrink-0 mt-0.5">
                   {s.tingkat}
                 </span>
               </div>
-              {/* Row 2: Status + Aging */}
               <div className="flex items-center gap-2 mb-1.5">
                 <StatusBadge status={s.status} showDot />
                 <AgingBadge dueDate={s.dueDate} />
               </div>
-              {/* Row 3: Meta */}
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                 <span>{s.kecamatan}</span>
                 {s.pjCro && <><span>·</span><span>{s.pjCro}</span></>}
@@ -342,23 +454,20 @@ export default function SekolahPage() {
           ))
         )}
 
-        {/* Mobile Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-muted-foreground">
-              {page}/{totalPages} · {total} sekolah
-            </p>
+            <p className="text-xs text-muted-foreground">{page}/{totalPages} · {total} sekolah</p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
+                disabled={page === 1 || loadingList}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border border-border"
               >
                 <ChevronLeft size={15} />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
+                disabled={page === totalPages || loadingList}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border border-border"
               >
                 <ChevronRight size={15} />
@@ -372,7 +481,7 @@ export default function SekolahPage() {
       <AddSekolahModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => setIsAddModalOpen(false)}
+        onSuccess={handleAddSuccess}
       />
       <ImportMassalModal
         isOpen={isImportModalOpen}

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import {
-  ArrowLeft, Edit2, UserCheck, Plus, Play, Trash2,
+  ArrowLeft, Edit2, UserCheck, Plus, Trash2,
   Phone, MapPin, Users, Calendar, Clock,
-  RotateCcw, CheckCircle, XCircle, AlertCircle,
-  MessageSquare, PhoneCall, Handshake, Loader2
+  CheckCircle, XCircle, AlertCircle,
+  MessageSquare, PhoneCall, Handshake, Loader2,
+  Play, RotateCcw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -15,9 +16,10 @@ import {
   AktivitasEkstraModal, ReassignCROModal, DeleteSekolahModal,
   EditSekolahModal, EditAktivitasModal
 } from '@/components/sekolah';
-import { getMockSekolahById, type MockSekolah, type MockAktivitas, type MockAktivitasEkstra } from '@/lib/mock/sekolah';
+import { getSekolahDetail } from '@/lib/api/sekolah.api';
+import type { SekolahDetail, Aktivitas, AktivitasEkstra } from '@/lib/types/sekolah.types';
 import { isManagerOrAdmin } from '@/lib/constants/sekolah';
-import Cookies from 'js-cookie';
+import { useAuthStore } from '@/store/useAuthStore';
 
 type TabKey = 'info' | 'aktivitas' | 'siswa' | 'ekstra';
 
@@ -72,11 +74,15 @@ function EkstraStatusBadge({ status }: { status: string }) {
 export default function SekolahDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuthStore();
 
-  const [sekolah, setSekolah] = useState<MockSekolah | null>(null);
+  const [sekolah, setSekolah]     = useState<SekolahDetail | null>(null);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('info');
-  const [userRole, setUserRole] = useState<string>('CRO');
-  const [userName, setUserName] = useState<string>('');
+
+  const userRole = user?.role ?? 'CRO';
+  const userName = user?.nama ?? user?.username ?? '';
 
   // Modals
   const [showInputAktivitas, setShowInputAktivitas]   = useState(false);
@@ -86,36 +92,54 @@ export default function SekolahDetailPage() {
   const [showEdit, setShowEdit]                       = useState(false);
 
   // Edit aktivitas
-  const [editingAktivitas, setEditingAktivitas] = useState<MockAktivitas | null>(null);
+  const [editingAktivitas, setEditingAktivitas] = useState<Aktivitas | null>(null);
 
   // Konfirmasi Selesai / Batalkan ekstra
   const [confirmEkstra, setConfirmEkstra] = useState<{
-    ae: MockAktivitasEkstra;
+    ae: AktivitasEkstra;
     action: 'selesai' | 'batal';
   } | null>(null);
 
   // Drag to scroll logic for Tabs
   const scrollContainerRef = useDragScroll<HTMLDivElement>();
 
-  useEffect(() => {
-    const data = getMockSekolahById(id);
-    setSekolah(data);
-    // Read role from cookie
+  // ── Fetch data sekolah ──────────────────────────────────────
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const userStr = Cookies.get('nexa_user');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        setUserRole(user.role ?? 'CRO');
-        setUserName(user.nama ?? user.username ?? '');
+      const data = await getSekolahDetail(id);
+      setSekolah(data);
+    } catch (err: unknown) {
+      const e = err as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      if (e?.response?.status === 404) {
+        setError('not_found');
+      } else {
+        setError(e?.response?.data?.message || e?.message || 'Gagal memuat data.');
       }
-    } catch {}
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
-  if (!sekolah) {
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // ── Loading state ───────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
+        <Loader2 size={32} className="opacity-40 animate-spin" />
+        <p className="text-sm">Memuat data sekolah...</p>
+      </div>
+    );
+  }
+
+  // ── Error / Not Found ───────────────────────────────────────
+  if (error || !sekolah) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
         <AlertCircle size={36} className="opacity-30" />
-        <p className="text-sm">Sekolah tidak ditemukan</p>
+        <p className="text-sm">{error === 'not_found' ? 'Sekolah tidak ditemukan' : (error ?? 'Terjadi kesalahan')}</p>
         <button onClick={() => router.push('/sekolah')} className="text-xs text-primary hover:underline">
           ← Kembali ke Daftar Sekolah
         </button>
@@ -303,9 +327,7 @@ export default function SekolahDetailPage() {
         onSuccess={() => {
           setShowInputAktivitas(false);
           setActiveTab('aktivitas');
-          // Optimistic: reload mock data to reflect new aktivitas
-          const refreshed = getMockSekolahById(id);
-          if (refreshed) setSekolah(refreshed);
+          fetchData();
         }}
       />
       <AktivitasEkstraModal
@@ -315,17 +337,16 @@ export default function SekolahDetailPage() {
         onSuccess={() => {
           setShowAktivitasEkstra(false);
           setActiveTab('ekstra');
-          const refreshed = getMockSekolahById(id);
-          if (refreshed) setSekolah(refreshed);
+          fetchData();
         }}
       />
       <ReassignCROModal
         isOpen={showReassign}
         onClose={() => setShowReassign(false)}
         sekolah={sekolah}
-        onSuccess={(newCro?: string) => {
+        onSuccess={() => {
           setShowReassign(false);
-          if (newCro) setSekolah(prev => prev ? { ...prev, pjCro: newCro } : prev);
+          fetchData();
         }}
       />
       <DeleteSekolahModal
@@ -338,9 +359,9 @@ export default function SekolahDetailPage() {
         isOpen={showEdit}
         onClose={() => setShowEdit(false)}
         sekolah={sekolah}
-        onSuccess={(updated?: Partial<MockSekolah>) => {
+        onSuccess={() => {
           setShowEdit(false);
-          if (updated) setSekolah(prev => prev ? { ...prev, ...updated } : prev);
+          fetchData();
         }}
       />
 
@@ -351,15 +372,9 @@ export default function SekolahDetailPage() {
         aktivitas={editingAktivitas}
         isManager={isManager}
         userName={userName}
-        onSuccess={updated => {
+        onSuccess={() => {
           setEditingAktivitas(null);
-          setSekolah(prev => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              aktivitas: prev.aktivitas.map(a => a.id === updated.id ? updated : a),
-            };
-          });
+          fetchData();
         }}
       />
 
@@ -369,17 +384,9 @@ export default function SekolahDetailPage() {
           ae={confirmEkstra.ae}
           action={confirmEkstra.action}
           onClose={() => setConfirmEkstra(null)}
-          onSuccess={updated => {
+          onSuccess={() => {
             setConfirmEkstra(null);
-            setSekolah(prev => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                aktivitasEkstra: prev.aktivitasEkstra.map(a =>
-                  a.id === updated.id ? updated : a
-                ),
-              };
-            });
+            fetchData();
           }}
         />
       )}
@@ -389,7 +396,7 @@ export default function SekolahDetailPage() {
 
 // ════════ TAB COMPONENTS ════════
 
-function TabDetail({ sekolah }: { sekolah: MockSekolah }) {
+function TabDetail({ sekolah }: { sekolah: SekolahDetail }) {
   return (
     <div className="grid sm:grid-cols-2 gap-5">
       <div className="space-y-3">
@@ -470,10 +477,10 @@ function TabDetail({ sekolah }: { sekolah: MockSekolah }) {
 function TabAktivitas({
   aktivitas, isManager, isCRO, onEdit,
 }: {
-  aktivitas: MockAktivitas[];
+  aktivitas: Aktivitas[];
   isManager: boolean;
   isCRO: boolean;
-  onEdit: (ak: MockAktivitas) => void;
+  onEdit: (ak: Aktivitas) => void;
 }) {
   if (aktivitas.length === 0) {
     return (
@@ -511,7 +518,6 @@ function TabAktivitas({
                 <span className="text-xs px-2 py-0.5 rounded bg-secondary text-foreground font-medium">
                   {ak.jenisAktivitas}
                 </span>
-                <span className="text-xs text-muted-foreground">PJ: {ak.pjCro}</span>
               </div>
               {!isCRO && canEdit && (
                 <button
@@ -529,11 +535,6 @@ function TabAktivitas({
                 <span className="text-muted-foreground text-xs w-14 shrink-0">Hasil</span>
                 <span className="font-medium text-foreground flex items-center gap-1.5">
                   {ak.hasilAktivitas}
-                  {ak.isDowngrade && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-400 border border-orange-500/20">
-                      ↩️ DOWNGRADE
-                    </span>
-                  )}
                 </span>
               </div>
               {ak.catatan && (
@@ -545,17 +546,12 @@ function TabAktivitas({
               <div className="flex items-start gap-2">
                 <span className="text-muted-foreground text-xs w-14 shrink-0">Update</span>
                 <span className="text-xs text-muted-foreground">
-                  {ak.statusSebelum} → <span className="text-foreground font-medium">{ak.statusSesudah}</span>
+                  <span className="text-foreground font-medium">{ak.statusSesudah}</span>
                 </span>
               </div>
             </div>
 
-            {/* Edited badge */}
-            {ak.editedBy && (
-              <p className="mt-1 text-[10px] text-muted-foreground/60 italic">
-                Diedit oleh {ak.editedBy} · {timeAgo(ak.editedAt ?? ak.createdAt)}
-              </p>
-            )}
+
           </div>
         );
       })}
@@ -563,7 +559,7 @@ function TabAktivitas({
   );
 }
 
-function TabPIC({ sekolah }: { sekolah: MockSekolah }) {
+function TabPIC({ sekolah }: { sekolah: SekolahDetail }) {
   const pic = sekolah.pic;
   if (!pic) {
     return (
@@ -619,12 +615,12 @@ function TabSiswa() {
 function TabEkstra({
   ekstra, canAdd, onAdd, isCRO, onSelesai, onBatalkan,
 }: {
-  ekstra: MockAktivitasEkstra[];
+  ekstra: AktivitasEkstra[];
   canAdd: boolean;
   onAdd: () => void;
   isCRO: boolean;
-  onSelesai: (ae: MockAktivitasEkstra) => void;
-  onBatalkan: (ae: MockAktivitasEkstra) => void;
+  onSelesai: (ae: AktivitasEkstra) => void;
+  onBatalkan: (ae: AktivitasEkstra) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -668,11 +664,7 @@ function TabEkstra({
                 <span className="text-foreground">Hasil:</span> {ae.catatanHasil}
               </p>
             )}
-            {ae.alasanBatal && (
-              <p className="text-xs text-rose-400">
-                Batal: {ae.alasanBatal}
-              </p>
-            )}
+
 
             {/* Actions */}
             {!isCRO && ae.statusAktivitas === 'Direncanakan' && (
@@ -698,17 +690,17 @@ function TabEkstra({
   );
 }
 
-// ════════ KONFIRMASI EKSTRA MODAL ════════
+// ════ KONFIRMASI EKSTRA MODAL ════
 function KonfirmasiEkstraModal({
   ae,
   action,
   onClose,
   onSuccess,
 }: {
-  ae: MockAktivitasEkstra;
+  ae: AktivitasEkstra;
   action: 'selesai' | 'batal';
   onClose: () => void;
-  onSuccess: (updated: MockAktivitasEkstra) => void;
+  onSuccess: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [tanggalRealisasi, setTanggalRealisasi] = useState(
@@ -725,12 +717,14 @@ function KonfirmasiEkstraModal({
     if (!formValid) return;
     setLoading(true);
     try {
-      // TODO: apiClient.patch(`/api/aktivitas-ekstra/${ae.id}`, payload)
-      await new Promise(r => setTimeout(r, 600));
-      const updated: MockAktivitasEkstra = isSelesai
-        ? { ...ae, statusAktivitas: 'Selesai', tanggalRealisasi, catatanHasil: catatanHasil || undefined }
-        : { ...ae, statusAktivitas: 'Dibatalkan', alasanBatal };
-      onSuccess(updated);
+      if (isSelesai) {
+        const { selesaikanEkstra } = await import('@/lib/api/sekolah.api');
+        await selesaikanEkstra(ae.id, { tanggalRealisasi, catatanHasil: catatanHasil || undefined });
+      } else {
+        const { batalkanEkstra } = await import('@/lib/api/sekolah.api');
+        await batalkanEkstra(ae.id, { alasanBatal: alasanBatal || undefined });
+      }
+      onSuccess();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
       alert(e?.response?.data?.message || 'Gagal memperbarui aktivitas ekstra');

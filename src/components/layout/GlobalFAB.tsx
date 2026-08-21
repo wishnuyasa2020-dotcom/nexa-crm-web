@@ -244,7 +244,7 @@ export function GlobalFAB() {
         <InputAktivitasModal
           isOpen={!!selectedSekolah}
           onClose={() => setSelectedSekolah(null)}
-          sekolah={selectedSekolah}
+          sekolah={selectedSekolah as any}
           onSuccess={() => setSelectedSekolah(null)}
         />
       )}

@@ -11,51 +11,42 @@ import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
 import { EditAktivitasModal } from '@/components/siswa/EditAktivitasModal';
 import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
 
-// Data Mock
-const mockSiswaDetail = {
-  id: 'S-001',
-  nama: 'Ahmad Faisal',
-  sekolah: 'SMA N 1 Kota',
-  kelas: 'XII-IPA-1',
-  prioritas: 'Tinggi',
-  status: 'Prospek Aktif',
-  nextAction: 'Konsultasi',
-  dueDate: '2026-08-15',
-  noWa: '', // Kosong untuk simulasi transisi BSUID
-  bsuid: '1234abcd5678efgh',
-  rencanaLulus: 'Kuliah - Teknik Informatika',
-  minatAwal: 'Ya',
-  orangtuaTahu: 'Ya',
-  pjCro: 'Budi Santoso',
-};
-
-const mockAktivitas = [
-  {
-    id: 'A-01',
-    tanggal: '12/08/2026 10:30',
-    jenis: 'WhatsApp',
-    status: 'Prospek Aktif',
-    catatan: 'Siswa sangat tertarik, tapi masih ragu masalah biaya. Minta dihubungi lagi lusa.',
-    pj: 'Budi Santoso'
-  },
-  {
-    id: 'A-02',
-    tanggal: '10/08/2026 09:15',
-    jenis: 'Form Publik',
-    status: 'Data Masuk',
-    catatan: 'Mengisi form sosialisasi di kelas.',
-    pj: 'Sistem'
-  }
-];
+import apiClient from '@/lib/apiClient';
 
 export default function SiswaDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const [siswaDetail, setSiswaDetail] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [isInputAktivitasOpen, setIsInputAktivitasOpen] = useState(false);
   const [isEditAktivitasOpen, setIsEditAktivitasOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAktivitas, setSelectedAktivitas] = useState<string | null>(null);
 
-  const isNoWaHidden = !mockSiswaDetail.noWa;
+  useEffect(() => {
+    const loadDetail = async () => {
+      try {
+        const res = await apiClient.get(`/api/v1/siswa/${params.id}`);
+        if (res.data?.status === 'ok') {
+          setSiswaDetail(res.data.data);
+        }
+      } catch (e) {
+        console.error('Error fetching detail:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDetail();
+  }, [params.id]);
+
+  if (loading) {
+    return <div className="p-8 text-center text-muted-foreground">Memuat data...</div>;
+  }
+
+  if (!siswaDetail) {
+    return <div className="p-8 text-center text-muted-foreground">Data tidak ditemukan.</div>;
+  }
+
+  const isNoWaHidden = !siswaDetail.no_wa;
 
   return (
     <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 sm:pb-8">
@@ -69,10 +60,10 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
         </button>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            {mockSiswaDetail.nama}
+            {siswaDetail.nama_lengkap}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-            <School size={14} /> {mockSiswaDetail.sekolah} • {mockSiswaDetail.id}
+            <School size={14} /> {siswaDetail.nama_sekolah} • {siswaDetail.id}
           </p>
         </div>
       </div>
@@ -80,17 +71,17 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
       {/* STATUS & BADGES (Mobile Scrollable) */}
       <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 hide-scrollbar gap-2 sm:gap-3">
         <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs sm:text-sm font-semibold">
-          🔥 {mockSiswaDetail.prioritas}
+          🔥 {siswaDetail.prioritas}
         </div>
         <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 text-xs sm:text-sm font-semibold">
-          🟢 {mockSiswaDetail.status}
+          🟢 {siswaDetail.status_terkini}
         </div>
         <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs sm:text-sm">
-          Next: <span className="font-medium">{mockSiswaDetail.nextAction}</span>
+          Next: <span className="font-medium">{siswaDetail.next_action}</span>
         </div>
         <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs sm:text-sm">
           <Calendar size={14} className="text-muted-foreground" />
-          {mockSiswaDetail.dueDate}
+          {siswaDetail.due_date || '-'}
         </div>
       </div>
 
@@ -116,7 +107,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
               ) : (
                 <div className="flex items-center gap-2 text-foreground font-medium">
                   <Phone size={16} className="text-muted-foreground" />
-                  {mockSiswaDetail.noWa}
+                  {siswaDetail.no_wa}
                 </div>
               )}
             </div>
@@ -124,13 +115,13 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Kelas</p>
-                <p className="text-sm font-medium text-foreground">{mockSiswaDetail.kelas}</p>
+                <p className="text-sm font-medium text-foreground">{siswaDetail.kelas}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Penanggung Jawab (CRO)</p>
                 <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                   <User size={14} />
-                  {mockSiswaDetail.pjCro}
+                  {siswaDetail.pj_cro}
                 </p>
               </div>
             </div>
@@ -144,11 +135,11 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
           <div className="grid grid-cols-2 gap-y-4 gap-x-3">
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Rencana Lulus</p>
-              <p className="text-sm font-medium text-foreground">{mockSiswaDetail.rencanaLulus}</p>
+              <p className="text-sm font-medium text-foreground">{siswaDetail.rencana_lulus}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Minat Awal</p>
-              <p className="text-sm font-medium text-foreground">{mockSiswaDetail.minatAwal}</p>
+              <p className="text-sm font-medium text-foreground">{siswaDetail.minat_awal}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Orangtua Tahu Minat ke Jepang?</p>
@@ -195,10 +186,12 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
         <h2 className="text-sm font-semibold text-foreground border-b border-border pb-3 mb-4">Riwayat Aktivitas</h2>
 
         <div className="space-y-6">
-          {mockAktivitas.map((act, idx) => (
+          {siswaDetail.logs?.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center">Belum ada riwayat aktivitas.</p>
+          ) : siswaDetail.logs?.map((act: any, idx: number) => (
             <div key={act.id} className="relative flex gap-4">
               {/* Garis vertikal timeline */}
-              {idx !== mockAktivitas.length - 1 && (
+              {idx !== siswaDetail.logs.length - 1 && (
                 <div className="absolute left-[11px] top-6 bottom-[-24px] w-px bg-border z-0" />
               )}
 
@@ -211,9 +204,9 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
               <div className="flex-1 bg-secondary/30 border border-border rounded-lg p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-foreground">{act.jenis}</span>
+                    <span className="font-semibold text-sm text-foreground">{act.jenis_aktivitas}</span>
                     <span className="px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
-                      {act.status}
+                      {act.status_sesudah}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -224,7 +217,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
                 <p className="text-sm text-foreground/80 mb-3">{act.catatan}</p>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <User size={12} /> {act.pj}
+                    <User size={12} /> {act.pj_cro}
                   </p>
                   <button
                     onClick={() => {
@@ -248,7 +241,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
       <DeleteSiswaModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        siswaName={mockSiswaDetail.nama}
+        siswaName={siswaDetail.nama_lengkap}
       />
     </div>
   );
