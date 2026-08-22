@@ -14,7 +14,7 @@ apiClient.interceptors.request.use((config) => {
     const path = config.url.startsWith('/') ? config.url : `/${config.url}`;
     
     // Jika developer me-passing absolute API path, gunakan origin saja
-    if (path.startsWith('/api/v1') || path.startsWith('/api/crm')) {
+    if (path.startsWith('/api/v1') || path.startsWith('/api/crm') || path.startsWith('/api/public') || path.startsWith('/api/webhook')) {
       try {
         const urlObj = new URL(base);
         config.url = `${urlObj.origin}${path}`;

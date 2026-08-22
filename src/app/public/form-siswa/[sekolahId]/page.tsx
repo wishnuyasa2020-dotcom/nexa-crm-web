@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, Send, School } from 'lucide-react';
 
 export default function FormSiswaPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const sekolahId = params.sekolahId as string;
+  const croId = searchParams.get('croId') || '';
+  const kelasParam = searchParams.get('kelas') || '';
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -16,10 +19,10 @@ export default function FormSiswaPage() {
   const [formData, setFormData] = useState({
     nama_lengkap: '',
     no_wa: '',
-    kelas: '',
+    kelas: kelasParam,
     minat_awal: '',
     rencana_lulus: '',
-    pj_cro: ''
+    pj_cro: croId
   });
 
   useEffect(() => {
@@ -112,10 +115,15 @@ export default function FormSiswaPage() {
       <div className="bg-primary text-primary-foreground p-6 rounded-b-[2.5rem] shadow-lg mb-8">
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold mb-2">Form Data Siswa</h1>
-          <p className="text-primary-foreground/80 text-sm flex items-center gap-2">
+          <p className="text-primary-foreground/90 text-sm flex items-center gap-2 mb-1">
             <School size={16} />
             {sekolah.nama_sekolah}
           </p>
+          {kelasParam && (
+            <p className="text-primary-foreground/80 text-xs font-medium bg-black/10 inline-block px-2 py-1 rounded-md">
+              Kelas: {kelasParam}
+            </p>
+          )}
         </div>
       </div>
 
@@ -151,16 +159,9 @@ export default function FormSiswaPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Kelas</label>
-              <input 
-                name="kelas" 
-                value={formData.kelas} 
-                onChange={handleChange} 
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all" 
-                placeholder="Contoh: 12 IPA 1" 
-              />
-            </div>
+            {/* Kelas and CRO are now pre-bound from URL parameters */}
+            <input type="hidden" name="kelas" value={formData.kelas} />
+            <input type="hidden" name="pj_cro" value={formData.pj_cro} />
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Minat Kerja / Magang ke Jepang</label>
@@ -192,21 +193,6 @@ export default function FormSiswaPage() {
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Pilih Tim Nexa <span className="text-rose-500">*</span></label>
-              <select 
-                required
-                name="pj_cro" 
-                value={formData.pj_cro} 
-                onChange={handleChange} 
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all"
-              >
-                <option value="">-- Pilih Tim yang Sosialisasi --</option>
-                <option value="Budi Santoso">Kak Budi Santoso</option>
-                <option value="Siti Aminah">Kak Siti Aminah</option>
-                <option value="Agus Setiawan">Kak Agus Setiawan</option>
-              </select>
-            </div>
 
             <div className="pt-4">
               <button 

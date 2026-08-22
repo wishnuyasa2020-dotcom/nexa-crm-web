@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Search, Users, Radio, TrendingUp, LogOut, Clock, FileText, User } from 'lucide-react';
+import { Bell, Search, Users, Radio, TrendingUp, LogOut, Clock, FileText, User, Settings } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
@@ -92,9 +92,14 @@ export default function Header({ title }: { title?: string }) {
                 <div className="h-px bg-border my-1" />
 
                 {(user?.role === 'Admin' || user?.role === 'Manager') && (
-                  <Link href="/manajemen-tim" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                    <Users size={16} /> Manajemen Tim
-                  </Link>
+                  <>
+                    <Link href="/manajemen-tim" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
+                      <Users size={16} /> Manajemen Tim
+                    </Link>
+                    <Link href="/settings" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
+                      <Settings size={16} /> Settings
+                    </Link>
+                  </>
                 )}
                 <Link href="/broadcast" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
                   <Radio size={16} /> Broadcast

@@ -9,20 +9,32 @@ import { getMockSekolahList, MockSekolah } from '@/lib/mock/sekolah';
 import { InputAktivitasModal } from '@/components/sekolah/InputAktivitasModal';
 import { AddSekolahModal } from '@/components/sekolah/AddSekolahModal';
 import { usePathname } from 'next/navigation';
+import apiClient from '@/lib/apiClient';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export function GlobalFAB() {
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuthStore();
   const [searchAction, setSearchAction] = useState<'aktivitas' | 'link' | 'show-link' | null>(null);
-  const [selectedSekolahForLink, setSelectedSekolahForLink] = useState<MockSekolah | null>(null);
+  const [selectedSekolahForLink, setSelectedSekolahForLink] = useState<any | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<MockSekolah[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  
+  const [kelasList, setKelasList] = useState<{id: number, kelas: string}[]>([]);
+  const [selectedKelas, setSelectedKelas] = useState('');
 
   useEffect(() => {
+    // Fetch master kelas for the form
+    apiClient.get('/settings/kelas-mapping').then(res => {
+      if (res.data.status === 'ok') {
+        setKelasList(res.data.data);
+      }
+    }).catch(console.error);
     const main = document.getElementById('main-scroll-container');
     if (!main) return;
 
@@ -43,15 +55,24 @@ export function GlobalFAB() {
   }, []);
 
   // Modals
-  const [selectedSekolah, setSelectedSekolah] = useState<MockSekolah | null>(null);
+  const [selectedSekolah, setSelectedSekolah] = useState<any | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     if (query.length > 2) {
-      const res = getMockSekolahList({ search: query, page: 1, pageSize: 5 });
-      setSearchResults(res.data);
+      try {
+        const res = await apiClient.get('/sekolah', { params: { search: query } });
+        if (res.data.status === 'ok') {
+          setSearchResults(res.data.data.data || []);
+        } else {
+          setSearchResults([]);
+        }
+      } catch (err) {
+        console.error('Failed to search sekolah:', err);
+        setSearchResults([]);
+      }
       setHasSearched(true);
     } else {
       setSearchResults([]);
@@ -59,19 +80,25 @@ export function GlobalFAB() {
     }
   };
 
-  const openInputAktivitas = (sekolah: MockSekolah) => {
+  const openInputAktivitas = (sekolah: any) => {
     if (searchAction === 'aktivitas') {
       setSelectedSekolah(sekolah);
       setSearchAction(null);
     } else if (searchAction === 'link') {
       setSelectedSekolahForLink(sekolah);
+      setSelectedKelas(''); // reset
       setSearchAction('show-link');
     }
   };
 
   const getFormUrl = () => {
     if (!selectedSekolahForLink) return '';
-    return `${window.location.origin}/public/form-siswa?sekolahId=${selectedSekolahForLink.id}&croId=CRO-CURRENT`;
+    const croName = user?.nama || 'CRO-CURRENT';
+    const baseUrl = `${window.location.origin}/public/form-siswa?sekolahId=${selectedSekolahForLink.id}&croId=${encodeURIComponent(croName)}`;
+    if (selectedKelas) {
+      return `${baseUrl}&kelas=${encodeURIComponent(selectedKelas)}`;
+    }
+    return baseUrl;
   };
 
   const copyToClipboard = async () => {
@@ -266,56 +293,81 @@ export function GlobalFAB() {
 
             <button
               onClick={() => setSearchAction(null)}
-              className="absolute top-4 right-4 p-2 bg-background/50 hover:bg-secondary rounded-full backdrop-blur-md transition-colors"
+              className="absolute top-4 right-4 p-2 bg-background/50 hover:bg-secondary rounded-full backdrop-blur-md transition-colors z-20"
             >
               <X size={18} />
             </button>
 
-            <div className="bg-white p-3 rounded-2xl flex items-center justify-center mb-4 z-10 shadow-sm border border-border">
-              <QRCode value={getFormUrl()} size={140} />
-            </div>
-
-            <h3 className="text-xl font-bold mb-1">Bagikan Form Publik</h3>
-            <p className="text-sm text-muted-foreground mb-6">
+            <h3 className="text-xl font-bold mb-1 z-10">Bagikan Form Publik</h3>
+            <p className="text-sm text-muted-foreground mb-4 z-10">
               Siswa di <span className="font-semibold text-foreground">{selectedSekolahForLink.nama}</span>
             </p>
 
-            {/* Link Container */}
-            <div className="w-full bg-secondary/50 border border-border rounded-xl p-3 mb-4 flex items-center gap-3">
-              <div className="flex-1 truncate text-xs text-muted-foreground font-mono text-left">
-                {getFormUrl()}
+            {/* Class Selection Dropdown */}
+            <div className="w-full mb-4 z-10 text-left">
+              <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">Pilih Kelas <span className="text-destructive">*</span></label>
+              <select 
+                value={selectedKelas}
+                onChange={(e) => setSelectedKelas(e.target.value)}
+                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
+              >
+                <option value="" disabled>-- Pilih Kelas --</option>
+                {kelasList.map(k => (
+                  <option key={k.id} value={k.kelas}>{k.kelas}</option>
+                ))}
+              </select>
+            </div>
+
+            {selectedKelas ? (
+              <>
+                <div className="bg-white p-3 rounded-2xl flex items-center justify-center mb-4 z-10 shadow-sm border border-border">
+                  <QRCode value={getFormUrl()} size={140} />
+                </div>
+
+                {/* Link Container */}
+                <div className="w-full bg-secondary/50 border border-border rounded-xl p-3 mb-4 flex items-center gap-3 z-10">
+                  <div className="flex-1 truncate text-xs text-muted-foreground font-mono text-left">
+                    {getFormUrl()}
+                  </div>
+                  <button
+                    onClick={copyToClipboard}
+                    className="p-2 bg-background border border-border rounded-lg hover:bg-secondary hover:text-primary transition-colors flex-shrink-0"
+                    title="Copy Link"
+                  >
+                    {isCopied ? <CheckCircle2 size={16} className="text-green-500" /> : <Copy size={16} />}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 w-full z-10">
+                  <button
+                    onClick={copyToClipboard}
+                    className={cn(
+                      "py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all",
+                      isCopied ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-secondary text-foreground hover:bg-secondary/80 border border-transparent"
+                    )}
+                  >
+                    {isCopied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
+                    {isCopied ? 'Tersalin' : 'Copy'}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSearchAction(null);
+                      router.push(getFormUrl().replace(window.location.origin, ''));
+                    }}
+                    className="py-3 px-4 gradient-primary text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
+                  >
+                    Buka Form <ExternalLink size={16} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full py-8 text-muted-foreground bg-secondary/30 border border-dashed border-border rounded-xl z-10 mb-2">
+                <School size={32} className="mb-2 opacity-50" />
+                <p className="text-sm font-medium">Pilih kelas terlebih dahulu</p>
+                <p className="text-xs opacity-70">QR Code akan muncul setelah kelas dipilih</p>
               </div>
-              <button
-                onClick={copyToClipboard}
-                className="p-2 bg-background border border-border rounded-lg hover:bg-secondary hover:text-primary transition-colors flex-shrink-0"
-                title="Copy Link"
-              >
-                {isCopied ? <CheckCircle2 size={16} className="text-green-500" /> : <Copy size={16} />}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 w-full">
-              <button
-                onClick={copyToClipboard}
-                className={cn(
-                  "py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all",
-                  isCopied ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-secondary text-foreground hover:bg-secondary/80 border border-transparent"
-                )}
-              >
-                {isCopied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                {isCopied ? 'Tersalin' : 'Copy'}
-              </button>
-
-              <button
-                onClick={() => {
-                  setSearchAction(null);
-                  router.push(`/public/form-siswa?sekolahId=${selectedSekolahForLink.id}&croId=CRO-CURRENT`);
-                }}
-                className="py-3 px-4 gradient-primary text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
-              >
-                Buka Form <ExternalLink size={16} />
-              </button>
-            </div>
+            )}
           </div>
         </div>
       )}

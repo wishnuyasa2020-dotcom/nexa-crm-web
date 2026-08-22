@@ -15,7 +15,7 @@ import { Edit2, User, Tag, ToggleLeft, ToggleRight } from "lucide-react";
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user?: { id: string; nama: string; role: string; status: string } | null;
+  user?: { id: string; nama: string; role: string; status: string; supervisor_id?: number | null } | null;
   onSuccess?: () => void;
 }
 
@@ -23,14 +23,25 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
   const [nama, setNama] = useState('');
   const [role, setRole] = useState('CRO');
   const [status, setStatus] = useState('Aktif');
+  const [supervisorId, setSupervisorId] = useState('');
+  const [chiefCros, setChiefCros] = useState<any[]>([]);
 
   useEffect(() => {
     if (user && isOpen) {
       setNama(user.nama);
       setRole(user.role);
       setStatus(user.status);
+      setSupervisorId(user.supervisor_id ? String(user.supervisor_id) : '');
     }
   }, [user, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      apiClient.get('/users?role=Chief CRO').then(res => {
+        setChiefCros(res.data.data || []);
+      }).catch(() => {});
+    }
+  }, [isOpen]);
 
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +50,12 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
     if (!user) return;
     try {
       setLoading(true);
-      await apiClient.put(`/users/${user.id}`, { nama, role, status_aktif: status });
+      await apiClient.put(`/users/${user.id}`, { 
+        nama, 
+        role, 
+        status_aktif: status,
+        supervisor_id: role === 'CRO' && supervisorId ? Number(supervisorId) : null 
+      });
       toast.success('Data staf berhasil diperbarui');
       if (onSuccess) onSuccess();
       onClose();
@@ -92,6 +108,24 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
               <option value="CRO">CRO</option>
             </select>
           </div>
+
+          {role === 'CRO' && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <User size={14} /> Atasan (Chief CRO)
+              </label>
+              <select 
+                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+                value={supervisorId}
+                onChange={e => setSupervisorId(e.target.value)}
+              >
+                <option value="">-- Tidak ada atasan --</option>
+                {chiefCros.map(c => (
+                  <option key={c.id} value={c.id}>{c.nama}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="space-y-2 pt-2 border-t border-border">
             <div className="flex items-center justify-between">

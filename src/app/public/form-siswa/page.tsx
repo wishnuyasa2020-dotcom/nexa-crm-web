@@ -1,45 +1,115 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Send, User, Phone, School, BookOpen, MapPin } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { Send, User, Phone, School, BookOpen, Loader2, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getMockSekolahList } from '@/lib/mock/sekolah';
+import { useSearchParams } from 'next/navigation';
+import apiClient from '@/lib/apiClient';
 
-export default function FormSosialisasiPage() {
+function FormSosialisasiContent() {
+  const searchParams = useSearchParams();
+  const sekolahId = searchParams.get('sekolahId') || '';
+  const croId = searchParams.get('croId') || '';
+  const kelasParam = searchParams.get('kelas') || '';
+
   const [formData, setFormData] = useState({
-    namaLengkap: '',
-    noWa: '',
-    kelas: '',
-    rencanaLulus: '',
-    minatAwal: '',
+    nama_lengkap: '',
+    no_wa: '',
+    kelas: kelasParam,
+    rencana_lulus: '',
+    minat_awal: '',
+    pj_cro: croId
   });
+  
   const [namaSekolah, setNamaSekolah] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    // Simulasi pengambilan nama sekolah berdasarkan ID di URL
-    const params = new URLSearchParams(window.location.search);
-    const sekolahId = params.get('sekolahId');
     if (sekolahId) {
-      const res = getMockSekolahList({ search: '', page: 1, pageSize: 100 });
-      const sekolah = res.data.find(s => s.id === sekolahId);
-      if (sekolah) {
-        setNamaSekolah(sekolah.nama);
-      }
+      apiClient.get(`/api/public/sekolah/${sekolahId}`)
+        .then(res => {
+          if (res.data.status === 'ok') {
+            setNamaSekolah(res.data.data.nama_sekolah);
+          }
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
-  }, []);
+  }, [sekolahId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Di backend nyata, ambil ID dari URL:
-    // const params = new URLSearchParams(window.location.search);
-    // const croId = params.get('croId');
-    // Payload form ini disubmit beserta croId tersebut.
-    
-    // Simulate WhatsApp Redirect
-    const text = `Halo, saya ${formData.namaLengkap} dari kelas ${formData.kelas}. Saya berminat untuk bergabung.`;
-    const waUrl = `https://wa.me/628123456789?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    if (!formData.nama_lengkap || !formData.no_wa || !formData.pj_cro) {
+      return alert('Mohon lengkapi data yang bertanda bintang (*)');
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await apiClient.post(`/api/public/form-siswa/${sekolahId}`, formData);
+      if (res.data.status === 'ok') {
+        setSuccess(true);
+        
+        // Redirect to WhatsApp to open Service Window
+        const text = `Halo, saya ${formData.nama_lengkap} dari kelas ${formData.kelas}. Saya hadir di sosialisasi.`;
+        // TODO: Get actual WABA number from tenant settings, for now using placeholder or env var
+        const wabaNumber = process.env.NEXT_PUBLIC_WABA_NUMBER || '628123456789';
+        const waUrl = `https://wa.me/${wabaNumber}?text=${encodeURIComponent(text)}`;
+        
+        // Use window.location.href to redirect directly on mobile
+        window.location.href = waUrl;
+      } else {
+        alert(res.data.message || 'Gagal menyimpan data');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Terjadi kesalahan jaringan.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-secondary/30 p-4">
+        <div className="bg-card border border-border rounded-3xl p-10 shadow-2xl max-w-sm w-full text-center space-y-4">
+          <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={40} className="text-emerald-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-foreground">Terima Kasih!</h2>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+            Data kehadiran kamu telah berhasil direkam.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Jika kamu tidak dialihkan ke WhatsApp secara otomatis, silakan klik tombol di bawah ini:
+          </p>
+          <button 
+            onClick={() => {
+              const text = `Halo, saya ${formData.nama_lengkap} dari kelas ${formData.kelas}. Saya hadir di sosialisasi.`;
+              const wabaNumber = process.env.NEXT_PUBLIC_WABA_NUMBER || '628123456789';
+              window.location.href = `https://wa.me/${wabaNumber}?text=${encodeURIComponent(text)}`;
+            }}
+            className="mt-6 w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+          >
+            <Send size={16} /> Buka WhatsApp
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30 pb-20 sm:pb-0">
@@ -60,7 +130,19 @@ export default function FormSosialisasiPage() {
           {namaSekolah ? (
             <p className="text-white/90 text-sm font-medium mb-1">{namaSekolah}</p>
           ) : null}
-          <p className="text-white/80 text-sm mt-1">Silakan isi biodata kamu sebagai bukti kehadiran sosialisasi.</p>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+            {kelasParam && (
+              <div className="px-3 py-1 bg-black/20 rounded-lg backdrop-blur-sm">
+                <p className="text-white/90 text-xs font-semibold">Kelas: {kelasParam}</p>
+              </div>
+            )}
+            {croId && (
+              <div className="px-3 py-1 bg-black/20 rounded-lg backdrop-blur-sm">
+                <p className="text-white/90 text-xs font-semibold">CRO: {croId}</p>
+              </div>
+            )}
+          </div>
+          <p className="text-white/80 text-sm mt-3">Silakan isi biodata kamu sebagai bukti kehadiran sosialisasi.</p>
         </div>
 
         {/* Form Card */}
@@ -74,9 +156,10 @@ export default function FormSosialisasiPage() {
                 <input 
                   type="text"
                   required
+                  name="nama_lengkap"
                   placeholder="Ketik nama lengkap kamu"
-                  value={formData.namaLengkap}
-                  onChange={e => setFormData({ ...formData, namaLengkap: e.target.value })}
+                  value={formData.nama_lengkap}
+                  onChange={e => setFormData({ ...formData, nama_lengkap: e.target.value })}
                   className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                 />
               </div>
@@ -92,28 +175,18 @@ export default function FormSosialisasiPage() {
                 <input 
                   type="tel"
                   required
+                  name="no_wa"
                   placeholder="Contoh: 081234567890"
-                  value={formData.noWa}
-                  onChange={e => setFormData({ ...formData, noWa: e.target.value })}
+                  value={formData.no_wa}
+                  onChange={e => setFormData({ ...formData, no_wa: e.target.value })}
                   className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Kelas <span className="text-rose-500">*</span></label>
-              <div className="relative">
-                <School size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input 
-                  type="text"
-                  required
-                  placeholder="Ketik nama kelasmu (Misal: XII IPA 1)"
-                  value={formData.kelas}
-                  onChange={e => setFormData({ ...formData, kelas: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-                />
-              </div>
-            </div>
+            {/* Hidden fields for pre-bound data */}
+            <input type="hidden" name="kelas" value={formData.kelas} />
+            <input type="hidden" name="pj_cro" value={formData.pj_cro} />
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Rencana Setelah Lulus <span className="text-rose-500">*</span></label>
@@ -121,8 +194,9 @@ export default function FormSosialisasiPage() {
                 <BookOpen size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <select 
                   required
-                  value={formData.rencanaLulus}
-                  onChange={e => setFormData({ ...formData, rencanaLulus: e.target.value })}
+                  name="rencana_lulus"
+                  value={formData.rencana_lulus}
+                  onChange={e => setFormData({ ...formData, rencana_lulus: e.target.value })}
                   className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all appearance-none"
                 >
                   <option value="" disabled>Pilih rencana...</option>
@@ -144,10 +218,10 @@ export default function FormSosialisasiPage() {
                   <button
                     key={opt}
                     type="button"
-                    onClick={() => setFormData({ ...formData, minatAwal: opt })}
+                    onClick={() => setFormData({ ...formData, minat_awal: opt })}
                     className={cn(
                       "py-2.5 rounded-xl border text-sm font-medium transition-all",
-                      formData.minatAwal === opt 
+                      formData.minat_awal === opt 
                         ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20" 
                         : "bg-background border-border text-foreground hover:bg-secondary"
                     )}
@@ -161,13 +235,14 @@ export default function FormSosialisasiPage() {
             <div className="pt-6 pb-6">
               <button 
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 py-4 gradient-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 hover:shadow-xl hover:opacity-95 active:scale-[0.98] transition-all"
+                disabled={submitting}
+                className="w-full flex items-center justify-center gap-2 py-4 gradient-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 hover:shadow-xl hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100"
               >
-                <Send size={18} />
-                Kirim & Konfirmasi via WhatsApp
+                {submitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                Kirim Data
               </button>
               <p className="text-center text-[10px] text-muted-foreground mt-4 leading-relaxed px-4">
-                Dengan menekan tombol di atas, Anda akan dialihkan ke aplikasi WhatsApp untuk menyelesaikan konfirmasi kehadiran secara otomatis.
+                Data yang Anda kirimkan akan direkam ke dalam sistem Nexa OS.
               </p>
             </div>
 
@@ -176,5 +251,13 @@ export default function FormSosialisasiPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function FormSosialisasiPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>}>
+      <FormSosialisasiContent />
+    </Suspense>
   );
 }

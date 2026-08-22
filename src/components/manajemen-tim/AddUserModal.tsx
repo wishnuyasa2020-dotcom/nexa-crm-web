@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
 import {
@@ -24,14 +24,30 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
   const [role, setRole] = useState('CRO');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [supervisorId, setSupervisorId] = useState('');
+  const [chiefCros, setChiefCros] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      apiClient.get('/users?role=Chief CRO').then(res => {
+        setChiefCros(res.data.data || []);
+      }).catch(() => {});
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
-      await apiClient.post('/users', { nama, username, role, password });
+      await apiClient.post('/users', { 
+        nama, 
+        username, 
+        role, 
+        password,
+        supervisor_id: role === 'CRO' && supervisorId ? Number(supervisorId) : null
+      });
       toast.success('Staf baru berhasil ditambahkan');
       if (onSuccess) onSuccess();
       onClose();
@@ -40,6 +56,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
       setUsername('');
       setPassword('');
       setRole('CRO');
+      setSupervisorId('');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Gagal menambahkan staf');
     } finally {
@@ -103,6 +120,24 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               <option value="CRO">CRO</option>
             </select>
           </div>
+
+          {role === 'CRO' && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <User size={14} /> Atasan (Chief CRO)
+              </label>
+              <select 
+                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+                value={supervisorId}
+                onChange={e => setSupervisorId(e.target.value)}
+              >
+                <option value="">-- Tidak ada atasan --</option>
+                {chiefCros.map(c => (
+                  <option key={c.id} value={c.id}>{c.nama}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">

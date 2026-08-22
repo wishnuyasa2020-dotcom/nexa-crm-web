@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, School, CheckSquare, Calendar,
-  Home, TrendingUp, Radio, FileText, LogOut, ChevronLeft, ChevronRight, Zap, Clock, MessageSquare
+  Home, TrendingUp, Radio, FileText, LogOut, ChevronLeft, ChevronRight, Zap, Clock, MessageSquare,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
@@ -23,6 +24,7 @@ const navItems = [
   { label: 'Snooze Campaign', href: '/snooze-campaign', icon: Clock },
   { label: 'Live Chat', href: '/live-chat', icon: MessageSquare },
   { label: 'Template Admin', href: '/templates', icon: FileText },
+  { label: 'Settings', href: '/settings', icon: SettingsIcon },
 ];
 
 export default function Sidebar() {
