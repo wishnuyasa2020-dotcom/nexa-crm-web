@@ -4,10 +4,11 @@ import { useState } from 'react';
 import KelasMapping from '@/components/settings/KelasMapping';
 import KotaMapping from '@/components/settings/KotaMapping';
 import KecamatanMapping from '@/components/settings/KecamatanMapping';
+import ProfileTab from '@/components/settings/ProfileTab';
 import { Settings as SettingsIcon } from 'lucide-react';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan'>('kelas');
+  const [activeTab, setActiveTab] = useState<'profile' | 'kelas' | 'kota' | 'kecamatan'>('profile');
 
   return (
     <div className="flex flex-col h-full bg-background overflow-y-auto">
@@ -28,6 +29,16 @@ export default function SettingsPage() {
       <main className="flex-1 p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex border-b border-border overflow-x-auto whitespace-nowrap scrollbar-hide">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'profile'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
+              }`}
+            >
+              Profil Saya
+            </button>
             <button
               onClick={() => setActiveTab('kelas')}
               className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
@@ -61,6 +72,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="mt-6">
+            {activeTab === 'profile' && <ProfileTab />}
             {activeTab === 'kelas' && <KelasMapping />}
             {activeTab === 'kota' && <KotaMapping />}
             {activeTab === 'kecamatan' && <KecamatanMapping />}

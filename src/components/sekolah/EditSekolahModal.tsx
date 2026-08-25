@@ -17,36 +17,79 @@ const FIELD_CLASS =
 
 export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props) {
   const [loading, setLoading] = useState(false);
+  const [kotaList, setKotaList] = useState<{id: number, kota: string}[]>([]);
+  const [kecamatanList, setKecamatanList] = useState<{id: number, kecamatan: string, kota_id: number}[]>([]);
+
   const [form, setForm] = useState({
     namaSekolah: '',
     tingkat: '',
+    kota: '',
     kecamatan: '',
     alamat: '',
     statusAktif: '',
     jumlahSiswaKelas12: 0,
   });
 
+  // Fetch Master Kota & Kecamatan
+  useEffect(() => {
+    if (isOpen) {
+      import('@/lib/apiClient').then(({ default: apiClient }) => {
+        Promise.all([
+          apiClient.get('/api/v1/settings/kota'),
+          apiClient.get('/api/v1/settings/kecamatan')
+        ]).then(([kotaRes, kecRes]) => {
+          setKotaList(kotaRes.data?.data || []);
+          setKecamatanList(kecRes.data?.data || []);
+        }).catch(err => console.error('Failed to load master data', err));
+      });
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen && sekolah) {
+      // Find kota based on sekolah's kecamatan
+      let initialKota = '';
+      if (kecamatanList.length > 0 && kotaList.length > 0) {
+        const kecMatch = kecamatanList.find(k => k.kecamatan === sekolah.kecamatan);
+        if (kecMatch) {
+          const kotaMatch = kotaList.find(k => k.id == kecMatch.kota_id);
+          if (kotaMatch) initialKota = kotaMatch.kota;
+        }
+      }
+
       setForm({
         namaSekolah: sekolah.nama,
         tingkat: sekolah.tingkat,
+        kota: initialKota,
         kecamatan: sekolah.kecamatan,
         alamat: sekolah.alamat || '',
         statusAktif: sekolah.statusAktif || '',
         jumlahSiswaKelas12: sekolah.jumlahSiswaKelas12 || 0,
       });
     }
-  }, [isOpen, sekolah]);
-
-  if (!isOpen) return null;
+  }, [isOpen, sekolah, kecamatanList, kotaList]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: name === 'jumlahSiswaKelas12' ? parseInt(value) || 0 : value
-    }));
+    setForm(prev => {
+      if (name === 'kota') {
+        return { ...prev, kota: value, kecamatan: '' };
+      }
+      // Jika kecamatan dipilih dan kota belum ada, set kota otomatis
+      if (name === 'kecamatan' && !prev.kota && value) {
+        const kecMatch = kecamatanList.find(k => k.kecamatan === value);
+        if (kecMatch) {
+          const kotaMatch = kotaList.find(k => k.id == kecMatch.kota_id);
+          if (kotaMatch) {
+            return { ...prev, kecamatan: value, kota: kotaMatch.kota };
+          }
+        }
+      }
+      return {
+        ...prev,
+        [name]: name === 'jumlahSiswaKelas12' ? parseInt(value) || 0 : value
+      };
+    });
   };
 
   const isValid = form.namaSekolah.trim() && form.tingkat && form.kecamatan.trim();
@@ -75,6 +118,8 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -110,7 +155,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
             />
           </div>
 
-          {/* Tingkat + Kecamatan */}
+          {/* Tingkat + Kota */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
@@ -132,16 +177,43 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
-                Kecamatan <span className="text-rose-400">*</span>
+                Kota/Kabupaten <span className="text-rose-400">*</span>
               </label>
-              <input
+              <select
                 required
-                name="kecamatan"
-                value={form.kecamatan}
+                name="kota"
+                value={form.kota}
                 onChange={handleChange}
                 className={FIELD_CLASS}
-              />
+              >
+                <option value="">— Pilih Kota —</option>
+                {kotaList.map(k => (
+                  <option key={k.id} value={k.kota}>{k.kota}</option>
+                ))}
+              </select>
             </div>
+          </div>
+
+          {/* Kecamatan */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
+              Kecamatan <span className="text-rose-400">*</span>
+            </label>
+            <select
+              required
+              name="kecamatan"
+              value={form.kecamatan}
+              onChange={handleChange}
+              className={FIELD_CLASS}
+            >
+              <option value="">{form.kota ? '— Pilih Kecamatan —' : '— Semua Kecamatan —'}</option>
+              {kecamatanList
+                .filter(kec => !form.kota || kotaList.find(k => k.kota === form.kota)?.id == kec.kota_id)
+                .map(kec => (
+                  <option key={kec.id} value={kec.kecamatan}>{kec.kecamatan}</option>
+                ))
+              }
+            </select>
           </div>
 
           {/* Alamat */}

@@ -20,6 +20,7 @@ export interface BacklogItem {
   status: string | null;
   owner: string | null;     // pic / pj_aktivitas
   marketing_period: string;
+  date_val?: string | null; // due_date or tanggal_rencana
 }
 
 /** Item di Board (sudah dijadwalkan, dari weekly_planning) */

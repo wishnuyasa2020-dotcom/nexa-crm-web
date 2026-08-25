@@ -20,6 +20,7 @@ interface AddUserModalProps {
 
 export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
   const [nama, setNama] = useState('');
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [role, setRole] = useState('CRO');
   const [password, setPassword] = useState('');
@@ -43,6 +44,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
       setLoading(true);
       await apiClient.post('/users', { 
         nama, 
+        email,
         username, 
         role, 
         password,
@@ -53,6 +55,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
       onClose();
       // Reset
       setNama('');
+      setEmail('');
       setUsername('');
       setPassword('');
       setRole('CRO');
@@ -87,6 +90,20 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               placeholder="Ketik nama lengkap..." 
               value={nama}
               onChange={e => setNama(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <User size={14} /> Alamat Email
+            </label>
+            <input 
+              required
+              type="email" 
+              placeholder="Ketik alamat email..." 
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
             />
           </div>

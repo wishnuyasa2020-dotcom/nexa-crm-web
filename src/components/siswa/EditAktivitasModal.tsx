@@ -27,7 +27,7 @@ export function EditAktivitasModal({ isOpen, onClose, aktivitasId }: EditAktivit
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm sm:items-center sm:p-0">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm sm:items-center sm:p-0">
       <div className="relative w-full max-w-md bg-card border border-border rounded-xl shadow-lg sm:rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}

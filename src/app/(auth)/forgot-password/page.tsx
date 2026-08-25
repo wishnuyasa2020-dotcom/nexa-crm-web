@@ -3,37 +3,32 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleForgot(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setMessage('');
     try {
-      const res = await axios.post(`${API_BASE}/auth/login`, { username, password });
+      const res = await axios.post(`${API_BASE}/auth/forgot-password`, { email });
       if (res.data.status === 'ok') {
-        const { token, user } = res.data.data;
-        Cookies.set('nexa_token', token, { expires: 1 });
-        Cookies.set('nexa_user', JSON.stringify(user), { expires: 1 });
-        router.push('/dashboard');
+        setMessage(res.data.message || 'Instruksi reset password telah dikirimkan.');
       } else {
-        setError(res.data.message || 'Login gagal.');
+        setError(res.data.message || 'Gagal mengirim instruksi reset password.');
       }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      setError(axiosErr?.response?.data?.message || 'Login gagal. Periksa username & password.');
+      setError(axiosErr?.response?.data?.message || 'Terjadi kesalahan sistem.');
     } finally {
       setLoading(false);
     }
@@ -51,70 +46,43 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-primary mb-4 shadow-lg glow-primary">
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Nexa CRM</h1>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/20 tracking-wide uppercase">
-              Demo Version
-            </span>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Lupa Password</h1>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">Masuk ke dasbor operasional</p>
+          <p className="text-sm text-muted-foreground mt-1">Masukkan email untuk mereset password</p>
         </div>
 
-        {/* Login Card */}
+        {/* Form Card */}
         <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl shadow-black/40">
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleForgot} className="space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="username" className="text-sm font-medium text-foreground">
-                Username
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
+                Alamat Email
               </label>
               <input
-                id="username"
-                type="text"
-                autoComplete="username"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 required
                 className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-                placeholder="Masukkan username"
+                placeholder="Masukkan email Anda"
               />
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-foreground">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  className="w-full px-3 pr-10 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-                  placeholder="Masukkan password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              <div className="flex justify-end pt-1">
-                <Link href="/forgot-password" className="text-xs text-primary hover:underline font-medium">
-                  Lupa Password?
-                </Link>
-              </div>
             </div>
 
             {error && (
               <div className="px-3 py-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
                 {error}
+              </div>
+            )}
+            
+            {message && (
+              <div className="px-3 py-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm">
+                {message}
               </div>
             )}
 
@@ -132,10 +100,16 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Memproses...
+                  Mengirim...
                 </span>
-              ) : 'Masuk'}
+              ) : 'Kirim Instruksi Reset'}
             </button>
+            
+            <div className="text-center mt-4">
+              <Link href="/login" className="text-sm text-primary hover:underline font-medium">
+                Kembali ke Login
+              </Link>
+            </div>
           </form>
         </div>
 

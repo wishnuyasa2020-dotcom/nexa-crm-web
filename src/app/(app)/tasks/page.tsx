@@ -4,6 +4,9 @@ import { useState, useCallback, useEffect } from 'react';
 import { CheckSquare, Calendar, Clock, RefreshCw, AlertCircle, School, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TundaTaskModal } from '@/components/sekolah/TundaTaskModal';
+import { InputAktivitasModal as SekolahInputModal } from '@/components/sekolah/InputAktivitasModal';
+import { InputAktivitasModal as SiswaInputModal } from '@/components/siswa/InputAktivitasModal';
+import type { SekolahDetail } from '@/lib/types/sekolah.types';
 import apiClient from '@/lib/apiClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -58,7 +61,11 @@ export default function TasksPage() {
   const [counts, setCounts]         = useState<TaskCounts | null>(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
-  const [tundaTarget, setTundaTarget] = useState<TundaTarget | null>(null);
+  const [tundaTarget, setTundaTarget] = useState<{ id: string; tipe: Task['tipe']; title: string } | null>(null);
+
+  const [eksekusiTarget, setEksekusiTarget] = useState<Task | null>(null);
+  const [sekolahDetail, setSekolahDetail] = useState<SekolahDetail | null>(null);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
 
   // Fetch tasks untuk tab aktif
   const fetchTasks = useCallback(async (tab: TabKey) => {
@@ -134,6 +141,36 @@ export default function TasksPage() {
     if (!tundaTarget) return;
     setTasks(prev => prev.filter(t => !(t.id === tundaTarget.id && t.tipe === tundaTarget.tipe)));
     setTundaTarget(null);
+  };
+
+  const handleEksekusi = async (task: Task) => {
+    if (task.tipe === 'sekolah') {
+      setIsFetchingDetail(true);
+      try {
+        const { getSekolahDetail } = await import('@/lib/api/sekolah.api');
+        const res = await getSekolahDetail(task.id);
+        setSekolahDetail(res);
+        setEksekusiTarget(task);
+      } catch (err) {
+        console.error('Gagal mengambil data sekolah', err);
+        alert('Gagal memuat data sekolah.');
+      } finally {
+        setIsFetchingDetail(false);
+      }
+    } else if (task.tipe === 'siswa') {
+      setEksekusiTarget(task);
+    } else {
+      alert(`Fitur eksekusi untuk tipe ${task.tipe} belum tersedia.`);
+    }
+  };
+
+  const handleEksekusiSuccess = () => {
+    // Hapus task dari list jika sukses
+    if (eksekusiTarget) {
+      setTasks(prev => prev.filter(t => !(t.id === eksekusiTarget.id && t.tipe === eksekusiTarget.tipe)));
+    }
+    setEksekusiTarget(null);
+    setSekolahDetail(null);
   };
 
   return (
@@ -298,6 +335,7 @@ export default function TasksPage() {
                     <Calendar size={14} /> Tunda
                   </button>
                   <button
+                    onClick={() => handleEksekusi(task)}
                     className="flex-1 py-2.5 rounded-lg gradient-primary text-xs font-semibold text-white hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20"
                   >
                     <CheckSquare size={14} /> Eksekusi
@@ -318,6 +356,24 @@ export default function TasksPage() {
           taskId={tundaTarget.id}
           taskTipe={tundaTarget.tipe}
           onSuccess={handleTundaSuccess}
+        />
+      )}
+
+      {/* ── Modal Eksekusi Task ── */}
+      {eksekusiTarget?.tipe === 'sekolah' && sekolahDetail && (
+        <SekolahInputModal
+          isOpen={!!eksekusiTarget}
+          onClose={() => { setEksekusiTarget(null); setSekolahDetail(null); }}
+          sekolah={sekolahDetail}
+          onSuccess={handleEksekusiSuccess}
+        />
+      )}
+
+      {eksekusiTarget?.tipe === 'siswa' && (
+        <SiswaInputModal
+          isOpen={!!eksekusiTarget}
+          onClose={() => setEksekusiTarget(null)}
+          // onSuccess={handleEksekusiSuccess} // If SiswaInputModal supports this later
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Loader2, School, Info } from 'lucide-react';
 import { TINGKAT_OPTIONS } from '@/lib/constants/sekolah';
 
@@ -15,17 +15,51 @@ const FIELD_CLASS =
 
 export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
+  const [kotaList, setKotaList] = useState<{id: number, kota: string}[]>([]);
+  const [kecamatanList, setKecamatanList] = useState<{id: number, kecamatan: string, kota_id: number}[]>([]);
+  
   const [form, setForm] = useState({
     namaSekolah: '',
     tingkat: '',
+    kota: '',
     kecamatan: '',
     alamat: '',
   });
 
-  if (!isOpen) return null;
+  // Fetch Master Kota & Kecamatan when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      import('@/lib/apiClient').then(({ default: apiClient }) => {
+        Promise.all([
+          apiClient.get('/api/v1/settings/kota'),
+          apiClient.get('/api/v1/settings/kecamatan')
+        ]).then(([kotaRes, kecRes]) => {
+          setKotaList(kotaRes.data?.data || []);
+          setKecamatanList(kecRes.data?.data || []);
+        }).catch(err => console.error('Failed to load master data', err));
+      });
+    }
+  }, [isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm(prev => {
+      // Jika kota diganti, reset kecamatan
+      if (name === 'kota') {
+        return { ...prev, kota: value, kecamatan: '' };
+      }
+      // Jika kecamatan dipilih dan kota belum ada, set kota otomatis
+      if (name === 'kecamatan' && !prev.kota && value) {
+        const kecMatch = kecamatanList.find(k => k.kecamatan === value);
+        if (kecMatch) {
+          const kotaMatch = kotaList.find(k => k.id == kecMatch.kota_id);
+          if (kotaMatch) {
+            return { ...prev, kecamatan: value, kota: kotaMatch.kota };
+          }
+        }
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const isValid = form.namaSekolah.trim() && form.tingkat && form.kecamatan.trim();
@@ -43,7 +77,7 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
         kecamatan: form.kecamatan,
         alamat: form.alamat || undefined,
       });
-      setForm({ namaSekolah: '', tingkat: '', kecamatan: '', alamat: '' });
+      setForm({ namaSekolah: '', tingkat: '', kota: '', kecamatan: '', alamat: '' });
       onSuccess();
       onClose();
     } catch (err: unknown) {
@@ -53,6 +87,8 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -89,7 +125,7 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
             />
           </div>
 
-          {/* Tingkat + Kecamatan */}
+          {/* Tingkat + Kota */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
@@ -111,36 +147,59 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
+                Kota/Kabupaten <span className="text-rose-400">*</span>
+              </label>
+              <select
+                required
+                name="kota"
+                value={form.kota}
+                onChange={handleChange}
+                className={FIELD_CLASS}
+              >
+                <option value="">— Pilih Kota —</option>
+                {kotaList.map(k => (
+                  <option key={k.id} value={k.kota}>{k.kota}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Kecamatan + Alamat */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">
                 Kecamatan <span className="text-rose-400">*</span>
               </label>
-              <input
+              <select
                 required
                 name="kecamatan"
                 value={form.kecamatan}
                 onChange={handleChange}
-                placeholder="Cth: Coblong"
+                className={FIELD_CLASS}
+              >
+                <option value="">{form.kota ? '— Pilih Kecamatan —' : '— Semua Kecamatan —'}</option>
+                {kecamatanList
+                  .filter(kec => !form.kota || kotaList.find(k => k.kota === form.kota)?.id == kec.kota_id)
+                  .map(kec => (
+                    <option key={kec.id} value={kec.kecamatan}>{kec.kecamatan}</option>
+                  ))
+                }
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                Alamat
+                <span className="text-[11px] text-muted-foreground font-normal">(opsional)</span>
+              </label>
+              <input
+                name="alamat"
+                value={form.alamat}
+                onChange={handleChange}
+                placeholder="Jl. Sudirman No. 5..."
                 className={FIELD_CLASS}
               />
             </div>
-          </div>
-
-          {/* Alamat — opsional */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-              Alamat
-              <span className="text-[11px] text-muted-foreground font-normal">(opsional)</span>
-            </label>
-            <input
-              name="alamat"
-              value={form.alamat}
-              onChange={handleChange}
-              placeholder="Jl. Sudirman No. 5..."
-              className={FIELD_CLASS}
-            />
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-              <Info size={11} />
-              Bisa dilengkapi nanti saat laporan Visit Awal
-            </p>
           </div>
 
           {/* Preview Status Otomatis */}

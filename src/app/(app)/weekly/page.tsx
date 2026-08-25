@@ -482,6 +482,11 @@ function BacklogCard({ item, index }: { item: BacklogItem; index: number }) {
               <span className={cn('inline-flex items-center gap-0.5 text-[9px] font-medium px-1.5 py-0.5 rounded-full', cfg.cls)}>
                 {cfg.icon} {cfg.label}
               </span>
+              {item.date_val && (
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-secondary/80 text-muted-foreground border border-border/50">
+                  <Calendar size={10} /> {formatDisplayDate(item.date_val)}
+                </span>
+              )}
               {item.status && (
                 <span className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full truncate max-w-[80px]">
                   {item.status}

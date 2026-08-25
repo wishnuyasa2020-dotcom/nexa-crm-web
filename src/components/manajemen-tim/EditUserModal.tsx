@@ -15,12 +15,13 @@ import { Edit2, User, Tag, ToggleLeft, ToggleRight } from "lucide-react";
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user?: { id: string; nama: string; role: string; status: string; supervisor_id?: number | null } | null;
+  user?: { id: string; nama: string; email: string; role: string; status: string; supervisor_id?: number | null } | null;
   onSuccess?: () => void;
 }
 
 export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModalProps) {
   const [nama, setNama] = useState('');
+  const [email, setEmail] = useState('');
   const [role, setRole] = useState('CRO');
   const [status, setStatus] = useState('Aktif');
   const [supervisorId, setSupervisorId] = useState('');
@@ -29,6 +30,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
   useEffect(() => {
     if (user && isOpen) {
       setNama(user.nama);
+      setEmail(user.email || '');
       setRole(user.role);
       setStatus(user.status);
       setSupervisorId(user.supervisor_id ? String(user.supervisor_id) : '');
@@ -52,6 +54,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
       setLoading(true);
       await apiClient.put(`/users/${user.id}`, { 
         nama, 
+        email,
         role, 
         status_aktif: status,
         supervisor_id: role === 'CRO' && supervisorId ? Number(supervisorId) : null 
@@ -89,6 +92,20 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
               placeholder="Ketik nama lengkap..." 
               value={nama}
               onChange={e => setNama(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <User size={14} /> Alamat Email
+            </label>
+            <input 
+              required
+              type="email" 
+              placeholder="Ketik alamat email..." 
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
             />
           </div>

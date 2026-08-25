@@ -85,8 +85,8 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-card w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl border border-border flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-card w-full sm:w-auto sm:min-w-[400px] max-w-lg sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[92vh]">
 
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border flex-shrink-0">
