@@ -12,6 +12,7 @@ const navItems = [
   { label: 'Tasks', href: '/tasks', icon: CheckSquare },
   { label: 'Live Chat', href: '/live-chat', icon: MessageSquare },
   { label: 'Sekolah', href: '/sekolah', icon: School },
+  { label: 'Siswa', href: '/siswa', icon: Users },
 ];
 
 export function BottomNav() {

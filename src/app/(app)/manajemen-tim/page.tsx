@@ -143,7 +143,11 @@ export default function ManajemenTimPage() {
                     <MoreVertical size={16} />
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">@{u.username}</p>
+                <div className="text-xs text-muted-foreground mb-2">
+                  <span>@{u.username}</span>
+                  {u.email && <span className="mx-1">•</span>}
+                  {u.email && <span>{u.email}</span>}
+                </div>
                 
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${getRoleColor(u.role)}`}>
@@ -180,6 +184,7 @@ export default function ManajemenTimPage() {
             <thead>
               <tr className="border-b border-border bg-secondary/30">
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Info Staf</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Email</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Role</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground w-48">Area Kecamatan</th>
@@ -189,7 +194,7 @@ export default function ManajemenTimPage() {
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-muted-foreground">Tidak ada tim ditemukan.</td>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">Tidak ada tim ditemukan.</td>
                 </tr>
               ) : (
                 filteredUsers.map(u => (
@@ -204,6 +209,9 @@ export default function ManajemenTimPage() {
                           <p className="text-xs text-muted-foreground">@{u.username}</p>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {u.email || <span className="text-muted-foreground/30">—</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded font-medium ${getRoleColor(u.role)}`}>{u.role}</span>

@@ -20,7 +20,8 @@ const nextConfig: NextConfig = {
     '*.run.pinggy-free.link',
     '*.pinggy.link',
     '*.pinggy.net',
-    '*.a.pinggy.io'
+    '*.a.pinggy.io',
+    '192.168.53.233'
   ]
 };
 

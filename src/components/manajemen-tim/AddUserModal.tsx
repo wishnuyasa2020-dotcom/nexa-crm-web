@@ -70,7 +70,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md rounded-2xl w-[90%] md:w-full">
-        <DialogHeader>
+        <DialogHeader className="sticky top-[-1rem] bg-popover z-10 pt-4 pb-2 -mt-4 -mx-4 px-4 border-b border-border/50">
           <DialogTitle className="flex items-center gap-2">
             <UserPlus size={20} className="text-primary" /> Tambah Staf Baru
           </DialogTitle>
@@ -179,7 +179,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
             </div>
           </div>
 
-          <DialogFooter className="mt-4 flex flex-row gap-2 justify-end sm:justify-end">
+          <DialogFooter className="sticky bottom-[-1rem] bg-popover z-10 pt-4 pb-4 -mb-4 -mx-4 px-4 border-t border-border/50 mt-4 flex flex-row gap-2 justify-end sm:justify-end">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
             <Button type="submit" className="flex-1 sm:flex-none h-11 gradient-primary text-white" disabled={loading}>
               {loading ? 'Menyimpan...' : 'Simpan Data'}

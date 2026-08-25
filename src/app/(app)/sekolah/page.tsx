@@ -214,11 +214,11 @@ export default function SekolahPage() {
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-white text-xs font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
             >
-              <Plus size={14} />
-              <span className="hidden xs:inline">Tambah</span>
-              <span className="inline xs:hidden">+</span>
+              <Plus size={15} />
+              <span className="hidden sm:inline">Tambah Sekolah</span>
+              <span className="sm:hidden">Tambah</span>
             </button>
           </div>
         )}
