@@ -6,7 +6,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Eye, EyeOff } from 'lucide-react';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/crm';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
 
 export default function LoginPage() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/crm';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
 
 const apiClient = axios.create({
   timeout: 15000,
