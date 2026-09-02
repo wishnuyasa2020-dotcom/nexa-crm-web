@@ -120,7 +120,16 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
-  html { @apply font-sans; }
+  html {
+    @apply font-sans;
+    font-size: 120%; /* Mobile first: Perbesar font 20% (berlaku untuk semua teks di Tailwind) */
+  }
+  /* Kembalikan ke ukuran normal 100% saat di layar tablet/desktop (md: 768px ke atas) */
+  @media (min-width: 768px) {
+    html {
+      font-size: 100%;
+    }
+  }
 }
 
 @layer utilities {
