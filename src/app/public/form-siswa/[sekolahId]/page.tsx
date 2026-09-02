@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, Send, School } from 'lucide-react';
 
-export default function FormSiswaPage() {
+function FormSiswaContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const sekolahId = params.sekolahId as string;
@@ -213,10 +213,18 @@ export default function FormSiswaPage() {
           </form>
         </div>
         
-        <p className="text-center text-xs text-muted-foreground mt-8">
-          &copy; {new Date().getFullYear()} Nexa OS - Pendidikan Vokasi Terpadu
-        </p>
+        <div className="mt-8 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Nexa OS · Sistem PPDB
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function FormSiswaPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-primary" size={32} /></div>}>
+      <FormSiswaContent />
+    </React.Suspense>
   );
 }

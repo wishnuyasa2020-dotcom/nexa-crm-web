@@ -1,9 +1,9 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+# Ini BUKAN Next.js yang Anda kenal
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+Versi ini memiliki perubahan yang tidak kompatibel (breaking changes) — API, konvensi, dan struktur file mungkin semuanya berbeda dari data pelatihan Anda. Baca panduan yang relevan di `node_modules/next/dist/docs/` (diselesaikan dari direktori file ini; dalam monorepo paket `next` mungkin tidak terlihat dari root repo) sebelum menulis kode apa pun. Perhatikan pemberitahuan depresiasi.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+Blok ini ditulis dan ditambahkan kembali oleh `next dev` — verifikasi di `node_modules/next/dist/server/lib/generate-agent-files.js`. Menghapusnya dari diff hanya akan membuat ulang perubahan yang belum di-commit; melakukan commit bersama dengan pekerjaan Anda akan menjaga struktur tetap bersih.
 
 <!-- END:nextjs-agent-rules -->
