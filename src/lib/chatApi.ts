@@ -48,22 +48,27 @@ export interface ChatMessage {
 }
 
 export interface WaTemplate {
-  id_template:           number;
-  pipeline:              string | null;
-  nama_template:         string;
-  template_name_api:     string;
-  language_code:         string;
-  body_text:             string;
-  kategori:              string;
-  urutan:                number;
-  status_crm:            string;
-  meta_status:           MetaStatus;
-  meta_template_id:      string | null;
+  id_template:            string;    // varchar(50) di DB
+  pipeline:               string | null;
+  nama_template:          string;
+  template_name_api:      string;
+  language_code:          string;
+  body_text:              string;
+  kategori:               string;
+  urutan:                 number;
+  status_crm:             'ACTIVE' | 'INACTIVE' | 'DELETED';
+  meta_status:            MetaStatus;
+  meta_template_id:       string | null;
   meta_status_updated_at: string | null;
-  meta_quality_rating:   string | null;
-  parameters:            string; // JSON string
-  created_date:          string;
-  last_updated:          string;
+  meta_quality_rating:    string | null;
+  meta_buttons:           string | null;  // JSON string: buttons dari Meta (read-only)
+  parameters:             string;         // JSON string schema {body:[], header:{}, buttons:[]}
+  header_type:            'none' | 'text' | 'image' | 'video' | 'document' | null;
+  header_url:             string | null;
+  header_filename:        string | null;
+  supports_bsuid:         0 | 1;
+  created_date:           string;
+  last_updated:           string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -113,33 +118,60 @@ export async function fetchTemplates(params: {
   status?:   MetaStatus;
   pipeline?: string;
   search?:   string;
-} = {}): Promise<WaTemplate[]> {
+  page?:     number;
+  limit?:    number;
+} = {}): Promise<{ data: WaTemplate[]; total: number; page: number; limit: number }> {
   const res = await apiClient.get('/api/v1/templates', { params });
+  return res.data;
+}
+
+/** Ambil satu template berdasarkan ID */
+export async function getTemplateById(id: string): Promise<WaTemplate> {
+  const res = await apiClient.get(`/api/v1/templates/${id}`);
   return res.data.data;
 }
 
 /** Buat template baru */
 export async function createTemplate(data: {
-  nama_template:     string;
-  body_text:         string;
+  nama_template:      string;
+  body_text:          string;
   template_name_api?: string;
-  language_code?:    string;
-  kategori?:         string;
-  urutan?:           number;
-  pipeline?:         string;
-  parameters?:       string;
-  submitToMeta?:     boolean;
-}): Promise<{ id_template: number; meta_status: MetaStatus }> {
+  language_code?:     string;
+  kategori?:          string;
+  urutan?:            number;
+  pipeline?:          string;
+  parameters?:        string;
+  header_type?:       string;
+  header_url?:        string;
+  header_filename?:   string;
+  submitToMeta?:      boolean;
+}): Promise<{ id_template: string; meta_status: MetaStatus }> {
   const res = await apiClient.post('/api/v1/templates', data);
   return res.data;
 }
 
-/** Update template yang sudah ada */
+/** Update info dasar template */
 export async function updateTemplate(
-  id: number,
-  data: Partial<Pick<WaTemplate, 'nama_template' | 'body_text' | 'kategori' | 'urutan' | 'status_crm'>>
+  id: string,
+  data: Partial<Pick<WaTemplate,
+    'nama_template' | 'body_text' | 'kategori' | 'urutan' | 'status_crm' |
+    'header_type' | 'header_url' | 'header_filename' | 'parameters'
+  >>
 ): Promise<void> {
   await apiClient.put(`/api/v1/templates/${id}`, data);
+}
+
+/** Update hanya JSON parameters schema */
+export async function updateParameters(
+  id: string,
+  parameters: object | string
+): Promise<void> {
+  await apiClient.patch(`/api/v1/templates/${id}/parameters`, { parameters });
+}
+
+/** Soft delete template (set status_crm = 'DELETED') */
+export async function deleteTemplate(id: string): Promise<void> {
+  await apiClient.delete(`/api/v1/templates/${id}`);
 }
 
 /** Sinkronisasi status template dari Meta */
