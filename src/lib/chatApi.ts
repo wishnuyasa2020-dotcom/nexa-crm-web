@@ -32,9 +32,9 @@ export interface Conversation {
 
 export interface ChatMessage {
   message_id:  number;
-  conv_id:     number;
-  timestamp:   number;
-  datetime:    string;
+  conv_id:     number | string;
+  timestamp:   number | string;  // Unix ms — bisa number atau string dari legacy DB
+  datetime:    string | null;
   direction:   MessageDirection;
   from_phone:  string;
   from_name:   string;

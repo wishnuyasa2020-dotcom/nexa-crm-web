@@ -51,7 +51,13 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
     if (!silent) setLoadingMsgs(true);
     try {
       const data = await fetchMessages(convId);
-      setMessages(data);
+      // Sort berdasarkan timestamp ascending (pakai timestamp Unix ms yang reliable)
+      const sorted = [...data].sort((a, b) => {
+        const ta = Number(a.timestamp) || new Date(a.datetime ?? 0).getTime();
+        const tb = Number(b.timestamp) || new Date(b.datetime ?? 0).getTime();
+        return ta - tb;
+      });
+      setMessages(sorted);
       // Tandai terbaca saat membuka percakapan
       await markConversationAsRead(convId).catch(() => null);
     } catch (err) {
@@ -275,9 +281,18 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 <p className="text-xs md:text-sm whitespace-pre-wrap">{msg.body || `[${msg.type}]`}</p>
                 <div className="flex items-center justify-end space-x-1 mt-1">
                   <span className="text-[10px] text-gray-400">
-                    {msg.datetime
-                      ? new Date(msg.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                      : ''}
+                    {(() => {
+                      // Pakai timestamp (Unix ms) jika ada, fallback ke datetime string
+                      const ts = Number(msg.timestamp);
+                      const date = ts > 0 ? new Date(ts) : (msg.datetime ? new Date(msg.datetime) : null);
+                      return date
+                        ? date.toLocaleTimeString('id-ID', {
+                            hour:     '2-digit',
+                            minute:   '2-digit',
+                            timeZone: 'Asia/Jakarta',
+                          })
+                        : '';
+                    })()}
                   </span>
                   {msg.direction === 'outgoing' && (
                     <span className="text-gray-400">
