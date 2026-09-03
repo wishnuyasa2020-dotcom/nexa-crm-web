@@ -58,6 +58,7 @@ function parseButtonsFromParams(parametersStr: string | null | undefined): Previ
 export default function TemplatesPage() {
   const [templates,    setTemplates]    = useState<WaTemplate[]>([]);
   const [total,        setTotal]        = useState(0);
+  const [approvedTotal, setApprovedTotal] = useState<number | null>(null);
   const [isLoading,    setIsLoading]    = useState(true);
   const [isSyncing,    setIsSyncing]    = useState(false);
   const [search,       setSearch]       = useState('');
@@ -65,6 +66,13 @@ export default function TemplatesPage() {
   const [pipeline,     setPipeline]     = useState('');
   const [showModal,    setShowModal]    = useState(false);
   const [editTemplate, setEditTemplate] = useState<WaTemplate | undefined>();
+
+  // ── Fetch jumlah APPROVED sekali saat mount (tidak ikut filter) ──────────────
+  useEffect(() => {
+    fetchTemplates({ status: 'APPROVED', limit: 1 })
+      .then(r => setApprovedTotal(r.total))
+      .catch(() => {});
+  }, []);
 
   // ── Load templates ──────────────────────────────────────────────────────────
   const loadTemplates = useCallback(async () => {
@@ -159,8 +167,16 @@ export default function TemplatesPage() {
             <FileText size={20} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Template Manager</h1>
-            <p className="text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold text-foreground">Template Manager</h1>
+              {approvedTotal !== null && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                  {approvedTotal} Approved
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Kelola sinkronisasi Meta &amp; CRM template &mdash; {total} template terdaftar
             </p>
           </div>
