@@ -1,8 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Calendar } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from '@/components/ui/dialog';
 
 interface InputAktivitasModalProps {
   isOpen: boolean;
@@ -15,22 +21,12 @@ export function InputAktivitasModal({ isOpen, onClose }: InputAktivitasModalProp
   const [catatan, setCatatan] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm sm:items-center sm:p-0">
-      <div className="relative w-full max-w-md bg-card border border-border rounded-xl shadow-lg sm:rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border">
-          <h2 className="text-lg font-bold text-foreground">Input Aktivitas Baru</h2>
-          <button 
-            onClick={onClose}
-            className="p-2 -mr-2 text-muted-foreground hover:bg-secondary rounded-lg transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md bg-card border-border p-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogHeader className="p-4 sm:p-5 border-b border-border">
+          <DialogTitle className="text-lg font-bold text-foreground">Input Aktivitas Baru</DialogTitle>
+        </DialogHeader>
 
         {/* Body (Scrollable) */}
         <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
@@ -98,7 +94,7 @@ export function InputAktivitasModal({ isOpen, onClose }: InputAktivitasModalProp
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 border-t border-border bg-secondary/30 flex justify-end gap-3">
+        <DialogFooter className="p-4 sm:p-5 border-t border-border bg-secondary/30 flex justify-end gap-3 sm:justify-end">
           <button 
             onClick={onClose}
             className="px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary rounded-lg transition-colors"
@@ -111,9 +107,8 @@ export function InputAktivitasModal({ isOpen, onClose }: InputAktivitasModalProp
           >
             Simpan Aktivitas
           </button>
-        </div>
-
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
