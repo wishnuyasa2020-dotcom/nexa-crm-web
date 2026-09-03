@@ -135,38 +135,38 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   return (
     <div className="flex flex-col h-full bg-[#0b141a] w-full relative">
       {/* Header */}
-      <div className="bg-[#202c33] border-b border-[#222d34] px-4 py-3 flex items-center shadow-sm z-10 w-full">
+      <div className="bg-[#202c33] border-b border-[#222d34] px-2 py-2 md:px-4 md:py-3 flex items-center shadow-sm z-10 w-full">
         <Button
           variant="ghost" size="icon"
-          className="mr-2 md:hidden text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942]"
+          className="mr-1 md:mr-2 md:hidden text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] h-8 w-8"
           onClick={onBack}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4" />
         </Button>
 
-        <Avatar className="h-10 w-10 mr-3">
-          <AvatarFallback className="bg-[#6b7280] text-white">
+        <Avatar className="h-8 w-8 md:h-10 md:w-10 mr-2 md:mr-3">
+          <AvatarFallback className="bg-[#6b7280] text-white text-xs md:text-sm">
             {conversation.student_name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
-        <div className="flex-1">
-          <h2 className="font-semibold text-[#e9edef] leading-tight">{conversation.student_name}</h2>
-          <div className="flex items-center text-xs mt-0.5">
+        <div className="flex-1 min-w-0">
+          <h2 className="font-semibold text-[#e9edef] leading-tight text-sm md:text-base truncate">{conversation.student_name}</h2>
+          <div className="flex items-center text-[10px] md:text-xs mt-0.5">
             {isSwOpen ? (
               <span className="flex items-center text-[#00a884] font-medium">
-                <span className="w-2 h-2 rounded-full bg-[#00a884] mr-1.5 animate-pulse" />
+                <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00a884] mr-1 md:mr-1.5 animate-pulse" />
                 24h Active
                 {conversation.window_expires_at && (
-                  <span className="ml-1.5 text-[#8696a0]">
+                  <span className="ml-1 md:ml-1.5 text-[#8696a0] hidden sm:inline">
                     (exp: {new Date(conversation.window_expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
                   </span>
                 )}
               </span>
             ) : (
               <span className="flex items-center text-rose-500 font-medium">
-                <span className="w-2 h-2 rounded-full bg-rose-500 mr-1.5" />
-                Service Window Closed
+                <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-rose-500 mr-1 md:mr-1.5" />
+                <span className="hidden xs:inline">Service Window </span>Closed
               </span>
             )}
           </div>
@@ -231,7 +231,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-4 w-full">
+      <div className="flex-1 overflow-y-auto min-h-0 px-2 py-3 md:p-4 w-full">
         {loadingMsgs && messages.length === 0 && (
           <div className="flex justify-center items-center h-32">
             <Loader2 className="h-6 w-6 animate-spin text-[#8696a0]" />
@@ -251,13 +251,13 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               className={`flex ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] sm:max-w-[75%] rounded-lg px-3 py-2 shadow-sm relative ${
+                className={`max-w-[88%] sm:max-w-[75%] rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 shadow-sm relative ${
                   msg.direction === 'outgoing'
                     ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none'
                     : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.body || `[${msg.type}]`}</p>
+                <p className="text-xs md:text-sm whitespace-pre-wrap">{msg.body || `[${msg.type}]`}</p>
                 <div className="flex items-center justify-end space-x-1 mt-1">
                   <span className="text-[10px] text-gray-400">
                     {msg.datetime
@@ -282,7 +282,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       </div>
 
       {/* Composer */}
-      <div className="bg-[#202c33] p-3 flex items-end space-x-2 z-10 w-full">
+      <div className="bg-[#202c33] px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full">
         {!isSwOpen ? (
           // SW CLOSED
           <div className="w-full flex flex-col space-y-2">
