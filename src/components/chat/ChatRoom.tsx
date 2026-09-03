@@ -32,9 +32,18 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   const [loadingMsgs,  setLoadingMsgs]  = useState(false);
   const [showSwInfo,   setShowSwInfo]   = useState(false); // toggle info SW closed
   const messagesEndRef                   = useRef<HTMLDivElement>(null);
+  const scrollContainerRef               = useRef<HTMLDivElement>(null); // ref ke scroll container
   const pollingRef                       = useRef<NodeJS.Timeout | null>(null);
+  const forceScrollRef                   = useRef(false); // true saat harus paksa scroll (kirim/buka baru)
 
   const convId: number | string | null = conversation?.conv_id ?? null;
+
+  // ── Cek apakah user dekat bawah (dalam 150px) ─────────────────────────
+  const isNearBottom = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+  }, []);
 
   // ── Load pesan & mark as read ──────────────────────────────────────────
   const loadMessages = useCallback(async (silent = false) => {
@@ -52,10 +61,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
     }
   }, [convId]);
 
-  // Reset + load saat percakapan berubah
+  // Reset + load saat percakapan berubah — paksa scroll ke bawah
   useEffect(() => {
     setMessages([]);
     setInputText('');
+    forceScrollRef.current = true; // buka percakapan baru → selalu scroll ke bawah
     loadMessages();
   }, [loadMessages]);
 
@@ -67,10 +77,13 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [convId, loadMessages]);
 
-  // Auto-scroll ke bawah saat pesan baru masuk
+  // Smart auto-scroll: hanya scroll kalau user dekat bawah ATAU dipaksa (buka/kirim)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (forceScrollRef.current || isNearBottom()) {
+      messagesEndRef.current?.scrollIntoView({ behavior: forceScrollRef.current ? 'instant' : 'smooth' });
+      forceScrollRef.current = false;
+    }
+  }, [messages, isNearBottom]);
 
   if (!conversation) {
     return (
@@ -98,6 +111,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
     try {
       await sendMessage(convId, { text: textToSend });
       onMessageSent();
+      forceScrollRef.current = true; // paksa scroll ke bawah setelah kirim
       await loadMessages(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal mengirim pesan.';
@@ -232,7 +246,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-2 py-3 md:p-4 w-full">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 px-2 py-3 md:p-4 w-full">
         {loadingMsgs && messages.length === 0 && (
           <div className="flex justify-center items-center h-32">
             <Loader2 className="h-6 w-6 animate-spin text-[#8696a0]" />
