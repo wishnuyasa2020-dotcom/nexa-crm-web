@@ -22,7 +22,13 @@ export function ChatLayout() {
   // Ref agar polling tidak ter-trigger ulang saat state berubah
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  const activeContact = conversations.find(c => c.conv_id === activeConvId) ?? null;
+  useEffect(() => {
+    if (initConvId) {
+      setActiveConvId(initConvId);
+    }
+  }, [initConvId]);
+
+  const activeContact = conversations.find(c => String(c.conv_id) === String(activeConvId)) ?? null;
 
   // ── Fetch conversations ──────────────────────────────────────────────────
   const loadConversations = useCallback(async (silent = false) => {

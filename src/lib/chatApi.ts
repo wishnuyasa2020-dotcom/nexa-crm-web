@@ -82,7 +82,9 @@ export async function fetchConversations(params: {
   page?:   number;
   limit?:  number;
 } = {}): Promise<{ data: Conversation[]; total: number }> {
-  const res = await apiClient.get('/api/v1/chats', { params });
+  const res = await apiClient.get('/api/v1/chats', { 
+    params: { ...params, _t: Date.now() } 
+  });
   return res.data;
 }
 
@@ -91,7 +93,9 @@ export async function fetchMessages(
   convId: number | string,
   params: { limit?: number; before?: number } = {}
 ): Promise<ChatMessage[]> {
-  const res = await apiClient.get(`/api/v1/chats/${convId}/messages`, { params });
+  const res = await apiClient.get(`/api/v1/chats/${convId}/messages`, { 
+    params: { ...params, _t: Date.now() } 
+  });
   return res.data.data;
 }
 
