@@ -335,7 +335,7 @@ function TemplateCard({
           {isLocal
             ? <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-md"><MessageSquare size={14} /></div>
             : <div className="p-1.5 bg-blue-500/10 text-blue-500 rounded-md"><Phone size={14} /></div>}
-          <h3 className="font-bold text-sm text-foreground truncate max-w-32.5">{t.nama_template}</h3>
+          <h3 className="font-bold text-sm text-white truncate max-w-32.5">{t.nama_template}</h3>
         </div>
         <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border', statusColors[t.meta_status] || statusColors.LOCAL_ONLY)}>
           {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
@@ -344,9 +344,9 @@ function TemplateCard({
 
       {/* Tags */}
       <div className="flex flex-wrap items-center gap-1.5 mb-3">
-        <span className="text-[10px] px-2 py-0.5 border border-border text-muted-foreground rounded-full">{t.kategori}</span>
-        {t.pipeline && <span className="text-[10px] px-2 py-0.5 border border-border text-muted-foreground rounded-full">{t.pipeline}</span>}
-        {t.language_code && <span className="text-[10px] px-2 py-0.5 border border-border text-muted-foreground rounded-full">{t.language_code.toUpperCase()}</span>}
+        <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.kategori}</span>
+        {t.pipeline && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.pipeline}</span>}
+        {t.language_code && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.language_code.toUpperCase()}</span>}
         {t.header_type && t.header_type !== 'none' && (
           <span className="text-[10px] px-2 py-0.5 border border-amber-500/30 text-amber-500 rounded-full">📎 {t.header_type}</span>
         )}
@@ -359,7 +359,7 @@ function TemplateCard({
       </div>
 
       {/* Body preview */}
-      <div className="flex-1 bg-secondary/30 rounded-lg p-3 text-xs text-muted-foreground line-clamp-3">
+      <div className="flex-1 bg-white/5 rounded-lg p-3 text-xs text-white/75 line-clamp-3">
         {t.body_text}
       </div>
 
@@ -370,11 +370,11 @@ function TemplateCard({
           onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
           className={cn(
             'flex items-center gap-1.5 text-xs font-medium transition-colors',
-            isActive ? 'text-emerald-500' : 'text-muted-foreground'
+            isActive ? 'text-emerald-400' : 'text-white/50'
           )}
           title={isActive ? 'Nonaktifkan' : 'Aktifkan'}
         >
-          {isActive ? <ToggleRight size={18} className="text-emerald-500" /> : <ToggleLeft size={18} />}
+          {isActive ? <ToggleRight size={18} className="text-emerald-400" /> : <ToggleLeft size={18} className="text-white/40" />}
           {isActive ? 'Aktif' : 'Nonaktif'}
         </button>
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
