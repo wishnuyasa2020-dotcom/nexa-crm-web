@@ -98,7 +98,7 @@ export async function fetchMessages(
 /** Kirim pesan — teks biasa atau template (Smart Routing di backend) */
 export async function sendMessage(
   convId: number,
-  payload: { text?: string; templateId?: number }
+  payload: { text?: string; templateId?: string | number }
 ): Promise<{ success: boolean; sentAs: 'free_text' | 'meta_template'; body: string }> {
   const res = await apiClient.post(`/api/v1/chats/${convId}/send`, payload);
   return res.data;
