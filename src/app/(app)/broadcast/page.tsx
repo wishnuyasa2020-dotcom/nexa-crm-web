@@ -27,12 +27,12 @@ function Toast({ msg, type, onClose }: { msg: string; type: 'success' | 'error';
 
   return (
     <div className={cn(
-      'fixed bottom-24 lg:bottom-6 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium border max-w-xs transition-all',
+      'fixed bottom-24 lg:bottom-6 right-4 z-100 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium border max-w-xs transition-all',
       type === 'success'
         ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
         : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
     )}>
-      {type === 'success' ? <CheckCircle2 size={16} className="flex-shrink-0" /> : <AlertCircle size={16} className="flex-shrink-0" />}
+      {type === 'success' ? <CheckCircle2 size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
       <span>{msg}</span>
       <button onClick={onClose} className="ml-auto opacity-60 hover:opacity-100"><X size={14} /></button>
     </div>
@@ -53,7 +53,7 @@ export default function BroadcastPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500 flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500 shrink-0">
             <Radio size={20} />
           </div>
           <div className="min-w-0">
@@ -64,14 +64,14 @@ export default function BroadcastPage() {
         {view === 'history' ? (
           <button
             onClick={() => setView('new')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-white text-sm font-medium shadow-md shadow-primary/20 hover:opacity-90 transition-all flex-shrink-0"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-white text-sm font-medium shadow-md shadow-primary/20 hover:opacity-90 transition-all shrink-0"
           >
             <Send size={16} /> Broadcast Baru
           </button>
         ) : (
           <button
             onClick={() => setView('history')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:text-foreground transition-all flex-shrink-0"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:text-foreground transition-all shrink-0"
           >
             <ArrowLeft size={16} /> Kembali
           </button>
@@ -306,7 +306,7 @@ function SchoolCombobox({
         onChange={e => handleInput(e.target.value)}
         onFocus={() => setOpen(true)}
         placeholder="Cari nama siswa / sekolah..."
-        className="w-full pl-9 pr-16 py-2 bg-background border border-border rounded-lg text-sm focus:border-primary outline-none"
+        className="w-full pl-9 pr-16 py-2 bg-background border rounded-lg text-sm focus:border-primary outline-none"
       />
       {/* Tombol clear ✕ */}
       {query && (
@@ -354,7 +354,7 @@ function SchoolCombobox({
                     query.toLowerCase() === s.name.toLowerCase() && 'bg-primary/5 text-primary font-medium'
                   )}
                 >
-                  <School size={12} className="text-muted-foreground flex-shrink-0" />
+                  <School size={12} className="text-muted-foreground shrink-0" />
                   <span className="truncate">{s.name}</span>
                 </button>
               ))
@@ -562,7 +562,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
               value={namaCampaign}
               onChange={e => setNamaCampaign(e.target.value)}
               placeholder={`Campaign ${new Date().toLocaleDateString('id-ID')}`}
-              className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm focus:border-primary outline-none"
+              className="w-full px-3 py-2.5 bg-background border rounded-lg text-sm focus:border-primary outline-none"
             />
           </div>
         </div>
@@ -589,7 +589,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:border-primary outline-none text-muted-foreground"
+                className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:border-primary outline-none text-muted-foreground"
               >
                 <option value="">-- Semua Status Pipeline --</option>
                 <option value="Data Masuk">Data Masuk</option>
@@ -735,11 +735,11 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                           selectedIds.has(a.id) ? 'border-primary/50 bg-primary/5' : 'border-border bg-background'
                         )}
                       >
-                        <input type="checkbox" checked={selectedIds.has(a.id)} readOnly className="w-4 h-4 rounded border-border text-primary focus:ring-primary flex-shrink-0" />
+                        <input type="checkbox" checked={selectedIds.has(a.id)} readOnly className="w-4 h-4 rounded border-border text-primary focus:ring-primary shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <h4 className="font-semibold text-sm text-foreground truncate">{a.nama}</h4>
-                            <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
+                            <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
                               {a.isSwOpen ? 'SW Buka' : 'SW Tutup'}
                             </span>
                           </div>
@@ -797,7 +797,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                   <select
                     value={metaTemplate}
                     onChange={e => setMetaTemplate(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm focus:border-primary outline-none"
+                    className="w-full px-3 py-2.5 bg-background border rounded-lg text-sm focus:border-primary outline-none"
                   >
                     <option value="">-- Pilih Template Meta --</option>
                     {metaTemplates.map(t => (
@@ -820,7 +820,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                   <select
                     value={crmTemplate}
                     onChange={e => setCrmTemplate(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm focus:border-primary outline-none"
+                    className="w-full px-3 py-2.5 bg-background border rounded-lg text-sm focus:border-primary outline-none"
                   >
                     <option value="">-- Pilih Template Internal --</option>
                     {crmTemplates.map(t => (
@@ -862,17 +862,17 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
 
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <span className={cn('w-2 h-2 rounded-full flex-shrink-0', metaTemplate ? 'bg-emerald-500' : 'bg-border')} />
+              <span className={cn('w-2 h-2 rounded-full shrink-0', metaTemplate ? 'bg-emerald-500' : 'bg-border')} />
               <span>Meta Template: <span className={metaTemplate ? 'text-foreground font-medium' : ''}>{metaTemplate ? metaTemplates.find(t => t.id === metaTemplate)?.name : 'Belum dipilih'}</span></span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className={cn('w-2 h-2 rounded-full flex-shrink-0', crmTemplate ? 'bg-emerald-500' : 'bg-border')} />
+              <span className={cn('w-2 h-2 rounded-full shrink-0', crmTemplate ? 'bg-emerald-500' : 'bg-border')} />
               <span>CRM Template: <span className={crmTemplate ? 'text-foreground font-medium' : ''}>{crmTemplate ? crmTemplates.find(t => t.id === crmTemplate)?.name : 'Belum dipilih'}</span></span>
             </div>
           </div>
 
           <div className="mt-4 p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground flex items-start gap-2">
-            <Info size={14} className="mt-0.5 text-primary flex-shrink-0" />
+            <Info size={14} className="mt-0.5 text-primary shrink-0" />
             <p>Pengiriman akan dimasukkan ke dalam <strong>Queue (Antrean)</strong> di latar belakang agar aman dari limitasi Meta API.</p>
           </div>
 
