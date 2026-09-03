@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, MessageCircle, Plus, Edit2, Trash2,
   Calendar, User, Phone, MapPin, School, AlertCircle, Clock
@@ -13,8 +13,11 @@ import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
 
 import apiClient from '@/lib/apiClient';
 
-export default function SiswaDetailPage({ params }: { params: { id: string } }) {
+export default function SiswaDetailPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+  
   const [siswaDetail, setSiswaDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isInputAktivitasOpen, setIsInputAktivitasOpen] = useState(false);
@@ -25,7 +28,8 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     const loadDetail = async () => {
       try {
-        const res = await apiClient.get(`/api/v1/siswa/${params.id}`);
+        if (!id) return;
+        const res = await apiClient.get(`/api/v1/siswa/${id}`);
         if (res.data?.status === 'ok') {
           setSiswaDetail(res.data.data);
         }
@@ -36,7 +40,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
       }
     };
     loadDetail();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return <div className="p-8 text-center text-muted-foreground">Memuat data...</div>;
