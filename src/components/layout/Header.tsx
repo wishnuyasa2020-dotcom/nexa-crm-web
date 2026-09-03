@@ -50,7 +50,7 @@ export default function Header({ title }: { title?: string }) {
       <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-background/95 backdrop-blur-sm shrink-0 z-100">
         {/* Title */}
         <h1 className="text-base font-semibold text-foreground">
-          {title || (user?.tenant_id ? `Dashboard ${user.tenant_id.charAt(0).toUpperCase() + user.tenant_id.slice(1)}` : 'Dashboard')}
+          {title || (user?.tenant_id ? (user.tenant_id.charAt(0).toUpperCase() + user.tenant_id.slice(1)) : 'Dashboard')}
         </h1>
 
         {/* Right actions */}
