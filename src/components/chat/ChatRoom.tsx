@@ -116,7 +116,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   };
 
   // ── Kirim Template ─────────────────────────────────────────────────────
-  const handleSendTemplate = async (templateId: number) => {
+  const handleSendTemplate = async (templateId: string) => {
     if (isSending || !convId) return;
     setIsSending(true);
     try {
@@ -359,7 +359,7 @@ function TemplatePicker({
   iconOnly?:       boolean;
   studentName?:    string;
   disabled?:       boolean;
-  onSendTemplate:  (templateId: number) => void;
+  onSendTemplate:  (templateId: string) => void;
 }) {
   const [templates, setTemplates]   = useState<WaTemplate[]>([]);
   const [loading, setLoading]       = useState(false);
@@ -369,8 +369,8 @@ function TemplatePicker({
     if (templates.length > 0) return; // cache sederhana
     setLoading(true);
     try {
-      const data = await fetchTemplates({ status: undefined }); // semua template aktif
-      setTemplates(data.filter(t => t.status_crm === 'ACTIVE'));
+      const res = await fetchTemplates({ status: undefined }); // semua template aktif
+      setTemplates(res.data.filter((t: WaTemplate) => t.status_crm === 'ACTIVE'));
     } catch {
       console.error('Gagal load templates');
     } finally {
