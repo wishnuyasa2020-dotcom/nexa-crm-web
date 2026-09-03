@@ -33,7 +33,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   const messagesEndRef                   = useRef<HTMLDivElement>(null);
   const pollingRef                       = useRef<NodeJS.Timeout | null>(null);
 
-  const convId = conversation?.conv_id ?? null;
+  const convId: number | string | null = conversation?.conv_id ?? null;
 
   // ── Load pesan & mark as read ──────────────────────────────────────────
   const loadMessages = useCallback(async (silent = false) => {
@@ -116,7 +116,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   };
 
   // ── Kirim Template ─────────────────────────────────────────────────────
-  const handleSendTemplate = async (templateId: string) => {
+  const handleSendTemplate = async (templateId: string | number) => {
     if (isSending || !convId) return;
     setIsSending(true);
     try {
@@ -359,7 +359,7 @@ function TemplatePicker({
   iconOnly?:       boolean;
   studentName?:    string;
   disabled?:       boolean;
-  onSendTemplate:  (templateId: string) => void;
+  onSendTemplate:  (templateId: string | number) => void;
 }) {
   const [templates, setTemplates]   = useState<WaTemplate[]>([]);
   const [loading, setLoading]       = useState(false);

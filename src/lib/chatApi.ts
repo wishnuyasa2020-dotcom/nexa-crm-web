@@ -88,7 +88,7 @@ export async function fetchConversations(params: {
 
 /** Riwayat pesan dalam satu percakapan */
 export async function fetchMessages(
-  convId: number,
+  convId: number | string,
   params: { limit?: number; before?: number } = {}
 ): Promise<ChatMessage[]> {
   const res = await apiClient.get(`/api/v1/chats/${convId}/messages`, { params });
@@ -97,7 +97,7 @@ export async function fetchMessages(
 
 /** Kirim pesan — teks biasa atau template (Smart Routing di backend) */
 export async function sendMessage(
-  convId: number,
+  convId: number | string,
   payload: { text?: string; templateId?: string | number }
 ): Promise<{ success: boolean; sentAs: 'free_text' | 'meta_template'; body: string }> {
   const res = await apiClient.post(`/api/v1/chats/${convId}/send`, payload);
@@ -105,7 +105,7 @@ export async function sendMessage(
 }
 
 /** Tandai semua pesan dalam percakapan sudah dibaca */
-export async function markConversationAsRead(convId: number): Promise<void> {
+export async function markConversationAsRead(convId: number | string): Promise<void> {
   await apiClient.patch(`/api/v1/chats/${convId}/read`);
 }
 
