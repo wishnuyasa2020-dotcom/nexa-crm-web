@@ -33,11 +33,14 @@ export default function SiswaDetailPage() {
       setIsChatLoading(true);
       const res = await initiateConversation(id);
       if (res?.conv_id) {
-        router.push(`/live-chat?conv_id=${res.conv_id}`);
+        // Menggunakan hard redirect agar pasti memuat ulang state dan layout
+        window.location.href = `/live-chat?conv_id=${res.conv_id}`;
+      } else {
+        throw new Error('Gagal mendapatkan ID percakapan dari server');
       }
     } catch (e: any) {
       console.error('Failed to initiate chat:', e);
-      alert(e.response?.data?.message || 'Gagal memulai percakapan');
+      alert(e.response?.data?.message || e.message || 'Gagal memulai percakapan');
     } finally {
       setIsChatLoading(false);
     }
