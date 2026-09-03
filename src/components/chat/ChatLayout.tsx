@@ -11,9 +11,10 @@ const POLLING_INTERVAL_MS = 5000; // 5 detik
 export function ChatLayout() {
   const searchParams = useSearchParams();
   const initConvId = searchParams.get('conv_id');
+  const initialId = initConvId && !isNaN(Number(initConvId)) ? Number(initConvId) : initConvId;
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConvId, setActiveConvId]   = useState<number | string | null>(initConvId);
+  const [activeConvId, setActiveConvId]   = useState<number | string | null>(initialId);
   const [tab, setTab]                     = useState<'all' | 'unread' | 'waiting'>('all');
   const [search, setSearch]               = useState('');
   const [isLoading, setIsLoading]         = useState(true);
