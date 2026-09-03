@@ -109,6 +109,12 @@ export async function markConversationAsRead(convId: number | string): Promise<v
   await apiClient.patch(`/api/v1/chats/${convId}/read`);
 }
 
+/** Inisiasi atau dapatkan percakapan berdasarkan ID Siswa */
+export async function initiateConversation(idSiswa: string): Promise<{ conv_id: number | string }> {
+  const res = await apiClient.post('/api/v1/chats/initiate', { id_siswa: idSiswa });
+  return res.data.data;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPLATE API
 // ─────────────────────────────────────────────────────────────────────────────

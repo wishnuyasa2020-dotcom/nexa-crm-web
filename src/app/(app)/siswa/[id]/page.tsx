@@ -11,6 +11,7 @@ import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
 import { EditAktivitasModal } from '@/components/siswa/EditAktivitasModal';
 import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
 
+import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 
 export default function SiswaDetailPage() {
@@ -24,6 +25,23 @@ export default function SiswaDetailPage() {
   const [isEditAktivitasOpen, setIsEditAktivitasOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAktivitas, setSelectedAktivitas] = useState<string | null>(null);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const handleChatSiswa = async () => {
+    if (!id) return;
+    try {
+      setIsChatLoading(true);
+      const res = await initiateConversation(id);
+      if (res?.conv_id) {
+        router.push(`/chat/${res.conv_id}`);
+      }
+    } catch (e: any) {
+      console.error('Failed to initiate chat:', e);
+      alert(e.response?.data?.message || 'Gagal memulai percakapan');
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -158,10 +176,22 @@ export default function SiswaDetailPage() {
 
       {/* QUICK ACTIONS (Mobile: Fixed bottom, Desktop: normal row) */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t border-border z-10 sm:relative sm:p-0 sm:bg-transparent sm:border-t-0 sm:backdrop-blur-none flex gap-2">
-        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-          <MessageCircle size={16} />
-          <span className="hidden sm:inline">Chat Siswa</span>
-          <span className="sm:hidden">Chat</span>
+        <button 
+          onClick={handleChatSiswa}
+          disabled={isChatLoading}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isChatLoading ? (
+            <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+          ) : (
+            <MessageCircle size={16} />
+          )}
+          <span className="hidden sm:inline">
+            {isChatLoading ? 'Memproses...' : 'Chat Siswa'}
+          </span>
+          <span className="sm:hidden">
+            {isChatLoading ? 'Wait...' : 'Chat'}
+          </span>
         </button>
         <button
           onClick={() => setIsInputAktivitasOpen(true)}
