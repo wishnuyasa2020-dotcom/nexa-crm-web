@@ -12,13 +12,13 @@ import { id as localeId } from 'date-fns/locale';
 
 interface ConversationListProps {
   conversations:        Conversation[];
-  activeConvId:         number | null;
+  activeConvId:         number | string | null;
   isLoading:            boolean;
   tab:                  'all' | 'unread' | 'waiting';
   search:               string;
   onTabChange:          (tab: 'all' | 'unread' | 'waiting') => void;
   onSearchChange:       (search: string) => void;
-  onSelectConversation: (convId: number) => void;
+  onSelectConversation: (convId: number | string) => void;
 }
 
 export function ConversationList({

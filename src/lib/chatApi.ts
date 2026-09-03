@@ -14,7 +14,7 @@ export type MessageDirection    = 'incoming' | 'outgoing';
 export type MetaStatus          = 'APPROVED' | 'PENDING' | 'REJECTED' | 'LOCAL_ONLY';
 
 export interface Conversation {
-  conv_id:           number;
+  conv_id:           number | string;
   id_siswa:          number | null;
   wa_number:         string;
   student_name:      string;

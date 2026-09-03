@@ -9,7 +9,7 @@ const POLLING_INTERVAL_MS = 5000; // 5 detik
 
 export function ChatLayout() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConvId, setActiveConvId]   = useState<number | null>(null);
+  const [activeConvId, setActiveConvId]   = useState<number | string | null>(null);
   const [tab, setTab]                     = useState<'all' | 'unread' | 'waiting'>('all');
   const [search, setSearch]               = useState('');
   const [isLoading, setIsLoading]         = useState(true);
@@ -52,7 +52,7 @@ export function ChatLayout() {
   }, [loadConversations]);
 
   // ── Handler ──────────────────────────────────────────────────────────────
-  const handleSelectConversation = (convId: number) => {
+  const handleSelectConversation = (convId: number | string) => {
     setActiveConvId(convId);
   };
 
