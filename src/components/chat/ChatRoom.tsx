@@ -282,9 +282,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 <div className="flex items-center justify-end space-x-1 mt-1">
                   <span className="text-[10px] text-gray-400">
                     {(() => {
-                      // Pakai timestamp (Unix ms) jika ada, fallback ke datetime string
-                      const ts = Number(msg.timestamp);
-                      const date = ts > 0 ? new Date(ts) : (msg.datetime ? new Date(msg.datetime) : null);
+                      // datetime (ISO string dari DB) = waktu asli pesan, pakai untuk display
+                      // timestamp = Unix ms untuk sorting saja (bisa sama semua di legacy)
+                      const date = msg.datetime
+                        ? new Date(msg.datetime)
+                        : (Number(msg.timestamp) > 0 ? new Date(Number(msg.timestamp)) : null);
                       return date
                         ? date.toLocaleTimeString('id-ID', {
                             hour:     '2-digit',
