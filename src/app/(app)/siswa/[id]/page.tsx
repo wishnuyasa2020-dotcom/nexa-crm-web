@@ -46,7 +46,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
     return <div className="p-8 text-center text-muted-foreground">Data tidak ditemukan.</div>;
   }
 
-  const isNoWaHidden = !siswaDetail.no_wa;
+  const isNoWaHidden = !siswaDetail.wa;
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-8">
@@ -63,7 +63,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
             {siswaDetail.nama_lengkap}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-            <School size={14} /> {siswaDetail.nama_sekolah} • {siswaDetail.id}
+            <School size={14} /> {siswaDetail.nama_sekolah} • {siswaDetail.id_siswa}
           </p>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
           <div className="space-y-3">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Nomor WhatsApp</p>
-              {isNoWaHidden ? (
+              {!siswaDetail.wa ? (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-600 rounded-lg text-sm flex-1">
                     <AlertCircle size={16} />
@@ -107,7 +107,7 @@ export default function SiswaDetailPage({ params }: { params: { id: string } }) 
               ) : (
                 <div className="flex items-center gap-2 text-foreground font-medium">
                   <Phone size={16} className="text-muted-foreground" />
-                  {siswaDetail.no_wa}
+                  {siswaDetail.wa}
                 </div>
               )}
             </div>
