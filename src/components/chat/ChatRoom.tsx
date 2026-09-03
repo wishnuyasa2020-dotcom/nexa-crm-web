@@ -17,6 +17,8 @@ import {
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
 } from 'lucide-react';
 
+import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
+
 interface ChatRoomProps {
   conversation:   Conversation | null;
   onBack:         () => void;
@@ -31,6 +33,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   const [isSending,    setIsSending]    = useState(false); // anti double-send
   const [loadingMsgs,  setLoadingMsgs]  = useState(false);
   const [showSwInfo,   setShowSwInfo]   = useState(false); // toggle info SW closed
+  const [showAktivitasModal, setShowAktivitasModal] = useState(false); // state modal aktivitas
   const messagesEndRef                   = useRef<HTMLDivElement>(null);
   const scrollContainerRef               = useRef<HTMLDivElement>(null); // ref ke scroll container
   const pollingRef                       = useRef<NodeJS.Timeout | null>(null);
@@ -245,6 +248,18 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                     </div>
                   </div>
                 </div>
+                
+                {/* Aksi Cepat */}
+                <div className="bg-[#202c33] p-4 rounded-xl border border-[#222d34]">
+                  <h4 className="text-xs font-semibold text-[#8696a0] mb-3 uppercase tracking-wider">Aksi Cepat</h4>
+                  <Button 
+                    className="w-full bg-[#00a884] hover:bg-[#008f6f] text-[#111b21] font-semibold"
+                    onClick={() => setShowAktivitasModal(true)}
+                  >
+                    + Input Aktivitas
+                  </Button>
+                </div>
+
               </div>
             </div>
           </SheetContent>
@@ -382,6 +397,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
           </>
         )}
       </div>
+
+      <InputAktivitasModal 
+        isOpen={showAktivitasModal} 
+        onClose={() => setShowAktivitasModal(false)} 
+      />
     </div>
   );
 }
