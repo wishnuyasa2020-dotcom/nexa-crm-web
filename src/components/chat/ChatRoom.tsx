@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { toast } from 'sonner';
 import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
-  CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw,
+  CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
 } from 'lucide-react';
 
 interface ChatRoomProps {
@@ -30,6 +30,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   const [inputText,    setInputText]    = useState('');
   const [isSending,    setIsSending]    = useState(false); // anti double-send
   const [loadingMsgs,  setLoadingMsgs]  = useState(false);
+  const [showSwInfo,   setShowSwInfo]   = useState(false); // toggle info SW closed
   const messagesEndRef                   = useRef<HTMLDivElement>(null);
   const pollingRef                       = useRef<NodeJS.Timeout | null>(null);
 
@@ -282,24 +283,35 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       </div>
 
       {/* Composer */}
-      <div className="bg-[#202c33] px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full">
+      <div className="bg-[#202c33] px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full relative">
         {!isSwOpen ? (
-          // SW CLOSED
-          <div className="w-full flex flex-col space-y-2">
-            <div className="bg-rose-950/40 border border-rose-900/50 text-rose-400 text-xs px-3 py-2 rounded-md flex items-start">
-              <AlertCircle className="h-4 w-4 mr-2 shrink-0 mt-0.5" />
-              <p>Jeda waktu respon telah melewati 24 jam. Anda hanya dapat membalas menggunakan Template Pesan resmi.</p>
+          // SW CLOSED — hanya ikon ⓘ + tombol template
+          <>
+            {/* Info icon kecil */}
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setShowSwInfo(v => !v)}
+                className="h-8 w-8 flex items-center justify-center rounded-full text-rose-400 hover:bg-rose-950/40 transition-colors"
+                title="Info service window"
+              >
+                <Info className="h-4 w-4" />
+              </button>
+              {/* Popover info */}
+              {showSwInfo && (
+                <div className="absolute bottom-10 left-0 w-64 bg-[#2a3942] border border-rose-900/50 text-rose-300 text-xs px-3 py-2.5 rounded-lg shadow-xl z-50">
+                  <p className="leading-relaxed">Jeda waktu respon telah melewati 24 jam. Anda hanya dapat membalas menggunakan <span className="font-semibold text-rose-200">Template Pesan</span> resmi.</p>
+                  <div className="absolute -bottom-1.5 left-3 w-3 h-3 bg-[#2a3942] border-b border-r border-rose-900/50 rotate-45" />
+                </div>
+              )}
             </div>
-            <div className="flex items-center w-full space-x-2">
-              <TemplatePicker
-                buttonText={isSending ? 'Mengirim...' : 'Pilih & Kirim Template'}
-                buttonClassName="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50"
-                studentName={conversation.student_name}
-                disabled={isSending}
-                onSendTemplate={handleSendTemplate}
-              />
-            </div>
-          </div>
+            <TemplatePicker
+              buttonText={isSending ? 'Mengirim...' : 'Pilih & Kirim Template'}
+              buttonClassName="flex-1 h-9 md:h-11 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50 text-xs md:text-sm"
+              studentName={conversation.student_name}
+              disabled={isSending}
+              onSendTemplate={handleSendTemplate}
+            />
+          </>
         ) : (
           // SW OPEN
           <>
