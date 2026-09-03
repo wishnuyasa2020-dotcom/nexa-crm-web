@@ -65,9 +65,9 @@ export default function ProfileTab() {
         </div>
       )}
 
-      <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-background">
-        <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${connected ? 'bg-green-500/10' : 'bg-primary/10'}`}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-background">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center ${connected ? 'bg-green-500/10' : 'bg-primary/10'}`}>
             <Calendar className={`w-6 h-6 ${connected ? 'text-green-500' : 'text-primary'}`} />
           </div>
           <div>
@@ -84,11 +84,11 @@ export default function ProfileTab() {
           </div>
         </div>
 
-        <div>
+        <div className="w-full sm:w-auto flex sm:justify-end">
           {!loading && !connected && authUrl && (
             <a 
               href={authUrl}
-              className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="inline-flex w-full sm:w-auto items-center justify-center h-9 px-4 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Hubungkan
             </a>
@@ -96,7 +96,7 @@ export default function ProfileTab() {
           {!loading && connected && (
             <button 
               onClick={handleDisconnect}
-              className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
+              className="inline-flex w-full sm:w-auto items-center justify-center h-9 px-4 text-sm font-medium rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
             >
               Putuskan
             </button>

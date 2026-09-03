@@ -135,20 +135,22 @@ export default function KotaMapping() {
                 <tr key={m.id} className="hover:bg-muted/30">
                   <td className="px-6 py-3 font-medium text-foreground">{m.kota}</td>
                   <td className="px-6 py-3 text-right">
-                    <button
-                      onClick={() => handleOpenForm(m)}
-                      className="p-1 text-muted-foreground hover:text-foreground transition-colors mr-2"
-                      title="Edit"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(m.id)}
-                      className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-                      title="Hapus"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex justify-end items-center gap-1 sm:gap-2">
+                      <button
+                        onClick={() => handleOpenForm(m)}
+                        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(m.id)}
+                        className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
