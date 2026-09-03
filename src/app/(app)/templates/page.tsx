@@ -324,7 +324,7 @@ function TemplateCard({
     <div
       className={cn(
         'bg-card border rounded-xl p-4 flex flex-col hover:border-primary/50 transition-colors group relative',
-        isActive ? 'border-border' : 'border-border opacity-60'
+        isActive ? 'border-border' : 'border-border/40'
       )}
       onMouseEnter={() => setShowPreviewPopup(true)}
       onMouseLeave={() => setShowPreviewPopup(false)}
