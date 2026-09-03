@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { ChatLayout } from '@/components/chat/ChatLayout';
 import { Metadata } from 'next';
 
@@ -10,7 +10,9 @@ export const metadata: Metadata = {
 export default function ChatPage() {
   return (
     <div className="h-full w-full overflow-hidden">
-      <ChatLayout />
+      <Suspense fallback={<div className="flex h-full w-full items-center justify-center text-muted-foreground">Memuat Chat...</div>}>
+        <ChatLayout />
+      </Suspense>
     </div>
   );
 }
