@@ -33,7 +33,7 @@ export default function SiswaDetailPage() {
       setIsChatLoading(true);
       const res = await initiateConversation(id);
       if (res?.conv_id) {
-        router.push(`/chat/${res.conv_id}`);
+        router.push(`/live-chat?conv_id=${res.conv_id}`);
       }
     } catch (e: any) {
       console.error('Failed to initiate chat:', e);

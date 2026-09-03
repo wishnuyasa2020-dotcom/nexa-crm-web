@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ConversationList } from './ConversationList';
 import { ChatRoom } from './ChatRoom';
 import { fetchConversations, Conversation } from '@/lib/chatApi';
@@ -8,8 +9,11 @@ import { fetchConversations, Conversation } from '@/lib/chatApi';
 const POLLING_INTERVAL_MS = 5000; // 5 detik
 
 export function ChatLayout() {
+  const searchParams = useSearchParams();
+  const initConvId = searchParams.get('conv_id');
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConvId, setActiveConvId]   = useState<number | string | null>(null);
+  const [activeConvId, setActiveConvId]   = useState<number | string | null>(initConvId);
   const [tab, setTab]                     = useState<'all' | 'unread' | 'waiting'>('all');
   const [search, setSearch]               = useState('');
   const [isLoading, setIsLoading]         = useState(true);
