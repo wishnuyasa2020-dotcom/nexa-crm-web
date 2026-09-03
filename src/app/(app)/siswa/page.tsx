@@ -23,6 +23,8 @@ interface Siswa {
   prioritas:  string;
   dueDate:    string;
   namaSekolah: string;
+  wa?:        string;
+  bsuid?:     string;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -151,7 +153,7 @@ export default function SiswaPage() {
           placeholder="Cari nama siswa..."
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
-          className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
         />
       </div>
 
@@ -160,7 +162,7 @@ export default function SiswaPage() {
         <select
           value={filterStatus}
           onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
-          className="flex-1 px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="flex-1 px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
         >
           <option value="">Semua Status</option>
           {Object.keys(STATUS_COLORS).map(s => (
@@ -170,7 +172,7 @@ export default function SiswaPage() {
         <select
           value={filterKelas}
           onChange={e => { setFilterKelas(e.target.value); setPage(1); }}
-          className="flex-1 px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="flex-1 px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
         >
           <option value="">Semua Kelas</option>
           <option value="XII-IPA-1">XII-IPA-1</option>
@@ -220,7 +222,16 @@ export default function SiswaPage() {
                     onClick={() => router.push(`/siswa/${s.id}`)}
                     className="border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer"
                   >
-                    <td className="px-4 py-3 font-medium text-foreground">{s.nama}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      {s.nama}
+                      <div className="mt-1">
+                        {!s.wa && s.bsuid ? (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-secondary/50 text-muted-foreground border border-border">
+                            📱 Hidden by User
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs max-w-36 truncate">{s.namaSekolah}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{s.kelas}</td>
                     <td className="px-4 py-3">
@@ -287,7 +298,14 @@ export default function SiswaPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   {/* Nama & Sekolah */}
-                  <p className="font-semibold text-sm text-foreground truncate">{s.nama}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm text-foreground truncate">{s.nama}</p>
+                    {!s.wa && s.bsuid && (
+                      <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-secondary/50 text-muted-foreground border border-border">
+                        📱 Hidden by User
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground truncate mt-0.5">{s.namaSekolah}</p>
                   {/* Kelas & CRO */}
                   <p className="text-xs text-muted-foreground mt-0.5">

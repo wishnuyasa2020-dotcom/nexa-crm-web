@@ -43,6 +43,7 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
           nama_lengkap: row['Nama Lengkap'] || row.nama_lengkap,
           id_sekolah: row['ID Sekolah'] || row.id_sekolah,
           no_wa: row['No WA'] || row.no_wa,
+          bsuid: row['BSUID'] || row.bsuid,
           kelas: row['Kelas'] || row.kelas,
           minat_awal: row['Minat Awal'] || row.minat_awal,
           rencana_lulus: row['Rencana Lulus'] || row.rencana_lulus,
@@ -118,7 +119,7 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
                   required
                   value={selectedCro}
                   onChange={e => setSelectedCro(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                  className="w-full px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                   <option value="">-- Pilih Penanggung Jawab (CRO) --</option>
                   <option value="Budi Santoso">Budi Santoso</option>

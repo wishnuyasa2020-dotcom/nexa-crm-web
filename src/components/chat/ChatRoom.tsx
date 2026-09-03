@@ -214,9 +214,25 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               </Avatar>
               <div className="text-center mb-8">
                 <h3 className="font-bold text-2xl text-[#e9edef]">{conversation.student_name}</h3>
-                <p className="text-[#8696a0] mt-1 flex items-center justify-center gap-2">
-                  <Phone className="h-4 w-4" /> {conversation.wa_number}
-                </p>
+                {conversation.wa_number ? (
+                  <p className="text-[#8696a0] mt-1 flex items-center justify-center gap-2">
+                    <Phone className="h-4 w-4" /> {conversation.wa_number}
+                  </p>
+                ) : (
+                  <div className="mt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-[#00a884] text-[#00a884] hover:bg-[#00a884]/10"
+                      onClick={() => {
+                        toast.success('Permintaan kontak telah dikirim via Meta Interactive Message.');
+                      }}
+                    >
+                      <Phone className="h-3.5 w-3.5 mr-2" />
+                      Minta Nomor Telepon
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="space-y-4">
                 <div className="bg-[#202c33] p-4 rounded-xl border border-[#222d34]">

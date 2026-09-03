@@ -18,6 +18,7 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
     idSekolah: '',
     kelas: '',
     wa: '',
+    bsuid: '',
     email: '',
     alamat: '',
     minatAwal: '',
@@ -55,6 +56,7 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
         id_sekolah: formData.idSekolah,
         kelas: formData.kelas,
         no_wa: formData.wa,
+        bsuid: formData.bsuid,
         email: formData.email,
         alamat: formData.alamat,
         minat_awal: formData.minatAwal,
@@ -65,7 +67,7 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
       };
       await apiClient.post('/api/v1/siswa', payload);
       setFormData({
-        nama: '', idSekolah: '', kelas: '', wa: '', email: '', alamat: '',
+        nama: '', idSekolah: '', kelas: '', wa: '', bsuid: '', email: '', alamat: '',
         minatAwal: '', rencanaLulus: '', orangtuaTahu: '', dueDate: '', catatan: ''
       });
       onSuccess();
@@ -92,11 +94,11 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Nama Lengkap *</label>
-                <input required name="nama" value={formData.nama} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" placeholder="Budi Santoso" />
+                <input required name="nama" value={formData.nama} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="Budi Santoso" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Asal Sekolah *</label>
-                <select required name="idSekolah" value={formData.idSekolah} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none">
+                <select required name="idSekolah" value={formData.idSekolah} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none">
                   <option value="">-- Pilih Sekolah --</option>
                   {sekolahList.map((s, i) => (
                     <option key={s.value || i} value={s.value}>{s.text}</option>
@@ -108,18 +110,23 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">No. WhatsApp</label>
-                <input name="wa" value={formData.wa} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" placeholder="0812..." />
+                <input name="wa" value={formData.wa} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="0812..." />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Kelas</label>
-                <input name="kelas" value={formData.kelas} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" placeholder="12 IPA 1" />
+                <label className="text-sm font-medium text-foreground">BSUID (Opsional)</label>
+                <input name="bsuid" value={formData.bsuid} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="ID Meta..." />
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Kelas</label>
+              <input name="kelas" value={formData.kelas} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="12 IPA 1" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Minat Kerja ke Jepang</label>
-                <select name="minatAwal" value={formData.minatAwal} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none">
+                <select name="minatAwal" value={formData.minatAwal} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none">
                   <option value="">-- Pilih --</option>
                   <option value="Ya">Ya, saya berminat</option>
                   <option value="Ragu">Masih ragu-ragu</option>
@@ -128,7 +135,7 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Rencana Setelah Lulus</label>
-                <select name="rencanaLulus" value={formData.rencanaLulus} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none">
+                <select name="rencanaLulus" value={formData.rencanaLulus} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none">
                   <option value="">-- Pilih --</option>
                   <option value="Kerja">Kerja</option>
                   <option value="Kuliah">Kuliah</option>
@@ -141,7 +148,7 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Orangtua Tahu LPK?</label>
-                <select name="orangtuaTahu" value={formData.orangtuaTahu} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none">
+                <select name="orangtuaTahu" value={formData.orangtuaTahu} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none">
                   <option value="">-- Pilih --</option>
                   <option value="Sudah">Sudah</option>
                   <option value="Belum">Belum</option>
@@ -149,18 +156,18 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Jadwal Kontak Lanjut (Due Date)</label>
-                <input type="datetime-local" name="dueDate" value={formData.dueDate} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" />
+                <input type="datetime-local" name="dueDate" value={formData.dueDate} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Alamat</label>
-              <textarea name="alamat" value={formData.alamat} onChange={handleChange} rows={2} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" placeholder="Alamat lengkap" />
+              <textarea name="alamat" value={formData.alamat} onChange={handleChange} rows={2} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="Alamat lengkap" />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Catatan Awal</label>
-              <textarea name="catatan" value={formData.catatan} onChange={handleChange} rows={3} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" placeholder="Info tambahan..." />
+              <textarea name="catatan" value={formData.catatan} onChange={handleChange} rows={3} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="Info tambahan..." />
             </div>
           </form>
         </div>
