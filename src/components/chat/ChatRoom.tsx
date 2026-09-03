@@ -205,7 +205,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
             <SheetHeader className="sr-only">
               <SheetTitle>Info Siswa</SheetTitle>
             </SheetHeader>
-            <div className="h-32 bg-gradient-to-r from-[#005c4b] to-[#202c33]" />
+            <div className="h-32 bg-linear-to-r from-[#005c4b] to-[#202c33]" />
             <div className="px-6 pb-6 relative">
               <Avatar className="h-24 w-24 border-4 border-[#111b21] mx-auto -mt-12 bg-[#202c33] mb-4">
                 <AvatarFallback className="bg-[#6b7280] text-white text-2xl font-semibold">
@@ -377,7 +377,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
             <div className="flex-1 relative">
               <Input
                 placeholder="Ketik pesan..."
-                className="w-full rounded-full bg-[#2a3942] text-[#e9edef] placeholder:text-[#8696a0] border-none focus-visible:ring-1 focus-visible:ring-[#00a884] pr-10 py-5"
+                className="w-full rounded-full bg-[#2a3942] text-[#e9edef] border-none focus-visible:ring-1 focus-visible:ring-[#00a884] pr-10 py-5"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -467,7 +467,7 @@ function TemplatePicker({
         <DialogHeader>
           <DialogTitle className="text-[#e9edef]">Pilih Template Pesan</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="h-[320px] mt-4 pr-4">
+        <ScrollArea className="h-80 mt-4 pr-4">
           {loading && (
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-[#8696a0]" />

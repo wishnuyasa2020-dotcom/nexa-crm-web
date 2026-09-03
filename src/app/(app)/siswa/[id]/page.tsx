@@ -95,16 +95,16 @@ export default function SiswaDetailPage() {
 
       {/* STATUS & BADGES (Mobile Scrollable) */}
       <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 hide-scrollbar gap-2 sm:gap-3">
-        <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs sm:text-sm font-semibold">
+        <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs sm:text-sm font-semibold">
           🔥 {siswaDetail.prioritas}
         </div>
-        <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 text-xs sm:text-sm font-semibold">
+        <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 text-xs sm:text-sm font-semibold">
           🟢 {siswaDetail.status_terkini}
         </div>
-        <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs sm:text-sm">
+        <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs sm:text-sm">
           Next: <span className="font-medium">{siswaDetail.next_action}</span>
         </div>
-        <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs sm:text-sm">
+        <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs sm:text-sm">
           <Calendar size={14} className="text-muted-foreground" />
           {siswaDetail.due_date || '-'}
         </div>
@@ -168,7 +168,7 @@ export default function SiswaDetailPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Orangtua Tahu Minat ke Jepang?</p>
-              <select className="bg-secondary border border-border text-sm rounded-md px-2 py-1 text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full max-w-[100px]">
+              <select className="bg-secondary border border-border text-sm rounded-md px-2 py-1 text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full max-w-25">
                 <option>Ya</option>
                 <option>Tidak</option>
               </select>
@@ -229,11 +229,11 @@ export default function SiswaDetailPage() {
             <div key={act.id} className="relative flex gap-4">
               {/* Garis vertikal timeline */}
               {idx !== siswaDetail.logs.length - 1 && (
-                <div className="absolute left-[11px] top-6 bottom-[-24px] w-px bg-border z-0" />
+                <div className="absolute left-2.75 top-6 -bottom-6 w-px bg-border z-0" />
               )}
 
               {/* Ikon bulat */}
-              <div className="relative z-10 w-6 h-6 flex-shrink-0 rounded-full bg-secondary border-2 border-background flex items-center justify-center">
+              <div className="relative z-10 w-6 h-6 shrink-0 rounded-full bg-secondary border-2 border-background flex items-center justify-center">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               </div>
 

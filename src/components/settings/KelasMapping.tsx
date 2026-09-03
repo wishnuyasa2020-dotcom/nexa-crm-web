@@ -185,7 +185,7 @@ export default function KelasMapping() {
                   value={formData.kelas}
                   onChange={(e) => setFormData({ ...formData, kelas: e.target.value })}
                   placeholder="e.g., 12 IPA 1"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Nama ini akan muncul sebagai opsi di form publik pendaftaran.

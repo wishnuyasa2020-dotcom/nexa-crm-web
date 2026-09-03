@@ -207,7 +207,7 @@ export default function KecamatanMapping() {
                   required
                   value={formData.kota_id}
                   onChange={(e) => setFormData({ ...formData, kota_id: e.target.value })}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="" disabled>Pilih Kota/Kabupaten</option>
                   {kotaList.map(kota => (
@@ -225,7 +225,7 @@ export default function KecamatanMapping() {
                   value={formData.kecamatan}
                   onChange={(e) => setFormData({ ...formData, kecamatan: e.target.value })}
                   placeholder="e.g., Kebayoran Baru"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Nama ini akan muncul sebagai opsi di form publik pendaftaran.

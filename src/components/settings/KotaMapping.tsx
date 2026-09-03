@@ -185,7 +185,7 @@ export default function KotaMapping() {
                   value={formData.kota}
                   onChange={(e) => setFormData({ ...formData, kota: e.target.value })}
                   placeholder="e.g., Jakarta Selatan"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Nama ini akan muncul sebagai opsi di form publik pendaftaran.

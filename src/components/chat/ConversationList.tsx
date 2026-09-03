@@ -59,7 +59,7 @@ export function ConversationList({
           <Search className="absolute left-3 top-2 md:top-2.5 h-3.5 w-3.5 md:h-4 md:w-4 text-[#8696a0]" />
           <Input
             placeholder="Cari nama atau nomor..."
-            className="pl-9 md:pl-10 bg-[#202c33] text-[#e9edef] border-none placeholder:text-[#8696a0] h-8 md:h-10 text-xs md:text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-[#00a884]"
+            className="pl-9 md:pl-10 bg-[#202c33] text-[#e9edef] border-none h-8 md:h-10 text-xs md:text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-[#00a884]"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
           />
