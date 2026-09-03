@@ -2,13 +2,12 @@
 
 import React from 'react';
 import { Conversation } from '@/lib/chatApi';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Search, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface ConversationListProps {
   conversations:        Conversation[];
@@ -21,6 +20,12 @@ interface ConversationListProps {
   onSelectConversation: (convId: number | string) => void;
 }
 
+const TABS: { value: 'all' | 'unread' | 'waiting'; label: string }[] = [
+  { value: 'all',     label: 'All' },
+  { value: 'unread',  label: 'Unread' },
+  { value: 'waiting', label: 'Waiting' },
+];
+
 export function ConversationList({
   conversations,
   activeConvId,
@@ -32,8 +37,6 @@ export function ConversationList({
   onSelectConversation,
 }: ConversationListProps) {
 
-  // Filter unread & waiting di frontend (sudah di-filter di backend juga,
-  // tapi kita filter ulang agar tidak perlu polling ulang saat ganti tab)
   const filtered = conversations.filter(c => {
     if (!search) return true;
     return (
@@ -43,8 +46,11 @@ export function ConversationList({
   });
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#111b21]">
-      <div className="p-4 border-b border-[#222d34]">
+    // outer: full height flex column — MUST be flex-col with defined height
+    <div className="flex flex-col w-full bg-[#111b21]" style={{ height: '100%' }}>
+
+      {/* ── Header + Search ── shrink-0 agar tidak ikut flex-grow */}
+      <div className="shrink-0 p-4 border-b border-[#222d34]">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-[#e9edef]">CRM Inbox</h2>
           {isLoading && <Loader2 className="h-4 w-4 text-[#8696a0] animate-spin" />}
@@ -60,31 +66,40 @@ export function ConversationList({
         </div>
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => onTabChange(v as typeof tab)} className="flex-1 flex flex-col">
-        <TabsList className="w-full justify-start rounded-none border-b border-[#222d34] bg-transparent p-0 h-12">
-          <TabsTrigger value="all"     className="flex-1 rounded-none text-[#8696a0] data-[state=active]:text-[#00a884] data-[state=active]:border-b-2 data-[state=active]:border-[#00a884] data-[state=active]:bg-transparent h-full shadow-none data-[state=active]:shadow-none">All</TabsTrigger>
-          <TabsTrigger value="unread"  className="flex-1 rounded-none text-[#8696a0] data-[state=active]:text-[#00a884] data-[state=active]:border-b-2 data-[state=active]:border-[#00a884] data-[state=active]:bg-transparent h-full shadow-none data-[state=active]:shadow-none">Unread</TabsTrigger>
-          <TabsTrigger value="waiting" className="flex-1 rounded-none text-[#8696a0] data-[state=active]:text-[#00a884] data-[state=active]:border-b-2 data-[state=active]:border-[#00a884] data-[state=active]:bg-transparent h-full shadow-none data-[state=active]:shadow-none">Waiting</TabsTrigger>
-        </TabsList>
-
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <TabsContent value={tab} className="m-0">
-            {filtered.length === 0 && !isLoading && (
-              <div className="flex items-center justify-center h-32 text-[#8696a0] text-sm">
-                Tidak ada percakapan.
-              </div>
+      {/* ── Tab Bar ── shrink-0 */}
+      <div className="shrink-0 flex border-b border-[#222d34] h-12">
+        {TABS.map(t => (
+          <button
+            key={t.value}
+            onClick={() => onTabChange(t.value)}
+            className={cn(
+              'flex-1 text-sm font-medium transition-colors border-b-2 -mb-px',
+              tab === t.value
+                ? 'text-[#00a884] border-[#00a884]'
+                : 'text-[#8696a0] border-transparent hover:text-[#e9edef]'
             )}
-            {filtered.map(conv => (
-              <ContactItem
-                key={conv.conv_id}
-                conversation={conv}
-                isActive={activeConvId === conv.conv_id}
-                onClick={() => onSelectConversation(conv.conv_id)}
-              />
-            ))}
-          </TabsContent>
-        </div>
-      </Tabs>
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Scrollable Conversation List ── flex-1 + overflow-y-auto */}
+      <div className="flex-1 overflow-y-auto">
+        {filtered.length === 0 && !isLoading && (
+          <div className="flex items-center justify-center h-32 text-[#8696a0] text-sm">
+            Tidak ada percakapan.
+          </div>
+        )}
+        {filtered.map(conv => (
+          <ContactItem
+            key={conv.conv_id}
+            conversation={conv}
+            isActive={activeConvId === conv.conv_id}
+            onClick={() => onSelectConversation(conv.conv_id)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -135,7 +150,7 @@ function ContactItem({
         <div className="flex justify-between items-center">
           <p className="text-sm text-[#8696a0] truncate pr-2">{c.last_message_prev || '–'}</p>
           {c.unread_count > 0 && (
-            <span className="bg-[#00a884] text-[#111b21] text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+            <span className="bg-[#00a884] text-[#111b21] text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center">
               {c.unread_count}
             </span>
           )}

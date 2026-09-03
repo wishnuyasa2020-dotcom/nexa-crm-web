@@ -66,7 +66,7 @@ export function ChatLayout() {
     <div className="flex h-full flex-1 w-full overflow-hidden bg-[#111b21] text-[#e9edef]">
       {/* List Pane */}
       <div
-        className={`w-full md:w-[350px] lg:w-[400px] flex-shrink-0 border-r border-[#222d34] ${
+        className={`w-full md:w-[350px] lg:w-[400px] flex-shrink-0 border-r border-[#222d34] h-full ${
           activeConvId ? 'hidden md:flex' : 'flex'
         }`}
       >
