@@ -14,7 +14,7 @@ import {
   WaTemplate, MetaStatus,
 } from '@/lib/chatApi';
 import { TemplateFormModal } from '@/components/templates/TemplateFormModal';
-import { TemplatePreviewBubble, PreviewButton, ButtonType } from '@/components/templates/TemplatePreviewBubble';
+import { TemplatePreviewBubble, PreviewButton, ButtonType, buildPreviewText } from '@/components/templates/TemplatePreviewBubble';
 
 // ── Konstanta ─────────────────────────────────────────────────────────────────
 const STATUS_TABS: { label: string; value: MetaStatus | '' }[] = [
@@ -483,164 +483,164 @@ function TemplatePreviewModal({
 
         {/* Meta info */}
         {/* Body: 2 kolom — kiri info+params, kanan preview */}
-        <div className="flex flex-col md:flex-row gap-0 divide-y md:divide-y-0 md:divide-x divide-border">
+        {(() => {
+          // Parse parameters sekali, dipakai kolom kiri & kanan
+          let parsed: {
+            header?:       { type?: string; params?: string[]; url?: string };
+            body?:         string[];
+            meta_buttons?: { type: string; index: number; text: string; url?: string }[];
+          } = {};
+          try { parsed = JSON.parse(t.parameters || '{}'); } catch { parsed = {}; }
 
-          {/* ── Kolom Kiri: Meta info + Parameters ────────────── */}
-          <div className="md:w-1/2 px-5 py-4 flex flex-col gap-4">
+          const pHeader   = parsed.header       || null;
+          const bodyVars  = parsed.body          || [];
+          const metaBtns  = parsed.meta_buttons  || [];
+          const isEmpty   = !pHeader && bodyVars.length === 0 && metaBtns.length === 0;
 
-            {/* Status pills */}
-            <div className="flex flex-wrap gap-2 text-[11px]">
-              <span className={cn('font-semibold', statusColorText[t.meta_status] || 'text-sky-400')}>
-                {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
-              </span>
-              <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.kategori}</span>
-              {t.pipeline && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.pipeline}</span>}
-              {t.language_code && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.language_code.toUpperCase()}</span>}
-              {t.header_type && t.header_type !== 'none' && (
-                <span className="text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded-full">header: {t.header_type}</span>
-              )}
-            </div>
+          // Resolve header untuk bubble preview
+          // Priority: parameters.header.url > t.header_url (kolom DB)
+          const bubbleHeaderType = (pHeader?.type || t.header_type || 'none') as 'text' | 'image' | 'video' | 'document' | 'none';
+          const bubbleHeaderValue = pHeader?.url || t.header_url || null;
+          const bubbleHeaderText  = pHeader?.params?.[0] || null;
 
-            {/* Body text lengkap */}
-            <div>
-              <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Body Pesan</p>
-              <div className="bg-white/5 rounded-lg p-3 text-xs text-white/80 whitespace-pre-wrap leading-relaxed">
-                {t.body_text || <span className="opacity-40 italic">Tidak ada body</span>}
-              </div>
-            </div>
+          // Buttons untuk bubble
+          const bubbleButtons = metaBtns.map(b => ({
+            type:  (b.type || 'QUICK_REPLY') as ButtonType,
+            label: b.text,
+          }));
 
-            {/* Parameters */}
-            {(() => {
-              let parsed: {
-                header?:       { type?: string; params?: string[]; url?: string };
-                body?:         string[];
-                meta_buttons?: { type: string; index: number; text: string; url?: string }[];
-              } = {};
-              try { parsed = JSON.parse(t.parameters || '{}'); } catch { parsed = {}; }
+          // Substitute variabel body dengan nilai dummy agar preview lebih realistis
+          const bubbleBodyText = buildPreviewText(t.body_text || '', bodyVars);
 
-              const header   = parsed.header       || null;
-              const bodyVars = parsed.body          || [];
-              const metaBtns = parsed.meta_buttons  || [];
-              const isEmpty  = !header && bodyVars.length === 0 && metaBtns.length === 0;
+          return (
+            <div className="flex flex-col md:flex-row gap-0 divide-y md:divide-y-0 md:divide-x divide-border">
 
-              return (
-                <>
-                  {/* Header parameter */}
-                  {header && (
-                    <div>
-                      <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                        Header
-                      </p>
-                      <div className="flex flex-col gap-1.5">
-                        {/* Tipe header */}
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className={cn(
-                            'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
-                            header.type === 'image' ? 'bg-amber-500/20 text-amber-400' :
-                            header.type === 'video' ? 'bg-purple-500/20 text-purple-400' :
-                                                      'bg-white/10 text-white/60'
-                          )}>
-                            {header.type || 'text'}
-                          </span>
-                          {/* Variabel header (type=text) */}
-                          {header.params && header.params.length > 0 && (
-                            <span className="text-white/70">{header.params.join(', ')}</span>
-                          )}
-                        </div>
-                        {/* URL header (type=image/video) */}
-                        {header.url && (
-                          <a
-                            href={header.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] text-sky-400 hover:underline truncate"
-                          >
-                            {header.url}
-                          </a>
+              {/* ── Kolom Kiri: Meta info + Parameters ────────────── */}
+              <div className="md:w-1/2 px-5 py-4 flex flex-col gap-4">
+
+                {/* Status pills */}
+                <div className="flex flex-wrap gap-2 text-[11px]">
+                  <span className={cn('font-semibold', statusColorText[t.meta_status] || 'text-sky-400')}>
+                    {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
+                  </span>
+                  <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.kategori}</span>
+                  {t.pipeline && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.pipeline}</span>}
+                  {t.language_code && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.language_code.toUpperCase()}</span>}
+                  {bubbleHeaderType && bubbleHeaderType !== 'none' && (
+                    <span className="text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded-full">header: {bubbleHeaderType}</span>
+                  )}
+                </div>
+
+                {/* Body text lengkap */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Body Pesan</p>
+                  <div className="bg-white/5 rounded-lg p-3 text-xs text-white/80 whitespace-pre-wrap leading-relaxed">
+                    {t.body_text || <span className="opacity-40 italic">Tidak ada body</span>}
+                  </div>
+                </div>
+
+                {/* Header parameter */}
+                {pHeader && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Header</p>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className={cn(
+                          'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
+                          pHeader.type === 'image' ? 'bg-amber-500/20 text-amber-400' :
+                          pHeader.type === 'video' ? 'bg-purple-500/20 text-purple-400' :
+                                                     'bg-white/10 text-white/60'
+                        )}>
+                          {pHeader.type || 'text'}
+                        </span>
+                        {pHeader.params && pHeader.params.length > 0 && (
+                          <span className="text-white/70">{pHeader.params.join(', ')}</span>
                         )}
                       </div>
+                      {pHeader.url && (
+                        <a href={pHeader.url} target="_blank" rel="noopener noreferrer"
+                          className="text-[11px] text-sky-400 hover:underline truncate">
+                          {pHeader.url}
+                        </a>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {/* Variabel body */}
-                  {bodyVars.length > 0 && (
-                    <div>
-                      <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                        Variabel Body ({bodyVars.length})
-                      </p>
-                      <div className="flex flex-col gap-1">
-                        {bodyVars.map((v: string, i: number) => (
-                          <div key={i} className="flex items-center gap-2 text-xs">
-                            <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded font-mono shrink-0">
-                              {`{{${i + 1}}}`}
+                {/* Variabel body */}
+                {bodyVars.length > 0 && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
+                      Variabel Body ({bodyVars.length})
+                    </p>
+                    <div className="flex flex-col gap-1">
+                      {bodyVars.map((v: string, i: number) => (
+                        <div key={i} className="flex items-center gap-2 text-xs">
+                          <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded font-mono shrink-0">
+                            {`{{${i + 1}}}`}
+                          </span>
+                          <span className="text-white/70">{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Meta buttons */}
+                {metaBtns.length > 0 && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
+                      Tombol ({metaBtns.length})
+                    </p>
+                    <div className="flex flex-col gap-1">
+                      {metaBtns.map((btn: { type: string; index: number; text: string; url?: string }, i: number) => (
+                        <div key={i} className="flex flex-col gap-0.5 bg-white/5 rounded-lg px-3 py-1.5">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={cn(
+                              'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
+                              btn.type === 'QUICK_REPLY' ? 'bg-sky-500/20 text-sky-400' :
+                              btn.type === 'URL'         ? 'bg-blue-500/20 text-blue-400' :
+                                                          'bg-emerald-500/20 text-emerald-400'
+                            )}>
+                              {btn.type === 'QUICK_REPLY' ? 'Reply' : btn.type === 'URL' ? 'URL' : 'Phone'}
                             </span>
-                            <span className="text-white/70">{v}</span>
+                            <span className="text-white/80 truncate">{btn.text}</span>
                           </div>
-                        ))}
-                      </div>
+                          {btn.url && (
+                            <a href={btn.url} target="_blank" rel="noopener noreferrer"
+                              className="text-[10px] text-sky-400 hover:underline truncate pl-0.5">
+                              {btn.url}
+                            </a>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {/* Meta buttons */}
-                  {metaBtns.length > 0 && (
-                    <div>
-                      <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                        Tombol ({metaBtns.length})
-                      </p>
-                      <div className="flex flex-col gap-1">
-                        {metaBtns.map((btn: { type: string; index: number; text: string; url?: string }, i: number) => (
-                          <div key={i} className="flex flex-col gap-0.5 bg-white/5 rounded-lg px-3 py-1.5">
-                            <div className="flex items-center gap-2 text-xs">
-                              <span className={cn(
-                                'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
-                                btn.type === 'QUICK_REPLY'  ? 'bg-sky-500/20 text-sky-400' :
-                                btn.type === 'URL'          ? 'bg-blue-500/20 text-blue-400' :
-                                                              'bg-emerald-500/20 text-emerald-400'
-                              )}>
-                                {btn.type === 'QUICK_REPLY' ? 'Reply' : btn.type === 'URL' ? 'URL' : 'Phone'}
-                              </span>
-                              <span className="text-white/80 truncate">{btn.text}</span>
-                            </div>
-                            {/* URL untuk tipe URL button */}
-                            {btn.url && (
-                              <a
-                                href={btn.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[10px] text-sky-400 hover:underline truncate pl-0.5"
-                              >
-                                {btn.url}
-                              </a>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                {isEmpty && (
+                  <p className="text-xs text-muted-foreground italic">Tidak ada variabel atau tombol.</p>
+                )}
+              </div>
 
-                  {isEmpty && (
-                    <p className="text-xs text-muted-foreground italic">Tidak ada variabel atau tombol.</p>
-                  )}
-                </>
-              );
-            })()}
+              {/* ── Kolom Kanan: WA Preview ────────────────────────── */}
+              <div className="md:w-1/2 px-5 py-4">
+                <p className="text-[10px] text-muted-foreground mb-3 font-medium uppercase tracking-wider">Preview WhatsApp</p>
+                <div className="rounded-xl p-4 bg-[#0b141a] min-h-48">
+                  <TemplatePreviewBubble
+                    bodyText={bubbleBodyText}
+                    headerType={bubbleHeaderType !== 'none' ? bubbleHeaderType : null}
+                    headerValue={bubbleHeaderValue}
+                    headerText={bubbleHeaderText}
+                    buttonObjects={bubbleButtons}
+                  />
+                </div>
+              </div>
 
-          </div>
-
-          {/* ── Kolom Kanan: WA Preview ────────────────────────── */}
-          <div className="md:w-1/2 px-5 py-4">
-            <p className="text-[10px] text-muted-foreground mb-3 font-medium uppercase tracking-wider">Preview WhatsApp</p>
-            <div className="rounded-xl p-4 bg-[#0b141a] h-full min-h-48">
-              <TemplatePreviewBubble
-                bodyText={t.body_text}
-                headerType={t.header_type !== 'none' ? t.header_type as 'text' | 'image' | 'video' | 'document' : null}
-                headerValue={t.header_url}
-                buttonObjects={buttons}
-              />
             </div>
-          </div>
+          );
+        })()}
 
-        </div>
 
       </div>
     </div>,
