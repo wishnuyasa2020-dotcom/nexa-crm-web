@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   FileText, Plus, Search, MessageSquare, Phone,
   RefreshCw, Loader2, ToggleLeft, ToggleRight, Pencil, Trash2,
-  ChevronDown, ExternalLink,
+  ChevronDown, ExternalLink, Eye, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -309,9 +309,9 @@ export default function TemplatesPage() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // TemplateCard
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function TemplateCard({
   template: t,
   onToggleActive,
@@ -328,29 +328,7 @@ function TemplateCard({
   const buttons    = parseButtonsFromParams(t.parameters);
   const hasButtons = buttons.length > 0;
 
-  const [showPreviewPopup, setShowPreviewPopup] = useState(false);
-  const [popupStyle,       setPopupStyle]       = useState<React.CSSProperties>({});
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseEnter = () => {
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      const scrollEl = document.getElementById('main-scroll-container');
-      const containerBottom = scrollEl
-        ? scrollEl.getBoundingClientRect().bottom
-        : window.innerHeight;
-      const spaceBelow = containerBottom - rect.bottom;
-      const flipUp = spaceBelow < 280;
-
-      // Popup pakai position:fixed agar escape overflow clip dari scroll container
-      setPopupStyle(
-        flipUp
-          ? { position: 'fixed', left: rect.left, width: rect.width, bottom: window.innerHeight - rect.top + 8 }
-          : { position: 'fixed', left: rect.left, width: rect.width, top: rect.bottom + 8 }
-      );
-    }
-    setShowPreviewPopup(true);
-  };
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   const statusColors: Record<string, string> = {
     APPROVED:   'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
@@ -360,98 +338,176 @@ function TemplateCard({
   };
 
   return (
-    <div
-      ref={cardRef}
-      className={cn(
-        'relative bg-card border rounded-xl p-4 flex flex-col hover:border-primary/50 transition-colors group',
-        isActive ? 'border-border' : 'border-border/40'
-      )}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={() => setShowPreviewPopup(false)}
-    >
-      {/* Card Header */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center gap-2">
-          {isLocal
-            ? <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-md"><MessageSquare size={14} /></div>
-            : <div className="p-1.5 bg-blue-500/10 text-blue-500 rounded-md"><Phone size={14} /></div>}
-          <h3 className="font-bold text-sm text-white truncate max-w-32.5">{t.nama_template}</h3>
-        </div>
-        <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border', statusColors[t.meta_status] || statusColors.LOCAL_ONLY)}>
-          {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
-        </span>
-      </div>
-
-      {/* Tags */}
-      <div className="flex flex-wrap items-center gap-1.5 mb-3">
-        <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.kategori}</span>
-        {t.pipeline && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.pipeline}</span>}
-        {t.language_code && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.language_code.toUpperCase()}</span>}
-        {t.header_type && t.header_type !== 'none' && (
-          <span className="text-[10px] px-2 py-0.5 border border-amber-500/30 text-amber-500 rounded-full">📎 {t.header_type}</span>
+    <>
+      <div
+        className={cn(
+          'bg-card border rounded-xl p-4 flex flex-col hover:border-primary/50 transition-colors group',
+          isActive ? 'border-border' : 'border-border/40'
         )}
-        {/* Badge buttons */}
-        {hasButtons && (
-          <span className="text-[10px] px-2 py-0.5 border border-primary/30 text-primary rounded-full flex items-center gap-0.5">
-            <ExternalLink size={8} /> {buttons.length} btn
+      >
+        {/* Card Header */}
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex items-center gap-2">
+            {isLocal
+              ? <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-md"><MessageSquare size={14} /></div>
+              : <div className="p-1.5 bg-blue-500/10 text-blue-500 rounded-md"><Phone size={14} /></div>}
+            <h3 className="font-bold text-sm text-white truncate max-w-32.5">{t.nama_template}</h3>
+          </div>
+          <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border', statusColors[t.meta_status] || statusColors.LOCAL_ONLY)}>
+            {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
           </span>
-        )}
-      </div>
+        </div>
 
-      {/* Body preview */}
-      <div className="flex-1 bg-white/5 rounded-lg p-3 text-xs text-white/75 line-clamp-3">
-        {t.body_text}
-      </div>
-
-      {/* Footer */}
-      <div className="mt-3 pt-3 border-t border-border flex justify-between items-center text-xs">
-        {/* Toggle Active */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
-          className={cn(
-            'flex items-center gap-1.5 text-xs font-medium transition-colors',
-            isActive ? 'text-emerald-400' : 'text-white/50'
+        {/* Tags */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.kategori}</span>
+          {t.pipeline && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.pipeline}</span>}
+          {t.language_code && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.language_code.toUpperCase()}</span>}
+          {t.header_type && t.header_type !== 'none' && (
+            <span className="text-[10px] px-2 py-0.5 border border-amber-500/30 text-amber-500 rounded-full">header: {t.header_type}</span>
           )}
-          title={isActive ? 'Nonaktifkan' : 'Aktifkan'}
-        >
-          {isActive ? <ToggleRight size={18} className="text-emerald-400" /> : <ToggleLeft size={18} className="text-white/40" />}
-          {isActive ? 'Aktif' : 'Nonaktif'}
-        </button>
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {hasButtons && (
+            <span className="text-[10px] px-2 py-0.5 border border-primary/30 text-primary rounded-full flex items-center gap-0.5">
+              <ExternalLink size={8} /> {buttons.length} btn
+            </span>
+          )}
+        </div>
+
+        {/* Body preview */}
+        <div className="flex-1 bg-white/5 rounded-lg p-3 text-xs text-white/75 line-clamp-3">
+          {t.body_text}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-3 pt-3 border-t border-border flex justify-between items-center text-xs">
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            className="text-primary font-medium hover:underline flex items-center gap-1"
+            onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
+            className={cn(
+              'flex items-center gap-1.5 text-xs font-medium transition-colors',
+              isActive ? 'text-emerald-400' : 'text-white/50'
+            )}
+            title={isActive ? 'Nonaktifkan' : 'Aktifkan'}
           >
-            <Pencil size={12} /> Edit
+            {isActive ? <ToggleRight size={18} className="text-emerald-400" /> : <ToggleLeft size={18} className="text-white/40" />}
+            {isActive ? 'Aktif' : 'Nonaktif'}
           </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="text-rose-500 font-medium hover:underline flex items-center gap-1"
-          >
-            <Trash2 size={12} /> Hapus
-          </button>
+
+          <div className="flex gap-2 items-center">
+            {/* Preview — always visible */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowPreviewModal(true); }}
+              className="flex items-center gap-1 text-sky-400 font-medium hover:text-sky-300 transition-colors"
+            >
+              <Eye size={12} /> Preview
+            </button>
+            {/* Edit & Hapus — visible on hover */}
+            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="text-primary font-medium hover:underline flex items-center gap-1"
+              >
+                <Pencil size={12} /> Edit
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="text-rose-500 font-medium hover:underline flex items-center gap-1"
+              >
+                <Trash2 size={12} /> Hapus
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Hover Preview Popup — portal ke body agar tidak kena clip overflow */}
-      {showPreviewPopup && typeof document !== 'undefined' && createPortal(
-        <div
-          style={{ ...popupStyle, zIndex: 9999 }}
-          className="hidden md:block pointer-events-none"
-        >
-          <div className="bg-card border border-border rounded-xl p-3 shadow-xl">
-            <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">Preview Pesan</p>
+      {showPreviewModal && (
+        <TemplatePreviewModal
+          template={t}
+          buttons={buttons}
+          onClose={() => setShowPreviewModal(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// TemplatePreviewModal
+// -----------------------------------------------------------------------------
+function TemplatePreviewModal({
+  template: t,
+  buttons,
+  onClose,
+}: {
+  template: WaTemplate;
+  buttons: PreviewButton[];
+  onClose: () => void;
+}) {
+  const statusColorText: Record<string, string> = {
+    APPROVED:   'text-emerald-400',
+    PENDING:    'text-amber-400',
+    REJECTED:   'text-rose-400',
+    LOCAL_ONLY: 'text-sky-400',
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div
+        className="relative z-10 bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between p-5 border-b border-border">
+          <div>
+            <h2 className="font-bold text-base text-foreground">{t.nama_template}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 font-mono">{t.template_name_api}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors ml-3 shrink-0"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Meta info */}
+        <div className="px-5 pt-4 pb-2 flex flex-wrap gap-2 text-[11px]">
+          <span className={cn('font-semibold', statusColorText[t.meta_status] || 'text-sky-400')}>
+            {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
+          </span>
+          <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.kategori}</span>
+          {t.pipeline && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.pipeline}</span>}
+          {t.language_code && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.language_code.toUpperCase()}</span>}
+          {t.header_type && t.header_type !== 'none' && (
+            <span className="text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded-full">header: {t.header_type}</span>
+          )}
+        </div>
+
+        {/* WA Preview */}
+        <div className="px-5 pb-6 pt-2">
+          <p className="text-[10px] text-muted-foreground mb-3 font-medium uppercase tracking-wider">Preview Pesan WhatsApp</p>
+          <div className="rounded-xl p-4 bg-[#0b141a]">
             <TemplatePreviewBubble
               bodyText={t.body_text}
               headerType={t.header_type !== 'none' ? t.header_type as 'text' | 'image' | 'video' | 'document' : null}
               headerValue={t.header_url}
               buttonObjects={buttons}
-              className="text-[11px]"
             />
           </div>
-        </div>,
-        document.body
-      )}
-    </div>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
