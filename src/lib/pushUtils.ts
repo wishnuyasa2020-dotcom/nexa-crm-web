@@ -1,4 +1,4 @@
-export const VAPID_PUBLIC_KEY = 'BBnWWWzt3xTyvihCGBF4_tzP5vKxbZjjcUo4LWqkrzAeDxht_Th2hgq5T98fbSw-6qXGvqxzS82-opJ4L-uLROU';
+export const VAPID_PUBLIC_KEY = 'BJWiBuPtcJW1c4V83xMm0SZcxrplnL2G1eaRSMvaLIicpe4x9xytsnw1F3ftxjvnyo8nWqvWNZzOEtTxHmA_Y9o';
 
 export async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) {
