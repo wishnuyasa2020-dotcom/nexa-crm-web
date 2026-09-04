@@ -18,8 +18,9 @@ import {
 } from 'lucide-react';
 
 import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { SwCountdown } from './SwCountdown';
 
 interface ChatRoomProps {
   conversation:   Conversation | null;
@@ -182,7 +183,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
             {isSwOpen ? (
               <span className="flex items-center text-[#00a884] font-medium">
                 <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00a884] mr-1 md:mr-1.5 animate-pulse" />
-                24h Active
+                <span className="mr-1"><SwCountdown expiresAt={conversation.window_expires_at || ''} /> Active</span>
                 {conversation.window_expires_at && (
                   <span className="ml-1 md:ml-1.5 text-[#8696a0] hidden sm:inline">
                     (exp: {format(new Date(conversation.window_expires_at), 'dd MMM yyyy HH:mm', { locale: id })})
