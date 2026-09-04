@@ -334,9 +334,14 @@ function TemplateCard({
   const handleMouseEnter = () => {
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
-      // Estimasi tinggi popup ~320px; kalau ruang bawah kurang, flip ke atas
-      const spaceBelow = window.innerHeight - rect.bottom;
-      setPopupFlipUp(spaceBelow < 320);
+      // Pakai scroll container sebagai referensi, bukan window
+      // karena layout wraps content dalam <main id="main-scroll-container">
+      const scrollEl = document.getElementById('main-scroll-container');
+      const containerBottom = scrollEl
+        ? scrollEl.getBoundingClientRect().bottom
+        : window.innerHeight;
+      const spaceBelow = containerBottom - rect.bottom;
+      setPopupFlipUp(spaceBelow < 280);
     }
     setShowPreviewPopup(true);
   };
