@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, MessageCircle, Plus, Edit2, Trash2,
@@ -46,22 +46,22 @@ export default function SiswaDetailPage() {
     }
   };
 
-  useEffect(() => {
-    const loadDetail = async () => {
-      try {
-        if (!id) return;
-        const res = await apiClient.get(`/api/v1/siswa/${id}`);
-        if (res.data?.status === 'ok') {
-          setSiswaDetail(res.data.data);
-        }
-      } catch (e) {
-        console.error('Error fetching detail:', e);
-      } finally {
-        setLoading(false);
+  const reloadDetail = useCallback(async () => {
+    try {
+      if (!id) return;
+      const res = await apiClient.get(`/api/v1/siswa/${id}`);
+      if (res.data?.status === 'ok') {
+        setSiswaDetail(res.data.data);
       }
-    };
-    loadDetail();
+    } catch (e) {
+      console.error('Error fetching detail:', e);
+    }
   }, [id]);
+
+  useEffect(() => {
+    setLoading(true);
+    reloadDetail().finally(() => setLoading(false));
+  }, [reloadDetail]);
 
   if (loading) {
     return <div className="p-8 text-center text-muted-foreground">Memuat data...</div>;
@@ -273,8 +273,20 @@ export default function SiswaDetailPage() {
       </div>
 
       {/* MODALS */}
-      <InputAktivitasModal isOpen={isInputAktivitasOpen} onClose={() => setIsInputAktivitasOpen(false)} />
-      <EditAktivitasModal isOpen={isEditAktivitasOpen} onClose={() => setIsEditAktivitasOpen(false)} aktivitasId={selectedAktivitas} />
+      <InputAktivitasModal
+        isOpen={isInputAktivitasOpen}
+        onClose={() => setIsInputAktivitasOpen(false)}
+        siswaId={id}
+        siswaName={siswaDetail?.nama_lengkap}
+        onSuccess={reloadDetail}
+      />
+      <EditAktivitasModal 
+        isOpen={isEditAktivitasOpen} 
+        onClose={() => setIsEditAktivitasOpen(false)} 
+        aktivitasId={selectedAktivitas}
+        siswaId={id}
+        onSuccess={reloadDetail}
+      />
       <DeleteSiswaModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

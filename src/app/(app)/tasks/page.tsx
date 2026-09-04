@@ -203,7 +203,7 @@ export default function TasksPage() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              'flex-1 min-w-[90px] px-2 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5',
+              'flex-1 min-w-24 px-2 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5',
               activeTab === tab.id ? tab.activeCls : 'text-muted-foreground hover:bg-secondary/50'
             )}
           >
@@ -296,7 +296,7 @@ export default function TasksPage() {
 
               {/* Card Body */}
               <div className="mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1.5 leading-tight break-words">
+                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1.5 leading-tight text-wrap">
                   {task.nama}
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -373,7 +373,9 @@ export default function TasksPage() {
         <SiswaInputModal
           isOpen={!!eksekusiTarget}
           onClose={() => setEksekusiTarget(null)}
-          // onSuccess={handleEksekusiSuccess} // If SiswaInputModal supports this later
+          siswaId={eksekusiTarget.id}
+          siswaName={eksekusiTarget.nama}
+          onSuccess={handleEksekusiSuccess}
         />
       )}
     </div>

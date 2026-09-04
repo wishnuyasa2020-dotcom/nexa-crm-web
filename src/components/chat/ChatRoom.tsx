@@ -417,6 +417,8 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       <InputAktivitasModal 
         isOpen={showAktivitasModal} 
         onClose={() => setShowAktivitasModal(false)} 
+        siswaId={String(conversation?.id_siswa || '')}
+        siswaName={conversation?.student_name || conversation?.wa_number || ''}
       />
     </div>
   );
