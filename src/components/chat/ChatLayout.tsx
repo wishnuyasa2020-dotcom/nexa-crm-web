@@ -31,8 +31,21 @@ export function ChatLayout() {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'granted') {
         setPushEnabled(true);
+        // Jika sudah diizinkan, otomatis registrasi tanpa memunculkan banner
+        registerServiceWorker().then(async () => {
+          try {
+            const sub = await subscribeToPushNotifications();
+            if (sub) {
+              await subscribeToWebPush(sub.toJSON());
+            }
+          } catch (e) {
+            console.error('Auto-subscribe failed:', e);
+          }
+        });
       } else if (Notification.permission === 'default') {
         setShowPushBanner(true);
+      } else if (Notification.permission === 'denied') {
+        console.warn('Notification permission is denied by user.');
       }
     }
   }, []);
