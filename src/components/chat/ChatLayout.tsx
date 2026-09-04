@@ -28,24 +28,32 @@ export function ChatLayout() {
   const [showPushBanner, setShowPushBanner] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      if (Notification.permission === 'granted') {
-        setPushEnabled(true);
-        // Jika sudah diizinkan, otomatis registrasi tanpa memunculkan banner
-        registerServiceWorker().then(async () => {
-          try {
-            const sub = await subscribeToPushNotifications();
-            if (sub) {
-              await subscribeToWebPush(sub.toJSON());
+    if (typeof window !== 'undefined') {
+      console.log('[Push Debug] window is defined');
+      if ('Notification' in window) {
+        console.log('[Push Debug] Notification API is supported. Current permission:', Notification.permission);
+        if (Notification.permission === 'granted') {
+          setPushEnabled(true);
+          // Jika sudah diizinkan, otomatis registrasi tanpa memunculkan banner
+          registerServiceWorker().then(async () => {
+            try {
+              const sub = await subscribeToPushNotifications();
+              if (sub) {
+                await subscribeToWebPush(sub.toJSON());
+                console.log('[Push Debug] Auto-subscribe success');
+              }
+            } catch (e) {
+              console.error('[Push Debug] Auto-subscribe failed:', e);
             }
-          } catch (e) {
-            console.error('Auto-subscribe failed:', e);
-          }
-        });
-      } else if (Notification.permission === 'default') {
-        setShowPushBanner(true);
-      } else if (Notification.permission === 'denied') {
-        console.warn('Notification permission is denied by user.');
+          });
+        } else if (Notification.permission === 'default') {
+          console.log('[Push Debug] Setting showPushBanner to true');
+          setShowPushBanner(true);
+        } else if (Notification.permission === 'denied') {
+          console.warn('[Push Debug] Notification permission is denied by user.');
+        }
+      } else {
+        console.warn('[Push Debug] Notification API is NOT supported in this browser/context.');
       }
     }
   }, []);
