@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FileText, Plus, Search, MessageSquare, Phone,
   RefreshCw, Loader2, ToggleLeft, ToggleRight, Pencil, Trash2,
@@ -328,20 +329,25 @@ function TemplateCard({
   const hasButtons = buttons.length > 0;
 
   const [showPreviewPopup, setShowPreviewPopup] = useState(false);
-  const [popupFlipUp,      setPopupFlipUp]      = useState(false);
+  const [popupStyle,       setPopupStyle]       = useState<React.CSSProperties>({});
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
-      // Pakai scroll container sebagai referensi, bukan window
-      // karena layout wraps content dalam <main id="main-scroll-container">
       const scrollEl = document.getElementById('main-scroll-container');
       const containerBottom = scrollEl
         ? scrollEl.getBoundingClientRect().bottom
         : window.innerHeight;
       const spaceBelow = containerBottom - rect.bottom;
-      setPopupFlipUp(spaceBelow < 280);
+      const flipUp = spaceBelow < 280;
+
+      // Popup pakai position:fixed agar escape overflow clip dari scroll container
+      setPopupStyle(
+        flipUp
+          ? { position: 'fixed', left: rect.left, width: rect.width, bottom: window.innerHeight - rect.top + 8 }
+          : { position: 'fixed', left: rect.left, width: rect.width, top: rect.bottom + 8 }
+      );
     }
     setShowPreviewPopup(true);
   };
@@ -427,15 +433,13 @@ function TemplateCard({
         </div>
       </div>
 
-      {/* Hover Preview Popup — flip ke atas kalau card di baris bawah */}
-      {showPreviewPopup && (
-        <div className={cn(
-          'hidden md:block absolute left-0 right-0 z-30 pointer-events-none',
-          popupFlipUp
-            ? 'bottom-full mb-2'   // muncul ke atas
-            : 'top-full mt-2'      // muncul ke bawah
-        )}>
-          <div className="bg-card border border-border rounded-xl p-3 shadow-xl w-full">
+      {/* Hover Preview Popup — portal ke body agar tidak kena clip overflow */}
+      {showPreviewPopup && typeof document !== 'undefined' && createPortal(
+        <div
+          style={{ ...popupStyle, zIndex: 9999 }}
+          className="hidden md:block pointer-events-none"
+        >
+          <div className="bg-card border border-border rounded-xl p-3 shadow-xl">
             <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">Preview Pesan</p>
             <TemplatePreviewBubble
               bodyText={t.body_text}
@@ -445,7 +449,8 @@ function TemplateCard({
               className="text-[11px]"
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
