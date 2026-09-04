@@ -40,34 +40,34 @@ import {
  * Sinkronkan dengan backend jika menambah variabel baru.
  */
 const KNOWN_VARS = [
-  { key: 'STUDENT_NAME',      label: 'Nama Siswa',          example: 'Budi Santoso'        },
-  { key: 'SCHOOL_NAME',       label: 'Nama Sekolah',        example: 'SMA Negeri 1 Jakarta' },
-  { key: 'STUDENT_ID',        label: 'ID Siswa',            example: 'SIS-000001'           },
-  { key: 'CONSULTATION_DATE', label: 'Tgl. Konsultasi',     example: 'Senin, 8 Sep 2026'    },
-  { key: 'HOME_VISIT_DATE',   label: 'Tgl. Home Visit',     example: 'Rabu, 10 Sep 2026'    },
-  { key: 'SNOOZE_LEVEL',      label: 'Level Snooze',        example: '2'                    },
+  { key: 'STUDENT_NAME', label: 'Nama Siswa', example: 'Budi Santoso' },
+  { key: 'SCHOOL_NAME', label: 'Nama Sekolah', example: 'SMA Negeri 1 Jakarta' },
+  { key: 'STUDENT_ID', label: 'ID Siswa', example: 'SIS-000001' },
+  { key: 'CONSULTATION_DATE', label: 'Tgl. Konsultasi', example: 'Senin, 8 Sep 2026' },
+  { key: 'HOME_VISIT_DATE', label: 'Tgl. Home Visit', example: 'Rabu, 10 Sep 2026' },
+  { key: 'SNOOZE_LEVEL', label: 'Level Snooze', example: '2' },
 ] as const;
 
 type KnownVarKey = (typeof KNOWN_VARS)[number]['key'];
 
 const HEADER_TYPES = [
-  { value: 'none',     label: 'Tidak Ada', icon: Minus    },
-  { value: 'text',     label: 'Teks',      icon: Type     },
-  { value: 'image',    label: 'Gambar',    icon: ImageIcon },
-  { value: 'video',    label: 'Video',     icon: Video    },
-  { value: 'document', label: 'Dokumen',   icon: FileText },
+  { value: 'none', label: 'Tidak Ada', icon: Minus },
+  { value: 'text', label: 'Teks', icon: Type },
+  { value: 'image', label: 'Gambar', icon: ImageIcon },
+  { value: 'video', label: 'Video', icon: Video },
+  { value: 'document', label: 'Dokumen', icon: FileText },
 ] as const;
 
 const BUTTON_TYPES: { value: ButtonType; label: string; icon: React.ElementType; description: string }[] = [
-  { value: 'QUICK_REPLY',  label: 'Quick Reply',  icon: MessageSquare, description: 'Tombol balas cepat (teks/payload)' },
-  { value: 'URL',          label: 'URL',          icon: ExternalLink,  description: 'Buka link web (bisa dinamis)' },
-  { value: 'PHONE_NUMBER', label: 'Telepon',      icon: Phone,         description: 'Klik untuk menelepon' },
+  { value: 'QUICK_REPLY', label: 'Quick Reply', icon: MessageSquare, description: 'Tombol balas cepat (teks/payload)' },
+  { value: 'URL', label: 'URL', icon: ExternalLink, description: 'Buka link web (bisa dinamis)' },
+  { value: 'PHONE_NUMBER', label: 'Telepon', icon: Phone, description: 'Klik untuk menelepon' },
 ];
 
 const KATEGORI_OPTIONS = ['MARKETING', 'UTILITY', 'AUTHENTICATION'];
 const PIPELINE_OPTIONS = ['', 'PROBING', 'HOT_LEAD', 'REGISTRASI', 'NURTURING', 'SNOOZE', 'ALUMNI'];
 const LANGUAGE_OPTIONS = [
-  { value: 'id',    label: 'Indonesia (id)'   },
+  { value: 'id', label: 'Indonesia (id)' },
   { value: 'en_US', label: 'English (en_US)' },
 ];
 
@@ -80,29 +80,29 @@ interface TemplateFormModalProps {
 }
 
 interface ButtonDef {
-  type:    ButtonType;
-  label:   string;
+  type: ButtonType;
+  label: string;
   /** Untuk QUICK_REPLY: payload string. Untuk URL: URL-nya. Untuk PHONE_NUMBER: nomor. */
-  value:   string;
+  value: string;
   /** Untuk URL saja: apakah suffix URL dinamis dari variabel */
   urlSuffixVar?: string;
 }
 
 interface FormState {
-  nama_template:     string;
+  nama_template: string;
   template_name_api: string;
-  kategori:          string;
-  pipeline:          string;
-  language_code:     string;
-  urutan:            number;
-  header_type:       string;
-  header_url:        string;
-  header_text:       string;
-  header_filename:   string;
-  body_text:         string;
-  body_vars:         KnownVarKey[];
-  buttons:           ButtonDef[];
-  submitToMeta:      boolean;
+  kategori: string;
+  pipeline: string;
+  language_code: string;
+  urutan: number;
+  header_type: string;
+  header_url: string;
+  header_text: string;
+  header_filename: string;
+  body_text: string;
+  body_vars: KnownVarKey[];
+  buttons: ButtonDef[];
+  submitToMeta: boolean;
 }
 
 // ── Init State ────────────────────────────────────────────────────────────────
@@ -129,7 +129,7 @@ function getInitialState(tpl?: WaTemplate): FormState {
     // Parse buttons dari schema
     if (Array.isArray(schema.buttons)) {
       buttons = schema.buttons.map((b: Record<string, string>) => ({
-        type:  (b.type?.toUpperCase() || 'QUICK_REPLY') as ButtonType,
+        type: (b.type?.toUpperCase() || 'QUICK_REPLY') as ButtonType,
         label: b.label || b.text || '',
         value: b.payload || b.url || b.phone_number || '',
         urlSuffixVar: b.url_suffix_var || '',
@@ -138,20 +138,20 @@ function getInitialState(tpl?: WaTemplate): FormState {
   } catch { /* ignore */ }
 
   return {
-    nama_template:     tpl.nama_template,
+    nama_template: tpl.nama_template,
     template_name_api: tpl.template_name_api,
-    kategori:          tpl.kategori,
-    pipeline:          tpl.pipeline || '',
-    language_code:     tpl.language_code || 'id',
-    urutan:            tpl.urutan,
-    header_type:       tpl.header_type || 'none',
-    header_url:        tpl.header_url  || '',
-    header_text:       '',
-    header_filename:   tpl.header_filename || '',
-    body_text:         tpl.body_text,
-    body_vars:         bodyVars,
+    kategori: tpl.kategori,
+    pipeline: tpl.pipeline || '',
+    language_code: tpl.language_code || 'id',
+    urutan: tpl.urutan,
+    header_type: tpl.header_type || 'none',
+    header_url: tpl.header_url || '',
+    header_text: '',
+    header_filename: tpl.header_filename || '',
+    body_text: tpl.body_text,
+    body_vars: bodyVars,
     buttons,
-    submitToMeta:      false,
+    submitToMeta: false,
   };
 }
 
@@ -181,7 +181,7 @@ function buildParametersJson(state: FormState): string {
   if (state.buttons.length > 0) {
     schema.buttons = state.buttons.map((btn, idx) => {
       const b: Record<string, string | number> = {
-        type:  btn.type,
+        type: btn.type,
         label: btn.label,
         index: idx,
       };
@@ -208,12 +208,12 @@ function toApiName(name: string): string {
 // ── Komponen Utama ────────────────────────────────────────────────────────────
 export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateFormModalProps) {
   const isEdit = !!tpl;
-  const [form, setForm]                   = useState<FormState>(getInitialState(tpl));
-  const [isSaving, setIsSaving]           = useState(false);
-  const [showJson, setShowJson]           = useState(false);
+  const [form, setForm] = useState<FormState>(getInitialState(tpl));
+  const [isSaving, setIsSaving] = useState(false);
+  const [showJson, setShowJson] = useState(false);
   const [apiNameManual, setApiNameManual] = useState(isEdit);
 
-  const paramsJson  = buildParametersJson(form);
+  const paramsJson = buildParametersJson(form);
   const previewText = buildPreviewText(form.body_text, form.body_vars);
 
   // Preview buttons untuk TemplatePreviewBubble
@@ -236,8 +236,8 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
   // ── Simpan ────────────────────────────────────────────────────────────────
   const handleSave = async (submitToMeta: boolean) => {
     if (!form.nama_template.trim()) return toast.error('Nama template wajib diisi.');
-    if (!form.body_text.trim())     return toast.error('Body text wajib diisi.');
-    if (form.buttons.length > 3)    return toast.error('Maksimal 3 buttons per template (batas Meta API).');
+    if (!form.body_text.trim()) return toast.error('Body text wajib diisi.');
+    if (form.buttons.length > 3) return toast.error('Maksimal 3 buttons per template (batas Meta API).');
 
     const emptyBtn = form.buttons.find(b => !b.label.trim());
     if (emptyBtn) return toast.error('Semua button harus memiliki label.');
@@ -245,17 +245,17 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
     setIsSaving(true);
     try {
       const payload = {
-        nama_template:     form.nama_template.trim(),
+        nama_template: form.nama_template.trim(),
         template_name_api: form.template_name_api || toApiName(form.nama_template),
-        body_text:         form.body_text,
-        kategori:          form.kategori,
-        pipeline:          form.pipeline || undefined,
-        language_code:     form.language_code,
-        urutan:            form.urutan,
-        parameters:        paramsJson,
-        header_type:       (form.header_type !== 'none' ? form.header_type : undefined) as 'text' | 'image' | 'video' | 'document' | undefined,
-        header_url:        form.header_url  || undefined,
-        header_filename:   form.header_filename || undefined,
+        body_text: form.body_text,
+        kategori: form.kategori,
+        pipeline: form.pipeline || undefined,
+        language_code: form.language_code,
+        urutan: form.urutan,
+        parameters: paramsJson,
+        header_type: (form.header_type !== 'none' ? form.header_type : undefined) as 'text' | 'image' | 'video' | 'document' | undefined,
+        header_url: form.header_url || undefined,
+        header_filename: form.header_filename || undefined,
         submitToMeta,
       };
 
@@ -288,9 +288,9 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
   const removeVar = (varKey: KnownVarKey) => {
     setForm(f => {
-      const newVars  = f.body_vars.filter(v => v !== varKey);
-      const oldIdx   = f.body_vars.indexOf(varKey) + 1;
-      let   newBody  = f.body_text.replace(`{{${oldIdx}}}`, '');
+      const newVars = f.body_vars.filter(v => v !== varKey);
+      const oldIdx = f.body_vars.indexOf(varKey) + 1;
+      let newBody = f.body_text.replace(`{{${oldIdx}}}`, '');
       for (let i = oldIdx + 1; i <= f.body_vars.length; i++) {
         newBody = newBody.split(`{{${i}}}`).join(`{{${i - 1}}}`);
       }
@@ -324,7 +324,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -450,7 +450,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                 <p className="text-[11px] text-muted-foreground mb-1.5">Tambah variabel dinamis ke body:</p>
                 <div className="flex gap-1.5 flex-wrap">
                   {KNOWN_VARS.map(v => {
-                    const idx    = form.body_vars.indexOf(v.key);
+                    const idx = form.body_vars.indexOf(v.key);
                     const isUsed = idx !== -1;
                     return (
                       <button
