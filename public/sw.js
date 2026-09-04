@@ -9,7 +9,7 @@ self.addEventListener('push', function (event) {
         badge: '/favicon.ico',
         vibrate: [100, 50, 100],
         data: {
-          url: '/chat'
+          url: '/live-chat'
         }
       };
       
@@ -23,7 +23,7 @@ self.addEventListener('push', function (event) {
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
   
-  const urlToOpen = new URL(event.notification.data?.url || '/chat', self.location.origin).href;
+  const urlToOpen = new URL(event.notification.data?.url || '/live-chat', self.location.origin).href;
 
   event.waitUntil(
     clients.matchAll({
@@ -34,7 +34,7 @@ self.addEventListener('notificationclick', function (event) {
       // Periksa apakah tab sudah terbuka
       for (let i = 0; i < windowClients.length; i++) {
         const client = windowClients[i];
-        if (client.url.includes('/chat') && 'focus' in client) {
+        if (client.url.includes('/live-chat') && 'focus' in client) {
           return client.focus();
         }
       }
