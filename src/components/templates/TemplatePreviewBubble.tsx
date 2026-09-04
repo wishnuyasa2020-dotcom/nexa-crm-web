@@ -69,7 +69,7 @@ export function TemplatePreviewBubble({
   return (
     <div className={cn('flex flex-col items-end gap-1 select-none', className)}>
       {/* WA Background */}
-      <div className="w-full max-w-70 flex flex-col gap-0.5">
+      <div className="w-full flex flex-col gap-0.5">
         {/* Bubble */}
         <div className="rounded-lg rounded-tr-none bg-[#dcf8c6] shadow-sm overflow-hidden">
 

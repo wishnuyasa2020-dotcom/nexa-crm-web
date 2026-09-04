@@ -339,7 +339,7 @@ function TemplateCard({
   return (
     <div
       className={cn(
-        'bg-card border rounded-xl p-4 flex flex-col hover:border-primary/50 transition-colors group relative',
+        'relative bg-card border rounded-xl p-4 flex flex-col hover:border-primary/50 transition-colors group',
         isActive ? 'border-border' : 'border-border/40'
       )}
       onMouseEnter={() => setShowPreviewPopup(true)}
@@ -411,8 +411,8 @@ function TemplateCard({
 
       {/* Hover Preview Popup (desktop only) */}
       {showPreviewPopup && (
-        <div className="hidden md:block absolute left-full top-0 ml-3 z-30 pointer-events-none">
-          <div className="bg-card border border-border rounded-xl p-3 shadow-xl w-64">
+        <div className="hidden md:block absolute left-0 right-0 top-full mt-2 z-30 pointer-events-none">
+          <div className="bg-card border border-border rounded-xl p-3 shadow-xl w-full">
             <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">Preview Pesan</p>
             <TemplatePreviewBubble
               bodyText={t.body_text}
