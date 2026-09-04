@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 
 import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
+import { format, isToday, isYesterday } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 interface ChatRoomProps {
   conversation:   Conversation | null;
@@ -183,7 +185,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 24h Active
                 {conversation.window_expires_at && (
                   <span className="ml-1 md:ml-1.5 text-[#8696a0] hidden sm:inline">
-                    (exp: {new Date(conversation.window_expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                    (exp: {format(new Date(conversation.window_expires_at), 'dd MMM yyyy HH:mm', { locale: id })})
                   </span>
                 )}
               </span>
@@ -318,13 +320,14 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                       const date = msg.datetime
                         ? new Date(msg.datetime)
                         : (Number(msg.timestamp) > 0 ? new Date(Number(msg.timestamp)) : null);
-                      return date
-                        ? date.toLocaleTimeString('id-ID', {
-                            hour:     '2-digit',
-                            minute:   '2-digit',
-                            timeZone: 'Asia/Jakarta',
-                          })
-                        : '';
+                      if (!date) return '';
+                      if (isToday(date)) {
+                        return format(date, 'HH:mm', { locale: id });
+                      }
+                      if (isYesterday(date)) {
+                        return `Kemarin, ${format(date, 'HH:mm', { locale: id })}`;
+                      }
+                      return format(date, 'dd/MM/yyyy HH:mm', { locale: id });
                     })()}
                   </span>
                   {msg.direction === 'outgoing' && (
