@@ -119,6 +119,11 @@ export async function initiateConversation(idSiswa: string): Promise<{ conv_id: 
   return res.data.data;
 }
 
+/** Subscribe Web Push Notification */
+export async function subscribeToWebPush(subscription: any): Promise<void> {
+  await apiClient.post('/api/v1/web-push/subscribe', subscription);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPLATE API
 // ─────────────────────────────────────────────────────────────────────────────
