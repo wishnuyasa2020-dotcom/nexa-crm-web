@@ -467,8 +467,8 @@ function TemplatePreviewModal({
         className="relative z-10 bg-card border border-border rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-border">
+        {/* Header — sticky supaya tidak ikut scroll */}
+        <div className="sticky top-0 z-10 bg-card rounded-t-2xl flex items-start justify-between p-5 border-b border-border">
           <div>
             <h2 className="font-bold text-base text-foreground">{t.nama_template}</h2>
             <p className="text-xs text-muted-foreground mt-0.5 font-mono">{t.template_name_api}</p>
