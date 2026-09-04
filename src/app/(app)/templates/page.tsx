@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FileText, Plus, Search, MessageSquare, Phone,
   RefreshCw, Loader2, ToggleLeft, ToggleRight, Pencil, Trash2,
@@ -328,6 +328,18 @@ function TemplateCard({
   const hasButtons = buttons.length > 0;
 
   const [showPreviewPopup, setShowPreviewPopup] = useState(false);
+  const [popupFlipUp,      setPopupFlipUp]      = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseEnter = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      // Estimasi tinggi popup ~320px; kalau ruang bawah kurang, flip ke atas
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setPopupFlipUp(spaceBelow < 320);
+    }
+    setShowPreviewPopup(true);
+  };
 
   const statusColors: Record<string, string> = {
     APPROVED:   'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
@@ -338,11 +350,12 @@ function TemplateCard({
 
   return (
     <div
+      ref={cardRef}
       className={cn(
         'relative bg-card border rounded-xl p-4 flex flex-col hover:border-primary/50 transition-colors group',
         isActive ? 'border-border' : 'border-border/40'
       )}
-      onMouseEnter={() => setShowPreviewPopup(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setShowPreviewPopup(false)}
     >
       {/* Card Header */}
@@ -409,9 +422,14 @@ function TemplateCard({
         </div>
       </div>
 
-      {/* Hover Preview Popup (desktop only) */}
+      {/* Hover Preview Popup — flip ke atas kalau card di baris bawah */}
       {showPreviewPopup && (
-        <div className="hidden md:block absolute left-0 right-0 top-full mt-2 z-30 pointer-events-none">
+        <div className={cn(
+          'hidden md:block absolute left-0 right-0 z-30 pointer-events-none',
+          popupFlipUp
+            ? 'bottom-full mb-2'   // muncul ke atas
+            : 'top-full mt-2'      // muncul ke bawah
+        )}>
           <div className="bg-card border border-border rounded-xl p-3 shadow-xl w-full">
             <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">Preview Pesan</p>
             <TemplatePreviewBubble
