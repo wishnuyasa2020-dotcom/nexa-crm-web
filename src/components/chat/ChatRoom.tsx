@@ -381,7 +381,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   {msg.type === 'image' && msg.media_id ? (
                     <div className="mb-2">
                       <img 
-                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/chats/media/${msg.media_id}`} 
+                        src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}`} 
                         alt="Media terlampir" 
                         className="max-w-full max-h-64 object-contain rounded-md"
                       />
@@ -394,7 +394,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   {msg.type === 'video' && msg.media_id ? (
                     <div className="mb-2">
                       <video 
-                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/chats/media/${msg.media_id}`} 
+                        src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}`} 
                         controls 
                         className="max-w-full max-h-64 rounded-md bg-black"
                       />
