@@ -1,5 +1,7 @@
 'use client';
 
+import Cookies from 'js-cookie';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Conversation, ChatMessage, WaTemplate,
@@ -381,7 +383,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   {msg.type === 'image' && msg.media_id ? (
                     <div className="mb-2">
                       <img 
-                        src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}`} 
+                        src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`} 
                         alt="Media terlampir" 
                         className="max-w-full max-h-64 object-contain rounded-md"
                       />
@@ -394,7 +396,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   {msg.type === 'video' && msg.media_id ? (
                     <div className="mb-2">
                       <video 
-                        src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}`} 
+                        src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`} 
                         controls 
                         className="max-w-full max-h-64 rounded-md bg-black"
                       />
