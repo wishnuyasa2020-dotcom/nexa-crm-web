@@ -40,8 +40,9 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   const [loadingMsgs,  setLoadingMsgs]  = useState(false);
   const [showSwInfo,   setShowSwInfo]   = useState(false); // toggle info SW closed
   const [showAktivitasModal, setShowAktivitasModal] = useState(false); // state modal aktivitas
-  
-  // Media & Location state
+
+  // States untuk Media & File
+  const [showEmojiMenu, setShowEmojiMenu] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [attachAccept, setAttachAccept] = useState('image/*,video/*');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -562,7 +563,25 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
             <div className="relative shrink-0">
               <Button
                 variant="ghost" size="icon"
-                onClick={() => setShowAttachMenu(!showAttachMenu)}
+                onClick={() => { setShowEmojiMenu(!showEmojiMenu); setShowAttachMenu(false); }}
+                className="text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10"
+              >
+                <Smile className="h-5 w-5" />
+              </Button>
+              {showEmojiMenu && (
+                <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-xl shadow-xl flex flex-wrap gap-2 p-3 w-56 z-50">
+                  {['👍', '❤️', '😂', '😮', '😢', '🙏', '🔥', '🎉', '✅', '❌', '😊', '🙌', '👌', '💯'].map(e => (
+                    <button key={e} onClick={() => { setInputText(prev => prev + e); setShowEmojiMenu(false); }} className="text-xl hover:scale-125 transition-transform flex items-center justify-center h-8 w-8">
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="relative shrink-0">
+              <Button
+                variant="ghost" size="icon"
+                onClick={() => { setShowAttachMenu(!showAttachMenu); setShowEmojiMenu(false); }}
                 className="text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10"
               >
                 <Paperclip className="h-5 w-5" />
