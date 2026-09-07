@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
-  Image as ImageIcon, Video, MapPin, X
+  Image as ImageIcon, Video, MapPin, X, FileText
 } from 'lucide-react';
 
 import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
@@ -43,6 +43,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   
   // Media & Location state
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [attachAccept, setAttachAccept] = useState('image/*,video/*');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationData, setLocationData] = useState({ lat: '', lng: '', name: '', address: '' });
@@ -432,6 +433,14 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                       </a>
                     </div>
                   )}
+                  {msg.type === 'document' && (
+                    <div className="mb-2 bg-black/20 p-2 rounded flex flex-col gap-1 cursor-pointer hover:bg-black/30 transition-colors" onClick={() => msg.media_id && window.open(`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`)}>
+                      <div className="flex items-center gap-2 font-semibold text-[#e9edef]">
+                        <FileText className="h-5 w-5" /> <span>Dokumen Terlampir</span>
+                      </div>
+                      <span className="text-xs text-blue-400 underline">Unduh Dokumen</span>
+                    </div>
+                  )}
                   <div dangerouslySetInnerHTML={{ __html: renderMessageBody(msg.body || `[${msg.type}]`) }} />
                 </div>
                 <div className="flex items-center justify-end space-x-1 mt-1">
@@ -520,10 +529,16 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               {showAttachMenu && (
                 <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
                   <button
-                    onClick={() => { setShowAttachMenu(false); fileInputRef.current?.click(); }}
+                    onClick={() => { setAttachAccept('image/*,video/*'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
                     className="flex items-center gap-3 px-4 py-3 text-sm text-[#e9edef] hover:bg-[#202c33] transition-colors text-left"
                   >
                     <ImageIcon className="h-4 w-4 text-violet-400" /> Gambar/Video
+                  </button>
+                  <button
+                    onClick={() => { setAttachAccept('.pdf,.doc,.docx,.xls,.xlsx'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#e9edef] hover:bg-[#202c33] transition-colors text-left"
+                  >
+                    <FileText className="h-4 w-4 text-orange-400" /> Dokumen
                   </button>
                   <button
                     onClick={() => { setShowAttachMenu(false); setShowLocationModal(true); }}
@@ -539,7 +554,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               type="file" 
               ref={fileInputRef} 
               className="hidden" 
-              accept="image/*,video/*"
+              accept={attachAccept}
               onChange={handleFileChange}
             />
 
@@ -548,8 +563,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 <div className={`absolute left-0 bg-[#2a3942] px-3 py-2 rounded-t-xl border border-b-0 border-[#222d34] flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
                   {selectedFile.type.startsWith('image/') ? (
                     <img src={URL.createObjectURL(selectedFile)} alt="preview" className="h-16 w-16 object-cover rounded-md" />
+                  ) : selectedFile.type.startsWith('video/') ? (
+                    <Video className="h-4 w-4 text-[#8696a0]" />
                   ) : (
-                    <ImageIcon className="h-4 w-4 text-[#8696a0]" />
+                    <FileText className="h-4 w-4 text-[#8696a0]" />
                   )}
                   <span className="truncate max-w-40 text-xs text-[#e9edef]">{selectedFile.name}</span>
                   <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300 ml-2 bg-[#202c33] p-1 rounded-full">
