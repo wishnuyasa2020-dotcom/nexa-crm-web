@@ -48,6 +48,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationData, setLocationData] = useState({ lat: '', lng: '', name: '', address: '' });
+  const [mapsLink, setMapsLink] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef                   = useRef<HTMLDivElement>(null);
@@ -237,6 +238,39 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       toast.error(msg);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      toast.info('Sedang mencari lokasi...');
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocationData(prev => ({
+          ...prev,
+          lat: position.coords.latitude.toString(),
+          lng: position.coords.longitude.toString()
+        }));
+        toast.success('Lokasi GPS berhasil didapatkan!');
+      }, (error) => {
+        toast.error('Gagal mendapatkan lokasi GPS: ' + error.message);
+      }, { timeout: 10000 });
+    } else {
+      toast.error('Browser tidak mendukung Geolocation');
+    }
+  };
+
+  const handleExtractMapsLink = () => {
+    const match = mapsLink.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (match) {
+      setLocationData(prev => ({
+        ...prev,
+        lat: match[1],
+        lng: match[2]
+      }));
+      toast.success('Koordinat berhasil diekstrak!');
+      setMapsLink('');
+    } else {
+      toast.error('Gagal mengekstrak! Pastikan link dari browser yang mengandung (@latitude,longitude), bukan shortlink.');
     }
   };
 
@@ -671,6 +705,25 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
             <DialogTitle>Kirim Lokasi</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
+            
+            <div className="flex flex-col gap-2 p-3 bg-[#202c33] rounded-lg border border-[#2a3942]">
+              <Button onClick={handleGetCurrentLocation} variant="outline" className="w-full bg-[#2a3942] border-[#222d34] text-[#e9edef] hover:bg-[#32424b] hover:text-white">
+                <MapPin className="h-4 w-4 mr-2 text-emerald-400" /> Dapatkan Lokasi Saat Ini (GPS)
+              </Button>
+              <div className="text-center text-xs text-[#8696a0] py-1">ATAU</div>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Tempel Link Google Maps..." 
+                  value={mapsLink} 
+                  onChange={e => setMapsLink(e.target.value)}
+                  className="bg-[#111b21] border-[#2a3942] flex-1 text-xs"
+                />
+                <Button onClick={handleExtractMapsLink} disabled={!mapsLink} variant="secondary" className="bg-[#2a3942] text-xs">
+                  Ekstrak
+                </Button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs text-[#8696a0]">Latitude</label>
