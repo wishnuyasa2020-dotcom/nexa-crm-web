@@ -511,9 +511,14 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
             <div className="flex-1 relative flex flex-col">
               {selectedFile && (
-                <div className="absolute -top-12 left-0 bg-[#2a3942] px-3 py-1.5 rounded-t-xl border border-b-0 border-[#222d34] text-xs text-[#e9edef] flex items-center gap-2 max-w-full">
-                  <span className="truncate max-w-50">{selectedFile.name}</span>
-                  <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300">
+                <div className={`absolute left-0 bg-[#2a3942] px-3 py-2 rounded-t-xl border border-b-0 border-[#222d34] flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
+                  {selectedFile.type.startsWith('image/') ? (
+                    <img src={URL.createObjectURL(selectedFile)} alt="preview" className="h-16 w-16 object-cover rounded-md" />
+                  ) : (
+                    <ImageIcon className="h-4 w-4 text-[#8696a0]" />
+                  )}
+                  <span className="truncate max-w-40 text-xs text-[#e9edef]">{selectedFile.name}</span>
+                  <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300 ml-2 bg-[#202c33] p-1 rounded-full">
                     <X className="h-3 w-3" />
                   </button>
                 </div>
