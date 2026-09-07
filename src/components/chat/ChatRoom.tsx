@@ -102,8 +102,14 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
   // Smart auto-scroll: hanya scroll kalau user dekat bawah ATAU dipaksa (buka/kirim)
   useEffect(() => {
+    // Jangan konsumsi forceScrollRef jika list masih kosong (sedang loading)
+    if (messages.length === 0) return;
+
     if (forceScrollRef.current || isNearBottom()) {
-      messagesEndRef.current?.scrollIntoView({ behavior: forceScrollRef.current ? 'instant' : 'smooth' });
+      const isForced = forceScrollRef.current;
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: isForced ? 'instant' : 'smooth' });
+      }, 50); // Beri jeda sebentar agar DOM selesai merender list pesan
       forceScrollRef.current = false;
     }
   }, [messages, isNearBottom]);
@@ -386,6 +392,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                         src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`} 
                         alt="Media terlampir" 
                         className="max-w-full max-h-64 object-contain rounded-md"
+                        onLoad={() => {
+                          if (isNearBottom()) {
+                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
                       />
                     </div>
                   ) : msg.type === 'image' && (
@@ -399,6 +410,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                         src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`} 
                         controls 
                         className="max-w-full max-h-64 rounded-md bg-black"
+                        onLoadedData={() => {
+                          if (isNearBottom()) {
+                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
                       />
                     </div>
                   ) : msg.type === 'video' && (
