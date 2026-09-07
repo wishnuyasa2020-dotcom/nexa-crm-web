@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
-  Image as ImageIcon, Video, MapPin, X, FileText
+  Image as ImageIcon, Video, MapPin, X, FileText, Smile
 } from 'lucide-react';
 
 import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
@@ -158,7 +158,13 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      if (file.size > 16 * 1024 * 1024) {
+        toast.error('Ukuran file maksimal adalah 16MB sesuai batasan WhatsApp.');
+        e.target.value = '';
+        return;
+      }
+      setSelectedFile(file);
       setShowAttachMenu(false);
     }
   };
@@ -230,6 +236,26 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       toast.error(msg);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  // ── Kirim Reaksi ───────────────────────────────────────────────────────
+  const handleSendReaction = async (targetMessageId: string | number, emoji: string) => {
+    if (!convId) return;
+    // Jika emoji yang diklik sama dengan yang ada, berarti hapus reaksi (kirim string kosong)
+    const currentReaction = messages.find(m => m.message_id === targetMessageId)?.reaction;
+    const emojiToSend = currentReaction === emoji ? '' : emoji;
+    
+    // Optimistic update
+    setMessages(prev => prev.map(m => m.message_id === targetMessageId ? { ...m, reaction: emojiToSend } : m));
+    
+    try {
+      await sendMessage(convId, { type: 'reaction', targetMessageId, emoji: emojiToSend });
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim reaksi.');
+      toast.error(msg);
+      // Revert jika gagal
+      loadMessages(true);
     }
   };
 
@@ -377,8 +403,13 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
           {messages.map((msg) => (
             <div
               key={msg.message_id}
-              className={`flex ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
+              className={`flex group ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
             >
+              {msg.direction === 'outgoing' && isSwOpen && (
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center pr-2">
+                  <ReactionMenu onSelect={(emoji) => handleSendReaction(msg.message_id, emoji)} />
+                </div>
+              )}
               <div
                 className={`max-w-[88%] sm:max-w-[75%] rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 shadow-sm relative ${
                   msg.direction === 'outgoing'
@@ -471,7 +502,17 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                     </span>
                   )}
                 </div>
+                {msg.reaction && (
+                  <div className={`absolute -bottom-3 ${msg.direction === 'outgoing' ? '-left-2' : '-right-2'} bg-[#2a3942] border border-[#222d34] rounded-full px-1.5 py-0.5 text-xs shadow-sm z-10`}>
+                    {msg.reaction}
+                  </div>
+                )}
               </div>
+              {msg.direction === 'incoming' && isSwOpen && (
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center pl-2">
+                  <ReactionMenu onSelect={(emoji) => handleSendReaction(msg.message_id, emoji)} />
+                </div>
+              )}
             </div>
           ))}
           <div ref={messagesEndRef} />
@@ -675,6 +716,41 @@ function renderMessageBody(body: string) {
   html = html.replace(btnRegex, '<div class="mt-2 inline-block bg-[#2a3942] border border-[#3b4a54] text-[#00a884] font-medium px-3 py-1.5 rounded-full text-xs shadow-sm">$1</div>');
   
   return html;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reaction Menu Component
+// ─────────────────────────────────────────────────────────────────────────────
+function ReactionMenu({ onSelect }: { onSelect: (emoji: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setOpen(!open)}
+        className="h-7 w-7 rounded-full bg-[#202c33] hover:bg-[#2a3942] flex items-center justify-center text-[#8696a0] hover:text-[#e9edef] transition-colors shadow-sm"
+      >
+        <Smile className="h-4 w-4" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#2a3942] border border-[#222d34] rounded-full shadow-lg px-2 py-1.5 flex gap-1 z-50">
+            {emojis.map(e => (
+              <button 
+                key={e} 
+                onClick={() => { onSelect(e); setOpen(false); }}
+                className="hover:bg-[#202c33] h-8 w-8 rounded-full flex items-center justify-center text-lg transition-transform hover:scale-110"
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

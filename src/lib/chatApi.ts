@@ -43,8 +43,8 @@ export interface ChatMessage {
   media_id:    string | null;
   media_url:   string | null;
   mime_type:   string | null;
-  caption:     string | null;
   status:      string | null;
+  reaction:    string | null;
 }
 
 export interface WaTemplate {
@@ -102,7 +102,7 @@ export async function fetchMessages(
 /** Kirim pesan — teks biasa, template, lokasi, atau media */
 export async function sendMessage(
   convId: number | string,
-  payload: { text?: string; templateId?: string | number; type?: string; latitude?: number; longitude?: number; location_name?: string; location_address?: string } | FormData
+  payload: { text?: string; templateId?: string | number; type?: string; latitude?: number; longitude?: number; location_name?: string; location_address?: string; targetMessageId?: string | number; emoji?: string } | FormData
 ): Promise<{ success: boolean; sentAs: string; body: string }> {
   const headers = payload instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {};
   const res = await apiClient.post(`/api/v1/chats/${convId}/send`, payload, { headers });
