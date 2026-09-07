@@ -99,12 +99,13 @@ export async function fetchMessages(
   return res.data.data;
 }
 
-/** Kirim pesan — teks biasa atau template (Smart Routing di backend) */
+/** Kirim pesan — teks biasa, template, lokasi, atau media */
 export async function sendMessage(
   convId: number | string,
-  payload: { text?: string; templateId?: string | number }
-): Promise<{ success: boolean; sentAs: 'free_text' | 'meta_template'; body: string }> {
-  const res = await apiClient.post(`/api/v1/chats/${convId}/send`, payload);
+  payload: { text?: string; templateId?: string | number; type?: string; latitude?: number; longitude?: number; location_name?: string; location_address?: string } | FormData
+): Promise<{ success: boolean; sentAs: string; body: string }> {
+  const headers = payload instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {};
+  const res = await apiClient.post(`/api/v1/chats/${convId}/send`, payload, { headers });
   return res.data;
 }
 

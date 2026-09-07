@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
+  Image as ImageIcon, Video, MapPin, X
 } from 'lucide-react';
 
 import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
@@ -37,6 +38,14 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   const [loadingMsgs,  setLoadingMsgs]  = useState(false);
   const [showSwInfo,   setShowSwInfo]   = useState(false); // toggle info SW closed
   const [showAktivitasModal, setShowAktivitasModal] = useState(false); // state modal aktivitas
+  
+  // Media & Location state
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationData, setLocationData] = useState({ lat: '', lng: '', name: '', address: '' });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const messagesEndRef                   = useRef<HTMLDivElement>(null);
   const scrollContainerRef               = useRef<HTMLDivElement>(null); // ref ke scroll container
   const pollingRef                       = useRef<NodeJS.Timeout | null>(null);
@@ -113,6 +122,9 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
   // ── Kirim Pesan Teks ───────────────────────────────────────────────────
   const handleSendText = async () => {
+    if (selectedFile) {
+      return handleSendMedia();
+    }
     if (!inputText.trim() || isSending || !convId) return;
 
     // ANTI DOUBLE-SEND: disable tombol & input segera
@@ -125,11 +137,64 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       onMessageSent();
       forceScrollRef.current = true; // paksa scroll ke bawah setelah kirim
       await loadMessages(true);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal mengirim pesan.';
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim pesan.');
       toast.error(msg);
       // Kembalikan teks ke input jika gagal
       setInputText(textToSend);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+      setShowAttachMenu(false);
+    }
+  };
+
+  const handleSendMedia = async () => {
+    if (!selectedFile || isSending || !convId) return;
+    setIsSending(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      if (inputText.trim()) formData.append('text', inputText.trim());
+
+      await sendMessage(convId, formData);
+      setInputText('');
+      setSelectedFile(null);
+      onMessageSent();
+      forceScrollRef.current = true;
+      await loadMessages(true);
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim media.');
+      toast.error(msg);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSendLocation = async () => {
+    if (!locationData.lat || !locationData.lng || isSending || !convId) return;
+    setIsSending(true);
+    try {
+      await sendMessage(convId, {
+        type: 'location',
+        latitude: parseFloat(locationData.lat),
+        longitude: parseFloat(locationData.lng),
+        location_name: locationData.name,
+        location_address: locationData.address
+      });
+      setShowLocationModal(false);
+      setLocationData({ lat: '', lng: '', name: '', address: '' });
+      onMessageSent();
+      forceScrollRef.current = true;
+      await loadMessages(true);
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim lokasi.');
+      toast.error(msg);
     } finally {
       setIsSending(false);
     }
@@ -312,7 +377,29 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                     : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
                 }`}
               >
-                <p className="text-xs md:text-sm whitespace-pre-wrap">{msg.body || `[${msg.type}]`}</p>
+                <div className="text-xs md:text-sm whitespace-pre-wrap wrap-break-word">
+                  {msg.type === 'image' && (
+                    <div className="mb-2 bg-black/20 p-2 rounded flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4" /> <span className="font-medium text-xs">Gambar</span>
+                    </div>
+                  )}
+                  {msg.type === 'video' && (
+                    <div className="mb-2 bg-black/20 p-2 rounded flex items-center gap-2">
+                      <Video className="h-4 w-4" /> <span className="font-medium text-xs">Video</span>
+                    </div>
+                  )}
+                  {msg.type === 'location' && (
+                    <div className="mb-2 bg-black/20 p-2 rounded flex flex-col gap-1">
+                      <div className="flex items-center gap-2 font-semibold">
+                        <MapPin className="h-4 w-4" /> <span>Lokasi</span>
+                      </div>
+                      <a href={`https://maps.google.com/?q=${msg.body}`} target="_blank" rel="noreferrer" className="text-blue-400 underline truncate">
+                        Buka di Google Maps
+                      </a>
+                    </div>
+                  )}
+                  <div dangerouslySetInnerHTML={{ __html: renderMessageBody(msg.body || `[${msg.type}]`) }} />
+                </div>
                 <div className="flex items-center justify-end space-x-1 mt-1">
                   <span className="text-[10px] text-gray-400">
                     {(() => {
@@ -388,16 +475,52 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               disabled={isSending}
               onSendTemplate={handleSendTemplate}
             />
-            <Button
-              variant="ghost" size="icon"
-              className="shrink-0 text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10"
-            >
-              <Paperclip className="h-5 w-5" />
-            </Button>
-            <div className="flex-1 relative">
+            <div className="relative shrink-0">
+              <Button
+                variant="ghost" size="icon"
+                onClick={() => setShowAttachMenu(!showAttachMenu)}
+                className="text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10"
+              >
+                <Paperclip className="h-5 w-5" />
+              </Button>
+              {showAttachMenu && (
+                <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
+                  <button
+                    onClick={() => { setShowAttachMenu(false); fileInputRef.current?.click(); }}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#e9edef] hover:bg-[#202c33] transition-colors text-left"
+                  >
+                    <ImageIcon className="h-4 w-4 text-violet-400" /> Gambar/Video
+                  </button>
+                  <button
+                    onClick={() => { setShowAttachMenu(false); setShowLocationModal(true); }}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#e9edef] hover:bg-[#202c33] transition-colors text-left"
+                  >
+                    <MapPin className="h-4 w-4 text-emerald-400" /> Lokasi
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*,video/*"
+              onChange={handleFileChange}
+            />
+
+            <div className="flex-1 relative flex flex-col">
+              {selectedFile && (
+                <div className="absolute -top-12 left-0 bg-[#2a3942] px-3 py-1.5 rounded-t-xl border border-b-0 border-[#222d34] text-xs text-[#e9edef] flex items-center gap-2 max-w-full">
+                  <span className="truncate max-w-50">{selectedFile.name}</span>
+                  <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
               <Input
-                placeholder="Ketik pesan..."
-                className="w-full rounded-full bg-[#2a3942] text-[#e9edef] border-none focus-visible:ring-1 focus-visible:ring-[#00a884] pr-10 py-5"
+                placeholder={selectedFile ? "Tambah keterangan..." : "Ketik pesan..."}
+                className={`w-full bg-[#2a3942] text-[#e9edef] border-none focus-visible:ring-1 focus-visible:ring-[#00a884] pr-10 py-5 ${selectedFile ? 'rounded-b-xl rounded-tr-xl rounded-tl-none' : 'rounded-full'}`}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -424,8 +547,78 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
         siswaId={String(conversation?.id_siswa || '')}
         siswaName={conversation?.student_name || conversation?.wa_number || ''}
       />
+
+      {/* Location Modal */}
+      <Dialog open={showLocationModal} onOpenChange={setShowLocationModal}>
+        <DialogContent className="bg-[#111b21] border-[#222d34] text-[#e9edef]">
+          <DialogHeader>
+            <DialogTitle>Kirim Lokasi</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-[#8696a0]">Latitude</label>
+                <Input 
+                  placeholder="-6.200000" 
+                  value={locationData.lat} 
+                  onChange={e => setLocationData({...locationData, lat: e.target.value})}
+                  className="bg-[#202c33] border-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-[#8696a0]">Longitude</label>
+                <Input 
+                  placeholder="106.816666" 
+                  value={locationData.lng} 
+                  onChange={e => setLocationData({...locationData, lng: e.target.value})}
+                  className="bg-[#202c33] border-none"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-[#8696a0]">Nama Tempat (Opsional)</label>
+              <Input 
+                placeholder="Kantor Nexa" 
+                value={locationData.name} 
+                onChange={e => setLocationData({...locationData, name: e.target.value})}
+                className="bg-[#202c33] border-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-[#8696a0]">Alamat (Opsional)</label>
+              <Input 
+                placeholder="Jl. Jend. Sudirman..." 
+                value={locationData.address} 
+                onChange={e => setLocationData({...locationData, address: e.target.value})}
+                className="bg-[#202c33] border-none"
+              />
+            </div>
+            <div className="flex justify-end pt-4">
+              <Button onClick={handleSendLocation} disabled={!locationData.lat || !locationData.lng || isSending} className="bg-[#00a884] hover:bg-[#008f6f] text-[#111b21]">
+                {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kirim Lokasi'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper untuk render URL dan tombol
+// ─────────────────────────────────────────────────────────────────────────────
+function renderMessageBody(body: string) {
+  if (!body) return '';
+  // Mengubah URL menjadi anchor tag
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  let html = body.replace(urlRegex, '<a href="$1" target="_blank" rel="noreferrer" class="text-blue-400 hover:underline break-all">$1</a>');
+  
+  // Mengubah baris yang terlihat seperti tombol "Quick Reply: [Teks]" menjadi tampilan tombol
+  const btnRegex = /\[Quick Reply: (.*?)\]/g;
+  html = html.replace(btnRegex, '<div class="mt-2 inline-block bg-[#2a3942] border border-[#3b4a54] text-[#00a884] font-medium px-3 py-1.5 rounded-full text-xs shadow-sm">$1</div>');
+  
+  return html;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
