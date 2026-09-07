@@ -378,14 +378,30 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 }`}
               >
                 <div className="text-xs md:text-sm whitespace-pre-wrap wrap-break-word">
-                  {msg.type === 'image' && (
+                  {msg.type === 'image' && msg.media_id ? (
+                    <div className="mb-2">
+                      <img 
+                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/chats/media/${msg.media_id}`} 
+                        alt="Media terlampir" 
+                        className="max-w-full max-h-64 object-contain rounded-md"
+                      />
+                    </div>
+                  ) : msg.type === 'image' && (
                     <div className="mb-2 bg-black/20 p-2 rounded flex items-center gap-2">
-                      <ImageIcon className="h-4 w-4" /> <span className="font-medium text-xs">Gambar</span>
+                      <ImageIcon className="h-4 w-4" /> <span className="font-medium text-xs">Gambar (Gagal Muat)</span>
                     </div>
                   )}
-                  {msg.type === 'video' && (
+                  {msg.type === 'video' && msg.media_id ? (
+                    <div className="mb-2">
+                      <video 
+                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/chats/media/${msg.media_id}`} 
+                        controls 
+                        className="max-w-full max-h-64 rounded-md bg-black"
+                      />
+                    </div>
+                  ) : msg.type === 'video' && (
                     <div className="mb-2 bg-black/20 p-2 rounded flex items-center gap-2">
-                      <Video className="h-4 w-4" /> <span className="font-medium text-xs">Video</span>
+                      <Video className="h-4 w-4" /> <span className="font-medium text-xs">Video (Gagal Muat)</span>
                     </div>
                   )}
                   {msg.type === 'location' && (
@@ -535,7 +551,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
             {/* ANTI DOUBLE-SEND: disabled saat isSending */}
             <Button
               className="shrink-0 rounded-full h-11 w-11 p-0 bg-[#00a884] hover:bg-[#008f6f] text-[#111b21] shadow-sm disabled:opacity-50"
-              disabled={!inputText.trim() || isSending}
+              disabled={(!inputText.trim() && !selectedFile) || isSending}
               onClick={handleSendText}
             >
               {isSending
