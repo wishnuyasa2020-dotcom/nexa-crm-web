@@ -61,6 +61,12 @@ export interface MetaTemplate {
   language: string;             // language_code
   kategori: string;
   bodyText: string;             // body_text
+  headerType?: string;          // header_type
+  header_type?: string;
+  headerUrl?: string;           // header_url
+  header_url?: string;
+  headerFilename?: string;      // header_filename
+  header_filename?: string;
   parameters: string | null;
   status: string;               // status_meta
   qualityRating: string | null; // meta_quality_rating

@@ -816,15 +816,29 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     const bodyVars = parsed.body || [];
                     const metaBtns = parsed.meta_buttons || [];
 
-                    const bubbleHeaderType = pHeader?.type || 'none';
-                    const bubbleHeaderValue = pHeader?.url || null;
-                    const bubbleHeaderText = pHeader?.params?.[0] || null;
+                    // Meta Console Source of Truth
+                    const structureHeaderType = selectedMetaTmpl.headerType || selectedMetaTmpl.header_type || 'none';
+                    const bubbleHeaderType = structureHeaderType;
+                    const bubbleHeaderValue = bubbleHeaderType !== 'none' && bubbleHeaderType !== 'text' 
+                      ? (pHeader?.url || selectedMetaTmpl.headerUrl || selectedMetaTmpl.header_url || null) 
+                      : null;
+                    const bubbleHeaderText = bubbleHeaderType === 'text' 
+                      ? (pHeader?.params?.[0] || selectedMetaTmpl.headerFilename || selectedMetaTmpl.header_filename || null) 
+                      : null;
 
                     const bubbleButtons = metaBtns.map((b: any) => ({
                       type: (b.type || 'QUICK_REPLY') as ButtonType,
                       label: b.text,
                     }));
-                    const bubbleBodyText = buildPreviewText(selectedMetaTmpl.bodyText, bodyVars);
+
+                    const firstSelectedId = Array.from(selectedIds)[0];
+                    const sampleTarget = audience.find(a => a.id === firstSelectedId) || audience[0];
+                    const previewContext: Record<string, string> | undefined = sampleTarget ? {
+                      STUDENT_NAME: sampleTarget.nama,
+                      SCHOOL_NAME: sampleTarget.sekolah,
+                    } : undefined;
+
+                    const bubbleBodyText = buildPreviewText(selectedMetaTmpl.bodyText, bodyVars, previewContext);
 
                     return (
                       <div className="p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground border border-border/50">
@@ -832,7 +846,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                         <div className="bg-[#0b141a] rounded-xl p-4 min-h-48">
                           <TemplatePreviewBubble
                             bodyText={bubbleBodyText}
-                            headerType={bubbleHeaderType !== 'none' ? bubbleHeaderType : null}
+                            headerType={bubbleHeaderType !== 'none' ? (bubbleHeaderType as any) : null}
                             headerValue={bubbleHeaderValue}
                             headerText={bubbleHeaderText}
                             buttonObjects={bubbleButtons}

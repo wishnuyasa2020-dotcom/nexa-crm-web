@@ -944,9 +944,10 @@ function TemplateReviewDialog({
     } catch { /* ignore */ }
   }
 
-  const finalHeaderType = pHeader?.type || t.header_type || 'none';
-  const finalHeaderUrl  = pHeader?.url || t.header_url || null;
-  const finalHeaderText = pHeader?.params?.[0] || t.header_filename || null;
+  // Meta Console Source of Truth
+  const finalHeaderType = t.header_type || 'none';
+  const finalHeaderUrl  = finalHeaderType !== 'text' && finalHeaderType !== 'none' ? (pHeader?.url || t.header_url || null) : null;
+  const finalHeaderText = finalHeaderType === 'text' ? (pHeader?.params?.[0] || t.header_filename || null) : null;
   const resolvedHeaderText = finalHeaderText ? resolvePreview(finalHeaderText) : null;
 
   return (
