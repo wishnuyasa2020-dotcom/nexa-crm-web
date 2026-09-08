@@ -377,6 +377,15 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
   const [isLoadingAudience, setIsLoadingAudience] = useState(true);
   const [audienceError, setAudienceError]         = useState<string | null>(null);
 
+  const resolveMediaUrl = useCallback((url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    // Relative path dari server CRM
+    const base = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
+    const token = typeof window !== 'undefined' ? (document.cookie.match(/nexa_token=([^;]+)/) || [])[1] || '' : '';
+    return `${base}${url}${token ? `?token=${token}` : ''}`;
+  }, []);
+
   // ── School list state (untuk combobox) ──
   const [schools, setSchools]               = useState<{ id: string; name: string }[]>([]);
   const [isLoadingSchools, setIsLoadingSchools] = useState(true);
@@ -819,9 +828,10 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     // Meta Console Source of Truth
                     const structureHeaderType = selectedMetaTmpl.headerType || selectedMetaTmpl.header_type || 'none';
                     const bubbleHeaderType = structureHeaderType;
-                    const bubbleHeaderValue = bubbleHeaderType !== 'none' && bubbleHeaderType !== 'text' 
+                    const bubbleHeaderValueRaw = bubbleHeaderType !== 'none' && bubbleHeaderType !== 'text' 
                       ? (pHeader?.url || selectedMetaTmpl.headerUrl || selectedMetaTmpl.header_url || null) 
                       : null;
+                    const bubbleHeaderValue = bubbleHeaderValueRaw ? resolveMediaUrl(bubbleHeaderValueRaw) : null;
                     const bubbleHeaderText = bubbleHeaderType === 'text' 
                       ? (pHeader?.params?.[0] || selectedMetaTmpl.headerFilename || selectedMetaTmpl.header_filename || null) 
                       : null;
