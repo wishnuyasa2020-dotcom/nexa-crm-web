@@ -945,7 +945,16 @@ function TemplateReviewDialog({
   }
 
   // Meta Console Source of Truth
-  const finalHeaderType = (t.header_type || 'none').toLowerCase();
+  let finalHeaderType = (t.header_type || '').toLowerCase();
+  if (!finalHeaderType || finalHeaderType === 'none') {
+    const parsedType = (pHeader?.type || '').toLowerCase();
+    // Only fallback for media to avoid text header hallucinations (e.g., STUDENT_NAME)
+    if (['image', 'video', 'document'].includes(parsedType)) {
+      finalHeaderType = parsedType;
+    } else {
+      finalHeaderType = 'none';
+    }
+  }
   const finalHeaderUrl  = finalHeaderType !== 'text' && finalHeaderType !== 'none' ? (pHeader?.url || t.header_url || null) : null;
   const finalHeaderText = finalHeaderType === 'text' ? (pHeader?.params?.[0] || t.header_filename || null) : null;
   const resolvedHeaderText = finalHeaderText ? resolvePreview(finalHeaderText) : null;

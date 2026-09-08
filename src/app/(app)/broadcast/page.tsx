@@ -826,7 +826,16 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     const metaBtns = parsed.meta_buttons || [];
 
                     // Meta Console Source of Truth
-                    const structureHeaderType = (selectedMetaTmpl.headerType || selectedMetaTmpl.header_type || 'none').toLowerCase();
+                    let structureHeaderType = (selectedMetaTmpl.headerType || selectedMetaTmpl.header_type || '').toLowerCase();
+                    if (!structureHeaderType || structureHeaderType === 'none') {
+                      const parsedType = (pHeader?.type || '').toLowerCase();
+                      // Only fallback for media to avoid text header hallucinations (e.g., STUDENT_NAME)
+                      if (['image', 'video', 'document'].includes(parsedType)) {
+                        structureHeaderType = parsedType;
+                      } else {
+                        structureHeaderType = 'none';
+                      }
+                    }
                     const bubbleHeaderType = structureHeaderType;
                     const bubbleHeaderValueRaw = bubbleHeaderType !== 'none' && bubbleHeaderType !== 'text' 
                       ? (pHeader?.url || selectedMetaTmpl.headerUrl || selectedMetaTmpl.header_url || null) 
