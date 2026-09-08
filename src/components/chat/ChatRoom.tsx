@@ -935,6 +935,19 @@ function TemplateReviewDialog({
   const resolvedBody = resolvePreview(t.body_text);
   const resolvedBodyHtml = renderMessageBody(resolvedBody);
 
+  // Resolusi header (mengutamakan parameter dinamis jika ada)
+  let pHeader: { type?: string; url?: string; params?: string[] } | null = null;
+  if (t.parameters) {
+    try {
+      const params = JSON.parse(t.parameters);
+      pHeader = params.header || null;
+    } catch { /* ignore */ }
+  }
+
+  const finalHeaderType = pHeader?.type || t.header_type || 'none';
+  const finalHeaderUrl  = pHeader?.url || t.header_url || null;
+  const finalHeaderText = pHeader?.params?.[0] || t.header_filename || null;
+
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onBack(); }}>
       {/* flex-col + max-h agar konten bisa scroll jika panjang */}
@@ -957,9 +970,9 @@ function TemplateReviewDialog({
               <div className="max-w-[90%] bg-[#202c33] rounded-lg rounded-tl-none shadow-sm overflow-hidden">
 
                 {/* Header: image */}
-                {t.header_type === 'image' && t.header_url && (
+                {finalHeaderType === 'image' && finalHeaderUrl && (
                   <img
-                    src={resolveMediaUrl(t.header_url)}
+                    src={resolveMediaUrl(finalHeaderUrl)}
                     alt="Header template"
                     className="w-full max-h-56 object-cover"
                     onError={(e) => {
@@ -969,30 +982,30 @@ function TemplateReviewDialog({
                   />
                 )}
                 {/* Fallback placeholder jika header image tapi URL kosong */}
-                {t.header_type === 'image' && !t.header_url && (
+                {finalHeaderType === 'image' && !finalHeaderUrl && (
                   <div className="w-full h-32 bg-[#2a3942] flex items-center justify-center">
                     <ImageIcon className="h-8 w-8 text-[#8696a0]" />
                   </div>
                 )}
 
                 {/* Header: video */}
-                {t.header_type === 'video' && t.header_url && (
+                {finalHeaderType === 'video' && finalHeaderUrl && (
                   <video
-                    src={resolveMediaUrl(t.header_url)}
+                    src={resolveMediaUrl(finalHeaderUrl)}
                     controls
                     className="w-full max-h-56 bg-black"
                   />
                 )}
-                {t.header_type === 'video' && !t.header_url && (
+                {finalHeaderType === 'video' && !finalHeaderUrl && (
                   <div className="w-full h-32 bg-[#2a3942] flex items-center justify-center">
                     <Video className="h-8 w-8 text-[#8696a0]" />
                   </div>
                 )}
 
                 {/* Header: text */}
-                {t.header_type === 'text' && t.header_filename && (
+                {finalHeaderType === 'text' && finalHeaderText && (
                   <div className="px-3 pt-3 font-bold text-[#e9edef] text-sm leading-snug">
-                    {t.header_filename}
+                    {finalHeaderText}
                   </div>
                 )}
 
