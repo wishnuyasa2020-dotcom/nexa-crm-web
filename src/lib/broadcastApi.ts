@@ -67,6 +67,7 @@ export interface MetaTemplate {
   header_url?: string;
   headerFilename?: string;      // header_filename
   header_filename?: string;
+  meta_buttons?: string;
   parameters: string | null;
   status: string;               // status_meta
   qualityRating: string | null; // meta_quality_rating

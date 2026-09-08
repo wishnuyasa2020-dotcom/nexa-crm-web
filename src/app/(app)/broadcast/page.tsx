@@ -823,7 +823,8 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     
                     const pHeader = parsed.header || null;
                     const bodyVars = parsed.body || [];
-                    const metaBtns = parsed.meta_buttons || [];
+                    let metaBtns: any[] = [];
+                    try { metaBtns = JSON.parse(selectedMetaTmpl.meta_buttons || '[]'); } catch { metaBtns = []; }
 
                     // Meta Console Source of Truth
                     let structureHeaderType = (selectedMetaTmpl.headerType || selectedMetaTmpl.header_type || '').toLowerCase();
