@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Radio, Send, Search, ArrowLeft, Loader2, Info, RotateCcw, X, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, School } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { broadcastApi, type AudienceItem, type BroadcastCampaign, type MetaTemplate, type CrmTemplate } from '@/lib/broadcastApi';
+import { TemplatePreviewBubble, buildPreviewText, type ButtonType } from '@/components/templates/TemplatePreviewBubble';
 
 // Status dari GAS Worker: antri, proses, selesai, gagal
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -804,12 +805,42 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                   </select>
-                  {metaTemplate && metaTemplates.find(t => t.id === metaTemplate)?.bodyText && (
-                    <div className="p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground border border-border/50">
-                      <p className="font-medium text-foreground mb-1">Preview:</p>
-                      <p className="whitespace-pre-wrap">{metaTemplates.find(t => t.id === metaTemplate)?.bodyText}</p>
-                    </div>
-                  )}
+                  {(() => {
+                    const selectedMetaTmpl = metaTemplate ? metaTemplates.find(t => t.id === metaTemplate) : null;
+                    if (!selectedMetaTmpl || !selectedMetaTmpl.bodyText) return null;
+
+                    let parsed: any = {};
+                    try { parsed = JSON.parse(selectedMetaTmpl.parameters || '{}'); } catch { parsed = {}; }
+                    
+                    const pHeader = parsed.header || null;
+                    const bodyVars = parsed.body || [];
+                    const metaBtns = parsed.meta_buttons || [];
+
+                    const bubbleHeaderType = pHeader?.type || 'none';
+                    const bubbleHeaderValue = pHeader?.url || null;
+                    const bubbleHeaderText = pHeader?.params?.[0] || null;
+
+                    const bubbleButtons = metaBtns.map((b: any) => ({
+                      type: (b.type || 'QUICK_REPLY') as ButtonType,
+                      label: b.text,
+                    }));
+                    const bubbleBodyText = buildPreviewText(selectedMetaTmpl.bodyText, bodyVars);
+
+                    return (
+                      <div className="p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground border border-border/50">
+                        <p className="font-medium text-foreground mb-3">Preview:</p>
+                        <div className="bg-[#0b141a] rounded-xl p-4 min-h-48">
+                          <TemplatePreviewBubble
+                            bodyText={bubbleBodyText}
+                            headerType={bubbleHeaderType !== 'none' ? bubbleHeaderType : null}
+                            headerValue={bubbleHeaderValue}
+                            headerText={bubbleHeaderText}
+                            buttonObjects={bubbleButtons}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="space-y-2">

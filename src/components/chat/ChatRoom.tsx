@@ -1123,8 +1123,6 @@ function TemplatePicker({
     if (!text) return '';
     const vars = [studentName, 'Nexa', ''];
     let resolved = text.replace(/\{\{(\d+)\}\}/g, (_, i) => vars[parseInt(i) - 1] || '');
-    // Ganti parameter literal (biasa muncul di header dinamis)
-    resolved = resolved.replace(/STUDENT_NAME/g, studentName || 'Siswa');
     return resolved;
   };
 
