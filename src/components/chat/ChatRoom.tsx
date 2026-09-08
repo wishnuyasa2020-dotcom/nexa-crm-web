@@ -947,6 +947,7 @@ function TemplateReviewDialog({
   const finalHeaderType = pHeader?.type || t.header_type || 'none';
   const finalHeaderUrl  = pHeader?.url || t.header_url || null;
   const finalHeaderText = pHeader?.params?.[0] || t.header_filename || null;
+  const resolvedHeaderText = finalHeaderText ? resolvePreview(finalHeaderText) : null;
 
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onBack(); }}>
@@ -1003,9 +1004,9 @@ function TemplateReviewDialog({
                 )}
 
                 {/* Header: text */}
-                {finalHeaderType === 'text' && finalHeaderText && (
+                {finalHeaderType === 'text' && resolvedHeaderText && (
                   <div className="px-3 pt-3 font-bold text-[#e9edef] text-sm leading-snug">
-                    {finalHeaderText}
+                    {resolvedHeaderText}
                   </div>
                 )}
 
@@ -1118,9 +1119,13 @@ function TemplatePicker({
     if (!val) setSelected(null); // reset review saat picker ditutup
   };
 
-  const resolvePreview = (bodyText: string) => {
+  const resolvePreview = (text: string) => {
+    if (!text) return '';
     const vars = [studentName, 'Nexa', ''];
-    return bodyText.replace(/\{\{(\d+)\}\}/g, (_, i) => vars[parseInt(i) - 1] || '');
+    let resolved = text.replace(/\{\{(\d+)\}\}/g, (_, i) => vars[parseInt(i) - 1] || '');
+    // Ganti parameter literal (biasa muncul di header dinamis)
+    resolved = resolved.replace(/STUDENT_NAME/g, studentName || 'Siswa');
+    return resolved;
   };
 
   const handleConfirmSend = async () => {
