@@ -831,7 +831,7 @@ function ReactionMenu({ onSelect }: { onSelect: (emoji: string) => void }) {
 
 /** Parse semua button labels dari meta_buttons atau parameters (semua tipe: QUICK_REPLY, URL, PHONE_NUMBER) */
 function parseButtons(t: WaTemplate): { label: string; type: string }[] {
-  // Coba meta_buttons dulu (JSON array dari Meta)
+  // Coba meta_buttons dulu (string JSON dari kolom DB)
   if (t.meta_buttons) {
     try {
       const parsed = JSON.parse(t.meta_buttons);
@@ -842,16 +842,26 @@ function parseButtons(t: WaTemplate): { label: string; type: string }[] {
       }
     } catch { /* lanjut ke fallback */ }
   }
-  // Fallback: parameters (bisa berupa {buttons:[]} atau {components:[{type:'BUTTONS',buttons:[]}]})
+
+  // Fallback: baca dari field 'parameters' (format internal CRM kita)
   if (t.parameters) {
     try {
       const params = JSON.parse(t.parameters);
+
+      // Cek apakah ada meta_buttons di dalam parameters (struktur baru yang dipakai di templates/page.tsx)
+      if (Array.isArray(params?.meta_buttons) && params.meta_buttons.length > 0) {
+        return params.meta_buttons
+          .filter((b: any) => b.text)
+          .map((b: any) => ({ label: b.text as string, type: (b.type || 'QUICK_REPLY') as string }));
+      }
+
       // Format 1: { buttons: [{text, type}] }
       if (Array.isArray(params?.buttons) && params.buttons.length > 0) {
         return params.buttons
           .filter((b: any) => b.text)
           .map((b: any) => ({ label: b.text as string, type: (b.type || 'QUICK_REPLY') as string }));
       }
+
       // Format 2: { components: [{type:'BUTTONS', buttons:[]}] }
       if (Array.isArray(params?.components)) {
         const btnComp = params.components.find((c: any) => c.type === 'BUTTONS');
