@@ -945,7 +945,7 @@ function TemplateReviewDialog({
   }
 
   // Meta Console Source of Truth
-  const finalHeaderType = t.header_type || 'none';
+  const finalHeaderType = (t.header_type || 'none').toLowerCase();
   const finalHeaderUrl  = finalHeaderType !== 'text' && finalHeaderType !== 'none' ? (pHeader?.url || t.header_url || null) : null;
   const finalHeaderText = finalHeaderType === 'text' ? (pHeader?.params?.[0] || t.header_filename || null) : null;
   const resolvedHeaderText = finalHeaderText ? resolvePreview(finalHeaderText) : null;
