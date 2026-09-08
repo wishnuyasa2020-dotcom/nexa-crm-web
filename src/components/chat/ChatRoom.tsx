@@ -829,28 +829,37 @@ function ReactionMenu({ onSelect }: { onSelect: (emoji: string) => void }) {
 // TemplatePicker Dialog
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Parse quick-reply button labels dari meta_buttons atau parameters */
-function parseButtons(t: WaTemplate): string[] {
+/** Parse semua button labels dari meta_buttons atau parameters (semua tipe: QUICK_REPLY, URL, PHONE_NUMBER) */
+function parseButtons(t: WaTemplate): { label: string; type: string }[] {
   // Coba meta_buttons dulu (JSON array dari Meta)
   if (t.meta_buttons) {
     try {
       const parsed = JSON.parse(t.meta_buttons);
-      if (Array.isArray(parsed)) {
-        const labels = parsed
-          .filter((b: any) => b.type === 'QUICK_REPLY' && b.text)
-          .map((b: any) => b.text as string);
-        if (labels.length > 0) return labels;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+          .filter((b: any) => b.text)
+          .map((b: any) => ({ label: b.text as string, type: (b.type || 'QUICK_REPLY') as string }));
       }
     } catch { /* lanjut ke fallback */ }
   }
-  // Fallback: parameters.buttons[]
+  // Fallback: parameters (bisa berupa {buttons:[]} atau {components:[{type:'BUTTONS',buttons:[]}]})
   if (t.parameters) {
     try {
       const params = JSON.parse(t.parameters);
-      if (Array.isArray(params?.buttons)) {
+      // Format 1: { buttons: [{text, type}] }
+      if (Array.isArray(params?.buttons) && params.buttons.length > 0) {
         return params.buttons
           .filter((b: any) => b.text)
-          .map((b: any) => b.text as string);
+          .map((b: any) => ({ label: b.text as string, type: (b.type || 'QUICK_REPLY') as string }));
+      }
+      // Format 2: { components: [{type:'BUTTONS', buttons:[]}] }
+      if (Array.isArray(params?.components)) {
+        const btnComp = params.components.find((c: any) => c.type === 'BUTTONS');
+        if (btnComp && Array.isArray(btnComp.buttons)) {
+          return btnComp.buttons
+            .filter((b: any) => b.text)
+            .map((b: any) => ({ label: b.text as string, type: (b.type || 'QUICK_REPLY') as string }));
+        }
       }
     } catch { /* abaikan */ }
   }
@@ -888,6 +897,16 @@ function TemplateListItem({
   );
 }
 
+/** Resolve image URL: jika relative path, tambahkan base API + token */
+function resolveMediaUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // Relative path dari server CRM
+  const base = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
+  const token = typeof window !== 'undefined' ? (document.cookie.match(/nexa_token=([^;]+)/) || [])[1] || '' : '';
+  return `${base}${url}${token ? `?token=${token}` : ''}`;
+}
+
 /** Review Dialog — tampilan WA-bubble penerima */
 function TemplateReviewDialog({
   template: t,
@@ -904,78 +923,115 @@ function TemplateReviewDialog({
 }) {
   const buttons = parseButtons(t);
   const resolvedBody = resolvePreview(t.body_text);
+  const resolvedBodyHtml = renderMessageBody(resolvedBody);
 
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onBack(); }}>
-      <DialogContent className="sm:max-w-sm bg-[#111b21] border-[#222d34] text-[#e9edef] p-0 overflow-hidden">
-        <DialogHeader className="px-5 pt-5 pb-0">
+      {/* flex-col + max-h agar konten bisa scroll jika panjang */}
+      <DialogContent className="sm:max-w-sm bg-[#111b21] border-[#222d34] text-[#e9edef] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+
+        {/* Header — fixed, tidak ikut scroll */}
+        <DialogHeader className="px-5 pt-5 pb-3 shrink-0 border-b border-[#222d34]">
           <DialogTitle className="text-[#e9edef] flex items-center gap-2 text-sm">
             <span className="bg-[#00a884]/20 text-[#00a884] px-2 py-0.5 rounded-full text-xs font-semibold">PREVIEW</span>
             {t.nama_template}
           </DialogTitle>
         </DialogHeader>
 
-        {/* Wrapper bg simulasi wallpaper WA */}
-        <div className="mx-5 my-4 rounded-xl overflow-hidden shadow-inner" style={{ background: '#0b141a' }}>
-          <div className="p-3 flex justify-start">
-            {/* Bubble penerima */}
-            <div className="max-w-[90%] bg-[#202c33] rounded-lg rounded-tl-none shadow-sm overflow-hidden">
+        {/* Scrollable area — bubble WA */}
+        <ScrollArea className="flex-1 min-h-0">
+          {/* Wrapper bg simulasi wallpaper WA */}
+          <div className="mx-5 my-4 rounded-xl overflow-hidden shadow-inner" style={{ background: '#0b141a' }}>
+            <div className="p-3 flex justify-start">
+              {/* Bubble penerima */}
+              <div className="max-w-[90%] bg-[#202c33] rounded-lg rounded-tl-none shadow-sm overflow-hidden">
 
-              {/* Header: image */}
-              {t.header_type === 'image' && t.header_url && (
-                <img
-                  src={t.header_url}
-                  alt="Header template"
-                  className="w-full max-h-48 object-cover"
-                />
-              )}
+                {/* Header: image */}
+                {t.header_type === 'image' && t.header_url && (
+                  <img
+                    src={resolveMediaUrl(t.header_url)}
+                    alt="Header template"
+                    className="w-full max-h-56 object-cover"
+                    onError={(e) => {
+                      // Sembunyikan jika gagal load
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                )}
+                {/* Fallback placeholder jika header image tapi URL kosong */}
+                {t.header_type === 'image' && !t.header_url && (
+                  <div className="w-full h-32 bg-[#2a3942] flex items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-[#8696a0]" />
+                  </div>
+                )}
 
-              {/* Header: video */}
-              {t.header_type === 'video' && t.header_url && (
-                <video
-                  src={t.header_url}
-                  controls
-                  className="w-full max-h-48 bg-black"
-                />
-              )}
+                {/* Header: video */}
+                {t.header_type === 'video' && t.header_url && (
+                  <video
+                    src={resolveMediaUrl(t.header_url)}
+                    controls
+                    className="w-full max-h-56 bg-black"
+                  />
+                )}
+                {t.header_type === 'video' && !t.header_url && (
+                  <div className="w-full h-32 bg-[#2a3942] flex items-center justify-center">
+                    <Video className="h-8 w-8 text-[#8696a0]" />
+                  </div>
+                )}
 
-              {/* Header: text */}
-              {t.header_type === 'text' && t.header_filename && (
-                <div className="px-3 pt-3 font-bold text-[#e9edef] text-sm leading-snug">
-                  {t.header_filename}
+                {/* Header: text */}
+                {t.header_type === 'text' && t.header_filename && (
+                  <div className="px-3 pt-3 font-bold text-[#e9edef] text-sm leading-snug">
+                    {t.header_filename}
+                  </div>
+                )}
+
+                {/* Body — pakai dangerouslySetInnerHTML agar URL & format WA tampil */}
+                <div className="px-3 py-2.5">
+                  <div
+                    className="text-[#e9edef] text-sm whitespace-pre-wrap leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: resolvedBodyHtml }}
+                  />
+                  <span className="block text-right text-[10px] text-[#8696a0] mt-1">
+                    Sekarang ✓
+                  </span>
                 </div>
-              )}
 
-              {/* Body */}
-              <div className="px-3 py-2.5">
-                <p className="text-[#e9edef] text-sm whitespace-pre-wrap leading-relaxed">
-                  {resolvedBody}
-                </p>
-                <span className="block text-right text-[10px] text-[#8696a0] mt-1">
-                  Sekarang ✓
-                </span>
+                {/* Buttons */}
+                {buttons.length > 0 && (
+                  <div className="border-t border-[#2a3942]">
+                    {buttons.map((btn, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-center justify-center px-3 py-2 text-[#53bdeb] text-sm font-medium gap-1.5 ${
+                          i < buttons.length - 1 ? 'border-b border-[#2a3942]' : ''
+                        }`}
+                      >
+                        {btn.type === 'URL' ? (
+                          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current opacity-70" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                          </svg>
+                        ) : btn.type === 'PHONE_NUMBER' ? (
+                          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current opacity-70" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current opacity-70" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                          </svg>
+                        )}
+                        {btn.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {/* Quick Reply Buttons */}
-              {buttons.length > 0 && (
-                <div className="border-t border-[#2a3942]">
-                  {buttons.map((label, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center justify-center px-3 py-2 text-[#53bdeb] text-sm font-medium gap-1.5 ${i < buttons.length - 1 ? 'border-b border-[#2a3942]' : ''}`}
-                    >
-                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current opacity-70" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-                      {label}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
-        </div>
+        </ScrollArea>
 
-        {/* Action buttons */}
-        <div className="px-5 pb-5 flex gap-2">
+        {/* Action buttons — fixed di bawah */}
+        <div className="px-5 py-4 shrink-0 border-t border-[#222d34] flex gap-2">
           <Button
             variant="outline"
             className="flex-1 bg-transparent border-[#2a3942] text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef]"
