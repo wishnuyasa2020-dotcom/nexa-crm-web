@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
-  Image as ImageIcon, Video, MapPin, X, FileText, Smile
+  Image as ImageIcon, Video, MapPin, X, FileText, Smile, MousePointer2
 } from 'lucide-react';
 
 import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
@@ -507,7 +507,12 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                       <span className="text-xs text-blue-400 underline">Unduh Dokumen</span>
                     </div>
                   )}
-                  <div dangerouslySetInnerHTML={{ __html: renderMessageBody(msg.body || `[${msg.type}]`) }} />
+                  <div dangerouslySetInnerHTML={{ __html: renderMessageBody(msg.body || (msg.type === 'interactive' && msg.direction === 'incoming' ? '[Membalas Tombol Interaktif]' : `[${msg.type}]`)) }} />
+                  {(msg.type === 'interactive' || msg.type === 'template') && msg.direction === 'outgoing' && (
+                    <div className="mt-1.5 pt-1.5 border-t border-[#8696a0]/30 flex items-center gap-1.5 text-[10px] text-[#53bdeb] uppercase tracking-wider font-semibold">
+                      <MousePointer2 className="h-3 w-3" /> Pilihan Interaktif Terlampir
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center justify-end space-x-1 mt-1">
                   <span className="text-[10px] text-gray-400">
