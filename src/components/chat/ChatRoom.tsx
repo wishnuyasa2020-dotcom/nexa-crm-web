@@ -828,6 +828,177 @@ function ReactionMenu({ onSelect }: { onSelect: (emoji: string) => void }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // TemplatePicker Dialog
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** Parse quick-reply button labels dari meta_buttons atau parameters */
+function parseButtons(t: WaTemplate): string[] {
+  // Coba meta_buttons dulu (JSON array dari Meta)
+  if (t.meta_buttons) {
+    try {
+      const parsed = JSON.parse(t.meta_buttons);
+      if (Array.isArray(parsed)) {
+        const labels = parsed
+          .filter((b: any) => b.type === 'QUICK_REPLY' && b.text)
+          .map((b: any) => b.text as string);
+        if (labels.length > 0) return labels;
+      }
+    } catch { /* lanjut ke fallback */ }
+  }
+  // Fallback: parameters.buttons[]
+  if (t.parameters) {
+    try {
+      const params = JSON.parse(t.parameters);
+      if (Array.isArray(params?.buttons)) {
+        return params.buttons
+          .filter((b: any) => b.text)
+          .map((b: any) => b.text as string);
+      }
+    } catch { /* abaikan */ }
+  }
+  return [];
+}
+
+/** Sub-komponen item template di list picker */
+function TemplateListItem({
+  template: t,
+  resolvePreview,
+  onPickReview,
+}: {
+  template: WaTemplate;
+  resolvePreview: (body: string) => string;
+  onPickReview: (t: WaTemplate) => void;
+}) {
+  return (
+    <div
+      className="border border-[#222d34] bg-[#202c33] rounded-lg p-3 hover:bg-[#2a3942] cursor-pointer transition-colors group"
+    >
+      <div className="flex justify-between items-start mb-2">
+        <h4 className="font-semibold text-sm text-[#e9edef]">{t.nama_template}</h4>
+        <StatusBadge status={t.meta_status} />
+      </div>
+      <p className="text-xs text-[#8696a0] mb-3 line-clamp-3">{resolvePreview(t.body_text)}</p>
+      <Button
+        size="sm"
+        variant="outline"
+        className="w-full bg-[#111b21] hover:bg-[#222d34] text-[#e9edef] border-[#2a3942] opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => onPickReview(t)}
+      >
+        Preview &amp; Kirim
+      </Button>
+    </div>
+  );
+}
+
+/** Review Dialog — tampilan WA-bubble penerima */
+function TemplateReviewDialog({
+  template: t,
+  resolvePreview,
+  isSending,
+  onConfirm,
+  onBack,
+}: {
+  template: WaTemplate;
+  resolvePreview: (body: string) => string;
+  isSending: boolean;
+  onConfirm: () => void;
+  onBack: () => void;
+}) {
+  const buttons = parseButtons(t);
+  const resolvedBody = resolvePreview(t.body_text);
+
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) onBack(); }}>
+      <DialogContent className="sm:max-w-sm bg-[#111b21] border-[#222d34] text-[#e9edef] p-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-0">
+          <DialogTitle className="text-[#e9edef] flex items-center gap-2 text-sm">
+            <span className="bg-[#00a884]/20 text-[#00a884] px-2 py-0.5 rounded-full text-xs font-semibold">PREVIEW</span>
+            {t.nama_template}
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Wrapper bg simulasi wallpaper WA */}
+        <div className="mx-5 my-4 rounded-xl overflow-hidden shadow-inner" style={{ background: '#0b141a' }}>
+          <div className="p-3 flex justify-start">
+            {/* Bubble penerima */}
+            <div className="max-w-[90%] bg-[#202c33] rounded-lg rounded-tl-none shadow-sm overflow-hidden">
+
+              {/* Header: image */}
+              {t.header_type === 'image' && t.header_url && (
+                <img
+                  src={t.header_url}
+                  alt="Header template"
+                  className="w-full max-h-48 object-cover"
+                />
+              )}
+
+              {/* Header: video */}
+              {t.header_type === 'video' && t.header_url && (
+                <video
+                  src={t.header_url}
+                  controls
+                  className="w-full max-h-48 bg-black"
+                />
+              )}
+
+              {/* Header: text */}
+              {t.header_type === 'text' && t.header_filename && (
+                <div className="px-3 pt-3 font-bold text-[#e9edef] text-sm leading-snug">
+                  {t.header_filename}
+                </div>
+              )}
+
+              {/* Body */}
+              <div className="px-3 py-2.5">
+                <p className="text-[#e9edef] text-sm whitespace-pre-wrap leading-relaxed">
+                  {resolvedBody}
+                </p>
+                <span className="block text-right text-[10px] text-[#8696a0] mt-1">
+                  Sekarang ✓
+                </span>
+              </div>
+
+              {/* Quick Reply Buttons */}
+              {buttons.length > 0 && (
+                <div className="border-t border-[#2a3942]">
+                  {buttons.map((label, i) => (
+                    <div
+                      key={i}
+                      className={`flex items-center justify-center px-3 py-2 text-[#53bdeb] text-sm font-medium gap-1.5 ${i < buttons.length - 1 ? 'border-b border-[#2a3942]' : ''}`}
+                    >
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current opacity-70" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                      {label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="px-5 pb-5 flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1 bg-transparent border-[#2a3942] text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef]"
+            onClick={onBack}
+            disabled={isSending}
+          >
+            Batal
+          </Button>
+          <Button
+            className="flex-1 bg-[#00a884] hover:bg-[#008f6f] text-[#111b21] font-semibold disabled:opacity-50"
+            onClick={onConfirm}
+            disabled={isSending}
+          >
+            {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+              <><Send className="h-4 w-4 mr-1.5" />Kirim Sekarang</>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function TemplatePicker({
   buttonText,
   buttonClassName = '',
@@ -843,15 +1014,17 @@ function TemplatePicker({
   disabled?:       boolean;
   onSendTemplate:  (templateId: string | number) => void;
 }) {
-  const [templates, setTemplates]   = useState<WaTemplate[]>([]);
-  const [loading, setLoading]       = useState(false);
-  const [open, setOpen]             = useState(false);
+  const [templates, setTemplates]           = useState<WaTemplate[]>([]);
+  const [loading, setLoading]               = useState(false);
+  const [open, setOpen]                     = useState(false);
+  const [selectedForReview, setSelected]    = useState<WaTemplate | null>(null);
+  const [isSendingReview, setIsSendingReview] = useState(false);
 
   const loadTemplates = useCallback(async () => {
     if (templates.length > 0) return; // cache sederhana
     setLoading(true);
     try {
-      const res = await fetchTemplates({ status: undefined }); // semua template aktif
+      const res = await fetchTemplates({ status: undefined });
       setTemplates(res.data.filter((t: WaTemplate) => t.status_crm === 'ACTIVE'));
     } catch {
       console.error('Gagal load templates');
@@ -863,6 +1036,7 @@ function TemplatePicker({
   const handleOpenChange = (val: boolean) => {
     setOpen(val);
     if (val) loadTemplates();
+    if (!val) setSelected(null); // reset review saat picker ditutup
   };
 
   const resolvePreview = (bodyText: string) => {
@@ -870,56 +1044,66 @@ function TemplatePicker({
     return bodyText.replace(/\{\{(\d+)\}\}/g, (_, i) => vars[parseInt(i) - 1] || '');
   };
 
+  const handleConfirmSend = async () => {
+    if (!selectedForReview) return;
+    setIsSendingReview(true);
+    try {
+      await onSendTemplate(selectedForReview.id_template);
+    } finally {
+      setIsSendingReview(false);
+      setSelected(null);
+      setOpen(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        disabled={disabled}
-        className={
-          iconOnly
-            ? buttonVariants({ variant: 'ghost', size: 'icon', className: 'shrink-0 text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10' })
-            : buttonVariants({ className: buttonClassName })
-        }
-      >
-        {iconOnly ? <Clock className="h-5 w-5" /> : buttonText}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-[#111b21] border-[#222d34] text-[#e9edef]">
-        <DialogHeader>
-          <DialogTitle className="text-[#e9edef]">Pilih Template Pesan</DialogTitle>
-        </DialogHeader>
-        <ScrollArea className="h-80 mt-4 pr-4">
-          {loading && (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-[#8696a0]" />
-            </div>
-          )}
-          <div className="space-y-3">
-            {templates.map(t => (
-              <div
-                key={t.id_template}
-                className="border border-[#222d34] bg-[#202c33] rounded-lg p-3 hover:bg-[#2a3942] cursor-pointer transition-colors group"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-sm text-[#e9edef]">{t.nama_template}</h4>
-                  <StatusBadge status={t.meta_status} />
-                </div>
-                <p className="text-xs text-[#8696a0] mb-3">{resolvePreview(t.body_text)}</p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full bg-[#111b21] hover:bg-[#222d34] text-[#e9edef] border-[#2a3942] opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => {
-                    onSendTemplate(t.id_template);
-                    setOpen(false);
-                  }}
-                >
-                  Gunakan Template
-                </Button>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger
+          disabled={disabled}
+          className={
+            iconOnly
+              ? buttonVariants({ variant: 'ghost', size: 'icon', className: 'shrink-0 text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10' })
+              : buttonVariants({ className: buttonClassName })
+          }
+        >
+          {iconOnly ? <Clock className="h-5 w-5" /> : buttonText}
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md bg-[#111b21] border-[#222d34] text-[#e9edef]">
+          <DialogHeader>
+            <DialogTitle className="text-[#e9edef]">Pilih Template Pesan</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-80 mt-4 pr-4">
+            {loading && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-[#8696a0]" />
               </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+            )}
+            <div className="space-y-3">
+              {templates.map(t => (
+                <TemplateListItem
+                  key={t.id_template}
+                  template={t}
+                  resolvePreview={resolvePreview}
+                  onPickReview={(tmpl) => setSelected(tmpl)}
+                />
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Dialog — terbuka di atas list picker */}
+      {selectedForReview && (
+        <TemplateReviewDialog
+          template={selectedForReview}
+          resolvePreview={resolvePreview}
+          isSending={isSendingReview || disabled}
+          onConfirm={handleConfirmSend}
+          onBack={() => setSelected(null)}
+        />
+      )}
+    </>
   );
 }
 
