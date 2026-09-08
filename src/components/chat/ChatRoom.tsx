@@ -962,7 +962,7 @@ function TemplateReviewDialog({
         </DialogHeader>
 
         {/* Scrollable area — bubble WA */}
-        <ScrollArea className="flex-1 min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {/* Wrapper bg simulasi wallpaper WA */}
           <div className="mx-5 my-4 rounded-xl overflow-hidden shadow-inner" style={{ background: '#0b141a' }}>
             <div className="p-3 flex justify-start">
@@ -1051,7 +1051,7 @@ function TemplateReviewDialog({
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Action buttons — fixed di bawah */}
         <div className="px-5 py-4 shrink-0 border-t border-[#222d34] flex gap-2">
