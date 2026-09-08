@@ -826,8 +826,9 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     let metaBtns: any[] = [];
                     try { 
                         metaBtns = JSON.parse(selectedMetaTmpl.meta_buttons || '[]'); 
-                        if (metaBtns.length === 0 && parsed.buttons) {
-                            metaBtns = parsed.buttons.map((b: any) => ({
+                        const rawButtons = parsed.buttons || parsed.meta_buttons;
+                        if (metaBtns.length === 0 && rawButtons) {
+                            metaBtns = rawButtons.map((b: any) => ({
                                 type: b.type,
                                 text: b.label || b.text
                             }));
