@@ -85,7 +85,7 @@ export interface CrmTemplate {
 export interface SendBroadcastPayload {
   targetIds: string[];
   metaTemplateId: string | null;
-  crmTemplateId: string | null;
+  crmTemplateId?: string | null;
   namaCampaign?: string;
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Radio, Send, Search, ArrowLeft, Loader2, Info, RotateCcw, X, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, School } from 'lucide-react';
+import { Radio, Send, Search, ArrowLeft, Loader2, Info, RotateCcw, X, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, School, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { broadcastApi, type AudienceItem, type BroadcastCampaign, type MetaTemplate, type CrmTemplate } from '@/lib/broadcastApi';
 import { TemplatePreviewBubble, buildPreviewText, type ButtonType } from '@/components/templates/TemplatePreviewBubble';
@@ -392,7 +392,6 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
 
   // ── Template state ──
   const [metaTemplates, setMetaTemplates]   = useState<MetaTemplate[]>([]);
-  const [crmTemplates, setCrmTemplates]     = useState<CrmTemplate[]>([]);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
 
   // ── Filter state ──
@@ -406,7 +405,6 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
 
   // ── Form state ──
   const [metaTemplate, setMetaTemplate] = useState('');
-  const [crmTemplate, setCrmTemplate]   = useState('');
   const [namaCampaign, setNamaCampaign] = useState('');
   const [isSending, setIsSending]       = useState(false);
 
@@ -463,12 +461,8 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
   const fetchTemplates = useCallback(async () => {
     setIsLoadingTemplates(true);
     try {
-      const [metaRes, crmRes] = await Promise.all([
-        broadcastApi.getMetaTemplates(),
-        broadcastApi.getCrmTemplates(),
-      ]);
+      const metaRes = await broadcastApi.getMetaTemplates();
       setMetaTemplates(metaRes.data?.data ?? []);
-      setCrmTemplates(crmRes.data?.data ?? []);
     } catch (_) {
       // Template gagal load — biarkan dropdown kosong
     } finally {
@@ -540,7 +534,6 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
       await broadcastApi.sendBroadcast({
         targetIds: Array.from(selectedIds),
         metaTemplateId: metaTemplate || null,
-        crmTemplateId: crmTemplate || null,
         namaCampaign: namaCampaign || undefined,
       });
       onSuccess(`Broadcast ke ${selectedIds.size} audiens berhasil dimasukkan ke antrian!`);
@@ -788,7 +781,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
         {/* Step 3: Template Selection */}
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-border bg-secondary/30">
-            <h2 className="font-semibold text-foreground">3. Pilih Template Pesan (Dual-Template)</h2>
+            <h2 className="font-semibold text-foreground">3. Pilih Template Pesan</h2>
             <p className="text-xs text-muted-foreground mt-1">Variabel otomatis diisi berdasarkan nama target.</p>
           </div>
           <div className="p-5 space-y-5">
@@ -798,10 +791,9 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                 <span className="text-xs">Memuat template...</span>
               </div>
             ) : (
-              <>
-                <div className="space-y-2">
+              <div className="space-y-2">
                   <label className="text-sm font-semibold flex items-center justify-between">
-                    <span>Meta Template <span className="text-rose-500 text-xs">(Untuk SW Tertutup — Berbayar)</span></span>
+                    <span>Pilih Template Meta</span>
                     <span className="text-[10px] text-muted-foreground">{metaTemplates.length} tersedia</span>
                   </label>
                   <select
@@ -839,7 +831,6 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     let structureHeaderType = (selectedMetaTmpl.headerType || selectedMetaTmpl.header_type || '').toLowerCase();
                     if (!structureHeaderType || structureHeaderType === 'none') {
                       const parsedType = (pHeader?.type || '').toLowerCase();
-                      // Only fallback for media to avoid text header hallucinations (e.g., STUDENT_NAME)
                       if (['image', 'video', 'document'].includes(parsedType)) {
                         structureHeaderType = parsedType;
                       } else {
@@ -848,67 +839,62 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     }
                     const bubbleHeaderType = structureHeaderType;
                     const bubbleHeaderValueRaw = bubbleHeaderType !== 'none' && bubbleHeaderType !== 'text' 
-                      ? (pHeader?.url || selectedMetaTmpl.headerUrl || selectedMetaTmpl.header_url || null) 
-                      : null;
-                    const bubbleHeaderValue = bubbleHeaderValueRaw ? resolveMediaUrl(bubbleHeaderValueRaw) : null;
-                    const bubbleHeaderText = bubbleHeaderType === 'text' 
-                      ? (pHeader?.params?.[0] || selectedMetaTmpl.headerFilename || selectedMetaTmpl.header_filename || null) 
-                      : null;
+                        ? pHeader?.link || selectedMetaTmpl.headerUrl || selectedMetaTmpl.header_url 
+                        : pHeader?.text || selectedMetaTmpl.headerFilename || selectedMetaTmpl.header_filename;
+                    
+                    const bubbleHeaderValue = bubbleHeaderType !== 'none' && bubbleHeaderType !== 'text' 
+                        ? resolveMediaUrl(bubbleHeaderValueRaw)
+                        : bubbleHeaderValueRaw;
 
-                    const bubbleButtons = metaBtns.map((b: any) => ({
-                      type: (b.type || 'QUICK_REPLY') as ButtonType,
-                      label: b.text,
-                    }));
-
-                    const firstSelectedId = Array.from(selectedIds)[0];
-                    const sampleTarget = audience.find(a => a.id === firstSelectedId) || audience[0];
-                    const previewContext: Record<string, string> | undefined = sampleTarget ? {
-                      STUDENT_NAME: sampleTarget.nama,
-                      SCHOOL_NAME: sampleTarget.sekolah,
-                    } : undefined;
-
-                    const bubbleBodyText = buildPreviewText(selectedMetaTmpl.bodyText, bodyVars, previewContext);
+                    let bubbleBodyText = selectedMetaTmpl.bodyText || '';
+                    bodyVars.forEach((v: string, i: number) => {
+                      bubbleBodyText = bubbleBodyText.split(`{{${i+1}}}`).join(`[${v}]`);
+                    });
 
                     return (
-                      <div className="p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground border border-border/50">
-                        <p className="font-medium text-foreground mb-3">Preview:</p>
-                        <div className="bg-[#0b141a] rounded-xl p-4 min-h-48">
-                          <TemplatePreviewBubble
-                            bodyText={bubbleBodyText}
-                            headerType={bubbleHeaderType !== 'none' ? (bubbleHeaderType as any) : null}
-                            headerValue={bubbleHeaderValue}
-                            headerText={bubbleHeaderText}
-                            buttonObjects={bubbleButtons}
-                          />
+                      <div className="mt-4 flex flex-col gap-2 p-4 bg-[#E2FDC4] rounded-xl text-sm text-[#111B21] shadow-sm max-w-sm ml-auto border border-black/5 relative">
+                        {/* Tail/Tip SVG */}
+                        <div className="absolute top-0 -right-2 text-[#E2FDC4]">
+                          <svg viewBox="0 0 8 13" width="8" height="13" className="fill-current">
+                            <path d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" />
+                          </svg>
                         </div>
+
+                        {bubbleHeaderType === 'image' && bubbleHeaderValue && (
+                          <div className="w-full aspect-video bg-black/10 rounded-lg overflow-hidden flex items-center justify-center">
+                            <img src={bubbleHeaderValue} alt="Header" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        {bubbleHeaderType === 'video' && bubbleHeaderValue && (
+                          <div className="w-full aspect-video bg-black/10 rounded-lg overflow-hidden flex items-center justify-center">
+                            <video src={bubbleHeaderValue} controls className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        {bubbleHeaderType === 'document' && bubbleHeaderValue && (
+                          <div className="w-full p-3 bg-black/5 rounded-lg flex items-center gap-2">
+                            <FileText size={20} className="text-[#00A884]" />
+                            <span className="text-xs font-semibold text-black/70 truncate">{bubbleHeaderValue.split('/').pop() || 'Document'}</span>
+                          </div>
+                        )}
+                        {bubbleHeaderType === 'text' && bubbleHeaderValue && (
+                          <p className="font-bold text-[15px]">{bubbleHeaderValue}</p>
+                        )}
+                        
+                        <p className="whitespace-pre-wrap leading-relaxed">{bubbleBodyText}</p>
+                        
+                        {metaBtns.length > 0 && (
+                          <div className="flex flex-col gap-1 mt-2 border-t border-black/10 pt-2">
+                            {metaBtns.map((btn, idx) => (
+                              <button key={idx} disabled className="py-1.5 text-[#00A884] font-medium hover:bg-black/5 rounded-md transition-colors text-[15px]">
+                                {btn.text || btn.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold flex items-center justify-between">
-                    <span>CRM Template <span className="text-emerald-500 text-xs">(Untuk SW Terbuka — Gratis)</span></span>
-                    <span className="text-[10px] text-muted-foreground">{crmTemplates.length} tersedia</span>
-                  </label>
-                  <select
-                    value={crmTemplate}
-                    onChange={e => setCrmTemplate(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-background border rounded-lg text-sm focus:border-primary outline-none"
-                  >
-                    <option value="">-- Pilih Template Internal --</option>
-                    {crmTemplates.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                  {crmTemplate && crmTemplates.find(t => t.id === crmTemplate)?.previewText && (
-                    <div className="p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground border border-border/50">
-                      <p className="font-medium text-foreground mb-1">Preview:</p>
-                      <p className="whitespace-pre-wrap">{crmTemplates.find(t => t.id === crmTemplate)?.previewText}</p>
-                    </div>
-                  )}
-                </div>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -925,11 +911,11 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
               <span className="font-bold">{selectedIds.size}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-emerald-500">SW Terbuka (Gratis — CRM Template)</span>
+              <span className="text-emerald-500">SW Terbuka (Otomatis Routing — Gratis)</span>
               <span className="font-bold">{swOpenCount}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-rose-500">SW Tertutup (Berbayar — Meta Template)</span>
+              <span className="text-rose-500">SW Tertutup (Berbayar)</span>
               <span className="font-bold">{swClosedCount}</span>
             </div>
           </div>
@@ -937,11 +923,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <span className={cn('w-2 h-2 rounded-full shrink-0', metaTemplate ? 'bg-emerald-500' : 'bg-border')} />
-              <span>Meta Template: <span className={metaTemplate ? 'text-foreground font-medium' : ''}>{metaTemplate ? metaTemplates.find(t => t.id === metaTemplate)?.name : 'Belum dipilih'}</span></span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className={cn('w-2 h-2 rounded-full shrink-0', crmTemplate ? 'bg-emerald-500' : 'bg-border')} />
-              <span>CRM Template: <span className={crmTemplate ? 'text-foreground font-medium' : ''}>{crmTemplate ? crmTemplates.find(t => t.id === crmTemplate)?.name : 'Belum dipilih'}</span></span>
+              <span>Template Meta: <span className={metaTemplate ? 'text-foreground font-medium' : ''}>{metaTemplate ? metaTemplates.find(t => t.id === metaTemplate)?.name : 'Belum dipilih'}</span></span>
             </div>
           </div>
 
