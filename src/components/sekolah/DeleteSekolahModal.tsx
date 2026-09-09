@@ -97,7 +97,7 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
                 <AlertCircle size={14} />
                 Hard delete tidak diperbolehkan
               </p>
-              <ul className="list-disc list-inside opacity-90 pl-1 space-y-1 text-xs">
+              <ul className="list-disc list-inside text-foreground/90 pl-1 space-y-1 text-xs">
                 {hasAktivitas && <li>Sekolah memiliki {sekolah.aktivitas.length} riwayat aktivitas.</li>}
                 {isLeadCaptured && <li>Sekolah sudah berstatus Lead Captured.</li>}
                 {hasActiveEkstra && <li>Masih ada aktivitas ekstra yang direncanakan.</li>}
@@ -134,7 +134,7 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
               <p className="font-semibold flex items-center gap-1.5">
                 <AlertCircle size={14} /> Hapus Permanen
               </p>
-              <p className="text-xs opacity-90 leading-relaxed">
+              <p className="text-xs text-foreground/90 leading-relaxed">
                 Anda akan menghapus <strong className="font-semibold">{sekolah.nama}</strong>.<br/>
                 Sekolah ini aman dihapus karena belum memiliki riwayat aktivitas. Data yang dihapus tidak bisa dikembalikan.
               </p>

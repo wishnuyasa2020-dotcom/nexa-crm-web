@@ -150,10 +150,10 @@ export default function ManajemenTimPage() {
                 </div>
                 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${getRoleColor(u.role)}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${getRoleColor(u.role)}`}>
                     {u.role}
                   </span>
-                  <span className={`text-[10px] font-medium flex items-center gap-1 ${u.status === 'Aktif' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  <span className={`text-xs font-medium flex items-center gap-1 ${u.status === 'Aktif' ? 'text-emerald-500' : 'text-rose-500'}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'Aktif' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
                     {u.status}
                   </span>
@@ -224,7 +224,7 @@ export default function ManajemenTimPage() {
                     </td>
                     <td className="px-4 py-3">
                       {u.role === 'Chief CRO' ? (
-                        <div className="text-xs text-muted-foreground truncate max-w-[150px]">
+                        <div className="text-xs text-muted-foreground truncate max-w-36">
                           {u.kecamatan_list?.length ? u.kecamatan_list.join(', ') : <span className="text-amber-500 italic">Belum diatur</span>}
                         </div>
                       ) : <span className="text-xs text-muted-foreground/30">—</span>}

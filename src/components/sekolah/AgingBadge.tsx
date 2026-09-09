@@ -40,7 +40,7 @@ export function AgingBadge({ dueDate, className }: AgingBadgeProps) {
   return (
     <span className={cn('inline-flex items-center gap-1 text-xs font-medium', color.text, className)}>
       {color.label} {dateStr}
-      <span className="opacity-70">({agingText})</span>
+      <span className="text-foreground/70">({agingText})</span>
     </span>
   );
 }

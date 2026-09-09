@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { X, User, Lock, Eye, EyeOff, Check, AlertCircle, ChevronRight } from 'lucide-react';
+import { X, User, Lock, Eye, EyeOff, Check, AlertCircle, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import apiClient from '@/lib/apiClient';
 
 interface ProfileUser {
   nama?: string;
@@ -30,7 +31,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
@@ -40,7 +41,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
 
   const roleClass = ROLE_COLOR[user?.role ?? ''] ?? 'bg-secondary text-muted-foreground border-border';
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     setErrorMsg('');
     if (!oldPassword || !newPassword || !confirmPassword) {
       setStatus('error');
@@ -57,12 +58,24 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
       setErrorMsg('Konfirmasi password tidak cocok.');
       return;
     }
-    // TODO: integrate with real API
-    setStatus('success');
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setTimeout(() => setStatus('idle'), 3000);
+
+    setStatus('loading');
+    try {
+      await apiClient.put('/api/v1/auth/profile/change-password', {
+        old_password: oldPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+      
+      setStatus('success');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setStatus('idle'), 3000);
+    } catch (err: any) {
+      setStatus('error');
+      setErrorMsg(err.response?.data?.message || 'Terjadi kesalahan sistem.');
+    }
   };
 
   return (
@@ -180,9 +193,17 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
 
             <button
               onClick={handleChangePassword}
-              className="w-full py-3.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+              disabled={status === 'loading'}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Simpan Password
+              {status === 'loading' ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Memproses...
+                </>
+              ) : (
+                'Simpan Password'
+              )}
             </button>
           </div>
         )}

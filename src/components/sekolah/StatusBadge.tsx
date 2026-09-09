@@ -28,7 +28,7 @@ export function StatusBadge({ status, size = 'sm', showDot = false }: StatusBadg
       )}
     >
       {showDot && (
-        <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colors.dot)} />
+        <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', colors.dot)} />
       )}
       {isLeadCaptured && '🎯 '}
       {status}

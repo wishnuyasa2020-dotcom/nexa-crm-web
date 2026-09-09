@@ -85,11 +85,11 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-card w-full sm:w-auto sm:min-w-[400px] max-w-lg sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-card w-full sm:w-auto sm:min-w-100 max-w-lg sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[92vh]">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border flex-shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border shrink-0">
           <div>
             <h2 className="text-base font-bold text-foreground">➕ Aktivitas Ekstra</h2>
             <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
@@ -103,13 +103,13 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
         {!canAccessEkstra ? (
           <div className="p-5 space-y-3">
             <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-400">
-              <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+              <AlertCircle size={18} className="shrink-0 mt-0.5" />
               <div className="text-sm">
                 <p className="font-semibold">Tidak Tersedia</p>
-                <p className="text-xs mt-0.5 opacity-80">
+                <p className="text-xs mt-0.5 text-foreground/80">
                   Aktivitas Ekstra hanya tersedia untuk sekolah dengan status <strong>Sudah Sosialisasi</strong> atau <strong>Lead Captured</strong>.
                 </p>
-                <p className="text-xs mt-1 opacity-70">Status saat ini: {sekolah.status}</p>
+                <p className="text-xs mt-1 text-foreground/70">Status saat ini: {sekolah.status}</p>
               </div>
             </div>
             <div className="flex justify-end">
@@ -179,7 +179,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
                       {croList.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   ) : (
-                    <div className={cn(INPUT_CLASS, 'bg-secondary/20 opacity-70 cursor-not-allowed')}>
+                    <div className={cn(INPUT_CLASS, 'bg-secondary/20 text-foreground/70 cursor-not-allowed')}>
                       🔒 {myName || pjAktivitas}
                     </div>
                   )}
@@ -203,13 +203,13 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
 
               {/* Info: tidak mengubah status */}
               <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary/30 text-xs text-muted-foreground">
-                <AlertCircle size={13} className="flex-shrink-0 mt-0.5 text-primary/60" />
+                <AlertCircle size={13} className="shrink-0 mt-0.5 text-primary/60" />
                 <span>Aktivitas Ekstra <strong className="text-foreground">tidak mengubah</strong> status CRM sekolah.</span>
               </div>
             </form>
 
             {/* Footer */}
-            <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3 flex-shrink-0">
+            <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3 shrink-0">
               <button onClick={onClose} type="button" className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
                 Batal
               </button>

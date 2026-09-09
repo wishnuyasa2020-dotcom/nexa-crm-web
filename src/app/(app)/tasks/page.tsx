@@ -210,7 +210,7 @@ export default function TasksPage() {
             <tab.icon size={14} className="shrink-0" />
             <span className="truncate">{tab.label}</span>
             <span className={cn(
-              'px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0',
+              'px-1.5 py-0.5 rounded text-xs font-bold shrink-0',
               activeTab === tab.id ? tab.badgeCls : 'bg-secondary text-muted-foreground'
             )}>
               {tab.count}
@@ -268,7 +268,7 @@ export default function TasksPage() {
                     <User size={13} className="text-violet-400 shrink-0" />
                   )}
                   <span className={cn(
-                    'px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide',
+                    'px-2 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wide',
                     task.tipe === 'sekolah'         ? 'bg-blue-500/10 text-blue-400' :
                     task.tipe === 'siswa'           ? 'bg-violet-500/10 text-violet-400' :
                     task.tipe === 'homevisit'       ? 'bg-teal-500/10 text-teal-400' :
@@ -278,7 +278,7 @@ export default function TasksPage() {
                      task.tipe === 'homevisit' ? 'Home Visit' :
                      task.tipe === 'sekolah' ? 'Sekolah' : 'Siswa'}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] bg-primary/10 text-primary border border-primary/20">
+                  <span className="px-2 py-0.5 rounded-md text-xs bg-primary/10 text-primary border border-primary/20">
                     {task.status}
                   </span>
                 </div>
@@ -307,7 +307,7 @@ export default function TasksPage() {
                     <>
                       <span className="hidden sm:inline text-muted-foreground/50">•</span>
                       <span className="flex items-center gap-1">
-                        <span className="text-[10px] uppercase tracking-wider font-semibold opacity-70">PJ:</span>
+                        <span className="text-xs uppercase tracking-wider font-semibold text-foreground/70">PJ:</span>
                         {task.cro || task.pj}
                       </span>
                     </>
@@ -315,7 +315,7 @@ export default function TasksPage() {
                   {task.aging !== undefined && task.aging > 0 && (
                     <>
                       <span className="hidden sm:inline text-muted-foreground/50">•</span>
-                      <span className="text-[10px] text-amber-400">aging {task.aging}h</span>
+                      <span className="text-xs text-amber-400">aging {task.aging}h</span>
                     </>
                   )}
                 </p>
@@ -336,7 +336,7 @@ export default function TasksPage() {
                   </button>
                   <button
                     onClick={() => handleEksekusi(task)}
-                    className="flex-1 py-2.5 rounded-lg gradient-primary text-xs font-semibold text-white hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20"
+                    className="flex-1 py-2.5 rounded-lg gradient-primary text-xs font-semibold text-white hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20"
                   >
                     <CheckSquare size={14} /> Eksekusi
                   </button>

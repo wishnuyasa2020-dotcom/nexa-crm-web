@@ -189,7 +189,7 @@ export function ImportMassalModal({ isOpen, onClose, onSuccess }: Props) {
                 <CheckCircle2 size={32} />
               </div>
               <h3 className="text-lg font-bold text-foreground">Import Berhasil!</h3>
-              <p className="text-sm text-muted-foreground max-w-[250px]">
+              <p className="text-sm text-muted-foreground max-w-64">
                 {report.siap} data sekolah berhasil ditambahkan ke database.
               </p>
               <button

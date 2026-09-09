@@ -258,7 +258,7 @@ export default function WeeklyPage() {
     <div className="h-[calc(100vh-6rem)] flex flex-col space-y-4">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between flex-shrink-0 flex-wrap gap-3">
+      <div className="flex items-center justify-between shrink-0 flex-wrap gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 text-white">
             <Calendar size={20} />
@@ -307,7 +307,7 @@ export default function WeeklyPage() {
         <div className="flex-1 flex flex-col sm:flex-row gap-4 overflow-hidden">
 
           {/* ── Sidebar Backlog ── */}
-          <div className="w-full sm:w-64 h-56 sm:h-auto flex-shrink-0 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
+          <div className="w-full sm:w-64 h-56 sm:h-auto shrink-0 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
             <div className="p-3 border-b border-border bg-secondary/30">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-foreground text-sm">Belum Terjadwal</h2>
@@ -322,7 +322,7 @@ export default function WeeklyPage() {
                   placeholder="Cari target..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-lg text-xs focus:border-primary outline-none"
+                  className="w-full pl-8 pr-3 py-1.5 bg-background border rounded-lg text-xs focus:border-primary outline-none"
                 />
               </div>
             </div>
@@ -346,9 +346,9 @@ export default function WeeklyPage() {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={cn(
-                      'flex-1 p-2 overflow-y-auto hide-scrollbar space-y-2 transition-colors min-h-[60px]',
-                      snapshot.isDraggingOver && 'bg-primary/5'
+                      className={cn(
+                        'flex-1 p-2 overflow-y-auto hide-scrollbar space-y-2 transition-colors min-h-16',
+                        snapshot.isDraggingOver && 'bg-primary/5'
                     )}
                   >
                     {backlog.length === 0 && !snapshot.isDraggingOver && (
@@ -391,7 +391,7 @@ export default function WeeklyPage() {
                   <div
                     key={col.id}
                     className={cn(
-                      'w-56 flex-shrink-0 flex flex-col rounded-xl overflow-hidden border',
+                      'w-56 shrink-0 flex flex-col rounded-xl overflow-hidden border',
                       isToday
                         ? 'border-primary/40 bg-primary/5'
                         : 'bg-card/50 border-border'
@@ -407,12 +407,12 @@ export default function WeeklyPage() {
                           'font-bold text-sm',
                           isToday && 'text-primary'
                         )}>{col.title}</h3>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {formatDisplayDate(col.date)}
                         </p>
                       </div>
                       <span className={cn(
-                        'text-[10px] px-2 py-0.5 rounded-full font-medium',
+                        'text-xs px-2 py-0.5 rounded-full font-medium',
                         isOverloaded
                           ? 'bg-amber-500/20 text-amber-600'
                           : isToday
@@ -429,7 +429,7 @@ export default function WeeklyPage() {
                           ref={provided.innerRef}
                           {...provided.droppableProps}
                           className={cn(
-                            'flex-1 p-2 overflow-y-auto hide-scrollbar space-y-2 transition-colors min-h-[60px]',
+                            'flex-1 p-2 overflow-y-auto hide-scrollbar space-y-2 transition-colors min-h-16',
                             snapshot.isDraggingOver && 'bg-primary/5'
                           )}
                         >
@@ -466,29 +466,29 @@ function BacklogCard({ item, index }: { item: BacklogItem; index: number }) {
           {...provided.dragHandleProps}
           style={provided.draggableProps.style}
           className={cn(
-            'bg-background border rounded-lg p-2.5 shadow-sm flex items-start gap-2 transition-all group cursor-grab active:cursor-grabbing',
+            'bg-background border rounded-lg p-2.5 shadow-sm flex items-start gap-2 transition-all group cursor-grab',
             snapshot.isDragging
-              ? 'border-primary shadow-lg shadow-primary/20 scale-[1.03] z-50 rotate-1'
+              ? 'border-primary shadow-lg shadow-primary/20 scale-105 z-50 rotate-1'
               : 'border-border hover:border-primary/40'
           )}
         >
-          <GripVertical size={14} className="text-muted-foreground/30 mt-0.5 flex-shrink-0 group-hover:text-muted-foreground/60" />
+          <GripVertical size={14} className="text-muted-foreground/30 mt-0.5 shrink-0 group-hover:text-muted-foreground/60" />
           <div className="flex-1 min-w-0">
             <h4 className="text-xs font-bold text-foreground truncate leading-tight">{item.judul}</h4>
             {item.next_action && (
-              <p className="text-[10px] text-primary mt-0.5 truncate">{item.next_action}</p>
+              <p className="text-xs text-primary mt-0.5 truncate">{item.next_action}</p>
             )}
             <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-              <span className={cn('inline-flex items-center gap-0.5 text-[9px] font-medium px-1.5 py-0.5 rounded-full', cfg.cls)}>
+              <span className={cn('inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full', cfg.cls)}>
                 {cfg.icon} {cfg.label}
               </span>
               {item.date_val && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-secondary/80 text-muted-foreground border border-border/50">
+                <span className="inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full bg-secondary/80 text-muted-foreground border border-border/50">
                   <Calendar size={10} /> {formatDisplayDate(item.date_val)}
                 </span>
               )}
               {item.status && (
-                <span className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full truncate max-w-[80px]">
+                <span className="text-xs text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full truncate max-w-20">
                   {item.status}
                 </span>
               )}
@@ -523,27 +523,27 @@ function BoardCard({ item, index }: { item: BoardItem; index: number }) {
           style={provided.draggableProps.style}
           className={cn(
             'bg-background border rounded-lg p-2.5 shadow-sm flex items-start gap-2 transition-all group',
-            isTemp ? 'opacity-60 cursor-wait' : 'cursor-grab active:cursor-grabbing',
+            isTemp ? 'opacity-60 cursor-wait' : 'cursor-grab',
             snapshot.isDragging
-              ? 'border-primary shadow-lg shadow-primary/20 scale-[1.03] z-50 rotate-1'
+              ? 'border-primary shadow-lg shadow-primary/20 scale-105 z-50 rotate-1'
               : 'border-border hover:border-primary/40'
           )}
         >
-          <GripVertical size={14} className="text-muted-foreground/30 mt-0.5 flex-shrink-0 group-hover:text-muted-foreground/60" />
+          <GripVertical size={14} className="text-muted-foreground/30 mt-0.5 shrink-0 group-hover:text-muted-foreground/60" />
           <div className="flex-1 min-w-0">
             <h4 className="text-xs font-bold text-foreground truncate leading-tight">{item.judul}</h4>
             {item.jam_mulai && (
-              <p className="text-[10px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {item.jam_mulai}{item.jam_selesai ? ` – ${item.jam_selesai}` : ''}
               </p>
             )}
             <div className="mt-1.5">
-              <span className={cn('inline-flex items-center gap-0.5 text-[9px] font-medium px-1.5 py-0.5 rounded-full', cfg.cls)}>
+              <span className={cn('inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full', cfg.cls)}>
                 {cfg.icon} {cfg.label}
               </span>
             </div>
           </div>
-          {isTemp && <Loader2 size={11} className="animate-spin text-muted-foreground flex-shrink-0 mt-0.5" />}
+          {isTemp && <Loader2 size={11} className="animate-spin text-muted-foreground shrink-0 mt-0.5" />}
         </div>
       )}
     </Draggable>

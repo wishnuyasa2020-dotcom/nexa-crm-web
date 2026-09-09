@@ -119,7 +119,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#0b141a] h-full text-[#8696a0] w-full">
+      <div className="flex-1 flex flex-col items-center justify-center bg-background h-full text-muted-foreground w-full">
         <p className="text-lg">Pilih percakapan untuk memulai chat</p>
       </div>
     );
@@ -295,32 +295,32 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0b141a] w-full relative">
+    <div className="flex flex-col h-full bg-background w-full relative">
       {/* Header */}
-      <div className="bg-[#202c33] border-b border-[#222d34] px-2 py-2 md:px-4 md:py-3 flex items-center shadow-sm z-10 w-full">
+      <div className="bg-card border-b border-border px-2 py-2 md:px-4 md:py-3 flex items-center shadow-sm z-10 w-full">
         <Button
           variant="ghost" size="icon"
-          className="mr-1 md:mr-2 md:hidden text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] h-8 w-8"
+          className="mr-1 md:mr-2 md:hidden text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8"
           onClick={onBack}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
 
         <Avatar className="h-8 w-8 md:h-10 md:w-10 mr-2 md:mr-3">
-          <AvatarFallback className="bg-[#6b7280] text-white text-xs md:text-sm">
+          <AvatarFallback className="bg-muted-foreground text-white text-xs md:text-sm">
             {conversation.student_name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-[#e9edef] leading-tight text-sm md:text-base truncate">{conversation.student_name}</h2>
-          <div className="flex items-center text-[10px] md:text-xs mt-0.5">
+          <h2 className="font-semibold text-foreground leading-tight text-sm md:text-base truncate">{conversation.student_name}</h2>
+          <div className="flex items-center text-xs mt-0.5">
             {isSwOpen ? (
-              <span className="flex items-center text-[#00a884] font-medium">
-                <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00a884] mr-1 md:mr-1.5 animate-pulse" />
+              <span className="flex items-center text-primary font-medium">
+                <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-primary mr-1 md:mr-1.5 animate-pulse" />
                 <span className="mr-1"><SwCountdown expiresAt={conversation.window_expires_at || ''} /> Active</span>
                 {conversation.window_expires_at && (
-                  <span className="ml-1 md:ml-1.5 text-[#8696a0] hidden sm:inline">
+                  <span className="ml-1 md:ml-1.5 text-muted-foreground hidden sm:inline">
                     (exp: {format(new Date(conversation.window_expires_at), 'dd MMM yyyy HH:mm', { locale: id })})
                   </span>
                 )}
@@ -336,24 +336,24 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
         {/* Info Siswa Panel */}
         <Sheet>
-          <SheetTrigger className={buttonVariants({ variant: 'outline', size: 'sm', className: 'hidden sm:flex bg-transparent border-[#2a3942] text-[#e9edef] hover:bg-[#2a3942] hover:text-white' })}>
+          <SheetTrigger className={buttonVariants({ variant: 'outline', size: 'sm', className: 'hidden sm:flex bg-transparent border-border text-foreground hover:bg-accent hover:text-white' })}>
             Info Siswa
           </SheetTrigger>
-          <SheetContent className="bg-[#111b21] border-l border-[#222d34] text-[#e9edef] p-0 overflow-y-auto sm:max-w-md w-full">
+          <SheetContent className="bg-background border-l border-border text-foreground p-0 overflow-y-auto sm:max-w-md w-full">
             <SheetHeader className="sr-only">
               <SheetTitle>Info Siswa</SheetTitle>
             </SheetHeader>
-            <div className="h-32 bg-linear-to-r from-[#005c4b] to-[#202c33]" />
+            <div className="h-32 bg-linear-to-r from-primary/60 to-card" />
             <div className="px-6 pb-6 relative">
-              <Avatar className="h-24 w-24 border-4 border-[#111b21] mx-auto -mt-12 bg-[#202c33] mb-4">
-                <AvatarFallback className="bg-[#6b7280] text-white text-2xl font-semibold">
+              <Avatar className="h-24 w-24 border-4 border-background mx-auto -mt-12 bg-card mb-4">
+                <AvatarFallback className="bg-muted-foreground text-white text-2xl font-semibold">
                   {conversation.student_name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="text-center mb-8">
-                <h3 className="font-bold text-2xl text-[#e9edef]">{conversation.student_name}</h3>
+                <h3 className="font-bold text-2xl text-foreground">{conversation.student_name}</h3>
                 {conversation.wa_number ? (
-                  <p className="text-[#8696a0] mt-1 flex items-center justify-center gap-2">
+                  <p className="text-muted-foreground mt-1 flex items-center justify-center gap-2">
                     <Phone className="h-4 w-4" /> {conversation.wa_number}
                   </p>
                 ) : (
@@ -361,7 +361,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="border-[#00a884] text-[#00a884] hover:bg-[#00a884]/10"
+                      className="border-primary text-primary hover:bg-primary/10"
                       onClick={() => {
                         toast.success('Permintaan kontak telah dikirim via Meta Interactive Message.');
                       }}
@@ -373,25 +373,25 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 )}
               </div>
               <div className="space-y-4">
-                <div className="bg-[#202c33] p-4 rounded-xl border border-[#222d34]">
-                  <h4 className="text-xs font-semibold text-[#8696a0] mb-3 uppercase tracking-wider">Status & Pipeline</h4>
+                <div className="bg-card p-4 rounded-xl border border-border">
+                  <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Status & Pipeline</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[#e9edef] flex items-center gap-2">
-                        <Briefcase className="h-4 w-4 text-[#8696a0]" />
+                      <span className="text-foreground flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
                         Tahap Saat Ini
                       </span>
-                      <span className="bg-[#2a3942] text-[#53bdeb] px-2.5 py-1 rounded-md text-xs font-medium">
+                      <span className="bg-accent text-blue-400 px-2.5 py-1 rounded-md text-xs font-medium">
                         {conversation.pipeline_status || '–'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[#e9edef] flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-[#8696a0]" />
+                      <span className="text-foreground flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
                         Sisa Waktu SW
                       </span>
                       {isSwOpen ? (
-                        <span className="text-[#00a884] text-sm font-medium">
+                        <span className="text-primary text-sm font-medium">
                           {conversation.window_expires_at
                             ? new Date(conversation.window_expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : 'Active'}
@@ -404,10 +404,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 </div>
                 
                 {/* Aksi Cepat */}
-                <div className="bg-[#202c33] p-4 rounded-xl border border-[#222d34]">
-                  <h4 className="text-xs font-semibold text-[#8696a0] mb-3 uppercase tracking-wider">Aksi Cepat</h4>
+                <div className="bg-card p-4 rounded-xl border border-border">
+                  <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Aksi Cepat</h4>
                   <Button 
-                    className="w-full bg-[#00a884] hover:bg-[#008f6f] text-[#111b21] font-semibold"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                     onClick={() => setShowAktivitasModal(true)}
                   >
                     + Input Aktivitas
@@ -424,13 +424,13 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 px-2 py-3 md:p-4 w-full">
         {loadingMsgs && messages.length === 0 && (
           <div className="flex justify-center items-center h-32">
-            <Loader2 className="h-6 w-6 animate-spin text-[#8696a0]" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
 
         <div className="flex flex-col space-y-3 pb-4">
           <div className="text-center my-4">
-            <span className="bg-[#182229] text-[#ffd279] text-[11px] px-3 py-1.5 rounded-lg shadow-sm">
+            <span className="bg-muted text-yellow-400 text-xs px-3 py-1.5 rounded-lg shadow-sm">
               Sesi percakapan diamankan dengan enkripsi end-to-end Meta.
             </span>
           </div>
@@ -448,8 +448,8 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               <div
                 className={`max-w-[88%] sm:max-w-[75%] rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 shadow-sm relative ${
                   msg.direction === 'outgoing'
-                    ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none'
-                    : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
+                    ? 'bg-primary/80 text-primary-foreground rounded-tr-none'
+                    : 'bg-card text-foreground rounded-tl-none'
                 }`}
               >
                 <div className="text-xs md:text-sm whitespace-pre-wrap wrap-break-word">
@@ -501,7 +501,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   )}
                   {msg.type === 'document' && (
                     <div className="mb-2 bg-black/20 p-2 rounded flex flex-col gap-1 cursor-pointer hover:bg-black/30 transition-colors" onClick={() => msg.media_id && window.open(`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`)}>
-                      <div className="flex items-center gap-2 font-semibold text-[#e9edef]">
+                      <div className="flex items-center gap-2 font-semibold text-foreground">
                         <FileText className="h-5 w-5" /> <span>Dokumen Terlampir</span>
                       </div>
                       <span className="text-xs text-blue-400 underline">Unduh Dokumen</span>
@@ -509,13 +509,13 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   )}
                   <div dangerouslySetInnerHTML={{ __html: renderMessageBody(msg.body || (msg.type === 'interactive' && msg.direction === 'incoming' ? '[Membalas Tombol Interaktif]' : `[${msg.type}]`)) }} />
                   {(msg.type === 'interactive' || msg.type === 'template') && msg.direction === 'outgoing' && (
-                    <div className="mt-1.5 pt-1.5 border-t border-[#8696a0]/30 flex items-center gap-1.5 text-[10px] text-[#53bdeb] uppercase tracking-wider font-semibold">
+                    <div className="mt-1.5 pt-1.5 border-t border-white/20 flex items-center gap-1.5 text-xs text-blue-400 uppercase tracking-wider font-semibold">
                       <MousePointer2 className="h-3 w-3" /> Pilihan Interaktif Terlampir
                     </div>
                   )}
                 </div>
                 <div className="flex items-center justify-end space-x-1 mt-1">
-                  <span className="text-[10px] text-gray-400">
+                  <span className="text-xs text-foreground/50">
                     {(() => {
                       // datetime (ISO string dari DB) = waktu asli pesan, pakai untuk display
                       // timestamp = Unix ms untuk sorting saja (bisa sama semua di legacy)
@@ -533,9 +533,9 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                     })()}
                   </span>
                   {msg.direction === 'outgoing' && (
-                    <span className="text-gray-400">
+                    <span className="text-foreground/50">
                       {msg.status === 'read'
-                        ? <CheckCheck className="h-3.5 w-3.5 text-[#53bdeb]" />
+                        ? <CheckCheck className="h-3.5 w-3.5 text-blue-400" />
                         : msg.status === 'delivered'
                         ? <CheckCheck className="h-3.5 w-3.5" />
                         : <Check className="h-3.5 w-3.5" />}
@@ -543,7 +543,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   )}
                 </div>
                 {msg.reaction && (
-                  <div className={`absolute -bottom-3 ${msg.direction === 'outgoing' ? '-left-2' : '-right-2'} bg-[#2a3942] border border-[#222d34] rounded-full px-1.5 py-0.5 text-xs shadow-sm z-10`}>
+                  <div className={`absolute -bottom-3 ${msg.direction === 'outgoing' ? '-left-2' : '-right-2'} bg-accent border border-border rounded-full px-1.5 py-0.5 text-xs shadow-sm z-10`}>
                     {msg.reaction}
                   </div>
                 )}
@@ -560,7 +560,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       </div>
 
       {/* Composer */}
-      <div className="bg-[#202c33] px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full relative">
+      <div className="bg-card px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full relative border-t border-border">
         {!isSwOpen ? (
           // SW CLOSED — hanya ikon ⓘ + tombol template
           <>
@@ -575,9 +575,9 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               </button>
               {/* Popover info */}
               {showSwInfo && (
-                <div className="absolute bottom-10 left-0 w-64 bg-[#2a3942] border border-rose-900/50 text-rose-300 text-xs px-3 py-2.5 rounded-lg shadow-xl z-50">
+                <div className="absolute bottom-10 left-0 w-64 bg-accent border border-rose-900/50 text-rose-300 text-xs px-3 py-2.5 rounded-lg shadow-xl z-50">
                   <p className="leading-relaxed">Jeda waktu respon telah melewati 24 jam. Anda hanya dapat membalas menggunakan <span className="font-semibold text-rose-200">Template Pesan</span> resmi.</p>
-                  <div className="absolute -bottom-1.5 left-3 w-3 h-3 bg-[#2a3942] border-b border-r border-rose-900/50 rotate-45" />
+                  <div className="absolute -bottom-1.5 left-3 w-3 h-3 bg-accent border-b border-r border-rose-900/50 rotate-45" />
                 </div>
               )}
             </div>
@@ -603,12 +603,12 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               <Button
                 variant="ghost" size="icon"
                 onClick={() => { setShowEmojiMenu(!showEmojiMenu); setShowAttachMenu(false); }}
-                className="text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-10 w-10"
               >
                 <Smile className="h-5 w-5" />
               </Button>
               {showEmojiMenu && (
-                <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-xl shadow-xl flex flex-wrap gap-2 p-3 w-56 z-50">
+                <div className="absolute bottom-12 left-0 bg-accent border border-border rounded-xl shadow-xl flex flex-wrap gap-2 p-3 w-56 z-50">
                   {['👍', '❤️', '😂', '😮', '😢', '🙏', '🔥', '🎉', '✅', '❌', '😊', '🙌', '👌', '💯'].map(e => (
                     <button key={e} onClick={() => { setInputText(prev => prev + e); setShowEmojiMenu(false); }} className="text-xl hover:scale-125 transition-transform flex items-center justify-center h-8 w-8">
                       {e}
@@ -621,27 +621,27 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
               <Button
                 variant="ghost" size="icon"
                 onClick={() => { setShowAttachMenu(!showAttachMenu); setShowEmojiMenu(false); }}
-                className="text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-10 w-10"
               >
                 <Paperclip className="h-5 w-5" />
               </Button>
               {showAttachMenu && (
-                <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
+                <div className="absolute bottom-12 left-0 bg-accent border border-border rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
                   <button
                     onClick={() => { setAttachAccept('image/*,video/*'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#e9edef] hover:bg-[#202c33] transition-colors text-left"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
                   >
                     <ImageIcon className="h-4 w-4 text-violet-400" /> Gambar/Video
                   </button>
                   <button
                     onClick={() => { setAttachAccept('.pdf,.doc,.docx,.xls,.xlsx'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#e9edef] hover:bg-[#202c33] transition-colors text-left"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
                   >
                     <FileText className="h-4 w-4 text-orange-400" /> Dokumen
                   </button>
                   <button
                     onClick={() => { setShowAttachMenu(false); setShowLocationModal(true); }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-[#e9edef] hover:bg-[#202c33] transition-colors text-left"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
                   >
                     <MapPin className="h-4 w-4 text-emerald-400" /> Lokasi
                   </button>
@@ -659,23 +659,23 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
             <div className="flex-1 relative flex flex-col">
               {selectedFile && (
-                <div className={`absolute left-0 bg-[#2a3942] px-3 py-2 rounded-t-xl border border-b-0 border-[#222d34] flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
+                <div className={`absolute left-0 bg-accent px-3 py-2 rounded-t-xl border border-b-0 border-border flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
                   {selectedFile.type.startsWith('image/') ? (
                     <img src={URL.createObjectURL(selectedFile)} alt="preview" className="h-16 w-16 object-cover rounded-md" />
                   ) : selectedFile.type.startsWith('video/') ? (
-                    <Video className="h-4 w-4 text-[#8696a0]" />
+                    <Video className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <FileText className="h-4 w-4 text-[#8696a0]" />
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                   )}
-                  <span className="truncate max-w-40 text-xs text-[#e9edef]">{selectedFile.name}</span>
-                  <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300 ml-2 bg-[#202c33] p-1 rounded-full">
+                  <span className="truncate max-w-40 text-xs text-foreground">{selectedFile.name}</span>
+                  <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300 ml-2 bg-card p-1 rounded-full">
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               )}
               <Input
                 placeholder={selectedFile ? "Tambah keterangan..." : "Ketik pesan..."}
-                className={`w-full bg-[#2a3942] text-[#e9edef] border-none focus-visible:ring-1 focus-visible:ring-[#00a884] pr-10 py-5 ${selectedFile ? 'rounded-b-xl rounded-tr-xl rounded-tl-none' : 'rounded-full'}`}
+                className={`w-full bg-accent text-foreground border-none focus-visible:ring-1 focus-visible:ring-primary pr-10 py-5 ${selectedFile ? 'rounded-b-xl rounded-tr-xl rounded-tl-none' : 'rounded-full'}`}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -684,7 +684,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
             </div>
             {/* ANTI DOUBLE-SEND: disabled saat isSending */}
             <Button
-              className="shrink-0 rounded-full h-11 w-11 p-0 bg-[#00a884] hover:bg-[#008f6f] text-[#111b21] shadow-sm disabled:opacity-50"
+              className="shrink-0 rounded-full h-11 w-11 p-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm disabled:opacity-50"
               disabled={(!inputText.trim() && !selectedFile) || isSending}
               onClick={handleSendText}
             >
@@ -705,25 +705,25 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
       {/* Location Modal */}
       <Dialog open={showLocationModal} onOpenChange={setShowLocationModal}>
-        <DialogContent className="bg-[#111b21] border-[#222d34] text-[#e9edef]">
+        <DialogContent className="bg-background border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Kirim Lokasi</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             
-            <div className="flex flex-col gap-2 p-3 bg-[#202c33] rounded-lg border border-[#2a3942]">
-              <Button onClick={handleGetCurrentLocation} variant="outline" className="w-full bg-[#2a3942] border-[#222d34] text-[#e9edef] hover:bg-[#32424b] hover:text-white">
+            <div className="flex flex-col gap-2 p-3 bg-card rounded-lg border border-border">
+              <Button onClick={handleGetCurrentLocation} variant="outline" className="w-full">
                 <MapPin className="h-4 w-4 mr-2 text-emerald-400" /> Dapatkan Lokasi Saat Ini (GPS)
               </Button>
-              <div className="text-center text-xs text-[#8696a0] py-1">ATAU</div>
+              <div className="text-center text-xs text-muted-foreground py-1">ATAU</div>
               <div className="flex gap-2">
                 <Input 
                   placeholder="Tempel Link Google Maps..." 
                   value={mapsLink} 
                   onChange={e => setMapsLink(e.target.value)}
-                  className="bg-[#111b21] border-[#2a3942] flex-1 text-xs"
+                  className="bg-muted border-border flex-1 text-xs"
                 />
-                <Button onClick={handleExtractMapsLink} disabled={!mapsLink} variant="secondary" className="bg-[#2a3942] text-xs">
+                <Button onClick={handleExtractMapsLink} disabled={!mapsLink} variant="secondary" className="text-xs">
                   Ekstrak
                 </Button>
               </div>
@@ -731,44 +731,44 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs text-[#8696a0]">Latitude</label>
+                <label className="text-xs text-muted-foreground">Latitude</label>
                 <Input 
                   placeholder="-6.200000" 
                   value={locationData.lat} 
                   onChange={e => setLocationData({...locationData, lat: e.target.value})}
-                  className="bg-[#202c33] border-none"
+                  className="bg-muted border-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs text-[#8696a0]">Longitude</label>
+                <label className="text-xs text-muted-foreground">Longitude</label>
                 <Input 
                   placeholder="106.816666" 
                   value={locationData.lng} 
                   onChange={e => setLocationData({...locationData, lng: e.target.value})}
-                  className="bg-[#202c33] border-none"
+                  className="bg-muted border-none"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-[#8696a0]">Nama Tempat (Opsional)</label>
+              <label className="text-xs text-muted-foreground">Nama Tempat (Opsional)</label>
               <Input 
                 placeholder="Kantor Nexa" 
                 value={locationData.name} 
                 onChange={e => setLocationData({...locationData, name: e.target.value})}
-                className="bg-[#202c33] border-none"
+                className="bg-muted border-none"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-[#8696a0]">Alamat (Opsional)</label>
+              <label className="text-xs text-muted-foreground">Alamat (Opsional)</label>
               <Input 
                 placeholder="Jl. Jend. Sudirman..." 
                 value={locationData.address} 
                 onChange={e => setLocationData({...locationData, address: e.target.value})}
-                className="bg-[#202c33] border-none"
+                className="bg-muted border-none"
               />
             </div>
             <div className="flex justify-end pt-4">
-              <Button onClick={handleSendLocation} disabled={!locationData.lat || !locationData.lng || isSending} className="bg-[#00a884] hover:bg-[#008f6f] text-[#111b21]">
+              <Button onClick={handleSendLocation} disabled={!locationData.lat || !locationData.lng || isSending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kirim Lokasi'}
               </Button>
             </div>
@@ -790,7 +790,7 @@ function renderMessageBody(body: string) {
   
   // Mengubah baris yang terlihat seperti tombol "Quick Reply: [Teks]" menjadi tampilan tombol
   const btnRegex = /\[Quick Reply: (.*?)\]/g;
-  html = html.replace(btnRegex, '<div class="mt-2 inline-block bg-[#2a3942] border border-[#3b4a54] text-[#00a884] font-medium px-3 py-1.5 rounded-full text-xs shadow-sm">$1</div>');
+  html = html.replace(btnRegex, '<div class="mt-2 inline-block bg-accent border border-border text-primary font-medium px-3 py-1.5 rounded-full text-xs shadow-sm">$1</div>');
   
   return html;
 }
@@ -806,19 +806,19 @@ function ReactionMenu({ onSelect }: { onSelect: (emoji: string) => void }) {
     <div className="relative">
       <button 
         onClick={() => setOpen(!open)}
-        className="h-7 w-7 rounded-full bg-[#202c33] hover:bg-[#2a3942] flex items-center justify-center text-[#8696a0] hover:text-[#e9edef] transition-colors shadow-sm"
+        className="h-7 w-7 rounded-full bg-card hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shadow-sm"
       >
         <Smile className="h-4 w-4" />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#2a3942] border border-[#222d34] rounded-full shadow-lg px-2 py-1.5 flex gap-1 z-50">
+          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-accent border border-border rounded-full shadow-lg px-2 py-1.5 flex gap-1 z-50">
             {emojis.map(e => (
               <button 
                 key={e} 
                 onClick={() => { onSelect(e); setOpen(false); }}
-                className="hover:bg-[#202c33] h-8 w-8 rounded-full flex items-center justify-center text-lg transition-transform hover:scale-110"
+                className="hover:bg-card h-8 w-8 rounded-full flex items-center justify-center text-lg transition-transform hover:scale-110"
               >
                 {e}
               </button>
@@ -893,17 +893,17 @@ function TemplateListItem({
 }) {
   return (
     <div
-      className="border border-[#222d34] bg-[#202c33] rounded-lg p-3 hover:bg-[#2a3942] cursor-pointer transition-colors group"
+      className="border border-border bg-card rounded-lg p-3 hover:bg-accent cursor-pointer transition-colors group"
     >
       <div className="flex justify-between items-start mb-2">
-        <h4 className="font-semibold text-sm text-[#e9edef]">{t.nama_template}</h4>
+        <h4 className="font-semibold text-sm text-foreground">{t.nama_template}</h4>
         <StatusBadge status={t.meta_status} />
       </div>
-      <p className="text-xs text-[#8696a0] mb-3 line-clamp-3">{resolvePreview(t.body_text)}</p>
+      <p className="text-xs text-muted-foreground mb-3 line-clamp-3">{resolvePreview(t.body_text)}</p>
       <Button
         size="sm"
         variant="outline"
-        className="w-full bg-[#111b21] hover:bg-[#222d34] text-[#e9edef] border-[#2a3942] opacity-0 group-hover:opacity-100 transition-opacity"
+        className="w-full opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={() => onPickReview(t)}
       >
         Preview &amp; Kirim
@@ -967,23 +967,23 @@ function TemplateReviewDialog({
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onBack(); }}>
       {/* flex-col + max-h agar konten bisa scroll jika panjang */}
-      <DialogContent className="sm:max-w-sm bg-[#111b21] border-[#222d34] text-[#e9edef] p-0 flex flex-col max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-sm bg-background border-border text-foreground p-0 flex flex-col max-h-[90vh] overflow-hidden">
 
         {/* Header — fixed, tidak ikut scroll */}
-        <DialogHeader className="px-5 pt-5 pb-3 shrink-0 border-b border-[#222d34]">
-          <DialogTitle className="text-[#e9edef] flex items-center gap-2 text-sm">
-            <span className="bg-[#00a884]/20 text-[#00a884] px-2 py-0.5 rounded-full text-xs font-semibold">PREVIEW</span>
+        <DialogHeader className="px-5 pt-5 pb-3 shrink-0 border-b border-border">
+          <DialogTitle className="text-foreground flex items-center gap-2 text-sm">
+            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-semibold">PREVIEW</span>
             {t.nama_template}
           </DialogTitle>
         </DialogHeader>
 
         {/* Scrollable area — bubble WA */}
         <div className="flex-1 overflow-y-auto min-h-0">
-          {/* Wrapper bg simulasi wallpaper WA */}
-          <div className="mx-5 my-4 rounded-xl overflow-hidden shadow-inner" style={{ background: '#0b141a' }}>
+          {/* Wrapper bg simulasi wallpaper */}
+          <div className="mx-5 my-4 rounded-xl overflow-hidden shadow-inner bg-muted">
             <div className="p-3 flex justify-start">
               {/* Bubble penerima */}
-              <div className="max-w-[90%] bg-[#202c33] rounded-lg rounded-tl-none shadow-sm overflow-hidden">
+              <div className="max-w-[90%] bg-card rounded-lg rounded-tl-none shadow-sm overflow-hidden">
 
                 {/* Header: image */}
                 {finalHeaderType === 'image' && finalHeaderUrl && (
@@ -999,8 +999,8 @@ function TemplateReviewDialog({
                 )}
                 {/* Fallback placeholder jika header image tapi URL kosong */}
                 {finalHeaderType === 'image' && !finalHeaderUrl && (
-                  <div className="w-full h-32 bg-[#2a3942] flex items-center justify-center">
-                    <ImageIcon className="h-8 w-8 text-[#8696a0]" />
+                  <div className="w-full h-32 bg-accent flex items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
                   </div>
                 )}
 
@@ -1013,14 +1013,14 @@ function TemplateReviewDialog({
                   />
                 )}
                 {finalHeaderType === 'video' && !finalHeaderUrl && (
-                  <div className="w-full h-32 bg-[#2a3942] flex items-center justify-center">
-                    <Video className="h-8 w-8 text-[#8696a0]" />
+                  <div className="w-full h-32 bg-accent flex items-center justify-center">
+                    <Video className="h-8 w-8 text-muted-foreground" />
                   </div>
                 )}
 
                 {/* Header: text */}
                 {finalHeaderType === 'text' && resolvedHeaderText && (
-                  <div className="px-3 pt-3 font-bold text-[#e9edef] text-sm leading-snug">
+                  <div className="px-3 pt-3 font-bold text-foreground text-sm leading-snug">
                     {resolvedHeaderText}
                   </div>
                 )}
@@ -1028,22 +1028,22 @@ function TemplateReviewDialog({
                 {/* Body — pakai dangerouslySetInnerHTML agar URL & format WA tampil */}
                 <div className="px-3 py-2.5">
                   <div
-                    className="text-[#e9edef] text-sm whitespace-pre-wrap leading-relaxed"
+                    className="text-foreground text-sm whitespace-pre-wrap leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: resolvedBodyHtml }}
                   />
-                  <span className="block text-right text-[10px] text-[#8696a0] mt-1">
+                  <span className="block text-right text-xs text-muted-foreground mt-1">
                     Sekarang ✓
                   </span>
                 </div>
 
                 {/* Buttons */}
                 {buttons.length > 0 && (
-                  <div className="border-t border-[#2a3942]">
+                  <div className="border-t border-border">
                     {buttons.map((btn, i) => (
                       <div
                         key={i}
-                        className={`flex items-center justify-center px-3 py-2 text-[#53bdeb] text-sm font-medium gap-1.5 ${
-                          i < buttons.length - 1 ? 'border-b border-[#2a3942]' : ''
+                        className={`flex items-center justify-center px-3 py-2 text-blue-400 text-sm font-medium gap-1.5 ${
+                          i < buttons.length - 1 ? 'border-b border-border' : ''
                         }`}
                       >
                         {btn.type === 'URL' ? (
@@ -1070,17 +1070,17 @@ function TemplateReviewDialog({
         </div>
 
         {/* Action buttons — fixed di bawah */}
-        <div className="px-5 py-4 shrink-0 border-t border-[#222d34] flex gap-2">
+        <div className="px-5 py-4 shrink-0 border-t border-border flex gap-2">
           <Button
             variant="outline"
-            className="flex-1 bg-transparent border-[#2a3942] text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef]"
+            className="flex-1"
             onClick={onBack}
             disabled={isSending}
           >
             Batal
           </Button>
           <Button
-            className="flex-1 bg-[#00a884] hover:bg-[#008f6f] text-[#111b21] font-semibold disabled:opacity-50"
+            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold disabled:opacity-50"
             onClick={onConfirm}
             disabled={isSending}
           >
@@ -1160,20 +1160,20 @@ function TemplatePicker({
           disabled={disabled}
           className={
             iconOnly
-              ? buttonVariants({ variant: 'ghost', size: 'icon', className: 'shrink-0 text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full h-10 w-10' })
+              ? buttonVariants({ variant: 'ghost', size: 'icon', className: 'shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-10 w-10' })
               : buttonVariants({ className: buttonClassName })
           }
         >
           {iconOnly ? <Clock className="h-5 w-5" /> : buttonText}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md bg-[#111b21] border-[#222d34] text-[#e9edef]">
+        <DialogContent className="sm:max-w-md bg-background border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-[#e9edef]">Pilih Template Pesan</DialogTitle>
+            <DialogTitle className="text-foreground">Pilih Template Pesan</DialogTitle>
           </DialogHeader>
           <ScrollArea className="h-80 mt-4 pr-4">
             {loading && (
               <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-[#8696a0]" />
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
             <div className="space-y-3">
@@ -1206,10 +1206,10 @@ function TemplatePicker({
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    APPROVED:   'bg-[#005c4b] text-[#00a884]',
-    PENDING:    'bg-[#3f3b14] text-[#ffd279]',
+    APPROVED:   'bg-green-950 text-green-400',
+    PENDING:    'bg-yellow-950 text-yellow-400',
     REJECTED:   'bg-rose-950 text-rose-400',
-    LOCAL_ONLY: 'bg-[#2a3942] text-[#53bdeb]',
+    LOCAL_ONLY: 'bg-accent text-blue-400',
   };
   const labels: Record<string, string> = {
     APPROVED:   'META APPROVED',
@@ -1218,7 +1218,7 @@ function StatusBadge({ status }: { status: string }) {
     LOCAL_ONLY: 'LOCAL',
   };
   return (
-    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${map[status] || 'bg-[#2a3942] text-[#8696a0]'}`}>
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${map[status] || 'bg-accent text-muted-foreground'}`}>
       {labels[status] || status}
     </span>
   );

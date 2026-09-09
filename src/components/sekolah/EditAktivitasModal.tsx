@@ -48,7 +48,7 @@ export function EditAktivitasModal({
 
   if (!withinWindow) {
     return (
-      <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border border-border p-5 space-y-4">
           <div className="flex items-center gap-3 text-rose-400">
             <AlertCircle size={20} />
@@ -81,11 +81,11 @@ export function EditAktivitasModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-card w-full sm:w-auto sm:min-w-[400px] max-w-lg sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-card w-full sm:w-auto sm:min-w-100 max-w-lg sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[92vh]">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border flex-shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Edit2 size={15} className="text-primary" />
@@ -154,7 +154,7 @@ export function EditAktivitasModal({
 
           {/* Edit window info */}
           <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary/30 text-xs text-muted-foreground">
-            <AlertCircle size={12} className="flex-shrink-0 mt-0.5 text-amber-400/70" />
+            <AlertCircle size={12} className="shrink-0 mt-0.5 text-amber-400/70" />
             <span>
               {isManager
                 ? 'Manager dapat mengedit dalam 24 jam setelah aktivitas dibuat.'
@@ -164,7 +164,7 @@ export function EditAktivitasModal({
         </form>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3 flex-shrink-0">
+        <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}

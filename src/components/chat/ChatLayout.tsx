@@ -129,24 +129,24 @@ export function ChatLayout() {
   }, [loadConversations]);
 
   return (
-    <div className="flex h-full flex-1 w-full overflow-hidden bg-[#111b21] text-[#e9edef] relative">
+    <div className="flex h-full flex-1 w-full overflow-hidden bg-background text-foreground relative">
       {/* Banner Notifikasi */}
       {showPushBanner && (
-        <div className="absolute top-0 left-0 w-full z-50 bg-[#202c33] border-b border-[#222d34] px-4 py-2 flex items-center justify-between shadow-md">
+        <div className="absolute top-0 left-0 w-full z-50 bg-card border-b border-border px-4 py-2 flex items-center justify-between shadow-md">
           <div className="flex items-center text-sm">
-            <Bell className="w-4 h-4 mr-2 text-[#00a884]" />
+            <Bell className="w-4 h-4 mr-2 text-primary" />
             <span>Aktifkan notifikasi desktop untuk menerima pesan masuk</span>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowPushBanner(false)} className="text-xs px-3 py-1.5 text-[#8696a0] hover:text-[#e9edef]">Nanti</button>
-            <button onClick={handleEnablePush} className="text-xs px-3 py-1.5 bg-[#00a884] text-[#111b21] font-medium rounded hover:bg-[#00c99f]">Aktifkan</button>
+            <button onClick={() => setShowPushBanner(false)} className="text-xs px-3 py-1.5 text-muted-foreground hover:text-foreground">Nanti</button>
+            <button onClick={handleEnablePush} className="text-xs px-3 py-1.5 bg-primary text-primary-foreground font-medium rounded hover:bg-primary/90">Aktifkan</button>
           </div>
         </div>
       )}
 
       {/* List Pane */}
       <div
-        className={`w-full md:w-87.5 lg:w-100 shrink-0 border-r border-[#222d34] h-full ${
+        className={`w-full md:w-87.5 lg:w-100 shrink-0 border-r border-border h-full ${
           activeConvId ? 'hidden md:flex' : 'flex'
         }`}
       >

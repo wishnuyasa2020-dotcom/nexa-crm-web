@@ -147,11 +147,11 @@ export function InputAktivitasModal({ isOpen, onClose, sekolah, onSuccess, force
   );
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4">
       <div className="bg-background sm:bg-card w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-2xl shadow-xl sm:border border-border flex flex-col sm:max-h-[92vh]">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card flex-shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
           <div>
             <h2 className="text-base font-bold text-foreground">Input Aktivitas</h2>
             <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
@@ -331,7 +331,7 @@ export function InputAktivitasModal({ isOpen, onClose, sekolah, onSuccess, force
         </div>
 
         {/* Footer */}
-        <div className="fixed sm:static bottom-0 left-0 right-0 p-4 sm:p-5 border-t border-border flex justify-end gap-3 flex-shrink-0 bg-card sm:bg-secondary/5 z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-none">
+        <div className="fixed sm:static bottom-0 left-0 right-0 p-4 sm:p-5 border-t border-border flex justify-end gap-3 shrink-0 bg-card sm:bg-secondary/5 z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-none">
           <button type="button" onClick={onClose} className="hidden sm:block px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
             Batal
           </button>
