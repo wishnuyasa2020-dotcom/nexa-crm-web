@@ -846,9 +846,22 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                         ? resolveMediaUrl(bubbleHeaderValueRaw)
                         : bubbleHeaderValueRaw;
 
+                    const firstSelectedId = Array.from(selectedIds)[0];
+                    const sampleTarget = audience.find(a => a.id === firstSelectedId) || audience[0];
+                    const previewContext: Record<string, string> = sampleTarget ? {
+                      STUDENT_NAME: sampleTarget.nama || 'Siswa',
+                      SCHOOL_NAME: sampleTarget.sekolah || 'Sekolah',
+                      PHONE_NUMBER: sampleTarget.phone || '08xxx',
+                    } : {
+                      STUDENT_NAME: 'Budi',
+                      SCHOOL_NAME: 'SMA N 1',
+                      PHONE_NUMBER: '081234567890',
+                    };
+
                     let bubbleBodyText = selectedMetaTmpl.bodyText || '';
                     bodyVars.forEach((v: string, i: number) => {
-                      bubbleBodyText = bubbleBodyText.split(`{{${i+1}}}`).join(`[${v}]`);
+                      const resolvedVal = previewContext[v] || `[${v}]`;
+                      bubbleBodyText = bubbleBodyText.split(`{{${i+1}}}`).join(String(resolvedVal));
                     });
 
                     return (
