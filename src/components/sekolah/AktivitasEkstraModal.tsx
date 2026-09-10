@@ -34,7 +34,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
   
   const [croList, setCroList] = useState<string[]>([]);
 
-  const canAccessEkstra = ['Sudah Sosialisasi', 'Lead Captured'].includes(sekolah.status);
+  const canAccessEkstra = ['Sudah Sosialisasi', 'Identity Captured', 'Lead Captured'].includes(sekolah.status);
 
   useEffect(() => {
     if (isOpen) {
@@ -107,7 +107,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
               <div className="text-sm">
                 <p className="font-semibold">Tidak Tersedia</p>
                 <p className="text-xs mt-0.5 text-foreground/80">
-                  Aktivitas Ekstra hanya tersedia untuk sekolah dengan status <strong>Sudah Sosialisasi</strong> atau <strong>Lead Captured</strong>.
+                  Aktivitas Ekstra hanya tersedia untuk sekolah dengan status <strong>Sudah Sosialisasi</strong> atau <strong>Identity Captured</strong>.
                 </p>
                 <p className="text-xs mt-1 text-foreground/70">Status saat ini: {sekolah.status}</p>
               </div>

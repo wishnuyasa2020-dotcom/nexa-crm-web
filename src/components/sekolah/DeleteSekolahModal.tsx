@@ -25,11 +25,11 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
 
   // Guard Logic checks
   const hasAktivitas = sekolah.aktivitas.length > 0;
-  const isLeadCaptured = sekolah.status === 'Lead Captured';
+  const isIdentityCaptured = ['Identity Captured', 'Lead Captured'].includes(sekolah.status);
   const hasActiveEkstra = sekolah.aktivitasEkstra.some(ae => ae.statusAktivitas === 'Direncanakan');
   
   // Note: we don't have weekly_planning mock yet, so we just check extra activities for now
-  const isBlocked = hasAktivitas || isLeadCaptured || hasActiveEkstra;
+  const isBlocked = hasAktivitas || isIdentityCaptured || hasActiveEkstra;
 
   useEffect(() => {
     if (isOpen) {
@@ -99,7 +99,7 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
               </p>
               <ul className="list-disc list-inside text-foreground/90 pl-1 space-y-1 text-xs">
                 {hasAktivitas && <li>Sekolah memiliki {sekolah.aktivitas.length} riwayat aktivitas.</li>}
-                {isLeadCaptured && <li>Sekolah sudah berstatus Lead Captured.</li>}
+                {isIdentityCaptured && <li>Sekolah sudah berstatus Identity Captured.</li>}
                 {hasActiveEkstra && <li>Masih ada aktivitas ekstra yang direncanakan.</li>}
               </ul>
             </div>

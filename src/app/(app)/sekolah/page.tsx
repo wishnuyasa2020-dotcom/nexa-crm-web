@@ -246,9 +246,9 @@ export default function SekolahPage() {
           onClick={() => handleStatClick('Sosialisasi Terjadwal')}
           active={filterStatus === 'Sosialisasi Terjadwal'}
           loading={loadingStats} />
-        <StatCard label="Lead 🎯" value={stats?.leadCaptured ?? 0} color="text-emerald-300"
-          onClick={() => handleStatClick('Lead Captured')}
-          active={filterStatus === 'Lead Captured'}
+        <StatCard label="Identity 🎯" value={stats?.identityCaptured ?? stats?.leadCaptured ?? 0} color="text-emerald-300"
+          onClick={() => handleStatClick('Identity Captured')}
+          active={filterStatus === 'Identity Captured' || filterStatus === 'Lead Captured'}
           loading={loadingStats} />
         <StatCard label="Tidak Bisa" value={stats?.tidakBisa ?? 0} color="text-rose-400"
           onClick={() => handleStatClick('Tidak Bisa Sosialisasi')}
@@ -278,14 +278,14 @@ export default function SekolahPage() {
           onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
           className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
-          <option value="">Semua Status</option>
+          <option value="">Semua State</option>
           <option value="Belum Visit">Belum Visit</option>
           <option value="Tunggu Visit Ulang">Tunggu Visit Ulang</option>
           <option value="Tunggu Keputusan">Tunggu Keputusan</option>
           <option value="Tunggu Jadwal Sosialisasi">Tunggu Jadwal Sos.</option>
           <option value="Sosialisasi Terjadwal">Sos. Terjadwal</option>
           <option value="Sudah Sosialisasi">Sudah Sosialisasi</option>
-          <option value="Lead Captured">Lead Captured</option>
+          <option value="Identity Captured">Identity Captured</option>
           <option value="Tidak Bisa Sosialisasi">Tidak Bisa Sos.</option>
           <option value="Nonaktif / Tutup / Merger">Nonaktif</option>
         </select>
@@ -347,7 +347,7 @@ export default function SekolahPage() {
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Nama Sekolah</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Jenjang</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Kecamatan</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Commercial State</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">State</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Intent</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Next Action</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Due Date</th>

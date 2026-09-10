@@ -10,6 +10,7 @@ export type StatusCRM =
   | 'Tunggu Jadwal Sosialisasi'
   | 'Sosialisasi Terjadwal'
   | 'Sudah Sosialisasi'
+  | 'Identity Captured'
   | 'Lead Captured'
   | 'Tidak Bisa Sosialisasi'
   | 'Nonaktif / Tutup / Merger';
@@ -50,7 +51,7 @@ export const MASTER_HASIL_SEKOLAH: Record<HasilAktivitas, HasilMapping> = {
   'Jadwal Sosialisasi Dibatalkan': { status: 'Tunggu Jadwal Sosialisasi', nextAction: 'Jadwalkan Sosialisasi',   isTerminal: false, isDowngrade: true,  autoFillDueDate: null },
   'PIC Berganti — Perlu Visit Ulang': { status: 'Tunggu Visit Ulang',    nextAction: 'Visit Ulang',             isTerminal: false, isDowngrade: true,  autoFillDueDate: null },
   'Sosialisasi Selesai':           { status: 'Sudah Sosialisasi',         nextAction: 'Input Data Siswa',        isTerminal: false, isDowngrade: false, autoFillDueDate: 'H+1' },
-  'Data Siswa Terinput':           { status: 'Lead Captured',             nextAction: null,                      isTerminal: true,  isDowngrade: false, autoFillDueDate: null },
+  'Data Siswa Terinput':           { status: 'Identity Captured',         nextAction: null,                      isTerminal: true,  isDowngrade: false, autoFillDueDate: null },
   'Ditolak Final':                 { status: 'Tidak Bisa Sosialisasi',    nextAction: null,                      isTerminal: true,  isDowngrade: false, autoFillDueDate: null, requiresAlasan: true },
   'Tutup / Merger':                { status: 'Nonaktif / Tutup / Merger', nextAction: null,                      isTerminal: true,  isDowngrade: false, autoFillDueDate: null },
 };
@@ -63,6 +64,7 @@ export const STATUS_BADGE: Record<string, { bg: string; text: string; border: st
   'Tunggu Jadwal Sosialisasi': { bg: 'bg-blue-500/15',    text: 'text-blue-400',    border: 'border-blue-500/20',   dot: 'bg-blue-400' },
   'Sosialisasi Terjadwal':     { bg: 'bg-indigo-500/15',  text: 'text-indigo-400',  border: 'border-indigo-500/20', dot: 'bg-indigo-400' },
   'Sudah Sosialisasi':         { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/20',dot: 'bg-emerald-400' },
+  'Identity Captured':         { bg: 'bg-emerald-600/20', text: 'text-emerald-300', border: 'border-emerald-500/30',dot: 'bg-emerald-300' },
   'Lead Captured':             { bg: 'bg-emerald-600/20', text: 'text-emerald-300', border: 'border-emerald-500/30',dot: 'bg-emerald-300' },
   'Tidak Bisa Sosialisasi':    { bg: 'bg-rose-500/15',    text: 'text-rose-400',    border: 'border-rose-500/20',   dot: 'bg-rose-400' },
   'Nonaktif / Tutup / Merger': { bg: 'bg-zinc-500/15',    text: 'text-zinc-400',    border: 'border-zinc-500/20',   dot: 'bg-zinc-400' },
@@ -147,7 +149,7 @@ export const OUTCOME_META: Record<OutcomeKey, {
   'Jadwal Sosialisasi Dibatalkan':         { label: '↩️ Jadwal Dibatalkan',           targetState: 'Tunggu Jadwal Sosialisasi', isTerminal: false, isDowngrade: true,  requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
   'PIC Berganti — Perlu Visit Ulang':      { label: '↩️ PIC Berganti',                targetState: 'Tunggu Visit Ulang',        isTerminal: false, isDowngrade: true,  requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
   'Sosialisasi Selesai':                   { label: '✅ Sosialisasi Selesai',         targetState: 'Sudah Sosialisasi',         isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'SosialisasiCompleted' },
-  'Data Siswa Terinput':                   { label: '🎯 Data Siswa Terinput',      targetState: 'Lead Captured',             isTerminal: true,  isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'BatchStudentsImported' },
+  'Data Siswa Terinput':                   { label: '🎯 Data Siswa Terinput',      targetState: 'Identity Captured',         isTerminal: true,  isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'BatchStudentsImported' },
   'Ditolak Final':                         { label: '🔴 Ditolak Final',              targetState: 'Tidak Bisa Sosialisasi',    isTerminal: true,  isDowngrade: false, requiresAlasan: true,  requiresTanggalSos: false, eventType: 'SosialisasiRejected' },
   'Tutup / Merger':                        { label: 'Tutup / Merger',                targetState: 'Nonaktif / Tutup / Merger', isTerminal: true,  isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'SchoolClosed' },
 };
@@ -168,7 +170,7 @@ export const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string; i
   SosialisasiApproved:   { label: 'Sosialisasi Approved', color: 'text-blue-400',    icon: '🔵' },
   SosialisasiCompleted:  { label: 'Sosialisasi Selesai',  color: 'text-emerald-400', icon: '🟢' },
   SosialisasiRejected:   { label: 'Ditolak',              color: 'text-rose-400',    icon: '🔴' },
-  BatchStudentsImported: { label: 'Lead Captured',         color: 'text-emerald-300', icon: '🎯' },
+  BatchStudentsImported: { label: 'Identity Captured',    color: 'text-emerald-300', icon: '🎯' },
   SchoolClosed:          { label: 'Tutup / Merger',        color: 'text-zinc-400',    icon: '⚫' },
 };
 

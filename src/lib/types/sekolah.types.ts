@@ -90,7 +90,8 @@ export interface SekolahStatsResponse {
   proses:              number;  // Semua tahap Engaged (alias, backward compat)
   sosialisasiTerjadwal:number;
   sosialisasi:         number;  // Sudah Sosialisasi
-  leadCaptured:        number;
+  identityCaptured?:   number;
+  leadCaptured:        number;  // alias identityCaptured for backward compat
   tidakBisa:           number;
   nonaktif:            number;
 }

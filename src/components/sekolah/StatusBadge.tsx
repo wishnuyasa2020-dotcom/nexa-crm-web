@@ -17,7 +17,7 @@ export function StatusBadge({ status, size = 'sm', showDot = false }: StatusBadg
     dot: 'bg-muted-foreground',
   };
 
-  const isLeadCaptured = status === 'Lead Captured';
+  const isIdentityCaptured = status === 'Identity Captured' || status === 'Lead Captured';
 
   return (
     <span
@@ -30,7 +30,7 @@ export function StatusBadge({ status, size = 'sm', showDot = false }: StatusBadg
       {showDot && (
         <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', colors.dot)} />
       )}
-      {isLeadCaptured && '🎯 '}
+      {isIdentityCaptured && '🎯 '}
       {status}
     </span>
   );

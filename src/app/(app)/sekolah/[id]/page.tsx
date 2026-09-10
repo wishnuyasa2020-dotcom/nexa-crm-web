@@ -143,7 +143,7 @@ export default function SekolahDetailPage() {
 
   const isManager = isManagerOrAdmin(userRole);
   const isCRO = userRole === 'CRO';
-  const canEkstra = !isCRO && ['Sudah Sosialisasi', 'Lead Captured'].includes(sekolah.status);
+  const canEkstra = !isCRO && ['Sudah Sosialisasi', 'Identity Captured', 'Lead Captured'].includes(sekolah.status);
   const hasEkstraActive = sekolah.aktivitasEkstra.some(a => a.statusAktivitas === 'Direncanakan');
 
   return (
