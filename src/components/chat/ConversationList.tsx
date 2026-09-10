@@ -129,7 +129,7 @@ function ContactItem({
       className={`w-full text-left flex items-center px-2.5 py-2 md:p-3 hover:bg-accent/50 transition-colors border-b border-border/50 ${isActive ? 'bg-accent' : ''}`}
     >
       <div className="relative mr-2.5 md:mr-3 shrink-0">
-        <Avatar className="h-9 w-9 md:h-12 md:w-12 border border-border">
+        <Avatar className="h-9 w-9 md:h-12 md:w-12 border">
           <AvatarFallback className="bg-muted-foreground text-white text-xs md:text-sm">{getInitials(c.student_name)}</AvatarFallback>
         </Avatar>
         {/* Indikator Service Window */}

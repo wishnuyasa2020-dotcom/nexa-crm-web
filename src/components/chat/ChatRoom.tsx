@@ -373,7 +373,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 )}
               </div>
               <div className="space-y-4">
-                <div className="bg-card p-4 rounded-xl border border-border">
+                <div className="bg-card p-4 rounded-xl border">
                   <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Status & Pipeline</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -404,7 +404,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 </div>
                 
                 {/* Aksi Cepat */}
-                <div className="bg-card p-4 rounded-xl border border-border">
+                <div className="bg-card p-4 rounded-xl border">
                   <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Aksi Cepat</h4>
                   <Button 
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
@@ -543,7 +543,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                   )}
                 </div>
                 {msg.reaction && (
-                  <div className={`absolute -bottom-3 ${msg.direction === 'outgoing' ? '-left-2' : '-right-2'} bg-accent border border-border rounded-full px-1.5 py-0.5 text-xs shadow-sm z-10`}>
+                  <div className={`absolute -bottom-3 ${msg.direction === 'outgoing' ? '-left-2' : '-right-2'} bg-accent border rounded-full px-1.5 py-0.5 text-xs shadow-sm z-10`}>
                     {msg.reaction}
                   </div>
                 )}
@@ -608,7 +608,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 <Smile className="h-5 w-5" />
               </Button>
               {showEmojiMenu && (
-                <div className="absolute bottom-12 left-0 bg-accent border border-border rounded-xl shadow-xl flex flex-wrap gap-2 p-3 w-56 z-50">
+                <div className="absolute bottom-12 left-0 bg-accent border rounded-xl shadow-xl flex flex-wrap gap-2 p-3 w-56 z-50">
                   {['👍', '❤️', '😂', '😮', '😢', '🙏', '🔥', '🎉', '✅', '❌', '😊', '🙌', '👌', '💯'].map(e => (
                     <button key={e} onClick={() => { setInputText(prev => prev + e); setShowEmojiMenu(false); }} className="text-xl hover:scale-125 transition-transform flex items-center justify-center h-8 w-8">
                       {e}
@@ -626,7 +626,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
                 <Paperclip className="h-5 w-5" />
               </Button>
               {showAttachMenu && (
-                <div className="absolute bottom-12 left-0 bg-accent border border-border rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
+                <div className="absolute bottom-12 left-0 bg-accent border rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
                   <button
                     onClick={() => { setAttachAccept('image/*,video/*'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
                     className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
@@ -711,7 +711,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
           </DialogHeader>
           <div className="space-y-4 pt-4">
             
-            <div className="flex flex-col gap-2 p-3 bg-card rounded-lg border border-border">
+            <div className="flex flex-col gap-2 p-3 bg-card rounded-lg border">
               <Button onClick={handleGetCurrentLocation} variant="outline" className="w-full">
                 <MapPin className="h-4 w-4 mr-2 text-emerald-400" /> Dapatkan Lokasi Saat Ini (GPS)
               </Button>
@@ -790,7 +790,7 @@ function renderMessageBody(body: string) {
   
   // Mengubah baris yang terlihat seperti tombol "Quick Reply: [Teks]" menjadi tampilan tombol
   const btnRegex = /\[Quick Reply: (.*?)\]/g;
-  html = html.replace(btnRegex, '<div class="mt-2 inline-block bg-accent border border-border text-primary font-medium px-3 py-1.5 rounded-full text-xs shadow-sm">$1</div>');
+  html = html.replace(btnRegex, '<div class="mt-2 inline-block bg-accent border text-primary font-medium px-3 py-1.5 rounded-full text-xs shadow-sm">$1</div>');
   
   return html;
 }
@@ -813,7 +813,7 @@ function ReactionMenu({ onSelect }: { onSelect: (emoji: string) => void }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-accent border border-border rounded-full shadow-lg px-2 py-1.5 flex gap-1 z-50">
+          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-accent border rounded-full shadow-lg px-2 py-1.5 flex gap-1 z-50">
             {emojis.map(e => (
               <button 
                 key={e} 
@@ -893,7 +893,7 @@ function TemplateListItem({
 }) {
   return (
     <div
-      className="border border-border bg-card rounded-lg p-3 hover:bg-accent cursor-pointer transition-colors group"
+      className="border bg-card rounded-lg p-3 hover:bg-accent cursor-pointer transition-colors group"
     >
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-semibold text-sm text-foreground">{t.nama_template}</h4>
@@ -967,7 +967,7 @@ function TemplateReviewDialog({
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onBack(); }}>
       {/* flex-col + max-h agar konten bisa scroll jika panjang */}
-      <DialogContent className="sm:max-w-sm bg-background border-border text-foreground p-0 flex flex-col max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-sm bg-background border-border text-foreground p-0 flex flex-col max-h-dvh overflow-hidden">
 
         {/* Header — fixed, tidak ikut scroll */}
         <DialogHeader className="px-5 pt-5 pb-3 shrink-0 border-b border-border">
