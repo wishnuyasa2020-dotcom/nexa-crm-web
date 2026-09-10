@@ -23,6 +23,7 @@ export interface Sekolah {
   pic:             PIC | null;
   pjCro:           string;       // pj_sekolah
   status:          string;       // status_terkini CRM (backward compat)
+  pipelineState:   string;       // pipeline_state — ontologi B2B baru (Identified | Engaged | Sosialisasi Terjadwal | Sudah Sosialisasi | Identity Captured | Disqualified)
   commercialState: string;       // Commercial State (alias status_terkini)
   intent:          'High' | 'Mid' | 'Low' | null;  // Intent level
   nextAction:      string | null;

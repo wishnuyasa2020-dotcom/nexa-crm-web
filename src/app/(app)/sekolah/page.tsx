@@ -234,25 +234,25 @@ export default function SekolahPage() {
           onClick={() => handleStatClick('')}
           active={filterStatus === '' && !hasFilters}
           loading={loadingStats} />
-        <StatCard label="Belum Visit" value={stats?.belumVisit ?? 0} color="text-slate-400"
-          onClick={() => handleStatClick('Belum Visit')}
-          active={filterStatus === 'Belum Visit'}
+        <StatCard label="Belum Visit" value={stats?.belumVisit ?? stats?.cold ?? 0} color="text-slate-400"
+          onClick={() => handleStatClick('Identified')}
+          active={filterStatus === 'Identified'}
           loading={loadingStats} />
-        <StatCard label="Dalam Proses" value={stats?.proses ?? 0} color="text-amber-400"
-          onClick={() => { setFilterStatus(''); setPage(1); }}
-          active={false}
+        <StatCard label="Dalam Proses" value={stats?.proses ?? stats?.engaged ?? 0} color="text-amber-400"
+          onClick={() => handleStatClick('Engaged')}
+          active={filterStatus === 'Engaged'}
           loading={loadingStats} />
-        <StatCard label="Sos. Terjadwal" value={stats?.sosialisasiTerjadwal ?? stats?.sosialisasi ?? 0} color="text-blue-400"
+        <StatCard label="Sos. Terjadwal" value={stats?.sosialisasiTerjadwal ?? 0} color="text-blue-400"
           onClick={() => handleStatClick('Sosialisasi Terjadwal')}
           active={filterStatus === 'Sosialisasi Terjadwal'}
           loading={loadingStats} />
         <StatCard label="Identity 🎯" value={stats?.identityCaptured ?? stats?.leadCaptured ?? 0} color="text-emerald-300"
           onClick={() => handleStatClick('Identity Captured')}
-          active={filterStatus === 'Identity Captured' || filterStatus === 'Lead Captured'}
+          active={filterStatus === 'Identity Captured'}
           loading={loadingStats} />
         <StatCard label="Tidak Bisa" value={stats?.tidakBisa ?? 0} color="text-rose-400"
-          onClick={() => handleStatClick('Tidak Bisa Sosialisasi')}
-          active={filterStatus === 'Tidak Bisa Sosialisasi'}
+          onClick={() => handleStatClick('Disqualified')}
+          active={filterStatus === 'Disqualified'}
           loading={loadingStats} />
       </div>
 
@@ -279,15 +279,12 @@ export default function SekolahPage() {
           className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
           <option value="">Semua State</option>
-          <option value="Belum Visit">Belum Visit</option>
-          <option value="Tunggu Visit Ulang">Tunggu Visit Ulang</option>
-          <option value="Tunggu Keputusan">Tunggu Keputusan</option>
-          <option value="Tunggu Jadwal Sosialisasi">Tunggu Jadwal Sos.</option>
-          <option value="Sosialisasi Terjadwal">Sos. Terjadwal</option>
+          <option value="Identified">Identified (Belum Visit)</option>
+          <option value="Engaged">Engaged (Dalam Proses)</option>
+          <option value="Sosialisasi Terjadwal">Sosialisasi Terjadwal</option>
           <option value="Sudah Sosialisasi">Sudah Sosialisasi</option>
-          <option value="Identity Captured">Identity Captured</option>
-          <option value="Tidak Bisa Sosialisasi">Tidak Bisa Sos.</option>
-          <option value="Nonaktif / Tutup / Merger">Nonaktif</option>
+          <option value="Identity Captured">🎯 Identity Captured</option>
+          <option value="Disqualified">Disqualified (Tidak Bisa / Nonaktif)</option>
         </select>
         <select
           value={filterKecamatan}
@@ -389,7 +386,7 @@ export default function SekolahPage() {
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{s.kecamatan}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <StatusBadge status={s.status} showDot />
+                      <StatusBadge status={s.pipelineState ?? s.status} showDot />
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <IntentBadge intent={s.intent} />
@@ -461,7 +458,7 @@ export default function SekolahPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <StatusBadge status={s.status} showDot />
+                <StatusBadge status={s.pipelineState ?? s.status} showDot />
                 <IntentBadge intent={s.intent} />
                 <AgingBadge dueDate={s.dueDate} />
               </div>

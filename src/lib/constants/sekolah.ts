@@ -4,14 +4,19 @@
 // ============================================================
 
 export type StatusCRM =
-  | 'Belum Visit'
-  | 'Tunggu Visit Ulang'
-  | 'Tunggu Keputusan'
-  | 'Tunggu Jadwal Sosialisasi'
+  // ── Pipeline States Baru (Ontologi B2B) ──
+  | 'Identified'
+  | 'Engaged'
   | 'Sosialisasi Terjadwal'
   | 'Sudah Sosialisasi'
   | 'Identity Captured'
   | 'Lead Captured'
+  | 'Disqualified'
+  // ── Status Operasional Lama (backward-compat) ──
+  | 'Belum Visit'
+  | 'Tunggu Visit Ulang'
+  | 'Tunggu Keputusan'
+  | 'Tunggu Jadwal Sosialisasi'
   | 'Tidak Bisa Sosialisasi'
   | 'Nonaktif / Tutup / Merger';
 
@@ -58,14 +63,19 @@ export const MASTER_HASIL_SEKOLAH: Record<HasilAktivitas, HasilMapping> = {
 
 // Section 2 — Status Badge Color Mapping (Tailwind classes)
 export const STATUS_BADGE: Record<string, { bg: string; text: string; border: string; dot: string }> = {
+  // ── Pipeline States Baru (Ontologi B2B) ──
+  'Identified':            { bg: 'bg-slate-500/15',   text: 'text-slate-300',   border: 'border-slate-500/20',  dot: 'bg-slate-300' },
+  'Engaged':               { bg: 'bg-amber-500/15',   text: 'text-amber-400',   border: 'border-amber-500/20',  dot: 'bg-amber-400' },
+  'Sosialisasi Terjadwal': { bg: 'bg-indigo-500/15',  text: 'text-indigo-400',  border: 'border-indigo-500/20', dot: 'bg-indigo-400' },
+  'Sudah Sosialisasi':     { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/20',dot: 'bg-emerald-400' },
+  'Identity Captured':     { bg: 'bg-emerald-600/20', text: 'text-emerald-300', border: 'border-emerald-500/30',dot: 'bg-emerald-300' },
+  'Lead Captured':         { bg: 'bg-emerald-600/20', text: 'text-emerald-300', border: 'border-emerald-500/30',dot: 'bg-emerald-300' },
+  'Disqualified':          { bg: 'bg-rose-500/15',    text: 'text-rose-400',    border: 'border-rose-500/20',   dot: 'bg-rose-400' },
+  // ── Status Operasional Lama (backward-compat untuk detail sekolah) ──
   'Belum Visit':               { bg: 'bg-slate-500/15',   text: 'text-slate-400',   border: 'border-slate-500/20',  dot: 'bg-slate-400' },
   'Tunggu Visit Ulang':        { bg: 'bg-amber-500/15',   text: 'text-amber-400',   border: 'border-amber-500/20',  dot: 'bg-amber-400' },
   'Tunggu Keputusan':          { bg: 'bg-orange-500/15',  text: 'text-orange-400',  border: 'border-orange-500/20', dot: 'bg-orange-400' },
   'Tunggu Jadwal Sosialisasi': { bg: 'bg-blue-500/15',    text: 'text-blue-400',    border: 'border-blue-500/20',   dot: 'bg-blue-400' },
-  'Sosialisasi Terjadwal':     { bg: 'bg-indigo-500/15',  text: 'text-indigo-400',  border: 'border-indigo-500/20', dot: 'bg-indigo-400' },
-  'Sudah Sosialisasi':         { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/20',dot: 'bg-emerald-400' },
-  'Identity Captured':         { bg: 'bg-emerald-600/20', text: 'text-emerald-300', border: 'border-emerald-500/30',dot: 'bg-emerald-300' },
-  'Lead Captured':             { bg: 'bg-emerald-600/20', text: 'text-emerald-300', border: 'border-emerald-500/30',dot: 'bg-emerald-300' },
   'Tidak Bisa Sosialisasi':    { bg: 'bg-rose-500/15',    text: 'text-rose-400',    border: 'border-rose-500/20',   dot: 'bg-rose-400' },
   'Nonaktif / Tutup / Merger': { bg: 'bg-zinc-500/15',    text: 'text-zinc-400',    border: 'border-zinc-500/20',   dot: 'bg-zinc-400' },
 };

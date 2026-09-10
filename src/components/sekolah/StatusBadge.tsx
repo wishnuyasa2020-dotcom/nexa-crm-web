@@ -18,6 +18,7 @@ export function StatusBadge({ status, size = 'sm', showDot = false }: StatusBadg
   };
 
   const isIdentityCaptured = status === 'Identity Captured' || status === 'Lead Captured';
+  const isDisqualified = status === 'Disqualified';
 
   return (
     <span
