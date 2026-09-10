@@ -22,19 +22,23 @@ export interface Sekolah {
   statusAktif:     string;       // status_sekolah: 'Aktif' | 'Nonaktif' | 'Belum Diketahui'
   pic:             PIC | null;
   pjCro:           string;       // pj_sekolah
-  status:          string;       // status_terkini CRM
+  status:          string;       // status_terkini CRM (backward compat)
+  commercialState: string;       // Commercial State (alias status_terkini)
+  intent:          'High' | 'Mid' | 'Low' | null;  // Intent level
   nextAction:      string | null;
   dueDate:         string | null; // YYYY-MM-DD
   marketingPeriod: string;
   aging:           number;        // hari sejak status_updated_date
 }
 
-// ── Riwayat Aktivitas (timeline) ──────────────────────────────────────────────
+// ── Riwayat Aktivitas / Event Log (timeline) ──────────────────────────────────────
 export interface Aktivitas {
   id:              number;
   jenisAktivitas:  string;
   tanggal:         string | null;
-  hasilAktivitas:  string;
+  hasilAktivitas:  string;       // outcome text
+  outcome:         string;       // same as hasilAktivitas
+  eventType:       string;       // 'InteractionLogged' | 'SosialisasiApproved' | etc
   statusSesudah:   string;
   nextAction:      string | null;
   dueDate:         string | null;
@@ -59,13 +63,13 @@ export interface AktivitasEkstra {
   createdAt:        string;
 }
 
-// ── Detail Sekolah (detail page) ──────────────────────────────────────────────
+// ── Detail Sekolah (detail page) ──────────────────────────────────────────────────────
 export interface SekolahDetail extends Sekolah {
   jumlahSiswaKelas12: number;
   sekolahAktif:       string;    // sekolah_aktif di sekolah_periode
   alasanTidakBisa:    string;
   catatan:            string;
-  aktivitas:          Aktivitas[];
+  aktivitas:          Aktivitas[];         // Event Log (append-only)
   aktivitasEkstra:    AktivitasEkstra[];
 }
 
@@ -79,13 +83,16 @@ export interface SekolahListResponse {
 }
 
 export interface SekolahStatsResponse {
-  total:       number;
-  belumVisit:  number;
-  proses:      number;
-  sosialisasi: number;
-  leadCaptured:number;
-  tidakBisa:   number;
-  nonaktif:    number;
+  total:               number;
+  cold:                number;  // Belum Visit
+  belumVisit:          number;  // alias cold (backward compat)
+  engaged:             number;  // Tunggu Visit Ulang + Tunggu Keputusan
+  proses:              number;  // Semua tahap Engaged (alias, backward compat)
+  sosialisasiTerjadwal:number;
+  sosialisasi:         number;  // Sudah Sosialisasi
+  leadCaptured:        number;
+  tidakBisa:           number;
+  nonaktif:            number;
 }
 
 // ── Filter params untuk list ──────────────────────────────────────────────────
@@ -96,6 +103,7 @@ export interface SekolahListParams {
   kecamatan?: string;
   pjCro?:     string;
   search?:    string;
+  intent?:    string;
 }
 
 // ── Payload Tambah Sekolah ────────────────────────────────────────────────────
@@ -120,7 +128,7 @@ export interface EditSekolahPayload {
   sekolahAktif?:      string;
 }
 
-// ── Payload Input Aktivitas ───────────────────────────────────────────────────
+// ── Payload Input Aktivitas (BACKWARD COMPAT) ─────────────────────────────────────────────
 export interface InputAktivitasPayload {
   jenisAktivitas:       string;
   tanggalAktivitas:     string;       // YYYY-MM-DD
@@ -142,7 +150,28 @@ export interface InputAktivitasPayload {
   catatanAlasan?:       string;
 }
 
-// ── Payload Aktivitas Ekstra ──────────────────────────────────────────────────
+// ── Payload Log Interaction (Event-Sourcing, Endpoint Baru) ────────────────────────
+export interface LogInteractionPayload {
+  outcome:              string;       // Kunci dari INTERACTION_OUTCOME_MAP
+  channel:              string;       // 'Visit Langsung' | 'WhatsApp' | 'Telepon'
+  catatanFakta:         string;       // Catatan wajib diisi
+  tanggalInteraksi?:    string;       // YYYY-MM-DD (default hari ini)
+  tanggalSosialisasi?:  string;       // Wajib jika outcome = 'Mendapat Izin Sosialisasi'
+
+  // Wajib saat Visit Awal
+  statusAktif?:         string;
+  alamatLengkap?:       string;
+  jumlahSiswaKelas12?:  number;
+  namaPic?:             string;
+  jabatanPic?:          string;
+  noWaPic?:             string;
+
+  // Wajib jika outcome = 'Ditolak Final'
+  alasanTidakBisa?:     string;
+  catatanAlasan?:       string;
+}
+
+// ── Payload Aktivitas Ekstra ───────────────────────────────────────────────────────────
 export interface BuatEkstraPayload {
   jenisAktivitas: 'WhatsApp PIC' | 'Telepon PIC' | 'Meeting PIC';
   tanggalRencana: string;

@@ -12,13 +12,15 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  StatusBadge, AgingBadge, InputAktivitasModal,
+  StatusBadge, AgingBadge,
   AktivitasEkstraModal, ReassignCROModal, DeleteSekolahModal,
-  EditSekolahModal, EditAktivitasModal
+  EditSekolahModal,
 } from '@/components/sekolah';
+import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
+import { IntentBadge } from '@/components/sekolah/IntentBadge';
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail, Aktivitas, AktivitasEkstra } from '@/lib/types/sekolah.types';
-import { isManagerOrAdmin } from '@/lib/constants/sekolah';
+import { isManagerOrAdmin, EVENT_TYPE_CONFIG } from '@/lib/constants/sekolah';
 import { useAuthStore } from '@/store/useAuthStore';
 
 type TabKey = 'info' | 'aktivitas' | 'siswa' | 'ekstra';
@@ -37,11 +39,6 @@ function timeAgo(isoDatetime: string) {
   if (diff < 60) return `${Math.floor(diff)} menit lalu`;
   if (diff < 1440) return `${Math.floor(diff / 60)} jam lalu`;
   return `${Math.floor(diff / 1440)} hari lalu`;
-}
-
-function withinEditWindow(isoDatetime: string, isManager: boolean): boolean {
-  const ageMin = (Date.now() - new Date(isoDatetime).getTime()) / 60000;
-  return isManager ? ageMin <= 1440 : ageMin <= 60;
 }
 
 function formatDate(iso: string | null) {
@@ -85,14 +82,11 @@ export default function SekolahDetailPage() {
   const userName = user?.nama ?? user?.username ?? '';
 
   // Modals
-  const [showInputAktivitas, setShowInputAktivitas]   = useState(false);
+  const [showCatatInteraksi, setShowCatatInteraksi] = useState(false);
   const [showAktivitasEkstra, setShowAktivitasEkstra] = useState(false);
   const [showReassign, setShowReassign]               = useState(false);
   const [showDelete, setShowDelete]                   = useState(false);
   const [showEdit, setShowEdit]                       = useState(false);
-
-  // Edit aktivitas
-  const [editingAktivitas, setEditingAktivitas] = useState<Aktivitas | null>(null);
 
   // Konfirmasi Selesai / Batalkan ekstra
   const [confirmEkstra, setConfirmEkstra] = useState<{
@@ -181,11 +175,14 @@ export default function SekolahDetailPage() {
               <span className="flex items-center gap-1"><Calendar size={11} />{sekolah.marketingPeriod}</span>
             </div>
           </div>
-          <StatusBadge status={sekolah.status} size="md" showDot />
+          <div className="flex items-center gap-2 shrink-0">
+            <IntentBadge intent={sekolah.intent} size="md" />
+            <StatusBadge status={sekolah.status} size="md" showDot />
+          </div>
         </div>
 
         {/* Info Grid - hidden on mobile when sticky? We'll just hide it on very small screens or keep it scrollable */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 hidden sm:grid">
+        <div className="hidden sm:grid sm:grid-cols-4 grid-cols-2 gap-3">
           <div className="bg-secondary/30 rounded-xl p-3 space-y-0.5">
             <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Next Action</p>
             <p className="text-sm font-medium text-foreground">{sekolah.nextAction ?? '—'}</p>
@@ -247,23 +244,23 @@ export default function SekolahDetailPage() {
               </button>
             )}
             <button
-              onClick={() => setShowInputAktivitas(true)}
+              onClick={() => setShowCatatInteraksi(true)}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg gradient-primary text-white text-xs font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20 ml-auto"
             >
-              <Play size={13} /> Input Aktivitas
+              <Play size={13} /> Catat Interaksi
             </button>
           </div>
         )}
       </div>
 
       {/* ── Tabs ── */}
-      <div className="mt-4 min-h-[100dvh]">
+      <div className="mt-4 min-h-dvh">
         {/* Tab Nav (Sticky on Mobile) */}
         <div className="sticky -top-4 z-40 py-2 -mx-4 px-4 bg-background/95 backdrop-blur-md md:static md:bg-transparent md:mx-0 md:px-0 md:py-0">
           <div className="bg-card border border-border rounded-xl md:rounded-2xl overflow-hidden shadow-sm">
             <div
               ref={scrollContainerRef}
-              className="flex border-b border-border overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="flex border-b border-border overflow-x-auto scrollbar-none"
             >
               {TABS.map(tab => (
                 <button
@@ -300,9 +297,6 @@ export default function SekolahDetailPage() {
           {activeTab === 'aktivitas' && (
             <TabAktivitas
               aktivitas={sekolah.aktivitas}
-              isManager={isManager}
-              isCRO={isCRO}
-              onEdit={ak => setEditingAktivitas(ak)}
             />
           )}
           {activeTab === 'siswa'     && <TabSiswa />}
@@ -320,12 +314,12 @@ export default function SekolahDetailPage() {
       </div>
 
       {/* ── Modals ── */}
-      <InputAktivitasModal
-        isOpen={showInputAktivitas}
-        onClose={() => setShowInputAktivitas(false)}
+      <CatatInteraksiModal
+        isOpen={showCatatInteraksi}
+        onClose={() => setShowCatatInteraksi(false)}
         sekolah={sekolah}
         onSuccess={() => {
-          setShowInputAktivitas(false);
+          setShowCatatInteraksi(false);
           setActiveTab('aktivitas');
           fetchData();
         }}
@@ -365,18 +359,7 @@ export default function SekolahDetailPage() {
         }}
       />
 
-      {/* ── Edit Aktivitas Modal ── */}
-      <EditAktivitasModal
-        isOpen={!!editingAktivitas}
-        onClose={() => setEditingAktivitas(null)}
-        aktivitas={editingAktivitas}
-        isManager={isManager}
-        userName={userName}
-        onSuccess={() => {
-          setEditingAktivitas(null);
-          fetchData();
-        }}
-      />
+      {/* Edit Aktivitas modal removed — Event Log is now Append-Only (Fase 1 Ontologi) */}
 
       {/* ── Konfirmasi Selesai / Batalkan Ekstra ── */}
       {confirmEkstra && (
@@ -475,26 +458,31 @@ function TabDetail({ sekolah }: { sekolah: SekolahDetail }) {
 }
 
 function TabAktivitas({
-  aktivitas, isManager, isCRO, onEdit,
+  aktivitas,
 }: {
-  aktivitas: Aktivitas[];
-  isManager: boolean;
-  isCRO: boolean;
-  onEdit: (ak: Aktivitas) => void;
+  aktivitas:  Aktivitas[];
+  isManager?: boolean;
+  isCRO?:     boolean;
+  onEdit?:    (ak: Aktivitas) => void;
 }) {
   if (aktivitas.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground text-sm">
         <Clock size={28} className="mx-auto mb-2 opacity-20" />
-        Belum ada aktivitas tercatat
+        Belum ada interaksi tercatat
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
+      {/* Append-Only label */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Event Log (Append-Only)</h3>
+        <span className="text-[10px] text-muted-foreground/60">{aktivitas.length} entri</span>
+      </div>
       {aktivitas.map((ak, i) => {
-        const canEdit = withinEditWindow(ak.createdAt, isManager);
+        const evCfg = EVENT_TYPE_CONFIG[ak.eventType] ?? EVENT_TYPE_CONFIG['InteractionLogged'];
         return (
           <div
             key={ak.id}
@@ -505,7 +493,7 @@ function TabAktivitas({
           >
             {/* Timeline dot */}
             <div className={cn(
-              'absolute -left-[5px] top-1 w-2 h-2 rounded-full border-2',
+              'absolute -left-1.25 top-1 w-2 h-2 rounded-full border-2',
               i === 0 ? 'bg-primary border-primary' : 'bg-card border-muted-foreground'
             )} />
 
@@ -515,27 +503,28 @@ function TabAktivitas({
                 <span className="text-xs text-muted-foreground font-mono">
                   {formatDate(ak.tanggal)}
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded bg-secondary text-foreground font-medium">
-                  {ak.jenisAktivitas}
+                {/* Event Type Badge */}
+                <span className={cn('text-[10px] px-2 py-0.5 rounded border font-semibold', evCfg.color, 'bg-secondary border-border')} title={ak.eventType}>
+                  {evCfg.icon} {evCfg.label}
                 </span>
+                {ak.jenisAktivitas && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-secondary/50 text-muted-foreground">
+                    {ak.jenisAktivitas}
+                  </span>
+                )}
               </div>
-              {!isCRO && canEdit && (
-                <button
-                  onClick={() => onEdit(ak)}
-                  className="flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary transition-colors px-2 py-0.5 rounded border border-primary/20 hover:border-primary/40"
-                >
-                  ✏️ Edit
-                </button>
-              )}
+              {/* Append-Only: no edit button (removed withinEditWindow) */}
             </div>
 
             {/* Content */}
             <div className="mt-2 space-y-1 text-sm">
               <div className="flex items-start gap-2 flex-wrap">
-                <span className="text-muted-foreground text-xs w-14 shrink-0">Hasil</span>
-                <span className="font-medium text-foreground flex items-center gap-1.5">
-                  {ak.hasilAktivitas}
-                </span>
+                <span className="text-muted-foreground text-xs w-14 shrink-0">Outcome</span>
+                <span className="font-medium text-foreground">{ak.outcome || ak.hasilAktivitas}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground text-xs w-14 shrink-0">Update</span>
+                <span className="text-xs text-foreground font-medium">{ak.statusSesudah}</span>
               </div>
               {ak.catatan && (
                 <div className="flex items-start gap-2">
@@ -543,15 +532,13 @@ function TabAktivitas({
                   <span className="text-sm text-muted-foreground">{ak.catatan}</span>
                 </div>
               )}
-              <div className="flex items-start gap-2">
-                <span className="text-muted-foreground text-xs w-14 shrink-0">Update</span>
-                <span className="text-xs text-muted-foreground">
-                  <span className="text-foreground font-medium">{ak.statusSesudah}</span>
-                </span>
-              </div>
+              {ak.alasanTidakBisa && (
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground text-xs w-14 shrink-0">Alasan</span>
+                  <span className="text-sm text-rose-400">{ak.alasanTidakBisa}</span>
+                </div>
+              )}
             </div>
-
-
           </div>
         );
       })}
@@ -743,8 +730,8 @@ function KonfirmasiEkstraModal({
           isSelesai ? 'bg-emerald-500/5' : 'bg-rose-500/5'
         )}>
           {isSelesai
-            ? <CheckCircle size={18} className="text-emerald-400 flex-shrink-0" />
-            : <XCircle size={18} className="text-rose-400 flex-shrink-0" />
+            ? <CheckCircle size={18} className="text-emerald-400 shrink-0" />
+            : <XCircle size={18} className="text-rose-400 shrink-0" />
           }
           <div className="min-w-0">
             <h2 className="text-base font-bold text-foreground">
@@ -754,7 +741,7 @@ function KonfirmasiEkstraModal({
           </div>
           <button
             onClick={onClose}
-            className="ml-auto w-7 h-7 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+            className="ml-auto w-7 h-7 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0"
           >
             <XCircle size={14} />
           </button>
@@ -779,7 +766,7 @@ function KonfirmasiEkstraModal({
                   value={tanggalRealisasi}
                   max={new Date().toISOString().slice(0, 10)}
                   onChange={e => setTanggalRealisasi(e.target.value)}
-                  className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors"
+                  className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors"
                 />
               </div>
               <div className="space-y-1.5">
@@ -791,7 +778,7 @@ function KonfirmasiEkstraModal({
                   value={catatanHasil}
                   onChange={e => setCatatanHasil(e.target.value)}
                   placeholder="Ringkasan hasil aktivitas ekstra..."
-                  className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors resize-none placeholder:text-muted-foreground"
+                  className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors resize-none placeholder:text-muted-foreground"
                 />
               </div>
             </>
@@ -807,7 +794,7 @@ function KonfirmasiEkstraModal({
                 onChange={e => setAlasanBatal(e.target.value)}
                 placeholder="Jelaskan alasan pembatalan..."
                 className={cn(
-                  'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors resize-none placeholder:text-muted-foreground',
+                  'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors resize-none placeholder:text-muted-foreground',
                   !formValid && alasanBatal.length > 0 && 'border-rose-500 ring-1 ring-rose-500'
                 )}
               />

@@ -27,11 +27,13 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
   const [showPassword, setShowPassword] = useState(false);
   const [supervisorId, setSupervisorId] = useState('');
   const [chiefCros, setChiefCros] = useState<any[]>([]);
+  const [quotaErrorMsg, setQuotaErrorMsg] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
+      setQuotaErrorMsg(null);
       apiClient.get('/users?role=Chief CRO').then(res => {
         setChiefCros(res.data.data || []);
       }).catch(() => {});
@@ -40,6 +42,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setQuotaErrorMsg(null);
     try {
       setLoading(true);
       await apiClient.post('/users', { 
@@ -60,8 +63,15 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
       setPassword('');
       setRole('CRO');
       setSupervisorId('');
+      setQuotaErrorMsg(null);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Gagal menambahkan staf');
+      const isQuota = err.response?.data?.isQuotaError || err.response?.status === 403;
+      const msg = err.response?.data?.message || 'Gagal menambahkan staf';
+      if (isQuota) {
+        setQuotaErrorMsg(msg);
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -69,8 +79,8 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl w-[90%] md:w-full">
-        <DialogHeader className="sticky top-[-1rem] bg-popover z-10 pt-4 pb-2 -mt-4 -mx-4 px-4 border-b border-border/50">
+      <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
+        <DialogHeader className="sticky -top-4 bg-popover z-10 pt-4 pb-2 -mt-4 -mx-4 px-4 border-b border-border/50">
           <DialogTitle className="flex items-center gap-2">
             <UserPlus size={20} className="text-primary" /> Tambah Staf Baru
           </DialogTitle>
@@ -78,6 +88,15 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
             Isi formulir di bawah ini untuk mendaftarkan akun staf baru ke dalam sistem.
           </DialogDescription>
         </DialogHeader>
+
+        {quotaErrorMsg && (
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs space-y-1 mt-2">
+            <p className="font-bold text-amber-500 flex items-center gap-1.5">
+              ⚠️ Batas Kuota Tercapai
+            </p>
+            <p className="leading-relaxed text-muted-foreground">{quotaErrorMsg}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
@@ -179,7 +198,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
             </div>
           </div>
 
-          <DialogFooter className="sticky bottom-[-1rem] bg-popover z-10 pt-4 pb-4 -mb-4 -mx-4 px-4 border-t border-border/50 mt-4 flex flex-row gap-2 justify-end sm:justify-end">
+          <DialogFooter className="sticky -bottom-4 bg-popover z-10 pt-4 pb-4 -mb-4 -mx-4 px-4 border-t border-border/50 mt-4 flex flex-row gap-2 justify-end sm:justify-end">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
             <Button type="submit" className="flex-1 sm:flex-none h-11 gradient-primary text-white" disabled={loading}>
               {loading ? 'Menyimpan...' : 'Simpan Data'}

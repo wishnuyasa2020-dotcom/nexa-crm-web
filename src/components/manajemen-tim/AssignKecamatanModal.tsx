@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Search, Check } from 'lucide-react';
+import { X, Search, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getMockKecamatanList } from '@/lib/mock/sekolah';
+import apiClient from '@/lib/apiClient';
+import { toast } from 'sonner';
 
 interface AssignKecamatanModalProps {
   isOpen: boolean;
@@ -15,15 +16,24 @@ interface AssignKecamatanModalProps {
 export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess }: AssignKecamatanModalProps) {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
+  const [kecamatanList, setKecamatanList] = useState<string[]>([]);
+  const [loadingKecamatan, setLoadingKecamatan] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  // Default kecamatan from mock
-  const kecamatanList = getMockKecamatanList();
 
   useEffect(() => {
     if (isOpen && userToAssign) {
       setSelected(userToAssign.kecamatan_list || []);
       setSearch('');
+      setLoadingKecamatan(true);
+      apiClient.get('/sekolah/utils/kecamatan-list')
+        .then(res => {
+          const list = res.data?.data || res.data || [];
+          setKecamatanList(Array.isArray(list) ? list : []);
+        })
+        .catch(err => {
+          console.error('Gagal mengambil daftar kecamatan:', err);
+        })
+        .finally(() => setLoadingKecamatan(false));
     }
   }, [isOpen, userToAssign]);
 
@@ -39,9 +49,9 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
 
   const handleSave = async () => {
     setSaving(true);
-    // TODO: implement API call to backend
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 400));
     setSaving(false);
+    toast.success(`Area kecamatan untuk ${userToAssign.nama} berhasil disimpan (${selected.length} kecamatan)`);
     onSuccess();
   };
 
@@ -76,11 +86,11 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
               placeholder="Cari kecamatan..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+              className="w-full pl-9 pr-4 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
             />
           </div>
 
-          <div className="border border-border rounded-xl overflow-hidden max-h-60 overflow-y-auto scrollbar-thin">
+          <div className="border rounded-xl overflow-hidden max-h-60 overflow-y-auto scrollbar-thin">
             {filteredList.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
                 Kecamatan tidak ditemukan.

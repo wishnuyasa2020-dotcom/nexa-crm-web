@@ -65,7 +65,7 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
   const minDateStr = minDate.toISOString().split('T')[0];
 
   return (
-    <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
       <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border border-border flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
@@ -75,7 +75,7 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground">Tunda Agenda</h2>
-              <p className="text-[11px] text-muted-foreground truncate max-w-52">{taskTitle}</p>
+              <p className="text-xs text-muted-foreground truncate max-w-52">{taskTitle}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -95,7 +95,7 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
               min={minDateStr}
               value={tanggalBaru}
               onChange={(e) => setTanggalBaru(e.target.value)}
-              className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
             />
           </div>
 
@@ -109,7 +109,7 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
               value={alasanTunda}
               onChange={(e) => { setAlasanTunda(e.target.value); setError(null); }}
               placeholder="Kenapa agenda ini ditunda?"
-              className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none placeholder:text-muted-foreground"
+              className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none placeholder:text-muted-foreground"
             />
           </div>
 

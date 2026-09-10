@@ -11,6 +11,7 @@ import {
   StatusBadge, AgingBadge,
   AddSekolahModal, ImportMassalModal,
 } from '@/components/sekolah';
+import { IntentBadge } from '@/components/sekolah/IntentBadge';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
   getSekolahList,
@@ -24,9 +25,9 @@ import type { Sekolah, SekolahStatsResponse } from '@/lib/types/sekolah.types';
 function SkeletonRow() {
   return (
     <tr className="border-b border-border/50 animate-pulse">
-      {Array.from({ length: 8 }).map((_, i) => (
+      {Array.from({ length: 9 }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-3 bg-secondary rounded w-full max-w-[120px]" />
+          <div className="h-3 bg-secondary rounded w-full max-w-30" />
         </td>
       ))}
     </tr>
@@ -80,11 +81,12 @@ export default function SekolahPage() {
   const isCRO = user?.role === 'CRO';
 
   // ── Filter state ─────────────────────────────────────────────────────────────
-  const [search, setSearch]               = useState('');
-  const [filterStatus, setFilterStatus]   = useState('');
+  const [search, setSearch]                   = useState('');
+  const [filterStatus, setFilterStatus]       = useState('');
   const [filterKecamatan, setFilterKecamatan] = useState('');
-  const [filterCro, setFilterCro]         = useState('');
-  const [page, setPage]                   = useState(1);
+  const [filterCro, setFilterCro]             = useState('');
+  const [filterIntent, setFilterIntent]       = useState('');
+  const [page, setPage]                       = useState(1);
 
   // ── Modal state ──────────────────────────────────────────────────────────────
   const [isAddModalOpen, setIsAddModalOpen]       = useState(false);
@@ -125,6 +127,7 @@ export default function SekolahPage() {
         kecamatan: filterKecamatan || undefined,
         pjCro:     filterCro       || undefined,
         search:    debouncedSearch || undefined,
+        intent:    filterIntent    || undefined,
       });
       setSekolahList(res.data);
       setTotal(res.total);
@@ -161,10 +164,11 @@ export default function SekolahPage() {
     setFilterStatus('');
     setFilterKecamatan('');
     setFilterCro('');
+    setFilterIntent('');
     setPage(1);
   };
 
-  const hasFilters = search || filterStatus || filterKecamatan || filterCro;
+  const hasFilters = search || filterStatus || filterKecamatan || filterCro || filterIntent;
 
   const handleStatClick = (status: string) => {
     setFilterStatus(prev => prev === status ? '' : status);
@@ -185,7 +189,7 @@ export default function SekolahPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 flex-shrink-0">
+          <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 shrink-0">
             <School size={17} className="text-white" />
           </div>
           <div className="min-w-0">
@@ -198,7 +202,7 @@ export default function SekolahPage() {
         </div>
 
         {!isCRO && (
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setIsImportModalOpen(true)}
               className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
@@ -238,9 +242,9 @@ export default function SekolahPage() {
           onClick={() => { setFilterStatus(''); setPage(1); }}
           active={false}
           loading={loadingStats} />
-        <StatCard label="Sosialisasi" value={stats?.sosialisasi ?? 0} color="text-emerald-400"
-          onClick={() => handleStatClick('Sudah Sosialisasi')}
-          active={filterStatus === 'Sudah Sosialisasi'}
+        <StatCard label="Sos. Terjadwal" value={stats?.sosialisasiTerjadwal ?? stats?.sosialisasi ?? 0} color="text-blue-400"
+          onClick={() => handleStatClick('Sosialisasi Terjadwal')}
+          active={filterStatus === 'Sosialisasi Terjadwal'}
           loading={loadingStats} />
         <StatCard label="Lead 🎯" value={stats?.leadCaptured ?? 0} color="text-emerald-300"
           onClick={() => handleStatClick('Lead Captured')}
@@ -260,7 +264,7 @@ export default function SekolahPage() {
           placeholder="Cari nama sekolah, ID, kecamatan..."
           value={search}
           onChange={e => handleSearchChange(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full pl-9 pr-4 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         />
         {loadingList && search && (
           <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground animate-spin" />
@@ -272,7 +276,7 @@ export default function SekolahPage() {
         <select
           value={filterStatus}
           onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
-          className="w-full px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
           <option value="">Semua Status</option>
           <option value="Belum Visit">Belum Visit</option>
@@ -288,7 +292,7 @@ export default function SekolahPage() {
         <select
           value={filterKecamatan}
           onChange={e => { setFilterKecamatan(e.target.value); setPage(1); }}
-          className="w-full px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
           <option value="">Semua Kecamatan</option>
           {kecamatanList.map(k => <option key={k} value={k}>{k}</option>)}
@@ -297,12 +301,23 @@ export default function SekolahPage() {
           <select
             value={filterCro}
             onChange={e => { setFilterCro(e.target.value); setPage(1); }}
-            className="w-full px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+            className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
           >
             <option value="">Semua CRO</option>
             {croList.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         )}
+        {/* Filter Intent */}
+        <select
+          value={filterIntent}
+          onChange={e => { setFilterIntent(e.target.value); setPage(1); }}
+          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+        >
+          <option value="">Semua Intent</option>
+          <option value="High">🔥 High Intent</option>
+          <option value="Mid">🟢 Mid Intent</option>
+          <option value="Low">⚪ Low Intent</option>
+        </select>
         {hasFilters && (
           <button
             onClick={resetFilters}
@@ -332,7 +347,8 @@ export default function SekolahPage() {
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Nama Sekolah</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Jenjang</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Kecamatan</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Status CRM</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Commercial State</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Intent</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Next Action</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Due Date</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">PJ CRO</th>
@@ -343,7 +359,7 @@ export default function SekolahPage() {
                 Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
               ) : sekolahList.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center text-muted-foreground text-sm">
+                  <td colSpan={9} className="py-16 text-center text-muted-foreground text-sm">
                     <div className="flex flex-col items-center gap-2">
                       <School size={32} className="opacity-20" />
                       <p>Tidak ada sekolah ditemukan</p>
@@ -363,7 +379,7 @@ export default function SekolahPage() {
                     className="border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer group"
                   >
                     <td className="px-4 py-3 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{s.id}</td>
-                    <td className="px-4 py-3 min-w-[200px]">
+                    <td className="px-4 py-3 min-w-50">
                       <span className="font-medium text-foreground group-hover:text-primary transition-colors">
                         {s.nama}
                       </span>
@@ -374,6 +390,9 @@ export default function SekolahPage() {
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{s.kecamatan}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <StatusBadge status={s.status} showDot />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <IntentBadge intent={s.intent} />
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{s.nextAction ?? '—'}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -437,12 +456,13 @@ export default function SekolahPage() {
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span className="font-medium text-sm text-foreground leading-snug flex-1">{s.nama}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground flex-shrink-0 mt-0.5">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0 mt-0.5">
                   {s.tingkat}
                 </span>
               </div>
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <StatusBadge status={s.status} showDot />
+                <IntentBadge intent={s.intent} />
                 <AgingBadge dueDate={s.dueDate} />
               </div>
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground">

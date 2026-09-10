@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Clock, Plus, Search, Ban, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Clock, Plus, Search, Ban, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, ShieldCheck, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +22,7 @@ import { nurturingApi, SnoozeStats, SnoozeLead } from '@/lib/nurturingApi';
 function SkeletonRow() {
   return (
     <tr className="border-b border-border/50">
-      {[...Array(5)].map((_, i) => (
+      {[...Array(6)].map((_, i) => (
         <td key={i} className="px-4 py-3">
           <div className="h-4 bg-secondary animate-pulse rounded-md w-3/4" />
         </td>
@@ -40,7 +42,7 @@ function SkeletonCardMobile() {
         <div className="h-5 bg-secondary animate-pulse rounded-md w-16" />
       </div>
       <div className="h-3 bg-secondary animate-pulse rounded-md w-1/2" />
-      <div className="h-9 bg-secondary animate-pulse rounded-md w-full" />
+      <div className="h-11 bg-secondary animate-pulse rounded-md w-full" />
     </div>
   );
 }
@@ -49,26 +51,27 @@ function SkeletonCardMobile() {
 
 function SnoozeLevelBadge({ level }: { level: number }) {
   const colorMap: Record<number, string> = {
-    1: 'border-blue-500 text-blue-500 bg-blue-500/10',
-    2: 'border-orange-500 text-orange-500 bg-orange-500/10',
-    3: 'border-rose-500 text-rose-500 bg-rose-500/10',
+    1: 'border-blue-500/20 text-blue-500 bg-blue-500/10',
+    2: 'border-orange-500/20 text-orange-500 bg-orange-500/10',
+    3: 'border-rose-500/20 text-rose-500 bg-rose-500/10',
   };
   return (
-    <Badge variant="outline" className={`font-mono text-[10px] sm:text-xs ${colorMap[level] || 'border-slate-400 text-slate-400 bg-slate-400/10'}`}>
+    <Badge variant="outline" className={`font-medium text-xs whitespace-nowrap ${colorMap[level] || 'border-slate-500/20 text-slate-400 bg-slate-500/10'}`}>
       Snooze {level}
     </Badge>
   );
 }
 
 function SisaHariLabel({ hari }: { hari: number }) {
-  if (hari <= 0) return <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded">Hari ini!</span>;
-  if (hari <= 7) return <span className="text-xs font-semibold text-orange-500">{hari} hari lagi</span>;
+  if (hari <= 0) return <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Hari ini!</span>;
+  if (hari <= 7) return <span className="text-xs font-semibold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded">{hari} hari lagi</span>;
   return <span className="text-xs text-muted-foreground">{hari} hari lagi</span>;
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function SnoozeCampaignPage() {
+  const router                          = useRouter();
   const [stats, setStats]               = useState<SnoozeStats | null>(null);
   const [leads, setLeads]               = useState<SnoozeLead[]>([]);
   const [total, setTotal]               = useState(0);
@@ -81,17 +84,18 @@ export default function SnoozeCampaignPage() {
   const [error, setError]               = useState<string | null>(null);
 
   // Modals
-  const [showAddModal, setShowAddModal]           = useState(false);
-  const [showStopModal, setShowStopModal]         = useState(false);
-  const [selectedLead, setSelectedLead]           = useState<SnoozeLead | null>(null);
+  const [showAddModal, setShowAddModal]   = useState(false);
+  const [showStopModal, setShowStopModal] = useState(false);
+  const [selectedLead, setSelectedLead]   = useState<SnoozeLead | null>(null);
 
   // Add snooze form
-  const [addIdSiswa, setAddIdSiswa]   = useState('');
-  const [addAlasan, setAddAlasan]     = useState('');
-  const [addLoading, setAddLoading]   = useState(false);
+  const [addIdSiswa, setAddIdSiswa]       = useState('');
+  const [intervalDays, setIntervalDays]   = useState<number>(90);
+  const [addAlasan, setAddAlasan]         = useState('');
+  const [addLoading, setAddLoading]       = useState(false);
 
   // Stop snooze
-  const [stopLoading, setStopLoading] = useState(false);
+  const [stopLoading, setStopLoading]     = useState(false);
 
   // ── Fetch ────────────────────────────────────────────────────────────────────
 
@@ -146,11 +150,11 @@ export default function SnoozeCampaignPage() {
     if (!selectedLead) return;
     setStopLoading(true);
     try {
-      await nurturingApi.stopSnooze(selectedLead.id);
+      await nurturingApi.wakeupSnooze(selectedLead.id);
       setShowStopModal(false);
       await Promise.all([fetchStats(), fetchLeads(page)]);
     } catch {
-      alert('Gagal menghentikan snooze. Coba lagi.');
+      alert('Gagal membangunkan siswa dari snooze. Coba lagi.');
     } finally {
       setStopLoading(false);
     }
@@ -160,13 +164,19 @@ export default function SnoozeCampaignPage() {
     if (!addIdSiswa.trim()) return;
     setAddLoading(true);
     try {
-      await nurturingApi.addSnooze({ idSiswa: addIdSiswa.trim(), alasan: addAlasan });
+      await nurturingApi.requestSnooze({
+        idSiswa: addIdSiswa.trim(),
+        interval_days: intervalDays,
+        alasan: addAlasan,
+      });
       setShowAddModal(false);
       setAddIdSiswa('');
       setAddAlasan('');
+      setIntervalDays(90);
       await Promise.all([fetchStats(), fetchLeads(page)]);
-    } catch {
-      alert('Gagal menambahkan snooze. Pastikan ID Siswa benar.');
+    } catch (err: unknown) {
+      const errorMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      alert(errorMsg || 'Gagal menambahkan snooze. Pastikan ID Siswa benar dan izin WhatsApp aktif.');
     } finally {
       setAddLoading(false);
     }
@@ -177,7 +187,7 @@ export default function SnoozeCampaignPage() {
   if (error && !stats) {
     return (
       <div className="flex flex-col items-center justify-center h-60 gap-3 text-muted-foreground">
-        <AlertCircle size={32} className="text-rose-400" />
+        <AlertCircle size={32} className="text-rose-500" />
         <p className="text-sm">{error}</p>
         <Button variant="outline" size="sm" onClick={() => { setError(null); fetchStats(); fetchLeads(1); }}>
           <RefreshCw size={14} className="mr-1" /> Coba Lagi
@@ -198,7 +208,7 @@ export default function SnoozeCampaignPage() {
         </div>
         <div className="min-w-0">
           <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Snooze Campaign</h1>
-          <p className="text-xs md:text-sm text-muted-foreground truncate">Monitoring antrean prospek yang ditunda (90 Hari)</p>
+          <p className="text-xs md:text-sm text-muted-foreground truncate">Monitoring antrean prospek yang ditunda (30 / 60 / 90 Hari)</p>
         </div>
       </div>
 
@@ -206,7 +216,7 @@ export default function SnoozeCampaignPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
         <div className="col-span-1 lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           {/* Total Sedang Tunda */}
-          <Card className="border-border/50 shadow-sm">
+          <Card className="border shadow-sm">
             <CardContent className="p-4 flex flex-col justify-center h-full">
               <p className="text-xs text-muted-foreground font-medium mb-1">Total Sedang Tunda</p>
               <p className="text-2xl font-bold text-foreground">
@@ -216,10 +226,10 @@ export default function SnoozeCampaignPage() {
           </Card>
 
           {/* Bangun Minggu Ini */}
-          <Card className="border-border/50 shadow-sm bg-orange-500/5">
+          <Card className="border shadow-sm bg-orange-500/5">
             <CardContent className="p-4 flex flex-col justify-center h-full">
-              <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mb-1">Bangun Minggu Ini</p>
-              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+              <p className="text-xs text-orange-500 font-medium mb-1">Bangun Minggu Ini</p>
+              <p className="text-2xl font-bold text-orange-500">
                 {loading ? <span className="inline-block w-10 h-7 bg-orange-200 animate-pulse rounded" /> : (stats?.bangun_minggu_ini ?? 0)}
               </p>
             </CardContent>
@@ -239,11 +249,11 @@ export default function SnoozeCampaignPage() {
       </div>
 
       {/* ── DAFTAR SNOOZE ───────────────────────────────────────────────────── */}
-      <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col min-w-0">
-        <CardHeader className="p-3 md:p-4 border-b border-border/50 bg-secondary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 space-y-0">
+      <Card className="border shadow-sm overflow-hidden flex flex-col min-w-0">
+        <CardHeader className="p-3 md:p-4 border-b bg-secondary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 space-y-0">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             📋 Daftar Snooze Aktif
-            {!leadsLoading && <span className="text-[11px] font-normal text-muted-foreground">({total} total)</span>}
+            {!leadsLoading && <span className="text-xs font-normal text-muted-foreground">({total} total)</span>}
           </CardTitle>
           {/* Search form */}
           <form onSubmit={handleSearch} className="relative w-full sm:w-56 shrink-0">
@@ -253,7 +263,7 @@ export default function SnoozeCampaignPage() {
               placeholder="Cari nama siswa..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs md:text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary transition-all"
+              className="w-full pl-9 pr-3 py-2 text-xs md:text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary transition-all"
               id="input-search-snooze"
             />
           </form>
@@ -273,32 +283,54 @@ export default function SnoozeCampaignPage() {
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="font-bold text-sm text-foreground truncate">{lead.nama}</p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">{lead.noWa}</p>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{lead.sekolah}</p>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="px-2 py-0.5 rounded bg-secondary text-foreground text-xs font-medium">
+                        {lead.commercialState || 'Lead'}
+                      </span>
+                      <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
+                        <ShieldCheck size={11} /> Consent Aktif
+                      </span>
+                    </div>
                   </div>
-                  <div className="shrink-0">
+                  <div className="shrink-0 flex flex-col items-end gap-1.5">
                     <SnoozeLevelBadge level={lead.snoozeLevel} />
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-secondary text-foreground">
+                      {lead.intervalDays ? `${lead.intervalDays} Hari` : '90 Hari'}
+                    </span>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center text-xs bg-secondary/30 p-2.5 rounded-lg">
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Tgl Bangun</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">Tgl Bangun</p>
                     <p className="font-medium text-foreground">{lead.snoozeUntil}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Sisa Waktu</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">Sisa Waktu</p>
                     <SisaHariLabel hari={lead.sisaHari} />
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="w-full h-10 text-xs border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-900/50 dark:hover:bg-rose-950/30 transition-colors rounded-lg"
-                  onClick={() => handleStopSnooze(lead)}
-                  id={`btn-stop-snooze-mobile-${lead.id}`}
-                >
-                  <Ban size={14} className="mr-2" /> Bangunkan Lebih Awal
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    className="flex-1 h-11 text-xs rounded-lg font-medium"
+                    title="Lihat Chat"
+                    onClick={() => router.push(`/live-chat?leadId=${lead.id}`)}
+                  >
+                    <MessageSquare size={14} className="mr-1.5 text-primary" /> Chat
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-11 text-xs border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/40 transition-colors rounded-lg font-medium"
+                    onClick={() => handleStopSnooze(lead)}
+                    id={`btn-stop-snooze-mobile-${lead.id}`}
+                  >
+                    <Ban size={14} className="mr-1.5" /> Bangunkan Paksa
+                  </Button>
+                </div>
               </div>
             ))
           )}
@@ -306,10 +338,13 @@ export default function SnoozeCampaignPage() {
 
         {/* ── DESKTOP VIEW (TABLE) ───────────────────────────────────────────── */}
         <div className="hidden md:block overflow-x-auto w-full">
-          <table className="w-full text-sm border-collapse min-w-[620px]">
+          <table className="w-full text-sm border-collapse min-w-160">
             <thead>
-              <tr className="border-b border-border bg-secondary/30">
+              <tr className="border-b bg-secondary/30">
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nama Siswa</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Asal Sekolah</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status Komersial</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Consent</th>
                 <th className="text-center px-4 py-3 font-medium text-muted-foreground">Level Snooze</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Tgl Bangun</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Sisa Waktu</th>
@@ -321,7 +356,7 @@ export default function SnoozeCampaignPage() {
                 [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
               ) : leads.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-10 text-center text-muted-foreground text-sm">
+                  <td colSpan={8} className="p-10 text-center text-muted-foreground text-sm">
                     {search ? `Tidak ada hasil untuk "${search}".` : 'Belum ada antrean snooze aktif.'}
                   </td>
                 </tr>
@@ -330,9 +365,22 @@ export default function SnoozeCampaignPage() {
                   <tr key={lead.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
                     <td className="px-4 py-3 font-medium text-foreground">
                       <div className="min-w-0">
-                        <p className="truncate max-w-[200px] lg:max-w-[300px]">{lead.nama}</p>
-                        <p className="text-[11px] text-muted-foreground font-normal truncate max-w-[200px] lg:max-w-[300px]">{lead.sekolah}</p>
+                        <p className="truncate max-w-48 lg:max-w-72">{lead.nama}</p>
+                        <p className="text-xs text-muted-foreground font-normal truncate max-w-48 lg:max-w-72">{lead.noWa}</p>
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">
+                      <p className="truncate max-w-36 lg:max-w-64">{lead.sekolah}</p>
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-xs font-medium">
+                        {lead.commercialState || 'Lead'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">
+                        <ShieldCheck size={12} /> Aktif
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <SnoozeLevelBadge level={lead.snoozeLevel} />
@@ -342,15 +390,27 @@ export default function SnoozeCampaignPage() {
                       <SisaHariLabel hari={lead.sisaHari} />
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 rounded-lg text-xs hover:text-rose-500 hover:border-rose-200 transition-colors whitespace-nowrap"
-                        onClick={() => handleStopSnooze(lead)}
-                        id={`btn-stop-snooze-${lead.id}`}
-                      >
-                        <Ban size={14} className="mr-1 opacity-70" /> Bangunkan
-                      </Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg hover:text-primary transition-colors"
+                          title="Lihat Chat"
+                          onClick={() => router.push(`/live-chat?leadId=${lead.id}`)}
+                          id={`btn-chat-${lead.id}`}
+                        >
+                          <MessageSquare size={14} className="text-primary" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 rounded-lg text-xs hover:text-rose-500 hover:border-rose-500/40 transition-colors whitespace-nowrap"
+                          onClick={() => handleStopSnooze(lead)}
+                          id={`btn-stop-snooze-${lead.id}`}
+                        >
+                          <Ban size={14} className="mr-1 opacity-70" /> Bangunkan Paksa
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -359,14 +419,22 @@ export default function SnoozeCampaignPage() {
           </table>
         </div>
 
+        {/* ── PRIVACY & CONSENT NOTICE FOOTER ───────────────────────────────── */}
+        <div className="px-4 py-2.5 bg-emerald-500/5 border-t flex items-center justify-between text-xs text-emerald-500">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck size={14} className="shrink-0 text-emerald-500" />
+            <span><strong>Consent Engine Aktif:</strong> Siswa yang mencabut izin komunikasi WhatsApp otomatis didepak dari antrean Snooze.</span>
+          </span>
+        </div>
+
         {/* ── PAGINATION ─────────────────────────────────────────────────────── */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-1 md:gap-2 p-3 md:p-4 border-t border-border/50 bg-secondary/10">
+          <div className="flex items-center justify-center gap-1 md:gap-2 p-3 md:p-4 border-t bg-secondary/10">
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
               <ChevronLeft size={16} />
             </Button>
             
-            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar px-1 max-w-[200px] md:max-w-none">
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar px-1 max-w-48 md:max-w-none">
               {[...Array(Math.min(totalPages, 5))].map((_, i) => {
                 const p = i + 1;
                 return (
@@ -386,13 +454,13 @@ export default function SnoozeCampaignPage() {
 
       {/* ── MODAL TAMBAH SNOOZE ─────────────────────────────────────────────── */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="sm:max-w-md rounded-2xl w-[95vw] max-w-[400px] p-4 md:p-6">
+        <DialogContent className="sm:max-w-md w-full p-4 md:p-6">
           <DialogHeader className="text-left">
             <DialogTitle className="flex items-center gap-2 text-lg">
               <Plus size={20} className="text-primary" /> Tambah Snooze Manual
             </DialogTitle>
             <DialogDescription className="pt-2 text-xs md:text-sm">
-              Masukkan ID Siswa untuk dipindahkan ke antrean Snooze selama 90 hari.
+              Pilih durasi penundaan follow-up untuk prospek yang belum siap dihubungi saat ini.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -400,18 +468,42 @@ export default function SnoozeCampaignPage() {
               <label className="text-xs font-medium text-foreground">ID Siswa <span className="text-rose-500">*</span></label>
               <input
                 type="text"
-                placeholder="Contoh: SIS-2026-001"
+                placeholder="Contoh: STD-096303-810"
                 value={addIdSiswa}
                 onChange={(e) => setAddIdSiswa(e.target.value)}
-                className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                className="w-full px-3 py-2.5 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary transition-shadow"
                 id="input-add-siswa-id"
               />
             </div>
+
+            {/* Durasi Interval Dropdown / Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Berapa Lama Ditunda? <span className="text-rose-500">*</span></label>
+              <div className="grid grid-cols-3 gap-2">
+                {[30, 60, 90].map((days) => (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => setIntervalDays(days)}
+                    className={cn(
+                      'h-11 rounded-xl text-xs font-semibold border transition-all flex flex-col items-center justify-center',
+                      intervalDays === days
+                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary shadow-sm'
+                        : 'border-border bg-secondary/30 text-muted-foreground hover:bg-secondary/60'
+                    )}
+                  >
+                    <span>{days} Hari</span>
+                    {days === 90 && <span className="text-xs font-normal opacity-80">(Default)</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-foreground">Alasan Snooze (Opsional)</label>
               <textarea
-                className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary resize-none h-20 md:h-24 transition-shadow"
-                placeholder="Orang tua sedang di luar kota..."
+                className="w-full px-3 py-2.5 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary resize-none h-20 md:h-24 transition-shadow"
+                placeholder="Belum siap sekarang, minta dihubungi lagi setelah wisuda..."
                 value={addAlasan}
                 onChange={(e) => setAddAlasan(e.target.value)}
                 id="textarea-add-alasan"
@@ -436,10 +528,10 @@ export default function SnoozeCampaignPage() {
 
       {/* ── MODAL HENTIKAN SNOOZE ───────────────────────────────────────────── */}
       <Dialog open={showStopModal} onOpenChange={setShowStopModal}>
-        <DialogContent className="sm:max-w-md rounded-2xl w-[95vw] max-w-[400px] p-4 md:p-6">
+        <DialogContent className="sm:max-w-md w-full p-4 md:p-6">
           <DialogHeader className="text-left">
             <DialogTitle className="flex items-center gap-2 text-rose-600 text-lg">
-              <Ban size={20} /> Bangunkan dari Snooze
+              <Ban size={20} /> Bangunkan Paksa dari Snooze
             </DialogTitle>
             <DialogDescription className="pt-2 text-xs md:text-sm">
               Anda akan menghentikan masa tunda untuk <strong className="text-foreground">{selectedLead?.nama}</strong> lebih awal dari jadwal.
@@ -447,7 +539,7 @@ export default function SnoozeCampaignPage() {
           </DialogHeader>
           <div className="bg-rose-500/10 p-3 md:p-4 rounded-xl border border-rose-500/20 mt-2">
             <p className="text-xs md:text-sm text-rose-600 font-medium leading-relaxed">
-              Tindakan ini akan mengembalikan siswa ke daftar &quot;Backlog&quot; Task List agar bisa segera dikerjakan oleh CRO.
+              Tindakan ini akan memicu event <strong>SnoozeAborted (Reason: Woke Up)</strong> dan mengembalikan siswa ke antrean kerja Follow Up CRO hari ini.
             </p>
           </div>
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-4 sm:mt-0">
@@ -461,7 +553,7 @@ export default function SnoozeCampaignPage() {
               disabled={stopLoading}
               id="btn-confirm-stop-snooze"
             >
-              {stopLoading ? 'Memproses...' : 'Ya, Bangunkan'}
+              {stopLoading ? 'Memproses...' : 'Ya, Bangunkan Paksa'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -25,6 +25,7 @@ function FormSosialisasiContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [consentWa, setConsentWa] = useState(false);
 
   useEffect(() => {
     if (sekolahId) {
@@ -49,10 +50,16 @@ function FormSosialisasiContent() {
     if (!formData.nama_lengkap || !formData.no_wa || !formData.pj_cro) {
       return alert('Mohon lengkapi data yang bertanda bintang (*)');
     }
+    if (!consentWa) {
+      return alert('Mohon setujui persetujuan komunikasi via WhatsApp untuk melanjutkan.');
+    }
 
     setSubmitting(true);
     try {
-      const res = await apiClient.post(`/api/public/form-siswa/${sekolahId}`, formData);
+      const res = await apiClient.post(`/api/public/form-siswa/${sekolahId}`, {
+        ...formData,
+        consent_wa: consentWa,
+      });
       if (res.data.status === 'ok') {
         setSuccess(true);
         
@@ -117,7 +124,7 @@ function FormSosialisasiContent() {
       <div className="w-full max-w-md mx-auto min-h-screen bg-background sm:border-x border-border shadow-2xl flex flex-col relative overflow-hidden">
         
         {/* Dekorasi Latar Atas */}
-        <div className="absolute top-0 left-0 right-0 h-48 gradient-primary -z-10 rounded-b-[40px] opacity-90 shadow-inner" />
+        <div className="absolute top-0 left-0 right-0 h-48 gradient-primary -z-10 rounded-b-3xl opacity-90 shadow-inner" />
 
         {/* Header Logo & Info */}
         <div className="pt-12 pb-8 px-6 text-center text-white z-10">
@@ -146,7 +153,7 @@ function FormSosialisasiContent() {
         </div>
 
         {/* Form Card */}
-        <div className="flex-1 bg-card rounded-t-[32px] px-6 py-8 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-20">
+        <div className="flex-1 bg-card rounded-t-3xl px-6 py-8 shadow-sm z-20">
           <form onSubmit={handleSubmit} className="space-y-5">
             
             <div className="space-y-1.5">
@@ -160,7 +167,7 @@ function FormSosialisasiContent() {
                   placeholder="Ketik nama lengkap kamu"
                   value={formData.nama_lengkap}
                   onChange={e => setFormData({ ...formData, nama_lengkap: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                 />
               </div>
             </div>
@@ -179,7 +186,7 @@ function FormSosialisasiContent() {
                   placeholder="Contoh: 081234567890"
                   value={formData.no_wa}
                   onChange={e => setFormData({ ...formData, no_wa: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                 />
               </div>
             </div>
@@ -197,7 +204,7 @@ function FormSosialisasiContent() {
                   name="rencana_lulus"
                   value={formData.rencana_lulus}
                   onChange={e => setFormData({ ...formData, rencana_lulus: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all appearance-none"
+                  className="w-full pl-10 pr-4 py-3.5 bg-secondary/50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all appearance-none"
                 >
                   <option value="" disabled>Pilih rencana...</option>
                   <option value="Kerja">Kerja</option>
@@ -232,17 +239,37 @@ function FormSosialisasiContent() {
               </div>
             </div>
 
-            <div className="pt-6 pb-6">
+            {/* WhatsApp Consent Engine (Mandatory) */}
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-2">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={consentWa}
+                  onChange={(e) => setConsentWa(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-primary text-primary focus:ring-primary shrink-0"
+                />
+                <span className="text-xs text-foreground/80 leading-relaxed">
+                  Saya bersedia dan memberikan izin kepada konselor untuk menghubungi saya melalui WhatsApp terkait informasi sosialisasi, beasiswa, dan konsultasi lanjutan. <span className="text-rose-500 font-bold">*</span>
+                </span>
+              </label>
+            </div>
+
+            <div className="pt-4 pb-6">
               <button 
                 type="submit"
-                disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 py-4 gradient-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 hover:shadow-xl hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100"
+                disabled={submitting || !consentWa}
+                className="w-full flex items-center justify-center gap-2 py-4 gradient-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 hover:shadow-xl hover:opacity-95 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
               >
                 {submitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                 Kirim Data
               </button>
-              <p className="text-center text-[10px] text-muted-foreground mt-4 leading-relaxed px-4">
-                Data yang Anda kirimkan akan direkam ke dalam sistem Nexa OS.
+              {!consentWa && (
+                <p className="text-center text-xs text-amber-500 mt-2 font-medium">
+                  * Centang izin WhatsApp di atas untuk mengaktifkan tombol kirim
+                </p>
+              )}
+              <p className="text-center text-xs text-muted-foreground mt-4 leading-relaxed px-4">
+                Data yang Anda kirimkan akan direkam ke dalam sistem Nexa OS secara aman.
               </p>
             </div>
 

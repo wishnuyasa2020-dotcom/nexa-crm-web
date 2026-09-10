@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Radio, Send, Search, ArrowLeft, Loader2, Info, RotateCcw, X, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, School, FileText } from 'lucide-react';
+import { Radio, Send, Search, ArrowLeft, Loader2, Info, RotateCcw, X, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, ChevronUp, School, FileText, ShieldCheck, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { broadcastApi, type AudienceItem, type BroadcastCampaign, type MetaTemplate, type CrmTemplate } from '@/lib/broadcastApi';
 import { TemplatePreviewBubble, buildPreviewText, type ButtonType } from '@/components/templates/TemplatePreviewBubble';
@@ -28,7 +28,7 @@ function Toast({ msg, type, onClose }: { msg: string; type: 'success' | 'error';
 
   return (
     <div className={cn(
-      'fixed bottom-24 lg:bottom-6 right-4 z-100 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium border max-w-xs transition-all',
+      'fixed bottom-24 lg:bottom-6 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium border max-w-xs transition-all',
       type === 'success'
         ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
         : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
@@ -59,7 +59,7 @@ export default function BroadcastPage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-foreground">Broadcast Pesan</h1>
-            <p className="text-xs text-muted-foreground">Kirim pesan massal (Dual-Template)</p>
+            <p className="text-xs text-muted-foreground">Kirim pesan massal (Smart Routing &amp; Consent Engine)</p>
           </div>
         </div>
         {view === 'history' ? (
@@ -121,14 +121,14 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
   const statusBadge = (status: string) => {
     const cfg = STATUS_CONFIG[status] ?? { label: status, cls: 'bg-secondary text-muted-foreground' };
     return (
-      <span className={cn('px-2 py-1 rounded-md text-[10px] font-bold uppercase', cfg.cls)}>
+      <span className={cn('px-2 py-1 rounded-md text-xs font-bold uppercase', cfg.cls)}>
         {cfg.label}
       </span>
     );
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
       <div className="px-5 py-4 border-b border-border bg-secondary/30 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground">Riwayat Broadcast</h2>
         <button
@@ -334,11 +334,11 @@ function SchoolCombobox({
 
       {/* Dropdown suggestion */}
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border rounded-xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="px-3 py-1.5 bg-secondary/30 border-b border-border flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-              <School size={10} />
+          <div className="px-3 py-1.5 bg-secondary/30 border-b flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              <School size={12} />
               {query ? `${filtered.length} sekolah ditemukan` : `${schools.length} sekolah tersedia`}
             </span>
           </div>
@@ -395,9 +395,9 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
 
   // ── Filter state ──
-  const [searchQuery, setSearchQuery]   = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [audiencePage, setAudiencePage] = useState(1);
+  const [searchQuery, setSearchQuery]                     = useState('');
+  const [commercialStateFilter, setCommercialStateFilter] = useState('');
+  const [audiencePage, setAudiencePage]                   = useState(1);
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Selection state ──
@@ -407,21 +407,22 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
   const [metaTemplate, setMetaTemplate] = useState('');
   const [namaCampaign, setNamaCampaign] = useState('');
   const [isSending, setIsSending]       = useState(false);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   // ── Derived ──
-  const hasActiveFilter = !!searchQuery || !!statusFilter;
+  const hasActiveFilter = !!searchQuery || !!commercialStateFilter;
   const hasSchoolSelected = !!searchQuery.trim();
   const swOpenCount   = audience.filter(a => selectedIds.has(a.id) && a.isSwOpen).length;
   const swClosedCount = selectedIds.size - swOpenCount;
 
   // ── Fetch audience ──
-  const fetchAudience = useCallback(async (sq: string, sf: string, p: number) => {
+  const fetchAudience = useCallback(async (sq: string, cs: string, p: number) => {
     setIsLoadingAudience(true);
     setAudienceError(null);
     try {
       const res = await broadcastApi.getAudience({
         search: sq || undefined,
-        statusPipeline: sf || undefined,
+        commercialState: cs || undefined,
         page: p,
         limit: 50,
       });
@@ -433,7 +434,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
         page: p,
       });
       // Auto-select semua yang baru load
-      if (p === 1 && !sq && !sf) {
+      if (p === 1 && !sq && !cs) {
         setSelectedIds(new Set((payload.data ?? []).map((a: AudienceItem) => a.id)));
       }
     } catch (err: unknown) {
@@ -492,7 +493,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
 
     searchRef.current = setTimeout(() => {
       setAudiencePage(1);
-      fetchAudience(searchQuery, statusFilter, 1);
+      fetchAudience(searchQuery, commercialStateFilter, 1);
     }, 350);
     return () => { if (searchRef.current) clearTimeout(searchRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -501,12 +502,12 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
   const handleApplyFilter = () => {
     if (!searchQuery.trim()) return; // Jangan fetch jika sekolah belum dipilih
     setAudiencePage(1);
-    fetchAudience(searchQuery, statusFilter, 1);
+    fetchAudience(searchQuery, commercialStateFilter, 1);
   };
 
   const handleReset = () => {
     setSearchQuery('');
-    setStatusFilter('');
+    setCommercialStateFilter('');
     setAudiencePage(1);
     // Kosongkan list saat reset
     setAudience([]);
@@ -555,8 +556,8 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
       <div className="lg:col-span-2 space-y-6 pb-40 lg:pb-0">
 
         {/* Step 1: Nama Campaign (opsional tapi disarankan) */}
-        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-border bg-secondary/30">
+        <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b bg-secondary/30">
             <h2 className="font-semibold text-foreground">1. Nama Campaign (Opsional)</h2>
           </div>
           <div className="p-4">
@@ -571,8 +572,8 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
         </div>
 
         {/* Step 2: Target Audiens */}
-        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-border bg-secondary/30 flex items-center justify-between">
+        <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b bg-secondary/30 flex items-center justify-between">
             <h2 className="font-semibold text-foreground">2. Pilih Audiens (Targeting)</h2>
             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md font-bold">
               {selectedIds.size} Terpilih
@@ -590,17 +591,16 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
             />
             <div className="flex-1">
               <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
+                value={commercialStateFilter}
+                onChange={e => setCommercialStateFilter(e.target.value)}
                 className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:border-primary outline-none text-muted-foreground"
               >
-                <option value="">-- Semua Status Pipeline --</option>
-                <option value="Data Masuk">Data Masuk</option>
-                <option value="Calon Prospek">Calon Prospek</option>
-                <option value="Prospek Aktif">Prospek Aktif</option>
-                <option value="Konsultasi">Konsultasi</option>
-                <option value="Layak Home Visit">Layak Home Visit</option>
-                <option value="Siap Daftar">Siap Daftar</option>
+                <option value="">-- Semua Status Komersial --</option>
+                <option value="Known Profile">Known Profile</option>
+                <option value="Lead">Lead</option>
+                <option value="Prospect">Prospect</option>
+                <option value="Opportunity">Opportunity</option>
+                <option value="Registered Opportunity">Registered Opportunity</option>
               </select>
             </div>
             <div className="flex gap-2">
@@ -614,7 +614,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                 <button
                   onClick={handleReset}
                   title="Reset semua filter"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/5 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/5 transition-all"
                 >
                   <RotateCcw size={13} />
                   <span className="hidden sm:inline">Reset</span>
@@ -637,7 +637,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                 </div>
                 <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground/60">
                   <span className="w-5 h-px bg-border" />
-                  <span>Kemudian gunakan filter Status Pipeline jika perlu</span>
+                  <span>Siswa yang menolak WhatsApp (Consent Withdrawn) otomatis disaring</span>
                   <span className="w-5 h-px bg-border" />
                 </div>
               </div>
@@ -650,7 +650,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
               <div className="flex flex-col items-center py-8 gap-2 text-rose-500">
                 <AlertCircle size={18} />
                 <p className="text-xs">{audienceError}</p>
-                <button onClick={() => fetchAudience(searchQuery, statusFilter, audiencePage)} className="text-xs underline">Coba lagi</button>
+                <button onClick={() => fetchAudience(searchQuery, commercialStateFilter, audiencePage)} className="text-xs underline">Coba lagi</button>
               </div>
             ) : (
               <>
@@ -668,21 +668,22 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                       </th>
                       <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Siswa</th>
                       <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Sekolah</th>
-                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Pipeline</th>
+                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Status Komersial</th>
+                      <th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">Consent</th>
                       <th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">SW</th>
                     </tr>
                   </thead>
                   <tbody>
                     {audience.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center">
+                        <td colSpan={6} className="py-8 text-center">
                           <p className="text-sm text-muted-foreground">
-                            {statusFilter
-                              ? `Tidak ada siswa dengan status "${statusFilter}" di sekolah ini.`
+                            {commercialStateFilter
+                              ? `Tidak ada siswa dengan status "${commercialStateFilter}" di sekolah ini.`
                               : 'Tidak ada siswa ditemukan untuk sekolah ini.'}
                           </p>
-                          {statusFilter && (
-                            <button onClick={() => { setStatusFilter(''); fetchAudience(searchQuery, '', 1); }} className="text-xs text-primary underline mt-1">
+                          {commercialStateFilter && (
+                            <button onClick={() => { setCommercialStateFilter(''); fetchAudience(searchQuery, '', 1); }} className="text-xs text-primary underline mt-1">
                               Hapus filter status
                             </button>
                           )}
@@ -700,12 +701,22 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                           </td>
                           <td className="px-4 py-3 font-medium">
                             {a.nama}<br />
-                            <span className="text-[10px] text-muted-foreground">{a.phone}</span>
+                            <span className="text-xs text-muted-foreground">{a.phone}</span>
                           </td>
                           <td className="px-4 py-3 text-xs text-muted-foreground">{a.sekolah}</td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground">{a.statusPipeline}</td>
+                          <td className="px-4 py-3 text-xs">
+                            <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-xs font-medium">
+                              {a.commercialState || a.statusPipeline}
+                            </span>
+                          </td>
                           <td className="px-4 py-3 text-center">
-                            <span className={cn('text-[10px] px-2 py-1 rounded-full font-bold', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">
+                              <ShieldCheck size={12} />
+                              Aktif
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={cn('text-xs px-2 py-1 rounded-full font-bold', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
                               {a.isSwOpen ? 'Terbuka' : 'Tertutup'}
                             </span>
                           </td>
@@ -742,12 +753,20 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <h4 className="font-semibold text-sm text-foreground truncate">{a.nama}</h4>
-                            <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
+                            <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold shrink-0', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
                               {a.isSwOpen ? 'SW Buka' : 'SW Tutup'}
                             </span>
                           </div>
                           <p className="text-xs text-muted-foreground truncate mt-0.5">{a.sekolah} · {a.phone}</p>
-                          <p className="text-[10px] text-muted-foreground/70">{a.statusPipeline}</p>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-xs bg-secondary text-foreground px-2 py-0.5 rounded">
+                              {a.commercialState || a.statusPipeline}
+                            </span>
+                            <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
+                              <ShieldCheck size={11} />
+                              Consent Aktif
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -757,20 +776,28 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
             )}
           </div>
 
+          {/* Privacy & Consent Notice footer */}
+          <div className="px-4 py-2.5 bg-emerald-500/5 border-t flex items-center justify-between text-xs text-emerald-500">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck size={14} className="shrink-0 text-emerald-500" />
+              <span><strong>Consent Engine:</strong> Hanya siswa berstatus consent valid yang dimuat. Penolakan WhatsApp otomatis disaring.</span>
+            </span>
+          </div>
+
           {/* Pagination audiens */}
           {audienceMeta.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-secondary/10 text-xs text-muted-foreground">
+            <div className="flex items-center justify-between px-4 py-2 border-t bg-secondary/10 text-xs text-muted-foreground">
               <span>Total: {audienceMeta.total} audiens</span>
               <div className="flex gap-2">
                 <button
                   disabled={audienceMeta.page <= 1}
-                  onClick={() => { setAudiencePage(p => p - 1); fetchAudience(searchQuery, statusFilter, audiencePage - 1); }}
+                  onClick={() => { setAudiencePage(p => p - 1); fetchAudience(searchQuery, commercialStateFilter, audiencePage - 1); }}
                   className="px-2 py-1 rounded bg-secondary disabled:opacity-40"
                 >← Prev</button>
                 <span>Hal {audienceMeta.page} / {audienceMeta.totalPages}</span>
                 <button
                   disabled={audienceMeta.page >= audienceMeta.totalPages}
-                  onClick={() => { setAudiencePage(p => p + 1); fetchAudience(searchQuery, statusFilter, audiencePage + 1); }}
+                  onClick={() => { setAudiencePage(p => p + 1); fetchAudience(searchQuery, commercialStateFilter, audiencePage + 1); }}
                   className="px-2 py-1 rounded bg-secondary disabled:opacity-40"
                 >Next →</button>
               </div>
@@ -779,10 +806,10 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
         </div>
 
         {/* Step 3: Template Selection */}
-        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-border bg-secondary/30">
+        <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b bg-secondary/30">
             <h2 className="font-semibold text-foreground">3. Pilih Template Pesan</h2>
-            <p className="text-xs text-muted-foreground mt-1">Variabel otomatis diisi berdasarkan nama target.</p>
+            <p className="text-xs text-muted-foreground mt-1">Variabel otomatis diisi berdasarkan nama target (Smart Routing Meta/Interactive).</p>
           </div>
           <div className="p-5 space-y-5">
             {isLoadingTemplates ? (
@@ -792,10 +819,10 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
               </div>
             ) : (
               <div className="space-y-2">
-                  <label className="text-sm font-semibold flex items-center justify-between">
-                    <span>Pilih Template Meta</span>
-                    <span className="text-[10px] text-muted-foreground">{metaTemplates.length} tersedia</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-semibold">Pilih Template Meta</label>
+                    <span className="text-xs text-muted-foreground">{metaTemplates.length} tersedia</span>
+                  </div>
                   <select
                     value={metaTemplate}
                     onChange={e => setMetaTemplate(e.target.value)}
@@ -806,6 +833,24 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                   </select>
+
+                  {/* Mobile Preview Toggle */}
+                  {metaTemplate && (
+                    <div className="md:hidden pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowMobilePreview(v => !v)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/60 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Eye size={13} />
+                          {showMobilePreview ? 'Sembunyikan Preview Pesan' : 'Lihat Preview Pesan WhatsApp'}
+                        </span>
+                        {showMobilePreview ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+                    </div>
+                  )}
+
                   {(() => {
                     const selectedMetaTmpl = metaTemplate ? metaTemplates.find(t => t.id === metaTemplate) : null;
                     if (!selectedMetaTmpl || !selectedMetaTmpl.bodyText) return null;
@@ -865,45 +910,47 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
                     });
 
                     return (
-                      <div className="mt-4 flex flex-col gap-2 p-4 bg-[#E2FDC4] rounded-xl text-sm text-[#111B21] shadow-sm max-w-sm ml-auto border border-black/5 relative">
-                        {/* Tail/Tip SVG */}
-                        <div className="absolute top-0 -right-2 text-[#E2FDC4]">
-                          <svg viewBox="0 0 8 13" width="8" height="13" className="fill-current">
-                            <path d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" />
-                          </svg>
-                        </div>
+                      <div className={cn('mt-4', !showMobilePreview && 'hidden md:block')}>
+                        <div className="flex flex-col gap-2 p-4 bg-[#E2FDC4] rounded-xl text-sm text-[#111B21] shadow-sm max-w-sm ml-auto border border-black/5 relative">
+                          {/* Tail/Tip SVG */}
+                          <div className="absolute top-0 -right-2 text-[#E2FDC4]">
+                            <svg viewBox="0 0 8 13" width="8" height="13" className="fill-current">
+                              <path d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" />
+                            </svg>
+                          </div>
 
-                        {bubbleHeaderType === 'image' && bubbleHeaderValue && (
-                          <div className="w-full aspect-video bg-black/10 rounded-lg overflow-hidden flex items-center justify-center">
-                            <img src={bubbleHeaderValue} alt="Header" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                        {bubbleHeaderType === 'video' && bubbleHeaderValue && (
-                          <div className="w-full aspect-video bg-black/10 rounded-lg overflow-hidden flex items-center justify-center">
-                            <video src={bubbleHeaderValue} controls className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                        {bubbleHeaderType === 'document' && bubbleHeaderValue && (
-                          <div className="w-full p-3 bg-black/5 rounded-lg flex items-center gap-2">
-                            <FileText size={20} className="text-[#00A884]" />
-                            <span className="text-xs font-semibold text-black/70 truncate">{bubbleHeaderValue.split('/').pop() || 'Document'}</span>
-                          </div>
-                        )}
-                        {bubbleHeaderType === 'text' && bubbleHeaderValue && (
-                          <p className="font-bold text-[15px]">{bubbleHeaderValue}</p>
-                        )}
-                        
-                        <p className="whitespace-pre-wrap leading-relaxed">{bubbleBodyText}</p>
-                        
-                        {metaBtns.length > 0 && (
-                          <div className="flex flex-col gap-1 mt-2 border-t border-black/10 pt-2">
-                            {metaBtns.map((btn, idx) => (
-                              <button key={idx} disabled className="py-1.5 text-[#00A884] font-medium hover:bg-black/5 rounded-md transition-colors text-[15px]">
-                                {btn.text || btn.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                          {bubbleHeaderType === 'image' && bubbleHeaderValue && (
+                            <div className="w-full aspect-video bg-black/10 rounded-lg overflow-hidden flex items-center justify-center">
+                              <img src={bubbleHeaderValue} alt="Header" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          {bubbleHeaderType === 'video' && bubbleHeaderValue && (
+                            <div className="w-full aspect-video bg-black/10 rounded-lg overflow-hidden flex items-center justify-center">
+                              <video src={bubbleHeaderValue} controls className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          {bubbleHeaderType === 'document' && bubbleHeaderValue && (
+                            <div className="w-full p-3 bg-black/5 rounded-lg flex items-center gap-2">
+                              <FileText size={20} className="text-[#00A884]" />
+                              <span className="text-xs font-semibold text-black/70 truncate">{bubbleHeaderValue.split('/').pop() || 'Document'}</span>
+                            </div>
+                          )}
+                          {bubbleHeaderType === 'text' && bubbleHeaderValue && (
+                            <p className="font-bold text-sm">{bubbleHeaderValue}</p>
+                          )}
+                          
+                          <p className="whitespace-pre-wrap leading-relaxed">{bubbleBodyText}</p>
+                          
+                          {metaBtns.length > 0 && (
+                            <div className="flex flex-col gap-1 mt-2 border-t border-black/10 pt-2">
+                              {metaBtns.map((btn, idx) => (
+                                <button key={idx} disabled className="py-1.5 text-[#00A884] font-medium hover:bg-black/5 rounded-md transition-colors text-sm">
+                                  {btn.text || btn.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })()}
@@ -915,7 +962,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
 
       {/* ── KANAN: Summary Desktop ── */}
       <div className="lg:col-span-1 space-y-4">
-        <div className="bg-card border border-border rounded-xl p-4 shadow-xl lg:shadow-sm hidden lg:block">
+        <div className="bg-card border rounded-xl p-4 shadow-xl lg:shadow-sm hidden lg:block">
           <h3 className="font-bold mb-3">Ringkasan Eksekusi</h3>
 
           <div className="mb-4 space-y-1.5">

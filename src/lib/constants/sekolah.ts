@@ -89,7 +89,7 @@ export function getOverdueCategory(dueDateStr: string | null): keyof typeof OVER
   return 'kritis';
 }
 
-// Jenis Aktivitas Utama
+// Jenis Aktivitas Utama (backward compat for old InputAktivitasModal)
 export const JENIS_AKTIVITAS = [
   'Visit Awal',
   'Visit Ulang',
@@ -99,6 +99,78 @@ export const JENIS_AKTIVITAS = [
   'Laksanakan Sosialisasi',
   'Input Data Siswa',
 ] as const;
+
+// Channel / Jenis Interaksi (Event-Sourcing — endpoint /interactions)
+export const CHANNEL_OPTIONS = [
+  'Visit Langsung',
+  'WhatsApp',
+  'Telepon',
+  'Meeting',
+] as const;
+
+// Outcome Options (Event-Sourcing — endpoint /interactions)
+export const OUTCOME_OPTIONS = [
+  'PIC Tidak di Tempat / Menunggu Respon',
+  'PIC Minta Proposal Ditinggal',
+  'PIC Minta Kembali Minggu Depan',
+  'Diminta Meeting',
+  'Menunggu Keputusan',
+  'Mendapat Izin Sosialisasi',
+  'Jadwal Sosialisasi Ditunda',
+  'Jadwal Sosialisasi Dibatalkan',
+  'PIC Berganti — Perlu Visit Ulang',
+  'Sosialisasi Selesai',
+  'Data Siswa Terinput',
+  'Ditolak Final',
+  'Tutup / Merger',
+] as const;
+
+export type OutcomeKey = typeof OUTCOME_OPTIONS[number];
+
+// Outcome Map: outcome → UI metadata
+export const OUTCOME_META: Record<OutcomeKey, {
+  label: string;
+  targetState: string;
+  isTerminal: boolean;
+  isDowngrade: boolean;
+  requiresAlasan: boolean;
+  requiresTanggalSos: boolean;
+  eventType: string;
+}> = {
+  'PIC Tidak di Tempat / Menunggu Respon': { label: 'PIC Tidak di Tempat',          targetState: 'Tunggu Visit Ulang',        isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'PIC Minta Proposal Ditinggal':          { label: 'Proposal Ditinggal',            targetState: 'Tunggu Visit Ulang',        isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'PIC Minta Kembali Minggu Depan':        { label: 'Minta Kembali Minggu Depan',   targetState: 'Tunggu Visit Ulang',        isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'Diminta Meeting':                       { label: 'Diminta Meeting',               targetState: 'Tunggu Keputusan',          isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'Menunggu Keputusan':                    { label: 'Menunggu Keputusan',            targetState: 'Tunggu Keputusan',          isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'Mendapat Izin Sosialisasi':             { label: '⚡ Mendapat Izin Sosialisasi', targetState: 'Sosialisasi Terjadwal',     isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: true,  eventType: 'SosialisasiApproved' },
+  'Jadwal Sosialisasi Ditunda':            { label: '↩️ Jadwal Ditunda',              targetState: 'Tunggu Jadwal Sosialisasi', isTerminal: false, isDowngrade: true,  requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'Jadwal Sosialisasi Dibatalkan':         { label: '↩️ Jadwal Dibatalkan',           targetState: 'Tunggu Jadwal Sosialisasi', isTerminal: false, isDowngrade: true,  requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'PIC Berganti — Perlu Visit Ulang':      { label: '↩️ PIC Berganti',                targetState: 'Tunggu Visit Ulang',        isTerminal: false, isDowngrade: true,  requiresAlasan: false, requiresTanggalSos: false, eventType: 'InteractionLogged' },
+  'Sosialisasi Selesai':                   { label: '✅ Sosialisasi Selesai',         targetState: 'Sudah Sosialisasi',         isTerminal: false, isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'SosialisasiCompleted' },
+  'Data Siswa Terinput':                   { label: '🎯 Data Siswa Terinput',      targetState: 'Lead Captured',             isTerminal: true,  isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'BatchStudentsImported' },
+  'Ditolak Final':                         { label: '🔴 Ditolak Final',              targetState: 'Tidak Bisa Sosialisasi',    isTerminal: true,  isDowngrade: false, requiresAlasan: true,  requiresTanggalSos: false, eventType: 'SosialisasiRejected' },
+  'Tutup / Merger':                        { label: 'Tutup / Merger',                targetState: 'Nonaktif / Tutup / Merger', isTerminal: true,  isDowngrade: false, requiresAlasan: false, requiresTanggalSos: false, eventType: 'SchoolClosed' },
+};
+
+// Intent Options
+export const INTENT_OPTIONS = ['High', 'Mid', 'Low'] as const;
+export type IntentLevel = typeof INTENT_OPTIONS[number];
+
+export const INTENT_BADGE: Record<IntentLevel, { label: string; icon: string; bg: string; text: string; border: string }> = {
+  High: { label: 'High',  icon: '🔥', bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/20' },
+  Mid:  { label: 'Mid',   icon: '🟢', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  Low:  { label: 'Low',   icon: '⚪', bg: 'bg-slate-500/15',   text: 'text-slate-400',   border: 'border-slate-500/20' },
+};
+
+// Event Type Config (untuk label di Event Log UI)
+export const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
+  InteractionLogged:     { label: 'Interaksi',            color: 'text-amber-400',   icon: '🟡' },
+  SosialisasiApproved:   { label: 'Sosialisasi Approved', color: 'text-blue-400',    icon: '🔵' },
+  SosialisasiCompleted:  { label: 'Sosialisasi Selesai',  color: 'text-emerald-400', icon: '🟢' },
+  SosialisasiRejected:   { label: 'Ditolak',              color: 'text-rose-400',    icon: '🔴' },
+  BatchStudentsImported: { label: 'Lead Captured',         color: 'text-emerald-300', icon: '🎯' },
+  SchoolClosed:          { label: 'Tutup / Merger',        color: 'text-zinc-400',    icon: '⚫' },
+};
 
 // Jenis Aktivitas Ekstra (Section 8.1)
 export const JENIS_AKTIVITAS_EKSTRA = [

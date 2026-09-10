@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, X, Building2, AlertCircle } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
 
-interface KotaMapping {
+interface KotaMappingItem {
   id: number;
   kota: string;
 }
 
 export default function KotaMapping() {
-  const [mappings, setMappings] = useState<KotaMapping[]>([]);
+  const [mappings, setMappings] = useState<KotaMappingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -19,6 +19,7 @@ export default function KotaMapping() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ kota: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     fetchMappings();
@@ -32,13 +33,14 @@ export default function KotaMapping() {
         setMappings(res.data.data || []);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal memuat data mapping kota');
+      setError(err.response?.data?.message || err.message || 'Gagal memuat data master kota');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenForm = (mapping?: KotaMapping) => {
+  const handleOpenForm = (mapping?: KotaMappingItem) => {
+    setFormError('');
     if (mapping) {
       setEditingId(mapping.id);
       setFormData({ kota: mapping.kota });
@@ -53,11 +55,18 @@ export default function KotaMapping() {
     setIsFormOpen(false);
     setEditingId(null);
     setFormData({ kota: '' });
+    setFormError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.kota.trim()) {
+      setFormError('Nama kota/kabupaten wajib diisi.');
+      return;
+    }
+
     setSubmitting(true);
+    setFormError('');
     try {
       if (editingId) {
         await apiClient.put(`/api/v1/settings/kota/${editingId}`, formData);
@@ -67,145 +76,159 @@ export default function KotaMapping() {
       await fetchMappings();
       handleCloseForm();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Gagal menyimpan mapping');
+      setFormError(err.response?.data?.message || err.message || 'Gagal menyimpan data kota');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus mapping kota ini?')) return;
+    if (!confirm('Apakah Anda yakin ingin menghapus kota ini dari master data? Kecamatan terkait akan terdampak.')) return;
     try {
       await apiClient.delete(`/api/v1/settings/kota/${id}`);
       await fetchMappings();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Gagal menghapus mapping');
+      setError(err.response?.data?.message || err.message || 'Gagal menghapus kota');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Action Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Master Kota</h2>
-          <p className="text-sm text-muted-foreground">
-            Atur daftar master kota yang akan muncul sebagai pilihan di Form Publik dan Generator Link QR.
+          <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+            <Building2 size={18} className="text-primary" /> Master Kota / Kabupaten
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Daftar kota induk wilayah yang digunakan untuk mengelompokkan data kecamatan dan domisili siswa.
           </p>
         </div>
         <button
           onClick={() => handleOpenForm()}
-          className="w-full sm:w-auto px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center justify-center gap-2 text-sm font-medium"
+          className="w-full sm:w-auto h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all shrink-0 cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
+          <Plus size={16} />
           Tambah Kota
         </button>
       </div>
 
       {error && (
-        <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-lg">
-          {error}
+        <div className="p-4 text-xs sm:text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-2">
+          <AlertCircle size={16} className="shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-lg overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-muted/50 border-b border-border">
-            <tr>
-              <th className="px-6 py-3 font-medium text-foreground">Nama Kota</th>
-              <th className="px-6 py-3 font-medium text-foreground text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {mappings.length === 0 ? (
+      {/* Table */}
+      <div className="bg-card border rounded-2xl overflow-hidden shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-secondary/40 border-b">
               <tr>
-                <td colSpan={2} className="px-6 py-8 text-center text-muted-foreground">
-                  Belum ada data master kota yang ditambahkan.
-                </td>
+                <th className="px-5 py-3 font-semibold text-muted-foreground">Nama Kota / Kabupaten</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-32">Aksi</th>
               </tr>
-            ) : (
-              mappings.map((m) => (
-                <tr key={m.id} className="hover:bg-muted/30">
-                  <td className="px-6 py-3 font-medium text-foreground">{m.kota}</td>
-                  <td className="px-6 py-3 text-right">
-                    <div className="flex justify-end items-center gap-1 sm:gap-2">
-                      <button
-                        onClick={() => handleOpenForm(m)}
-                        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(m.id)}
-                        className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-                        title="Hapus"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+            </thead>
+            <tbody className="divide-y divide-border/60">
+              {mappings.length === 0 ? (
+                <tr>
+                  <td colSpan={2} className="px-5 py-10 text-center text-muted-foreground text-sm">
+                    Belum ada data master kota yang ditambahkan.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                mappings.map((m) => (
+                  <tr key={m.id} className="hover:bg-secondary/20 transition-colors">
+                    <td className="px-5 py-3.5 font-medium text-foreground">{m.kota}</td>
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex justify-end items-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenForm(m)}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                          title="Edit Kota"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(m.id)}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Hapus Kota"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Modal Form */}
+      {/* Modal Form (Center Dialog) */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-lg">
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <h3 className="font-semibold text-foreground">
-                {editingId ? 'Edit Master Kota' : 'Tambah Master Kota'}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-card border w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-5 h-14 border-b">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                {editingId ? 'Edit Master Kota' : 'Tambah Master Kota Baru'}
               </h3>
               <button
                 onClick={handleCloseForm}
-                className="text-muted-foreground hover:text-foreground"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-4 space-y-4">
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              {formError && (
+                <div className="p-3 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-2">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  Nama Kota <span className="text-destructive">*</span>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                  Nama Kota / Kabupaten <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.kota}
                   onChange={(e) => setFormData({ ...formData, kota: e.target.value })}
-                  placeholder="e.g., Jakarta Selatan"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  placeholder="Contoh: Kabupaten Tabanan, Kota Denpasar"
+                  className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Nama ini akan muncul sebagai opsi di form publik pendaftaran.
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Nama kota harus unik dan tidak boleh duplikat.
                 </p>
               </div>
-              <div className="pt-4 flex items-center gap-3">
+
+              <div className="pt-2 flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleCloseForm}
-                  className="flex-1 px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors"
+                  className="flex-1 h-10 border rounded-xl text-sm font-medium hover:bg-secondary transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Simpan
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Simpan Data'}
                 </button>
               </div>
             </form>

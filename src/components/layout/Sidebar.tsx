@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, School, CheckSquare, Calendar,
   Home, TrendingUp, Radio, FileText, LogOut, ChevronLeft, ChevronRight, Zap, Clock, MessageSquare,
-  Settings as SettingsIcon,
+  Settings as SettingsIcon, CalendarDays,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
@@ -24,6 +24,7 @@ const navItems = [
   { label: 'Snooze Campaign', href: '/snooze-campaign', icon: Clock },
   { label: 'Live Chat', href: '/live-chat', icon: MessageSquare },
   { label: 'Template Admin', href: '/templates', icon: FileText },
+  { label: 'Manajemen Periode', href: '/manajemen-periode', icon: CalendarDays },
   { label: 'Settings', href: '/settings', icon: SettingsIcon },
 ];
 
@@ -47,7 +48,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'hidden md:flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex-shrink-0',
+        'hidden md:flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 shrink-0',
         collapsed ? 'w-16' : 'w-60'
       )}
     >
@@ -56,13 +57,13 @@ export default function Sidebar() {
         'flex items-center gap-3 px-4 py-5 border-b border-sidebar-border',
         collapsed && 'justify-center px-0'
       )}>
-        <div className="flex-shrink-0 w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shadow-sm glow-primary">
+        <div className="shrink-0 w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shadow-sm glow-primary">
           <Zap className="w-4 h-4 text-white" />
         </div>
         {!collapsed && (
           <div className="min-w-0">
             <p className="text-sm font-bold text-foreground truncate">Nexa CRM</p>
-            <p className="text-[10px] text-muted-foreground truncate">Powered by Nexa OS</p>
+            <p className="text-xs text-muted-foreground truncate">Powered by Nexa OS</p>
           </div>
         )}
       </div>
@@ -70,7 +71,7 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-3 px-2">
         <div className="space-y-0.5">
-          {navItems.map((item) => {
+          {navItems.filter(item => !['/settings', '/manajemen-periode'].includes(item.href) || isFullAdmin).map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
@@ -86,10 +87,10 @@ export default function Sidebar() {
                   collapsed && 'justify-center px-0 w-10 mx-auto'
                 )}
               >
-                <Icon className={cn('flex-shrink-0 w-4.5 h-4.5', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} size={18} />
+                <Icon className={cn('shrink-0 w-4.5 h-4.5', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} size={18} />
                 {!collapsed && <span className="truncate">{item.label}</span>}
                 {!collapsed && isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                 )}
               </Link>
             );
@@ -117,7 +118,7 @@ export default function Sidebar() {
           )}
           title="Keluar"
         >
-          <LogOut size={16} className="flex-shrink-0" />
+          <LogOut size={16} className="shrink-0" />
           {!collapsed && <span>Keluar</span>}
         </button>
       </div>

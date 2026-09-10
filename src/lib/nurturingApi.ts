@@ -25,22 +25,29 @@ export interface NurturingLead {
   nama:             string;
   noWa:             string;
   sekolah:          string;
+  commercialState?: string;
   status:           string;
+  consent?:         'Granted' | 'Withdrawn' | 'Denied' | string;
   cro:              string;
   probeLevel:       number;
   lastProbeSentAt:  string | null;
   sisaHari:         number;
+  isSwOpen?:        boolean;
 }
 
 export interface SnoozeLead {
-  id:          string;
-  nama:        string;
-  noWa:        string;
-  sekolah:     string;
-  cro:         string;
-  snoozeLevel: number;
-  snoozeUntil: string;
-  sisaHari:    number;
+  id:              string;
+  nama:            string;
+  noWa:            string;
+  sekolah:         string;
+  cro:             string;
+  snoozeLevel:     number;
+  snoozeUntil:     string;
+  sisaHari:        number;
+  intervalDays?:   number;
+  commercialState?: string;
+  consent?:        string;
+  isSwOpen?:       boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -113,19 +120,35 @@ export const nurturingApi = {
     apiClient.post<{ status: string; message: string }>(`/api/v1/nurturing/takeover/${idSiswa}`),
 
   /**
-   * POST /api/v1/nurturing/snooze/add
-   * Tambahkan siswa ke antrean snooze 90 hari secara manual.
+   * POST /api/v1/nurturing/start/:id
+   * Daftarkan siswa ke kampanye probing (Event: NurturingStarted).
    */
-  addSnooze: (payload: { idSiswa: string; alasan?: string }) =>
-    apiClient.post<{ status: string; message: string; snoozeUntil: string }>(
-      '/api/v1/nurturing/snooze/add',
+  startNurturing: (idSiswa: string, reason?: string) =>
+    apiClient.post<{ status: string; message: string }>(`/api/v1/nurturing/start/${idSiswa}`, { reason }),
+
+  /**
+   * POST /api/v1/nurturing/snooze/request
+   * Tambahkan siswa ke antrean snooze (30/60/90 hari) secara manual.
+   */
+  requestSnooze: (payload: { idSiswa: string; interval_days?: number; alasan?: string }) =>
+    apiClient.post<{ status: string; message: string; snoozeUntil: string; intervalDays?: number }>(
+      '/api/v1/nurturing/snooze/request',
+      payload
+    ),
+
+  addSnooze: (payload: { idSiswa: string; interval_days?: number; alasan?: string }) =>
+    apiClient.post<{ status: string; message: string; snoozeUntil: string; intervalDays?: number }>(
+      '/api/v1/nurturing/snooze/request',
       payload
     ),
 
   /**
-   * DELETE /api/v1/nurturing/snooze/:id
-   * Bangunkan siswa dari snooze lebih awal dari jadwal.
+   * POST /api/v1/nurturing/snooze/wakeup & DELETE /api/v1/nurturing/snooze/:id
+   * Bangunkan siswa dari snooze lebih awal dari jadwal (Bangunkan Paksa).
    */
+  wakeupSnooze: (idSiswa: string) =>
+    apiClient.post<{ status: string; message: string }>('/api/v1/nurturing/snooze/wakeup', { idSiswa }),
+
   stopSnooze: (idSiswa: string) =>
     apiClient.delete<{ status: string; message: string }>(`/api/v1/nurturing/snooze/${idSiswa}`),
 };

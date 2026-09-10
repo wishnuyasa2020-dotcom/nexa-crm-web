@@ -4,87 +4,86 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search, Plus, ChevronLeft, ChevronRight, Users,
-  UserPlus, ChevronRight as ArrowRight, SlidersHorizontal,
+  ChevronRight as ArrowRight, SlidersHorizontal, Upload,
 } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { AddSiswaModal }    from '@/components/siswa/AddSiswaModal';
-import { EditSiswaModal }   from '@/components/siswa/EditSiswaModal';
 import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
+import type { Siswa, CommercialState, SiswaIntent } from '@/lib/types/siswa.types';
 
-interface Siswa {
-  idRecord:   string;
-  id:         string;
-  nama:       string;
-  kelas:      string;
-  cro:        string;
-  status:     string;
-  nextAction: string;
-  prioritas:  string;
-  dueDate:    string;
-  namaSekolah: string;
-  wa?:        string;
-  bsuid?:     string;
+// ── Intent Badge ──────────────────────────────────────────────────────────────
+const INTENT_CONFIG: Record<string, { label: string; className: string }> = {
+  'High': { label: '🔥 High', className: 'bg-rose-500/15 text-rose-400 border-rose-500/20' },
+  'Mid':  { label: '🟢 Mid',  className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
+  'Low':  { label: '⚪ Low',  className: 'bg-slate-500/15 text-slate-400 border-slate-500/20' },
+};
+
+function IntentBadge({ intent }: { intent: string }) {
+  if (!intent) return null;
+  const config = INTENT_CONFIG[intent];
+  if (!config) return null;
+  return (
+    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] border font-medium', config.className)}>
+      {config.label}
+    </span>
+  );
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  'Data Masuk':       'bg-slate-500/15 text-slate-400 border-slate-500/20',
-  'Calon Prospek':    'bg-blue-500/15 text-blue-400 border-blue-500/20',
-  'Prospek Aktif':    'bg-indigo-500/15 text-indigo-400 border-indigo-500/20',
-  'Konsultasi':       'bg-violet-500/15 text-violet-400 border-violet-500/20',
-  'Layak Home Visit': 'bg-purple-500/15 text-purple-400 border-purple-500/20',
-  'Home Visit':       'bg-pink-500/15 text-pink-400 border-pink-500/20',
-  'Siap Daftar':      'bg-amber-500/15 text-amber-400 border-amber-500/20',
-  'Terdaftar':        'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-  'Tidak Lanjut':     'bg-rose-500/15 text-rose-400 border-rose-500/20',
-};
-
-const PRIORITY_BADGE: Record<string, string> = {
-  'A': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-  'B': 'bg-amber-500/15 text-amber-400 border-amber-500/20',
-  'C': 'bg-slate-500/15 text-slate-400 border-slate-500/20',
-};
+// ── Skeleton Row ──────────────────────────────────────────────────────────────
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-border/50 animate-pulse">
+      {Array.from({ length: 7 }).map((_, i) => (
+        <td key={i} className="px-4 py-3">
+          <div className="h-3 bg-secondary rounded w-full max-w-28" />
+        </td>
+      ))}
+    </tr>
+  );
+}
 
 // ── Skeleton Mobile Card ──────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="border border-border/50 rounded-xl p-3 space-y-2">
+    <div className="border border-border/50 rounded-xl p-3 space-y-2 animate-pulse">
       <div className="flex justify-between">
         <div className="space-y-1.5 w-2/3">
-          <div className="h-4 bg-secondary animate-pulse rounded w-full" />
-          <div className="h-3 bg-secondary animate-pulse rounded w-3/4" />
+          <div className="h-4 bg-secondary rounded w-full" />
+          <div className="h-3 bg-secondary rounded w-3/4" />
         </div>
-        <div className="h-5 w-16 bg-secondary animate-pulse rounded" />
+        <div className="h-5 w-16 bg-secondary rounded" />
       </div>
-      <div className="h-3 bg-secondary animate-pulse rounded w-1/2" />
+      <div className="h-3 bg-secondary rounded w-1/2" />
     </div>
   );
 }
 
 export default function SiswaPage() {
   const router = useRouter();
-  const [siswaList,        setSiswaList]        = useState<Siswa[]>([]);
-  const [loading,          setLoading]          = useState(true);
-  const [search,           setSearch]           = useState('');
-  const [page,             setPage]             = useState(1);
-  const [total,            setTotal]            = useState(0);
-  const [filterStatus,     setFilterStatus]     = useState('');
-  const [filterKelas,      setFilterKelas]      = useState('');
-  const [isAddModalOpen,   setIsAddModalOpen]   = useState(false);
-  const [isImportModalOpen,setIsImportModalOpen]= useState(false);
-  const [isEditModalOpen,  setIsEditModalOpen]  = useState(false);
-  const [selectedSiswaId,  setSelectedSiswaId]  = useState<string | null>(null);
-  const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [siswaList,          setSiswaList]          = useState<Siswa[]>([]);
+  const [loading,            setLoading]            = useState(true);
+  const [search,             setSearch]             = useState('');
+  const [page,               setPage]               = useState(1);
+  const [total,              setTotal]              = useState(0);
+  const [filterCommercial,   setFilterCommercial]   = useState<CommercialState | ''>('');
+  const [filterIntent,       setFilterIntent]       = useState<SiswaIntent | ''>('');
+  const [filterKelas,        setFilterKelas]        = useState('');
+  const [isAddModalOpen,     setIsAddModalOpen]     = useState(false);
+  const [isImportModalOpen,  setIsImportModalOpen]  = useState(false);
+  const [showMobileFilter,   setShowMobileFilter]   = useState(false);
   const pageSize = 20;
 
   const loadSiswa = useCallback(async () => {
     setLoading(true);
     try {
       const query = new URLSearchParams();
-      if (page > 1) query.append('page', page.toString());
-      if (search) query.append('search', search);
-      if (filterStatus) query.append('status', filterStatus);
-      if (filterKelas)  query.append('kelas', filterKelas);
+      if (page > 1)          query.append('page', page.toString());
+      if (search)            query.append('search', search);
+      if (filterCommercial)  query.append('commercialState', filterCommercial);
+      if (filterIntent)      query.append('intent', filterIntent);
+      if (filterKelas)       query.append('kelas', filterKelas);
 
       const res = await apiClient.get(`/api/v1/siswa?${query.toString()}`);
       if (res.data?.status === 'ok') {
@@ -96,7 +95,7 @@ export default function SiswaPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filterStatus, filterKelas]);
+  }, [page, search, filterCommercial, filterIntent, filterKelas]);
 
   useEffect(() => {
     const timer = setTimeout(() => loadSiswa(), 300);
@@ -108,17 +107,18 @@ export default function SiswaPage() {
   return (
     <div className="space-y-4 pb-24 md:pb-6">
 
-      {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users size={18} className="text-primary" />
-          <div>
-            <h1 className="text-lg font-bold text-foreground">Data Siswa</h1>
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 shrink-0">
+            <Users size={17} className="text-white" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-foreground leading-tight">Master Siswa</h1>
             <p className="text-xs text-muted-foreground">{total} siswa ditemukan</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Filter toggle — mobile only */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setShowMobileFilter(v => !v)}
             className={cn(
@@ -130,8 +130,9 @@ export default function SiswaPage() {
           </button>
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
           >
+            <Upload size={13} />
             Import Excel
           </button>
           <button
@@ -145,44 +146,53 @@ export default function SiswaPage() {
         </div>
       </div>
 
-      {/* ── Search (always visible) ──────────────────────────────────────────── */}
+      {/* ── Search ─────────────────────────────────────────────────────────── */}
       <div className="relative">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder="Cari nama siswa..."
+          placeholder="Cari nama siswa, ID, sekolah..."
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
-          className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+          className="w-full pl-9 pr-4 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         />
       </div>
 
-      {/* ── Filters — desktop always visible, mobile toggleable ─────────────── */}
-      <div className={cn('flex-col sm:flex-row gap-3', showMobileFilter ? 'flex' : 'hidden sm:flex')}>
+      {/* ── Filter Bar ─────────────────────────────────────────────────────── */}
+      <div className={cn('flex-col sm:flex-row gap-2', showMobileFilter ? 'flex' : 'hidden sm:flex')}>
+        {/* Filter Commercial State */}
         <select
-          value={filterStatus}
-          onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
-          className="flex-1 px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+          value={filterCommercial}
+          onChange={e => { setFilterCommercial(e.target.value as CommercialState | ''); setPage(1); }}
+          className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
-          <option value="">Semua Status</option>
-          {Object.keys(STATUS_COLORS).map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
+          <option value="">Semua Commercial State</option>
+          <option value="Audience">⚫ Audience</option>
+          <option value="Known">⚪ Known Profile</option>
+          <option value="Lead">🟡 Lead</option>
+          <option value="Prospect">🔵 Prospect</option>
+          <option value="Opportunity">🟣 Opportunity</option>
+          <option value="Registered Opportunity">🟣 Reg. Opportunity</option>
+          <option value="Customer">🟢 Customer</option>
+          <option value="Disqualified">🔴 Disqualified</option>
+
         </select>
+        {/* Filter Intent */}
         <select
-          value={filterKelas}
-          onChange={e => { setFilterKelas(e.target.value); setPage(1); }}
-          className="flex-1 px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+          value={filterIntent}
+          onChange={e => { setFilterIntent(e.target.value as SiswaIntent | ''); setPage(1); }}
+          className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
-          <option value="">Semua Kelas</option>
-          <option value="XII-IPA-1">XII-IPA-1</option>
-          <option value="XII-IPS-2">XII-IPS-2</option>
+          <option value="">Semua Intent</option>
+          <option value="High">🔥 High Intent</option>
+          <option value="Mid">🟢 Mid Intent</option>
+          <option value="Low">⚪ Low Intent</option>
         </select>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          DESKTOP TABLE — hidden on mobile
-      ═══════════════════════════════════════════════════════════════════════ */}
+      {/* ═════════════════════════════════════════════════════════════════════
+          DESKTOP TABLE
+      ═════════════════════════════════════════════════════════════════════ */}
       <div className="hidden sm:block bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -190,9 +200,8 @@ export default function SiswaPage() {
               <tr className="border-b border-border bg-secondary/30">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Nama Siswa</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Sekolah</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Kelas</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Prioritas</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Commercial State</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Intent</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Next Action</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">CRO</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Due Date</th>
@@ -200,18 +209,10 @@ export default function SiswaPage() {
             </thead>
             <tbody>
               {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border/50">
-                    {Array.from({ length: 8 }).map((_, j) => (
-                      <td key={j} className="px-4 py-3">
-                        <div className="h-4 rounded bg-secondary animate-pulse" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
+                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
               ) : siswaList.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center text-muted-foreground text-sm">
+                  <td colSpan={7} className="py-16 text-center text-muted-foreground text-sm">
                     Tidak ada data siswa ditemukan
                   </td>
                 </tr>
@@ -220,33 +221,30 @@ export default function SiswaPage() {
                   <tr
                     key={s.idRecord}
                     onClick={() => router.push(`/siswa/${s.id}`)}
-                    className="border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer"
+                    className="border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer group"
                   >
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      {s.nama}
-                      <div className="mt-1">
-                        {!s.wa && s.bsuid ? (
+                    <td className="px-4 py-3 min-w-44">
+                      <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                        {s.nama}
+                      </span>
+                      {!s.wa && s.bsuid ? (
+                        <div className="mt-1">
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-secondary/50 text-muted-foreground border border-border">
                             📱 Hidden by User
                           </span>
-                        ) : null}
-                      </div>
+                        </div>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs max-w-36 truncate">{s.namaSekolah}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{s.kelas}</td>
                     <td className="px-4 py-3">
-                      <span className={cn('px-2 py-0.5 rounded-md text-[11px] border font-medium', STATUS_COLORS[s.status] || 'bg-secondary text-muted-foreground border-border')}>
-                        {s.status}
-                      </span>
+                      <CommercialStateBadge state={s.commercialState || 'Lead'} />
                     </td>
                     <td className="px-4 py-3">
-                      <span className={cn('px-2 py-0.5 rounded-md text-[11px] border font-bold', PRIORITY_BADGE[s.prioritas] || 'bg-secondary text-muted-foreground border-border')}>
-                        {s.prioritas}
-                      </span>
+                      <IntentBadge intent={s.intent} />
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{s.nextAction}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{s.cro}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{s.dueDate || '-'}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{s.dueDate || '–'}</td>
                   </tr>
                 ))
               )}
@@ -278,9 +276,9 @@ export default function SiswaPage() {
         )}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          MOBILE CARD LIST — hidden on desktop
-      ═══════════════════════════════════════════════════════════════════════ */}
+      {/* ═════════════════════════════════════════════════════════════════════
+          MOBILE CARD LIST
+      ═════════════════════════════════════════════════════════════════════ */}
       <div className="sm:hidden space-y-2">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
@@ -297,36 +295,27 @@ export default function SiswaPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  {/* Nama & Sekolah */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-semibold text-sm text-foreground truncate">{s.nama}</p>
                     {!s.wa && s.bsuid && (
                       <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-secondary/50 text-muted-foreground border border-border">
-                        📱 Hidden by User
+                        📱 Hidden
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate mt-0.5">{s.namaSekolah}</p>
-                  {/* Kelas & CRO */}
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {s.kelas && <span className="mr-2">{s.kelas}</span>}
                     {s.cro && <span className="text-primary/70">{s.cro}</span>}
                   </p>
                 </div>
-                {/* Prioritas badge di kanan */}
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  <span className={cn('px-2 py-0.5 rounded-md text-[10px] border font-bold', PRIORITY_BADGE[s.prioritas] || 'bg-secondary text-muted-foreground border-border')}>
-                    {s.prioritas || '–'}
-                  </span>
+                  <CommercialStateBadge state={s.commercialState || 'Lead'} size="sm" />
                   <ArrowRight size={14} className="text-muted-foreground" />
                 </div>
               </div>
 
-              {/* Status & Due date di bawah */}
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/40">
-                <span className={cn('px-2 py-0.5 rounded-md text-[10px] border font-medium', STATUS_COLORS[s.status] || 'bg-secondary text-muted-foreground border-border')}>
-                  {s.status}
-                </span>
+                <IntentBadge intent={s.intent} />
                 <span className="text-[10px] text-muted-foreground">
                   {s.dueDate ? `📅 ${s.dueDate}` : s.nextAction || ''}
                 </span>
@@ -364,12 +353,6 @@ export default function SiswaPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={() => { setPage(1); loadSiswa(); }}
-      />
-      <EditSiswaModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        idSiswa={selectedSiswaId}
-        onSuccess={() => loadSiswa()}
       />
       <ImportSiswaModal
         isOpen={isImportModalOpen}

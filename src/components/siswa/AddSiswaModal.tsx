@@ -12,6 +12,9 @@ interface SekolahDropdown {
 export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
   const [loading, setLoading] = useState(false);
   const [sekolahList, setSekolahList] = useState<SekolahDropdown[]>([]);
+  const [consentWa, setConsentWa] = useState(true);
+  const [waChecking, setWaChecking] = useState(false);
+  const [waDuplicate, setWaDuplicate] = useState<{ isDuplicate: boolean; student?: any } | null>(null);
   
   const [formData, setFormData] = useState({
     nama: '',
@@ -43,6 +46,31 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === 'wa' && waDuplicate) {
+      setWaDuplicate(null);
+    }
+  };
+
+  const handleWaBlur = async () => {
+    const phone = formData.wa.trim();
+    if (!phone || phone.length < 8) {
+      setWaDuplicate(null);
+      return;
+    }
+    setWaChecking(true);
+    try {
+      const res = await apiClient.get(`/api/v1/audience/check?phone=${encodeURIComponent(phone)}`);
+      if (res.data?.status === 'ok') {
+        setWaDuplicate({
+          isDuplicate: res.data.data.isDuplicate,
+          student: res.data.data.student
+        });
+      }
+    } catch (err) {
+      console.error('Check duplicate phone error', err);
+    } finally {
+      setWaChecking(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,13 +91,17 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
         rencana_lulus: formData.rencanaLulus,
         orangtua_tahu: formData.orangtuaTahu,
         due_date: formData.dueDate,
-        catatan: formData.catatan
+        catatan: formData.catatan,
+        consent_wa: consentWa,
+        opt_in_wa: consentWa ? 'Ya' : 'Belum'
       };
       await apiClient.post('/api/v1/siswa', payload);
       setFormData({
         nama: '', idSekolah: '', kelas: '', wa: '', bsuid: '', email: '', alamat: '',
         minatAwal: '', rencanaLulus: '', orangtuaTahu: '', dueDate: '', catatan: ''
       });
+      setConsentWa(true);
+      setWaDuplicate(null);
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -109,8 +141,23 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">No. WhatsApp</label>
-                <input name="wa" value={formData.wa} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="0812..." />
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-foreground">No. WhatsApp</label>
+                  {waChecking && <span className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Memeriksa...</span>}
+                </div>
+                <input 
+                  name="wa" 
+                  value={formData.wa} 
+                  onChange={handleChange} 
+                  onBlur={handleWaBlur}
+                  className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" 
+                  placeholder="081234567890" 
+                />
+                {waDuplicate?.isDuplicate && (
+                  <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-500">
+                    ⚠️ Nomor ini sudah tercatat atas nama <strong>{waDuplicate.student?.nama_lengkap}</strong> ({waDuplicate.student?.status_terkini || 'Data Masuk'}). Data baru akan diperbarui.
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">BSUID (Opsional)</label>
@@ -167,7 +214,27 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Catatan Awal</label>
-              <textarea name="catatan" value={formData.catatan} onChange={handleChange} rows={3} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="Info tambahan..." />
+              <textarea name="catatan" value={formData.catatan} onChange={handleChange} rows={2} className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="Info tambahan..." />
+            </div>
+
+            {/* WhatsApp Consent Box */}
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-1.5">
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={consentWa}
+                  onChange={e => setConsentWa(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-primary text-primary focus:ring-primary shrink-0"
+                />
+                <div>
+                  <span className="text-xs font-semibold text-foreground">
+                    Opt-In WhatsApp Consent (Izin Kontak)
+                  </span>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Siswa telah memberikan persetujuan untuk dihubungi melalui pesan WhatsApp (kepatuhan Meta & Nexa Evidence Engine).
+                  </p>
+                </div>
+              </label>
             </div>
           </form>
         </div>

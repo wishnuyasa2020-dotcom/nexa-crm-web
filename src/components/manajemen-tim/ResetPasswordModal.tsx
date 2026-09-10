@@ -44,7 +44,7 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl w-[90%] md:w-full">
+      <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-amber-500">
             <KeyRound size={20} /> Reset Password

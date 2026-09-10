@@ -186,7 +186,7 @@ export default function TemplatesPage() {
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all disabled:opacity-50"
           >
             {isSyncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
             <span className="hidden sm:inline">Sync Meta</span>
@@ -219,7 +219,7 @@ export default function TemplatesPage() {
       </div>
 
       {/* Search + Pipeline Filter */}
-      <div className="bg-card border border-border p-4 rounded-xl">
+      <div className="bg-card border p-4 rounded-xl">
         <div className="flex gap-3">
           {/* Search */}
           <div className="relative flex-1">
@@ -229,7 +229,7 @@ export default function TemplatesPage() {
               placeholder="Cari nama atau isi template..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+              className="w-full pl-9 pr-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
             />
           </div>
           {/* Pipeline Filter */}
@@ -255,13 +255,13 @@ export default function TemplatesPage() {
         {(pipeline || activeTab) && (
           <div className="flex gap-2 mt-2 flex-wrap">
             {pipeline && (
-              <span className="text-[11px] px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 flex items-center gap-1">
+              <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 flex items-center gap-1">
                 {activePipelineLabel}
                 <button onClick={() => setPipeline('')} className="opacity-60 hover:opacity-100">×</button>
               </span>
             )}
             {activeTab && (
-              <span className="text-[11px] px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 flex items-center gap-1">
+              <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 flex items-center gap-1">
                 {STATUS_TABS.find(t => t.value === activeTab)?.label}
                 <button onClick={() => setActiveTab('')} className="opacity-60 hover:opacity-100">×</button>
               </span>
@@ -351,23 +351,23 @@ function TemplateCard({
             {isLocal
               ? <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-md"><MessageSquare size={14} /></div>
               : <div className="p-1.5 bg-blue-500/10 text-blue-500 rounded-md"><Phone size={14} /></div>}
-            <h3 className="font-bold text-sm text-white truncate max-w-32.5">{t.nama_template}</h3>
+            <h3 className="font-bold text-sm text-white truncate max-w-36">{t.nama_template}</h3>
           </div>
-          <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border', statusColors[t.meta_status] || statusColors.LOCAL_ONLY)}>
+          <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold uppercase border', statusColors[t.meta_status] || statusColors.LOCAL_ONLY)}>
             {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
           </span>
         </div>
 
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-1.5 mb-3">
-          <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.kategori}</span>
-          {t.pipeline && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.pipeline}</span>}
-          {t.language_code && <span className="text-[10px] px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.language_code.toUpperCase()}</span>}
+          <span className="text-xs px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.kategori}</span>
+          {t.pipeline && <span className="text-xs px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.pipeline}</span>}
+          {t.language_code && <span className="text-xs px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.language_code.toUpperCase()}</span>}
           {t.header_type && t.header_type !== 'none' && (
-            <span className="text-[10px] px-2 py-0.5 border border-amber-500/30 text-amber-500 rounded-full">header: {t.header_type}</span>
+            <span className="text-xs px-2 py-0.5 border border-amber-500/30 text-amber-500 rounded-full">header: {t.header_type}</span>
           )}
           {hasButtons && (
-            <span className="text-[10px] px-2 py-0.5 border border-primary/30 text-primary rounded-full flex items-center gap-0.5">
+            <span className="text-xs px-2 py-0.5 border border-primary/30 text-primary rounded-full flex items-center gap-0.5">
               <ExternalLink size={8} /> {buttons.length} btn
             </span>
           )}
@@ -458,13 +458,13 @@ function TemplatePreviewModal({
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* Modal */}
       <div
-        className="relative z-10 bg-card border border-border rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+        className="relative z-10 bg-card border rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header — sticky supaya tidak ikut scroll */}
@@ -519,7 +519,7 @@ function TemplatePreviewModal({
               <div className="md:w-1/2 px-5 py-4 flex flex-col gap-4">
 
                 {/* Status pills */}
-                <div className="flex flex-wrap gap-2 text-[11px]">
+                <div className="flex flex-wrap gap-2 text-xs">
                   <span className={cn('font-semibold', statusColorText[t.meta_status] || 'text-sky-400')}>
                     {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
                   </span>
@@ -533,7 +533,7 @@ function TemplatePreviewModal({
 
                 {/* Body text lengkap */}
                 <div>
-                  <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Body Pesan</p>
+                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Body Pesan</p>
                   <div className="bg-white/5 rounded-lg p-3 text-xs text-white/80 whitespace-pre-wrap leading-relaxed">
                     {t.body_text || <span className="opacity-40 italic">Tidak ada body</span>}
                   </div>
@@ -542,11 +542,11 @@ function TemplatePreviewModal({
                 {/* Header parameter */}
                 {pHeader && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Header</p>
+                    <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Header</p>
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center gap-2 text-xs">
                         <span className={cn(
-                          'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
+                          'text-xs px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
                           pHeader.type === 'image' ? 'bg-amber-500/20 text-amber-400' :
                           pHeader.type === 'video' ? 'bg-purple-500/20 text-purple-400' :
                                                      'bg-white/10 text-white/60'
@@ -559,7 +559,7 @@ function TemplatePreviewModal({
                       </div>
                       {pHeader.url && (
                         <a href={pHeader.url} target="_blank" rel="noopener noreferrer"
-                          className="text-[11px] text-sky-400 hover:underline truncate">
+                          className="text-xs text-sky-400 hover:underline truncate">
                           {pHeader.url}
                         </a>
                       )}
@@ -570,7 +570,7 @@ function TemplatePreviewModal({
                 {/* Variabel body */}
                 {bodyVars.length > 0 && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
+                    <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
                       Variabel Body ({bodyVars.length})
                     </p>
                     <div className="flex flex-col gap-1">
@@ -589,7 +589,7 @@ function TemplatePreviewModal({
                 {/* Meta buttons */}
                 {metaBtns.length > 0 && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
+                    <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
                       Tombol ({metaBtns.length})
                     </p>
                     <div className="flex flex-col gap-1">
@@ -597,7 +597,7 @@ function TemplatePreviewModal({
                         <div key={i} className="flex flex-col gap-0.5 bg-white/5 rounded-lg px-3 py-1.5">
                           <div className="flex items-center gap-2 text-xs">
                             <span className={cn(
-                              'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
+                              'text-xs px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
                               btn.type === 'QUICK_REPLY' ? 'bg-sky-500/20 text-sky-400' :
                               btn.type === 'URL'         ? 'bg-blue-500/20 text-blue-400' :
                                                           'bg-emerald-500/20 text-emerald-400'
@@ -608,7 +608,7 @@ function TemplatePreviewModal({
                           </div>
                           {btn.url && (
                             <a href={btn.url} target="_blank" rel="noopener noreferrer"
-                              className="text-[10px] text-sky-400 hover:underline truncate pl-0.5">
+                              className="text-xs text-sky-400 hover:underline truncate pl-0.5">
                               {btn.url}
                             </a>
                           )}
@@ -625,8 +625,8 @@ function TemplatePreviewModal({
 
               {/* ── Kolom Kanan: WA Preview ────────────────────────── */}
               <div className="md:w-1/2 px-5 py-4">
-                <p className="text-[10px] text-muted-foreground mb-3 font-medium uppercase tracking-wider">Preview WhatsApp</p>
-                <div className="rounded-xl p-4 bg-[#0b141a] min-h-48">
+                <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">Preview WhatsApp</p>
+                <div className="rounded-xl p-4 bg-zinc-950 min-h-48">
                   <TemplatePreviewBubble
                     bodyText={bubbleBodyText}
                     headerType={bubbleHeaderType !== 'none' ? bubbleHeaderType : null}

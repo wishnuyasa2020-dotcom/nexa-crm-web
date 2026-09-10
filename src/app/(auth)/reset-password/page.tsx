@@ -61,7 +61,7 @@ function ResetPasswordContent() {
       {/* Background decorative orbs */}
       <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-sm mx-4">
         {/* Logo / Brand */}
@@ -78,7 +78,7 @@ function ResetPasswordContent() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl shadow-black/40">
+        <div className="bg-card border rounded-2xl p-6 shadow-2xl shadow-black/40">
           <form onSubmit={handleReset} className="space-y-4">
             <div className="space-y-1.5">
               <label htmlFor="password" className="text-sm font-medium text-foreground">
@@ -92,7 +92,7 @@ function ResetPasswordContent() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   disabled={!token || !!message}
-                  className="w-full px-3 pr-10 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors disabled:opacity-50"
+                  className="w-full px-3 pr-10 py-2.5 rounded-lg bg-input border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors disabled:opacity-50"
                   placeholder="Masukkan password baru"
                 />
                 <button
@@ -117,7 +117,7 @@ function ResetPasswordContent() {
                   onChange={e => setConfirmPassword(e.target.value)}
                   required
                   disabled={!token || !!message}
-                  className="w-full px-3 pr-10 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors disabled:opacity-50"
+                  className="w-full px-3 pr-10 py-2.5 rounded-lg bg-input border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors disabled:opacity-50"
                   placeholder="Ulangi password baru"
                 />
               </div>
@@ -139,8 +139,8 @@ function ResetPasswordContent() {
               type="submit"
               disabled={loading || !token || !!message}
               className="w-full py-2.5 rounded-lg gradient-primary text-white text-sm font-semibold 
-                         hover:opacity-90 active:scale-[0.98] transition-all duration-150
-                         cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
+                         hover:opacity-90 active:scale-95 transition-all duration-150
+                         disabled:opacity-50 disabled:cursor-not-allowed
                          shadow-lg shadow-primary/25 glow-primary mt-1"
             >
               {loading ? (

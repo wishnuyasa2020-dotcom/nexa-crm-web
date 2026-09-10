@@ -1,11 +1,20 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Users, School, CheckSquare, TrendingUp, Activity, ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle, ShieldCheck } from 'lucide-react';
+import { 
+  Users, School, CheckSquare, TrendingUp, Activity, 
+  ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle, 
+  ShieldCheck, Calendar, Clock, Check, Loader2 
+} from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
+import { TundaTaskModal } from '@/components/sekolah/TundaTaskModal';
+import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
+import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
+import { getSekolahDetail } from '@/lib/api/sekolah.api';
+import type { SekolahDetail } from '@/lib/types/sekolah.types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -46,9 +55,18 @@ interface TaskItem {
   id: string;
   nama: string;
   status: string;
+  commercialState?: string;
+  intent?: string;
   nextAction: string;
   dueDate: string;
   dueCategory: string;
+  siswaId?: string;
+}
+
+interface TundaTarget {
+  id: string;
+  title: string;
+  tipe: 'sekolah' | 'siswa' | 'homevisit' | 'aktifitas_ekstra';
 }
 
 interface TaskCounts {
@@ -60,11 +78,14 @@ interface TaskCounts {
   akan_datang: number;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Constants (5 Tahap Universal Ontologi B2C) ───────────────────────────────
 
 const FUNNEL_COLORS = [
-  '#6366f1', '#7c3aed', '#8b5cf6', '#a78bfa',
-  '#c4b5fd', '#10b981', '#f59e0b', '#f43f5e'
+  '#64748b', // Known Profile (Slate)
+  '#3b82f6', // Lead (Blue)
+  '#8b5cf6', // Prospect (Violet)
+  '#f59e0b', // Opportunity (Amber)
+  '#10b981', // Customer (Emerald)
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -79,6 +100,57 @@ export default function DashboardPage() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+  // ── Modal & Action States (Event-Sourcing) ──
+  const [tundaTarget, setTundaTarget] = useState<TundaTarget | null>(null);
+  const [eksekusiTarget, setEksekusiTarget] = useState<TaskItem | null>(null);
+  const [sekolahDetail, setSekolahDetail] = useState<SekolahDetail | null>(null);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
+
+  const handleTundaClick = (t: TaskItem) => {
+    setTundaTarget({
+      id: t.id,
+      title: t.nama,
+      tipe: t.tipe,
+    });
+  };
+
+  const handleTundaSuccess = () => {
+    if (tundaTarget) {
+      setTasks(prev => prev.filter(t => !(t.id === tundaTarget.id && t.tipe === tundaTarget.tipe)));
+      setTundaTarget(null);
+      load();
+    }
+  };
+
+  const handleEksekusiClick = async (task: TaskItem) => {
+    if (task.tipe === 'sekolah') {
+      setIsFetchingDetail(true);
+      try {
+        const res = await getSekolahDetail(task.id);
+        setSekolahDetail(res);
+        setEksekusiTarget(task);
+      } catch (err) {
+        console.error('Gagal mengambil data sekolah', err);
+        alert('Gagal memuat data sekolah.');
+      } finally {
+        setIsFetchingDetail(false);
+      }
+    } else if (task.tipe === 'siswa' || task.tipe === 'homevisit') {
+      setEksekusiTarget(task);
+    } else {
+      alert(`Fitur eksekusi untuk tipe ${task.tipe} belum tersedia.`);
+    }
+  };
+
+  const handleEksekusiSuccess = () => {
+    if (eksekusiTarget) {
+      setTasks(prev => prev.filter(t => !(t.id === eksekusiTarget.id && t.tipe === eksekusiTarget.tipe)));
+    }
+    setEksekusiTarget(null);
+    setSekolahDetail(null);
+    load();
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -192,9 +264,9 @@ export default function DashboardPage() {
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <div className="lg:col-span-2 bg-card border border-border rounded-xl h-[360px]" />
-          <div className="bg-card border border-border rounded-xl h-[360px]" />
-          <div className="bg-card border border-border rounded-xl h-[360px]" />
+          <div className="lg:col-span-2 bg-card border border-border rounded-xl h-96" />
+          <div className="bg-card border border-border rounded-xl h-96" />
+          <div className="bg-card border border-border rounded-xl h-96" />
         </div>
         <div className="bg-card border border-border rounded-xl h-48" />
       </div>
@@ -229,11 +301,11 @@ export default function DashboardPage() {
             <h1 className="text-lg font-bold text-foreground">Dashboard CRO</h1>
             {quota && (
               <span className={cn(
-                "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border",
                 quota.tier.toLowerCase() === 'free' ? "bg-slate-500/10 text-slate-500 border-slate-500/20" :
                 quota.tier.toLowerCase() === 'pro' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
                 quota.tier.toLowerCase() === 'business' ? "bg-violet-500/10 text-violet-500 border-violet-500/20" :
-                "bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                "bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-sm shadow-amber-500/20"
               )}>
                 {quota.tier}
               </span>
@@ -281,15 +353,15 @@ export default function DashboardPage() {
                 <div 
                   className={cn(
                     "h-full rounded-full transition-all duration-1000 ease-out",
-                    (quota.usedSiswa / quota.limitSiswa) > 0.95 ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
-                    (quota.usedSiswa / quota.limitSiswa) > 0.80 ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" :
-                    "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                    (quota.usedSiswa / quota.limitSiswa) > 0.95 ? "bg-rose-500 shadow-sm shadow-rose-500/50" :
+                    (quota.usedSiswa / quota.limitSiswa) > 0.80 ? "bg-amber-400 shadow-sm shadow-amber-400/50" :
+                    "bg-emerald-400 shadow-sm shadow-emerald-400/50"
                   )}
                   style={{ width: `${Math.min(Math.max((quota.usedSiswa / quota.limitSiswa) * 100, 0), 100)}%` }}
                 />
               </div>
               
-              <p className="text-[10px] mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
+              <p className="text-xs mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
                 {(quota.usedSiswa / quota.limitSiswa) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
               </p>
             </div>
@@ -321,15 +393,15 @@ export default function DashboardPage() {
                 <div 
                   className={cn(
                     "h-full rounded-full transition-all duration-1000 ease-out",
-                    (quota.usedSekolah / quota.limitSekolah) > 0.95 ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
-                    (quota.usedSekolah / quota.limitSekolah) > 0.80 ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" :
-                    "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                    (quota.usedSekolah / quota.limitSekolah) > 0.95 ? "bg-rose-500 shadow-sm shadow-rose-500/50" :
+                    (quota.usedSekolah / quota.limitSekolah) > 0.80 ? "bg-amber-400 shadow-sm shadow-amber-400/50" :
+                    "bg-emerald-400 shadow-sm shadow-emerald-400/50"
                   )}
                   style={{ width: `${Math.min(Math.max((quota.usedSekolah / quota.limitSekolah) * 100, 0), 100)}%` }}
                 />
               </div>
               
-              <p className="text-[10px] mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
+              <p className="text-xs mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
                 {(quota.usedSekolah / quota.limitSekolah) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
               </p>
             </div>
@@ -361,15 +433,15 @@ export default function DashboardPage() {
                 <div 
                   className={cn(
                     "h-full rounded-full transition-all duration-1000 ease-out",
-                    (quota.usedUser / quota.limitUser) > 0.95 ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
-                    (quota.usedUser / quota.limitUser) > 0.80 ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" :
-                    "bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]"
+                    (quota.usedUser / quota.limitUser) > 0.95 ? "bg-rose-500 shadow-sm shadow-rose-500/50" :
+                    (quota.usedUser / quota.limitUser) > 0.80 ? "bg-amber-400 shadow-sm shadow-amber-400/50" :
+                    "bg-pink-400 shadow-sm shadow-pink-400/50"
                   )}
                   style={{ width: `${Math.min(Math.max((quota.usedUser / quota.limitUser) * 100, 0), 100)}%` }}
                 />
               </div>
               
-              <p className="text-[10px] mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
+              <p className="text-xs mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
                 {(quota.usedUser / quota.limitUser) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
               </p>
             </div>
@@ -390,7 +462,7 @@ export default function DashboardPage() {
               </div>
               <p className="text-2xl font-bold text-foreground">{card.value}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{card.label}</p>
-              {card.sub && <p className="text-[10px] text-muted-foreground/70 mt-0.5">{card.sub}</p>}
+              {card.sub && <p className="text-xs text-muted-foreground/70 mt-0.5">{card.sub}</p>}
             </div>
           );
         })}
@@ -400,23 +472,23 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
         {/* Funnel Bar Chart */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] min-w-0">
-          <div className="flex items-center gap-2 mb-4 flex-shrink-0">
+        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5 flex flex-col h-96 min-w-0">
+          <div className="flex items-center gap-2 mb-4 shrink-0">
             <Activity size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Funnel Siswa</h2>
-            <span className="ml-auto text-[10px] text-muted-foreground">per status pipeline</span>
+            <h2 className="text-sm font-semibold text-foreground">Funnel Siswa (B2C Pipeline)</h2>
+            <span className="ml-auto text-xs text-muted-foreground">5 Tahap Universal</span>
           </div>
           <div className="flex-1 min-h-0 min-w-0">
             {funnels.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={funnels} barSize={28}>
-                  <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
+                <BarChart data={funnels} barSize={32}>
+                  <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
                   <Tooltip
                     contentStyle={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 8, color: '#f8fafc', fontSize: 12 }}
                     cursor={{ fill: 'rgba(99,102,241,0.08)' }}
                   />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                     {funnels.map((_, i) => (
                       <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
                     ))}
@@ -432,8 +504,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Distribusi Donut */}
-        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] min-w-0">
-          <h2 className="text-sm font-semibold text-foreground mb-4 flex-shrink-0">Distribusi Status</h2>
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-96 min-w-0">
+          <h2 className="text-sm font-semibold text-foreground mb-4 shrink-0">Distribusi Pipeline</h2>
           <div className="flex-1 min-h-0 min-w-0">
             {funnels.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -455,12 +527,12 @@ export default function DashboardPage() {
             )}
           </div>
           {funnels.length > 0 && (
-            <div className="space-y-2 mt-4 pt-4 border-t border-border/50 flex-shrink-0">
-              {funnels.slice(0, 4).map((f, i) => (
+            <div className="space-y-2 mt-4 pt-4 border-t border-border/50 shrink-0">
+              {funnels.slice(0, 5).map((f, i) => (
                 <div key={f.name} className="flex items-center gap-2 text-xs">
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: FUNNEL_COLORS[i] }} />
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: FUNNEL_COLORS[i % FUNNEL_COLORS.length] }} />
                   <span className="text-muted-foreground truncate flex-1">{f.name}</span>
-                  <span className="text-foreground font-medium">{f.value}</span>
+                  <span className="text-foreground font-semibold">{f.value}</span>
                 </div>
               ))}
             </div>
@@ -468,24 +540,24 @@ export default function DashboardPage() {
         </div>
 
         {/* Leaderboard */}
-        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-[380px] lg:h-[360px] lg:col-span-3 xl:col-span-1 min-w-0">
-          <div className="flex items-center gap-2 mb-4 flex-shrink-0">
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-96 lg:col-span-3 xl:col-span-1 min-w-0">
+          <div className="flex items-center gap-2 mb-4 shrink-0">
             <Trophy size={16} className="text-amber-500" />
-            <h2 className="text-sm font-semibold text-foreground">Top CRO Bulan Ini</h2>
+            <h2 className="text-sm font-semibold text-foreground">Top CRO (Closing DP)</h2>
           </div>
           <div className="flex-1 flex flex-col gap-3 overflow-y-auto">
             {leaderboard.length > 0 ? (
               leaderboard.map((cro) => (
                 <div key={cro.username} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-secondary/20 relative overflow-hidden">
                   <div className="absolute top-0 left-0 bottom-0 w-1 bg-amber-500/50" />
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm">
                     {cro.rank === 1 ? <Medal size={16} className="text-amber-500" />
                      : cro.rank === 2 ? <Medal size={16} className="text-slate-400" />
                      : <Medal size={16} className="text-amber-700" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{cro.nama}</p>
-                    <p className="text-[10px] text-muted-foreground">{cro.totalClosing} closing</p>
+                    <p className="text-xs text-muted-foreground">{cro.totalClosing} closing</p>
                   </div>
                   <span className="text-xs font-bold text-emerald-400">{cro.medal}</span>
                 </div>
@@ -500,66 +572,130 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Mini TaskList ── */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden min-w-0">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <div className="flex items-center gap-2">
+      {/* ── Mini TaskList (Tasks Prioritas dengan Aksi Cepat) ── */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden min-w-0 shadow-sm">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-secondary/10">
+          <div className="flex items-center gap-2 flex-wrap">
             <CheckSquare size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Tasks Prioritas</h2>
+            <h2 className="text-sm font-semibold text-foreground">Tasks Prioritas (Fokus Hari Ini)</h2>
             {taskCounts && taskCounts.hari_ini > 0 && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400">
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-400">
                 {taskCounts.hari_ini} hari ini
               </span>
             )}
             {totalOverdue > 0 && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400">
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-rose-500/20 text-rose-400">
                 {totalOverdue} overdue
               </span>
             )}
           </div>
-          <Link href="/tasks" className="text-xs text-primary hover:underline flex items-center gap-1">
-            Lihat semua <ArrowUpRight size={11} />
+          <Link href="/tasks" className="text-xs text-primary hover:underline flex items-center gap-1 font-medium">
+            Lihat semua di Task List <ArrowUpRight size={13} />
           </Link>
         </div>
         <div className="overflow-x-auto">
           {tasks.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              Tidak ada task hari ini 🎉
+              Tidak ada task yang perlu dieksekusi hari ini 🎉
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Target</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Tipe</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Status</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Next Action</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Due</th>
+                <tr className="border-b border-border bg-secondary/20">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Target Entitas</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Pipeline State</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Next Action</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Due Date</th>
+                  <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground">Aksi Cepat</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border/50">
                 {tasks.map((t, i) => (
-                  <tr key={`${t.tipe}-${t.id}-${i}`} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                    <td className="px-5 py-3 text-foreground font-medium max-w-[180px] truncate">
-                      {t.nama}
+                  <tr key={`${t.tipe}-${t.id}-${i}`} className="hover:bg-secondary/30 transition-colors">
+                    {/* Target & Entity Badge */}
+                    <td className="px-5 py-3 text-foreground font-medium max-w-56 truncate">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {t.tipe === 'sekolah' ? (
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1">
+                            🟣 Sekolah
+                          </span>
+                        ) : t.tipe === 'siswa' ? (
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
+                            🟠 Siswa
+                          </span>
+                        ) : t.tipe === 'homevisit' ? (
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 inline-flex items-center gap-1">
+                            🏠 Home Visit
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 inline-flex items-center gap-1">
+                            ⚡ Ekstra
+                          </span>
+                        )}
+                        <span className="truncate">{t.nama}</span>
+                      </div>
                     </td>
+
+                    {/* Pipeline State & Intent */}
                     <td className="px-5 py-3">
-                      <span className={cn(
-                        'px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide',
-                        t.tipe === 'sekolah' ? 'bg-blue-500/10 text-blue-400' :
-                        t.tipe === 'siswa' ? 'bg-violet-500/10 text-violet-400' :
-                        'bg-emerald-500/10 text-emerald-400'
-                      )}>
-                        {t.tipe === 'aktifitas_ekstra' ? 'ekstra' : t.tipe}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border border-border">
+                          {t.commercialState || t.status}
+                        </span>
+                        {t.intent && (
+                          <span className={cn(
+                            'px-1.5 py-0.5 rounded-md text-xs font-semibold border',
+                            t.intent === 'High' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            t.intent === 'Mid' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                            'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                          )}>
+                            {t.intent}
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-5 py-3">
-                      <span className="px-2 py-0.5 rounded-md text-xs bg-primary/10 text-primary border border-primary/20">
-                        {t.status}
-                      </span>
+
+                    {/* Next Action */}
+                    <td className="px-5 py-3 text-muted-foreground text-xs max-w-44 truncate">
+                      {t.nextAction || '-'}
                     </td>
-                    <td className="px-5 py-3 text-muted-foreground">{t.nextAction}</td>
-                    <td className="px-5 py-3 text-muted-foreground text-xs">{t.dueDate || '-'}</td>
+
+                    {/* Due Date */}
+                    <td className="px-5 py-3 text-muted-foreground text-xs whitespace-nowrap">
+                      {t.dueDate ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/80 text-foreground/80 border border-border">
+                          <Clock size={11} className="text-muted-foreground" />
+                          {t.dueDate}
+                        </span>
+                      ) : '-'}
+                    </td>
+
+                    {/* Aksi Cepat: Tunda & Eksekusi */}
+                    <td className="px-5 py-3 text-right">
+                      <div className="inline-flex items-center gap-1.5 justify-end">
+                        <button
+                          onClick={() => handleTundaClick(t)}
+                          className="px-2.5 py-1.5 rounded-lg border border-border bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition-all inline-flex items-center gap-1"
+                          title="Tunda Jadwal Task"
+                        >
+                          <Calendar size={13} />
+                          <span className="hidden sm:inline">Tunda</span>
+                        </button>
+                        <button
+                          onClick={() => handleEksekusiClick(t)}
+                          disabled={isFetchingDetail && eksekusiTarget?.id === t.id}
+                          className="px-3 py-1.5 rounded-lg gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm shadow-primary/20 inline-flex items-center gap-1 disabled:opacity-50"
+                          title="Eksekusi Kunjungan / Catat Interaksi"
+                        >
+                          {isFetchingDetail && eksekusiTarget?.id === t.id ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : (
+                            <CheckSquare size={13} />
+                          )}
+                          <span className="hidden sm:inline">Eksekusi</span>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -567,6 +703,39 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* ── Modal Tunda Task (Event-Sourcing: TaskRescheduled) ── */}
+      {tundaTarget && (
+        <TundaTaskModal
+          isOpen={!!tundaTarget}
+          onClose={() => setTundaTarget(null)}
+          taskTitle={tundaTarget.title}
+          taskId={tundaTarget.id}
+          taskTipe={tundaTarget.tipe}
+          onSuccess={handleTundaSuccess}
+        />
+      )}
+
+      {/* ── Modal Eksekusi Sekolah (Event-Sourcing Evidence) ── */}
+      {eksekusiTarget?.tipe === 'sekolah' && sekolahDetail && (
+        <CatatInteraksiModal
+          isOpen={!!eksekusiTarget}
+          onClose={() => { setEksekusiTarget(null); setSekolahDetail(null); }}
+          sekolah={sekolahDetail}
+          onSuccess={handleEksekusiSuccess}
+        />
+      )}
+
+      {/* ── Modal Eksekusi Siswa & Home Visit (Event-Sourcing Evidence) ── */}
+      {(eksekusiTarget?.tipe === 'siswa' || eksekusiTarget?.tipe === 'homevisit') && (
+        <CatatInteraksiSiswaModal
+          isOpen={!!eksekusiTarget}
+          onClose={() => setEksekusiTarget(null)}
+          siswaId={eksekusiTarget.siswaId || eksekusiTarget.id}
+          siswaName={eksekusiTarget.nama}
+          onSuccess={handleEksekusiSuccess}
+        />
+      )}
     </div>
   );
 }

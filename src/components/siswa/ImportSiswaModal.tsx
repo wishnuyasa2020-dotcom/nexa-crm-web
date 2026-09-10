@@ -15,13 +15,41 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successCount, setSuccessCount] = useState(0);
-  const [selectedCro, setSelectedCro] = useState('');
+  const [selectedCro, setSelectedCro] = useState('unassigned');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDownloadTemplate = () => {
+    const templateData = [
+      {
+        'Nama Lengkap': 'Ahmad Fauzi',
+        'ID Sekolah': 'SMK-01',
+        'No WA': '081234567890',
+        'Kelas': '12 TKJ 1',
+        'Minat Awal': 'Ya',
+        'Rencana Lulus': 'Kerja',
+        'Consent WA': 'Ya',
+        'BSUID': ''
+      },
+      {
+        'Nama Lengkap': 'Dewi Lestari',
+        'ID Sekolah': 'SMK-01',
+        'No WA': '089876543210',
+        'Kelas': '12 RPL 2',
+        'Minat Awal': 'Ragu',
+        'Rencana Lulus': 'Kuliah',
+        'Consent WA': 'Ya',
+        'BSUID': ''
+      }
+    ];
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template Siswa');
+    XLSX.writeFile(wb, 'Template_Import_Siswa.xlsx');
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!selectedCro) return alert('Silakan pilih penugasan CRO terlebih dahulu.');
 
     setIsUploading(true);
 
@@ -40,18 +68,21 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
 
         // Mapping to match backend expectations
         const mappedData = data.map((row: any) => ({
-          nama_lengkap: row['Nama Lengkap'] || row.nama_lengkap,
-          id_sekolah: row['ID Sekolah'] || row.id_sekolah,
-          no_wa: row['No WA'] || row.no_wa,
+          nama_lengkap: row['Nama Lengkap'] || row.nama_lengkap || row['Nama'] || row.nama,
+          id_sekolah: row['ID Sekolah'] || row.id_sekolah || row['Sekolah'] || row.sekolah,
+          no_wa: row['No WA'] || row.no_wa || row['WhatsApp'] || row['Nomor WA'] || row.phone,
           bsuid: row['BSUID'] || row.bsuid,
           kelas: row['Kelas'] || row.kelas,
-          minat_awal: row['Minat Awal'] || row.minat_awal,
-          rencana_lulus: row['Rencana Lulus'] || row.rencana_lulus,
+          minat_awal: row['Minat Awal'] || row.minat_awal || 'Ya',
+          rencana_lulus: row['Rencana Lulus'] || row.rencana_lulus || 'Kerja',
+          consent_wa: row['Consent WA'] !== undefined 
+            ? (row['Consent WA'] === true || String(row['Consent WA']).toLowerCase() === 'ya' || String(row['Consent WA']).toLowerCase() === 'true')
+            : true,
         }));
 
         const res = await apiClient.post('/api/v1/siswa/batch', {
           dataBatch: mappedData,
-          croName: selectedCro
+          croName: selectedCro === 'unassigned' ? null : selectedCro
         });
 
         if (res.data?.status === 'ok') {
@@ -74,9 +105,6 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
   };
 
   const handleBoxClick = () => {
-    if (!selectedCro) {
-      return alert('Silakan pilih Penugasan (CRO) terlebih dahulu sebelum upload file.');
-    }
     fileInputRef.current?.click();
   };
 
@@ -121,13 +149,13 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
                   onChange={e => setSelectedCro(e.target.value)}
                   className="w-full px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
-                  <option value="">-- Pilih Penanggung Jawab (CRO) --</option>
+                  <option value="unassigned">-- Tanpa CRO (Antrian Bebas / Unassigned) --</option>
                   <option value="Budi Santoso">Budi Santoso</option>
                   <option value="Siti Aminah">Siti Aminah</option>
                   <option value="Agus Setiawan">Agus Setiawan</option>
                 </select>
-                <p className="text-[11px] text-muted-foreground">
-                  Seluruh siswa di file ini akan otomatis ditugaskan ke CRO yang dipilih.
+                <p className="text-xs text-muted-foreground">
+                  Pilih CRO penanggung jawab atau masukkan ke antrian bebas untuk diklaim nanti.
                 </p>
               </div>
 
@@ -136,10 +164,14 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
                   <FileSpreadsheet size={24} className="text-emerald-600" />
                   <div>
                     <p className="text-sm font-semibold text-foreground">Template_Siswa.xlsx</p>
-                    <p className="text-xs text-muted-foreground">Download template format excel</p>
+                    <p className="text-xs text-muted-foreground">Format Excel resmi Nexa Intake</p>
                   </div>
                 </div>
-                <button className="text-xs font-medium text-primary hover:underline px-3 py-1.5 bg-primary/10 rounded-md">
+                <button 
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="text-xs font-semibold text-primary hover:underline px-3 py-1.5 bg-primary/10 rounded-md transition-colors"
+                >
                   Download
                 </button>
               </div>

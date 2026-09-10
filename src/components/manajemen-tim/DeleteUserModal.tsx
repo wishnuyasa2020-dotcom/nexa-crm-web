@@ -39,7 +39,7 @@ export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUser
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl w-[90%] md:w-full">
+      <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-500">
             <UserX size={20} /> Nonaktifkan Staf
@@ -51,7 +51,7 @@ export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUser
 
         <div className="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 mt-2">
           <p className="text-xs text-rose-600 font-medium flex gap-2">
-            <AlertTriangle size={16} className="flex-shrink-0" /> 
+            <AlertTriangle size={16} className="shrink-0" /> 
             <span>Akun yang dinonaktifkan tidak akan bisa login ke dalam Nexa CRM lagi, namun riwayat datanya akan tetap tersimpan (*soft delete*).</span>
           </p>
         </div>

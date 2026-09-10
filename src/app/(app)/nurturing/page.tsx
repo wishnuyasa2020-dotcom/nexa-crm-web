@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, MessageSquare, StopCircle, Filter, AlertCircle, Zap, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { TrendingUp, MessageSquare, StopCircle, Filter, AlertCircle, Zap, RefreshCw, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -20,24 +22,24 @@ import { nurturingApi, NurturingStats, NurturingLead } from '@/lib/nurturingApi'
 function ProbeBadge({ level }: { level: number }) {
   const colors: Record<number, string> = {
     0: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
-    1: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    2: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    3: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    4: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    5: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+    1: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    2: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    3: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    4: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    5: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
   };
   const label = level === 0 ? 'Antrean' : `Probe ${level}`;
   return (
-    <Badge variant="outline" className={`font-medium text-[10px] sm:text-[11px] whitespace-nowrap ${colors[level] || colors[5]}`}>
+    <Badge variant="outline" className={`font-medium text-xs whitespace-nowrap ${colors[level] || colors[5]}`}>
       {label}
     </Badge>
   );
 }
 
 function SisaHariBadge({ hari, needFollowUp }: { hari: number; needFollowUp: boolean }) {
-  if (needFollowUp) return <span className="text-[10px] sm:text-xs font-bold text-rose-500 animate-pulse bg-rose-500/10 px-2 py-0.5 rounded">⚠️ Follow Up!</span>;
-  if (hari === 0)   return <span className="text-[10px] sm:text-xs font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded">Hari ini</span>;
-  return <span className="text-[10px] sm:text-xs text-muted-foreground">{hari} hari lagi</span>;
+  if (needFollowUp) return <span className="text-xs font-bold text-rose-500 animate-pulse bg-rose-500/10 px-2 py-0.5 rounded">⚠️ Follow Up!</span>;
+  if (hari === 0)   return <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Hari ini</span>;
+  return <span className="text-xs text-muted-foreground">{hari} hari lagi</span>;
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -77,6 +79,7 @@ function SkeletonCardMobile() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function NurturingPage() {
+  const router                          = useRouter();
   const [stats, setStats]               = useState<NurturingStats | null>(null);
   const [leads, setLeads]               = useState<NurturingLead[]>([]);
   const [total, setTotal]               = useState(0);
@@ -193,14 +196,14 @@ export default function NurturingPage() {
     <div className="space-y-4 md:space-y-6 pb-20 w-full min-w-0">
 
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 shrink-0 rounded-xl gradient-primary flex items-center justify-center text-white shadow-lg">
             <TrendingUp size={20} />
           </div>
           <div className="min-w-0">
             <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Nurturing Campaign</h1>
-            <p className="text-xs md:text-sm text-muted-foreground truncate">Otomatisasi probing &amp; edukasi (WhatsApp)</p>
+            <p className="text-xs md:text-sm text-muted-foreground truncate">Otomatisasi probing &amp; edukasi (Smart Routing &amp; Consent Engine)</p>
           </div>
         </div>
 
@@ -223,7 +226,7 @@ export default function NurturingPage() {
 
       {/* Force trigger result */}
       {triggerResult && (
-        <div className={`text-xs p-3 rounded-lg border shadow-sm ${triggerResult.startsWith('✅') ? 'bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-600'}`}>
+        <div className={cn('text-xs p-3 rounded-lg border shadow-sm', triggerResult.startsWith('✅') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-rose-500/10 border-rose-500/20 text-rose-500')}>
           {triggerResult}
         </div>
       )}
@@ -231,9 +234,9 @@ export default function NurturingPage() {
       {/* ── STAT CARDS ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Total Calon Prospek */}
-        <Card className="border-border/50 shadow-sm">
+        <Card className="border shadow-sm">
           <CardContent className="p-3 md:p-4 flex flex-col justify-center h-full">
-            <p className="text-[10px] md:text-xs text-muted-foreground font-medium mb-1 truncate">Total Prospek</p>
+            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">Total Prospek</p>
             <p className="text-xl md:text-2xl font-bold text-foreground">
               {loading ? <span className="inline-block w-8 h-6 bg-secondary animate-pulse rounded" /> : (stats?.total_calon_prospek ?? 0)}
             </p>
@@ -241,20 +244,20 @@ export default function NurturingPage() {
         </Card>
 
         {/* Antrean Baru */}
-        <Card className="border-border/50 shadow-sm">
+        <Card className="border shadow-sm">
           <CardContent className="p-3 md:p-4 flex flex-col justify-center h-full">
-            <p className="text-[10px] md:text-xs text-muted-foreground font-medium mb-1 truncate">Antrean Baru</p>
-            <p className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">Antrean Baru (Probe 1)</p>
+            <p className="text-xl md:text-2xl font-bold text-blue-500">
               {loading ? <span className="inline-block w-8 h-6 bg-secondary animate-pulse rounded" /> : (stats?.antrean_baru_probe_1 ?? 0)}
             </p>
           </CardContent>
         </Card>
 
         {/* Sedang Nurturing */}
-        <Card className="border-border/50 shadow-sm">
+        <Card className="border shadow-sm">
           <CardContent className="p-3 md:p-4 flex flex-col justify-center h-full">
-            <p className="text-[10px] md:text-xs text-muted-foreground font-medium mb-1 truncate">Sedang Nurturing</p>
-            <p className="text-xl md:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">Sedang Nurturing (Probe 1-4)</p>
+            <p className="text-xl md:text-2xl font-bold text-emerald-500">
               {loading ? <span className="inline-block w-8 h-6 bg-secondary animate-pulse rounded" /> : (stats?.dalam_putaran_probe_1_4 ?? 0)}
             </p>
           </CardContent>
@@ -262,7 +265,7 @@ export default function NurturingPage() {
 
         {/* Perlu Follow Up — Actionable Card */}
         <Card
-          className={`border-border/50 shadow-sm cursor-pointer transition-all ${filterFollowUp ? 'ring-2 ring-rose-500 bg-rose-500/5' : 'hover:bg-secondary/50'}`}
+          className={cn('border shadow-sm cursor-pointer transition-all', filterFollowUp ? 'ring-2 ring-rose-500 bg-rose-500/5' : 'hover:bg-secondary/50')}
           onClick={() => setFilterFollowUp(!filterFollowUp)}
           id="card-perlu-followup"
         >
@@ -270,10 +273,10 @@ export default function NurturingPage() {
             <div className="absolute top-0 right-0 p-2 opacity-10">
               <AlertCircle size={40} className="text-rose-500" />
             </div>
-            <p className="text-[10px] md:text-xs text-rose-600 dark:text-rose-400 font-bold mb-1 flex items-center gap-1 z-10 truncate">
-              <AlertCircle size={10} className="md:w-3 md:h-3" /> Perlu Follow Up
+            <p className="text-xs text-rose-500 font-bold mb-1 flex items-center gap-1 z-10 truncate">
+              <AlertCircle size={12} className="shrink-0" /> Perlu Follow Up
             </p>
-            <p className="text-xl md:text-2xl font-bold text-rose-600 dark:text-rose-400 z-10">
+            <p className="text-xl md:text-2xl font-bold text-rose-500 z-10">
               {loading ? <span className="inline-block w-8 h-6 bg-rose-200 animate-pulse rounded" /> : (stats?.menunggu_followup_manual ?? 0)}
             </p>
           </CardContent>
@@ -281,12 +284,12 @@ export default function NurturingPage() {
       </div>
 
       {/* ── DAFTAR LEADS ───────────────────────────────────────────────────── */}
-      <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col min-w-0">
-        <CardHeader className="p-3 md:p-4 border-b border-border/50 bg-secondary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 space-y-0">
+      <Card className="border shadow-sm overflow-hidden flex flex-col min-w-0">
+        <CardHeader className="p-3 md:p-4 border-b bg-secondary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 space-y-0">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             📋 Daftar Audiens Nurturing
-            {filterFollowUp && <Badge variant="destructive" className="ml-2 text-[9px] px-1.5 py-0">Filter: Follow Up</Badge>}
-            {!leadsLoading && <span className="text-[10px] md:text-[11px] font-normal text-muted-foreground">({total} total)</span>}
+            {filterFollowUp && <Badge variant="destructive" className="ml-2 text-xs px-1.5 py-0">Filter: Follow Up</Badge>}
+            {!leadsLoading && <span className="text-xs font-normal text-muted-foreground">({total} total)</span>}
           </CardTitle>
           <Button variant="outline" size="sm" className="w-full sm:w-auto h-9 sm:h-8 text-xs shrink-0" onClick={() => setFilterFollowUp(!filterFollowUp)}>
             <Filter size={14} className="mr-1.5" /> {filterFollowUp ? 'Hapus Filter' : 'Filter Follow Up'}
@@ -313,10 +316,21 @@ export default function NurturingPage() {
                         <p className="font-bold text-sm text-foreground truncate">{lead.nama}</p>
                       </div>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{lead.noWa}</p>
-                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">{lead.sekolah}</p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{lead.sekolah}</p>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className="px-2 py-0.5 rounded bg-secondary text-foreground text-xs font-medium">
+                          {lead.commercialState || lead.status}
+                        </span>
+                        <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
+                          <ShieldCheck size={11} /> Consent Aktif
+                        </span>
+                      </div>
                     </div>
-                    <div className="shrink-0">
+                    <div className="shrink-0 flex flex-col items-end gap-1.5">
                       <ProbeBadge level={lead.probeLevel} />
+                      <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold', lead.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
+                        {lead.isSwOpen ? 'SW Buka' : 'SW Tutup'}
+                      </span>
                     </div>
                   </div>
                   
@@ -326,12 +340,17 @@ export default function NurturingPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button variant="secondary" className="flex-1 h-10 text-xs rounded-lg" title="Lihat Chat">
+                    <Button
+                      variant="secondary"
+                      className="flex-1 h-11 text-xs rounded-lg font-medium"
+                      title="Lihat Chat"
+                      onClick={() => router.push(`/live-chat?leadId=${lead.id}`)}
+                    >
                       <MessageSquare size={14} className="mr-1.5 text-primary" /> Chat
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex-1 h-10 text-xs border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-900/50 dark:hover:bg-rose-950/30 transition-colors rounded-lg"
+                      className="flex-1 h-11 text-xs border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/40 transition-colors rounded-lg font-medium"
                       onClick={() => handleTakeover(lead)}
                     >
                       <StopCircle size={14} className="mr-1.5" /> Takeover
@@ -345,13 +364,16 @@ export default function NurturingPage() {
 
         {/* ── DESKTOP VIEW (TABLE) ───────────────────────────────────────────── */}
         <div className="hidden md:block overflow-x-auto w-full">
-          <table className="w-full text-sm border-collapse min-w-[640px]">
+          <table className="w-full text-sm border-collapse min-w-180">
             <thead>
-              <tr className="border-b border-border bg-secondary/30">
+              <tr className="border-b bg-secondary/30">
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nama Siswa</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Asal Sekolah</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status Komersial</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Consent</th>
                 <th className="text-center px-4 py-3 font-medium text-muted-foreground">Level Probe</th>
                 <th className="text-center px-4 py-3 font-medium text-muted-foreground">Sisa Hari</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">SW</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">Aksi</th>
               </tr>
             </thead>
@@ -360,7 +382,7 @@ export default function NurturingPage() {
                 [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
               ) : displayedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-10 text-center text-muted-foreground text-sm">
+                  <td colSpan={8} className="p-10 text-center text-muted-foreground text-sm">
                     {filterFollowUp ? 'Tidak ada leads yang perlu follow up.' : 'Tidak ada leads aktif dalam nurturing campaign.'}
                   </td>
                 </tr>
@@ -373,13 +395,23 @@ export default function NurturingPage() {
                         <div className="flex items-center gap-2 min-w-0">
                           {needFollowUp && <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0" />}
                           <div className="min-w-0">
-                            <p className="truncate max-w-[180px] lg:max-w-[250px]">{lead.nama}</p>
-                            <p className="text-[11px] text-muted-foreground font-normal truncate max-w-[180px] lg:max-w-[250px]">{lead.noWa}</p>
+                            <p className="truncate max-w-44 lg:max-w-64">{lead.nama}</p>
+                            <p className="text-xs text-muted-foreground font-normal truncate max-w-44 lg:max-w-64">{lead.noWa}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground text-xs">
-                        <p className="truncate max-w-[150px] lg:max-w-[250px]">{lead.sekolah}</p>
+                        <p className="truncate max-w-36 lg:max-w-64">{lead.sekolah}</p>
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-xs font-medium">
+                          {lead.commercialState || lead.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">
+                          <ShieldCheck size={12} /> Aktif
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <ProbeBadge level={lead.probeLevel} />
@@ -387,9 +419,21 @@ export default function NurturingPage() {
                       <td className="px-4 py-3 text-center whitespace-nowrap">
                         <SisaHariBadge hari={lead.sisaHari} needFollowUp={needFollowUp} />
                       </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold', lead.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
+                          {lead.isSwOpen ? 'Terbuka' : 'Tertutup'}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg hover:text-primary transition-colors" title="Lihat Chat" id={`btn-chat-${lead.id}`}>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg hover:text-primary transition-colors"
+                            title="Lihat Chat"
+                            onClick={() => router.push('/live-chat?leadId=' + lead.id)}
+                            id={`btn-chat-${lead.id}`}
+                          >
                             <MessageSquare size={14} className="text-primary" />
                           </Button>
                           <Button
@@ -412,14 +456,22 @@ export default function NurturingPage() {
           </table>
         </div>
 
+        {/* ── PRIVACY & CONSENT NOTICE FOOTER ───────────────────────────────── */}
+        <div className="px-4 py-2.5 bg-emerald-500/5 border-t flex items-center justify-between text-xs text-emerald-500">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck size={14} className="shrink-0 text-emerald-500" />
+            <span><strong>Consent Engine Aktif:</strong> Siswa yang menolak atau mencabut izin WhatsApp otomatis dihentikan dan disaring dari antrean Probing.</span>
+          </span>
+        </div>
+
         {/* ── PAGINATION ─────────────────────────────────────────────────────── */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-1 md:gap-2 p-3 md:p-4 border-t border-border/50 bg-secondary/10">
+          <div className="flex items-center justify-center gap-1 md:gap-2 p-3 md:p-4 border-t bg-secondary/10">
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
               <ChevronLeft size={16} />
             </Button>
             
-            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar px-1 max-w-[200px] md:max-w-none">
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar px-1 max-w-48 md:max-w-none">
               {[...Array(Math.min(totalPages, 5))].map((_, i) => {
                 const p = i + 1;
                 return (
@@ -445,7 +497,7 @@ export default function NurturingPage() {
 
       {/* ── TAKEOVER MODAL ─────────────────────────────────────────────────── */}
       <Dialog open={showTakeoverModal} onOpenChange={setShowTakeoverModal}>
-        <DialogContent className="sm:max-w-md rounded-2xl w-[95vw] max-w-[400px] p-4 md:p-6">
+        <DialogContent className="sm:max-w-md w-full p-4 md:p-6">
           <DialogHeader className="text-left">
             <DialogTitle className="flex items-center gap-2 text-rose-600 text-lg">
               <StopCircle size={20} /> Konfirmasi Takeover

@@ -56,7 +56,7 @@ export default function LoginPage() {
           </div>
           <div className="flex items-center justify-center gap-2">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Nexa CRM</h1>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/20 tracking-wide uppercase">
+            <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/20 tracking-wide uppercase">
               Demo Version
             </span>
           </div>
@@ -64,7 +64,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl shadow-black/40">
+        <div className="bg-card border rounded-2xl p-6 shadow-2xl shadow-black/40">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
               <label htmlFor="username" className="text-sm font-medium text-foreground">
@@ -77,7 +77,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
                 placeholder="Masukkan username"
               />
             </div>
@@ -94,7 +94,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 pr-10 py-2.5 rounded-lg bg-input border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                  className="w-full px-3 pr-10 py-2.5 rounded-lg bg-input border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
                   placeholder="Masukkan password"
                 />
                 <button
@@ -122,7 +122,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full py-2.5 rounded-lg gradient-primary text-white text-sm font-semibold 
-                         hover:opacity-90 active:scale-[0.98] transition-all duration-150
+                         hover:opacity-90 active:scale-95 transition-all duration-150
                          disabled:opacity-50 disabled:cursor-not-allowed
                          shadow-lg shadow-primary/25 glow-primary mt-1"
             >

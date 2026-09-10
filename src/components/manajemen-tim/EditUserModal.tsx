@@ -26,6 +26,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
   const [status, setStatus] = useState('Aktif');
   const [supervisorId, setSupervisorId] = useState('');
   const [chiefCros, setChiefCros] = useState<any[]>([]);
+  const [quotaErrorMsg, setQuotaErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && isOpen) {
@@ -34,6 +35,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
       setRole(user.role);
       setStatus(user.status);
       setSupervisorId(user.supervisor_id ? String(user.supervisor_id) : '');
+      setQuotaErrorMsg(null);
     }
   }, [user, isOpen]);
 
@@ -50,6 +52,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    setQuotaErrorMsg(null);
     try {
       setLoading(true);
       await apiClient.put(`/users/${user.id}`, { 
@@ -63,7 +66,13 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
       if (onSuccess) onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Gagal mengubah staf');
+      const isQuota = err.response?.data?.isQuotaError || err.response?.status === 403;
+      const msg = err.response?.data?.message || 'Gagal mengubah staf';
+      if (isQuota) {
+        setQuotaErrorMsg(msg);
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -71,7 +80,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl w-[90%] md:w-full">
+      <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Edit2 size={20} className="text-primary" /> Edit Data Staf
@@ -80,6 +89,15 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
             Ubah profil dasar atau hak akses staf di bawah ini.
           </DialogDescription>
         </DialogHeader>
+
+        {quotaErrorMsg && (
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs space-y-1 mt-2">
+            <p className="font-bold text-amber-500 flex items-center gap-1.5">
+              ⚠️ Batas Kuota Tercapai
+            </p>
+            <p className="leading-relaxed text-muted-foreground">{quotaErrorMsg}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">

@@ -324,10 +324,10 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
-      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-card border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
 
         {/* ── Header Modal ──────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
@@ -356,7 +356,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                     type="text" placeholder="cth: Follow Up Probing 1"
                     value={form.nama_template}
                     onChange={e => setForm(f => ({ ...f, nama_template: e.target.value }))}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                    className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
                   />
                 </div>
                 <div>
@@ -365,36 +365,36 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                     type="text" placeholder="follow_up_probing_1 (huruf kecil, underscore)"
                     value={form.template_name_api}
                     onChange={e => { setApiNameManual(true); setForm(f => ({ ...f, template_name_api: e.target.value })); }}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm font-mono focus:ring-1 focus:ring-primary/60 outline-none"
+                    className="w-full px-3 py-2 bg-background border rounded-lg text-sm font-mono focus:ring-1 focus:ring-primary/60 outline-none"
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1">Auto-generate dari nama internal. Hanya huruf kecil, angka, dan underscore.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Auto-generate dari nama internal. Hanya huruf kecil, angka, dan underscore.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">Kategori</label>
                     <select value={form.kategori} onChange={e => setForm(f => ({ ...f, kategori: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
                       {KATEGORI_OPTIONS.map(k => <option key={k} value={k}>{k}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">Pipeline Tag</label>
                     <select value={form.pipeline} onChange={e => setForm(f => ({ ...f, pipeline: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
                       {PIPELINE_OPTIONS.map(p => <option key={p} value={p}>{p || '(tidak ada)'}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">Bahasa</label>
                     <select value={form.language_code} onChange={e => setForm(f => ({ ...f, language_code: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
                       {LANGUAGE_OPTIONS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">Urutan</label>
                     <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: parseInt(e.target.value) || 99 }))}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
                   </div>
                 </div>
               </div>
@@ -423,19 +423,19 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                 <input type="text" placeholder="Teks header (bisa berisi {{1}} jika pakai variabel)"
                   value={form.header_text}
                   onChange={e => setForm(f => ({ ...f, header_text: e.target.value }))}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                  className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
               )}
               {['image', 'video', 'document'].includes(form.header_type) && (
                 <div className="space-y-2">
                   <input type="url" placeholder="URL media (https://...)"
                     value={form.header_url}
                     onChange={e => setForm(f => ({ ...f, header_url: e.target.value }))}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                    className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
                   {form.header_type === 'document' && (
                     <input type="text" placeholder="Nama file (cth: Panduan.pdf)"
                       value={form.header_filename}
                       onChange={e => setForm(f => ({ ...f, header_filename: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
                   )}
                 </div>
               )}
@@ -447,7 +447,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
               {/* Var picker */}
               <div className="mb-2">
-                <p className="text-[11px] text-muted-foreground mb-1.5">Tambah variabel dinamis ke body:</p>
+                <p className="text-xs text-muted-foreground mb-1.5">Tambah variabel dinamis ke body:</p>
                 <div className="flex gap-1.5 flex-wrap">
                   {KNOWN_VARS.map(v => {
                     const idx = form.body_vars.indexOf(v.key);
@@ -458,13 +458,13 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                         onClick={() => isUsed ? removeVar(v.key) : insertVar(v.key)}
                         title={`Contoh: ${v.example}`}
                         className={cn(
-                          'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all',
+                          'flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all',
                           isUsed
                             ? 'bg-primary/10 border-primary text-primary'
                             : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
                         )}
                       >
-                        {isUsed && <span className="text-[10px] opacity-70">{'{{' + (idx + 1) + '}}'}</span>}
+                        {isUsed && <span className="text-xs opacity-70">{'{{' + (idx + 1) + '}}'}</span>}
                         {v.label}
                         {isUsed && <X size={10} />}
                       </button>
@@ -478,9 +478,9 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                 placeholder="Tulis body pesan di sini. Klik variabel di atas untuk menambahkan {{1}}, {{2}}, dst..."
                 value={form.body_text}
                 onChange={e => setForm(f => ({ ...f, body_text: e.target.value }))}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none resize-none leading-relaxed"
+                className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none resize-none leading-relaxed"
               />
-              <p className="text-[10px] text-muted-foreground mt-1">{form.body_text.length} karakter</p>
+              <p className="text-xs text-muted-foreground mt-1">{form.body_text.length} karakter</p>
             </section>
 
             {/* 4. Buttons/CTA — Section Baru */}
@@ -488,7 +488,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Buttons / CTA</h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Maks. 3 buttons — sesuai batas Meta API</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Maks. 3 buttons — sesuai batas Meta API</p>
                 </div>
                 {/* Add button dropdown */}
                 <div className="flex items-center gap-1.5">
@@ -497,7 +497,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                       key={bt.value}
                       onClick={() => addButton(bt.value)}
                       title={bt.description}
-                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-border text-[11px] text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
                     >
                       <Plus size={10} />
                       <bt.icon size={10} />
@@ -508,7 +508,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
               </div>
 
               {form.buttons.length === 0 ? (
-                <div className="border border-dashed border-border rounded-lg p-4 text-center text-[11px] text-muted-foreground">
+                <div className="border border-dashed border-border rounded-lg p-4 text-center text-xs text-muted-foreground">
                   Belum ada button. Tambahkan Quick Reply, URL, atau Telepon di atas.
                 </div>
               ) : (
@@ -516,7 +516,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                   {form.buttons.map((btn, idx) => {
                     const cfg = BUTTON_TYPES.find(b => b.value === btn.type);
                     return (
-                      <div key={idx} className="flex items-start gap-2 p-3 bg-secondary/20 border border-border rounded-lg">
+                      <div key={idx} className="flex items-start gap-2 p-3 bg-secondary/20 border rounded-lg">
                         {/* Tipe badge */}
                         <div className="shrink-0 mt-0.5">
                           {cfg && <cfg.icon size={14} className="text-primary" />}
@@ -528,7 +528,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                             placeholder={`Label tombol (cth: ${btn.type === 'QUICK_REPLY' ? 'Ya, Saya Berminat' : btn.type === 'URL' ? 'Lihat Program' : '0812-xxxx-xxxx'})`}
                             value={btn.label}
                             onChange={e => updateButton(idx, { label: e.target.value })}
-                            className="w-full px-2.5 py-1.5 bg-background border border-border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
+                            className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
                           />
                           {/* Value */}
                           {btn.type === 'QUICK_REPLY' && (
@@ -537,7 +537,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                               placeholder="Payload (cth: INTERESTED_YES)"
                               value={btn.value}
                               onChange={e => updateButton(idx, { value: e.target.value })}
-                              className="w-full px-2.5 py-1.5 bg-background border border-border rounded-md text-xs font-mono focus:ring-1 focus:ring-primary/60 outline-none"
+                              className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs font-mono focus:ring-1 focus:ring-primary/60 outline-none"
                             />
                           )}
                           {btn.type === 'URL' && (
@@ -546,7 +546,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                               placeholder="URL (cth: https://nexa.id/program)"
                               value={btn.value}
                               onChange={e => updateButton(idx, { value: e.target.value })}
-                              className="w-full px-2.5 py-1.5 bg-background border border-border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
+                              className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
                             />
                           )}
                           {btn.type === 'PHONE_NUMBER' && (
@@ -555,7 +555,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                               placeholder="Nomor telepon (cth: 628123456789)"
                               value={btn.value}
                               onChange={e => updateButton(idx, { value: e.target.value })}
-                              className="w-full px-2.5 py-1.5 bg-background border border-border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
+                              className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
                             />
                           )}
                         </div>
@@ -583,7 +583,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                 {showJson ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
               {showJson && (
-                <pre className="mt-2 p-3 bg-secondary/30 rounded-lg text-[11px] font-mono text-muted-foreground overflow-x-auto">
+                <pre className="mt-2 p-3 bg-secondary/30 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">
                   {paramsJson}
                 </pre>
               )}
@@ -596,7 +596,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
               <Eye size={14} className="text-muted-foreground" />
               <span className="text-xs font-medium text-muted-foreground">Live Preview</span>
               {previewButtonObjects.length > 0 && (
-                <span className="ml-auto text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
+                <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
                   {previewButtonObjects.length} btn
                 </span>
               )}
@@ -619,14 +619,14 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
         <div className="px-6 py-4 border-t border-border shrink-0 flex items-center justify-between gap-3">
-          <button onClick={handleClose} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg hover:border-primary/50 transition-all">
+          <button onClick={handleClose} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground border rounded-lg hover:border-primary/50 transition-all">
             Batal
           </button>
           <div className="flex gap-2">
             <button
               onClick={() => handleSave(false)}
               disabled={isSaving}
-              className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 text-sm border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isSaving && <Loader2 size={14} className="animate-spin" />}
               Simpan Lokal

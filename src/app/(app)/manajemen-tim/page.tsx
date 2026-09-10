@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
 
-// Modals
+import { cn } from '@/lib/utils';
 import { AssignKecamatanModal } from '@/components/manajemen-tim/AssignKecamatanModal';
 import { AddUserModal } from '@/components/manajemen-tim/AddUserModal';
 import { EditUserModal } from '@/components/manajemen-tim/EditUserModal';
@@ -20,6 +20,10 @@ export default function ManajemenTimPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [quota, setQuota] = useState<{
+    tier: string;
+    roles: Record<string, { role: string; max: number; used: number; available: number }>;
+  } | null>(null);
   
   // Modal States
   const [isAssignAreaOpen, setIsAssignAreaOpen] = useState(false);
@@ -34,11 +38,23 @@ export default function ManajemenTimPage() {
   const { user } = useAuthStore();
   const isFullAdmin = user?.role === 'Admin' || user?.role === 'Manager';
 
+  const fetchQuota = async () => {
+    try {
+      const res = await apiClient.get('/users/quota');
+      if (res.data?.status === 'ok') {
+        setQuota(res.data.data);
+      }
+    } catch (err) {
+      console.error('Gagal memuat data kuota tim:', err);
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const res = await apiClient.get('/users');
       setUsers(res.data.data || []);
+      fetchQuota();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Gagal memuat daftar staf');
     } finally {
@@ -112,16 +128,78 @@ export default function ManajemenTimPage() {
         </Button>
       </div>
 
+      {/* Quota & Capacity Overview Bar */}
+      {quota && (
+        <div className="bg-card border rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Kapasitas Kursi Staf</span>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                Tier {quota.tier}
+              </span>
+            </div>
+            {Object.values(quota.roles).some(r => r.available === 0) && (
+              <span className="text-xs text-amber-500 font-medium flex items-center gap-1">
+                ⚠️ Beberapa role telah mencapai batas maksimal tier
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {Object.entries(quota.roles).map(([roleKey, r]) => {
+              const isFull = r.available === 0;
+              return (
+                <div 
+                  key={roleKey}
+                  className={cn(
+                    "p-3 rounded-xl border transition-colors",
+                    isFull ? "bg-amber-500/5 border-amber-500/20" : "bg-secondary/30 border-border/50"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">{r.role}</span>
+                    <span className={cn(
+                      "text-xs font-bold px-1.5 py-0.5 rounded",
+                      isFull ? "bg-amber-500/20 text-amber-500" : "bg-primary/10 text-primary"
+                    )}>
+                      {r.used} / {r.max}
+                    </span>
+                  </div>
+                  <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        isFull ? "bg-amber-500" : "gradient-primary"
+                      )} 
+                      style={{ width: `${Math.min(100, (r.used / (r.max || 1)) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1.5 text-right">
+                    {r.available === 0 ? (
+                      <span className="text-amber-500 font-medium">Penuh</span>
+                    ) : (
+                      <span>Tersedia: {r.available}</span>
+                    )}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Sticky Search */}
-      <div className="relative w-full sticky top-14 sm:top-0 z-10 bg-background/95 backdrop-blur-sm py-2 sm:py-0">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Cari nama, username atau role..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 sm:py-2 bg-card border border-border rounded-xl sm:rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
-        />
+      <div className="sticky top-14 sm:top-0 z-10 w-full bg-background/95 backdrop-blur-sm py-2 sm:py-0">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Cari nama, username atau role..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 sm:py-2 bg-card border rounded-xl sm:rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          />
+        </div>
       </div>
 
       {/* Mobile Card View (Hidden on sm and up) */}
@@ -130,9 +208,9 @@ export default function ManajemenTimPage() {
           <div className="py-12 text-center text-muted-foreground text-sm">Tidak ada staf ditemukan.</div>
         ) : (
           filteredUsers.map(u => (
-            <div key={u.id} className="bg-card border border-border rounded-xl p-4 flex gap-3 relative">
+            <div key={u.id} className="bg-card border rounded-xl p-4 flex gap-3 relative">
               {/* Avatar */}
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-sm font-bold text-muted-foreground">
+              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-bold text-muted-foreground">
                 {u.nama.split(' ').map((n: string) => n[0]).join('').substring(0,2)}
               </div>
               
@@ -159,9 +237,17 @@ export default function ManajemenTimPage() {
                   </span>
                 </div>
 
+                {u.role === 'CRO' && u.supervisor_nama && (
+                  <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1 bg-secondary/40 px-2 py-1 rounded-md">
+                    <span>Atasan:</span>
+                    <span className="font-semibold text-foreground">{u.supervisor_nama}</span>
+                    <span className="text-primary text-xs">(Chief CRO)</span>
+                  </div>
+                )}
+
                 {/* More Menu Dropdown for Mobile */}
                 {mobileMenuOpen === u.id && (
-                  <div className="absolute right-4 top-12 bg-background border border-border rounded-lg shadow-xl z-20 w-40 flex flex-col py-1 overflow-hidden">
+                  <div className="absolute right-4 top-12 bg-background border rounded-lg shadow-xl z-20 w-40 flex flex-col py-1 overflow-hidden">
                     <button onClick={() => openAction('edit', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Edit2 size={14} /> Edit Staf</button>
                     {u.role === 'Chief CRO' && (
                       <button onClick={() => openAction('area', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Map size={14} /> Atur Area</button>
@@ -178,7 +264,7 @@ export default function ManajemenTimPage() {
       </div>
 
       {/* Desktop Table View (Hidden on mobile) */}
-      <div className="hidden sm:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+      <div className="hidden sm:block bg-card border rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -206,7 +292,15 @@ export default function ManajemenTimPage() {
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{u.nama}</p>
-                          <p className="text-xs text-muted-foreground">@{u.username}</p>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span>@{u.username}</span>
+                            {u.role === 'CRO' && u.supervisor_nama && (
+                              <>
+                                <span>•</span>
+                                <span className="text-primary font-medium">Chief: {u.supervisor_nama}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>

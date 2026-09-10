@@ -52,20 +52,20 @@ export default function ProfileTab() {
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6">
+    <div className="bg-card border rounded-2xl p-6 shadow-xs">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-foreground mb-1">Integrasi Kalender</h3>
-        <p className="text-sm text-muted-foreground">Hubungkan akun Nexa CRM dengan Google Calendar untuk otomatisasi penjadwalan.</p>
+        <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">Integrasi Kalender</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground">Hubungkan akun Nexa CRM dengan Google Calendar untuk otomatisasi penjadwalan.</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-red-500">
+        <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3 text-destructive">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <p className="text-sm">{error}</p>
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-background">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border bg-background/50">
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center ${connected ? 'bg-green-500/10' : 'bg-primary/10'}`}>
             <Calendar className={`w-6 h-6 ${connected ? 'text-green-500' : 'text-primary'}`} />

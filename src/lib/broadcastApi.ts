@@ -14,6 +14,8 @@ export interface AudienceItem {
   sekolah: string;
   phone: string;
   statusPipeline: string;
+  commercialState?: string;
+  consent?: 'Granted' | 'Withdrawn' | 'Denied' | string;
   isSwOpen: boolean;
 }
 
@@ -109,6 +111,8 @@ export const broadcastApi = {
   getAudience: (params?: {
     search?: string;
     statusPipeline?: string;
+    commercialState?: string;
+    schoolId?: string;
     page?: number;
     limit?: number;
     period?: string;

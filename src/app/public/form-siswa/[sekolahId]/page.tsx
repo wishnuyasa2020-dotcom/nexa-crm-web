@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, Send, School } from 'lucide-react';
 
+import apiClient from '@/lib/apiClient';
+
 function FormSiswaContent() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -15,6 +17,7 @@ function FormSiswaContent() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sekolah, setSekolah] = useState<any>(null);
+  const [consentWa, setConsentWa] = useState(false);
   
   const [formData, setFormData] = useState({
     nama_lengkap: '',
@@ -28,11 +31,10 @@ function FormSiswaContent() {
   useEffect(() => {
     // Fetch info sekolah dari public API
     if (sekolahId) {
-      fetch(`http://localhost:3001/api/public/sekolah/${sekolahId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'ok') {
-            setSekolah(data.data);
+      apiClient.get(`/api/public/sekolah/${sekolahId}`)
+        .then(res => {
+          if (res.data.status === 'ok') {
+            setSekolah(res.data.data);
           }
           setLoading(false);
         })
@@ -53,22 +55,25 @@ function FormSiswaContent() {
       return alert('Mohon lengkapi data yang bertanda bintang (*)');
     }
 
+    if (!consentWa) {
+      return alert('Persetujuan komunikasi WhatsApp (Consent Opt-In) wajib dicentang.');
+    }
+
     setSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/public/form-siswa/${sekolahId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+      const res = await apiClient.post(`/api/public/form-siswa/${sekolahId}`, {
+        ...formData,
+        consent_wa: true,
+        opt_in_wa: 'Ya'
       });
-      const data = await res.json();
       
-      if (data.status === 'ok') {
+      if (res.data.status === 'ok') {
         setSuccess(true);
       } else {
-        alert(data.message || 'Gagal menyimpan data');
+        alert(res.data.message || 'Gagal menyimpan data');
       }
     } catch (err: any) {
-      alert('Terjadi kesalahan jaringan.');
+      alert(err.response?.data?.message || 'Terjadi kesalahan jaringan.');
     } finally {
       setSubmitting(false);
     }
@@ -112,7 +117,7 @@ function FormSiswaContent() {
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col">
       {/* Header Mobile */}
-      <div className="bg-primary text-primary-foreground p-6 rounded-b-[2.5rem] shadow-lg mb-8">
+      <div className="bg-primary text-primary-foreground p-6 rounded-b-3xl shadow-lg mb-8">
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold mb-2">Form Data Siswa</h1>
           <p className="text-primary-foreground/90 text-sm flex items-center gap-2 mb-1">
@@ -141,7 +146,7 @@ function FormSiswaContent() {
                 name="nama_lengkap" 
                 value={formData.nama_lengkap} 
                 onChange={handleChange} 
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all" 
+                className="w-full px-4 py-3 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all" 
                 placeholder="Masukkan nama lengkap Anda" 
               />
             </div>
@@ -154,7 +159,7 @@ function FormSiswaContent() {
                 name="no_wa" 
                 value={formData.no_wa} 
                 onChange={handleChange} 
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all" 
+                className="w-full px-4 py-3 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all" 
                 placeholder="0812xxxx..." 
               />
             </div>
@@ -169,7 +174,7 @@ function FormSiswaContent() {
                 name="minat_awal" 
                 value={formData.minat_awal} 
                 onChange={handleChange} 
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all"
+                className="w-full px-4 py-3 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all"
               >
                 <option value="">-- Pilih --</option>
                 <option value="Ya">Ya, saya sangat berminat</option>
@@ -184,7 +189,7 @@ function FormSiswaContent() {
                 name="rencana_lulus" 
                 value={formData.rencana_lulus} 
                 onChange={handleChange} 
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all"
+                className="w-full px-4 py-3 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all"
               >
                 <option value="">-- Pilih --</option>
                 <option value="Kerja">Langsung Kerja</option>
@@ -194,11 +199,31 @@ function FormSiswaContent() {
             </div>
 
 
+            {/* Consent Engine: Checkbox Persetujuan WhatsApp */}
+            <div className="pt-2">
+              <label className="flex items-start gap-3 p-3.5 rounded-xl border bg-secondary/30 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={consentWa}
+                  onChange={e => setConsentWa(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded text-primary focus:ring-primary shrink-0"
+                />
+                <div className="space-y-0.5 text-xs">
+                  <span className="font-semibold text-foreground">
+                    Persetujuan Kontak WhatsApp (Wajib) <span className="text-rose-500">*</span>
+                  </span>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Saya bersedia dihubungi via WhatsApp oleh tim konselor untuk informasi program dan bimbingan karir.
+                  </p>
+                </div>
+              </label>
+            </div>
+
             <div className="pt-4">
               <button 
                 type="submit" 
-                disabled={submitting} 
-                className="w-full flex justify-center items-center gap-2 px-4 py-3.5 text-white font-semibold gradient-primary rounded-xl shadow-lg shadow-primary/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100"
+                disabled={submitting || !consentWa} 
+                className="w-full flex justify-center items-center gap-2 px-4 py-3.5 text-white font-semibold gradient-primary rounded-xl shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <Loader2 size={18} className="animate-spin" />

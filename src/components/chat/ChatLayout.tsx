@@ -144,9 +144,9 @@ export function ChatLayout() {
         </div>
       )}
 
-      {/* List Pane */}
+      {/* List Pane — lebar fixed di desktop, full-screen di mobile saat tidak ada chat aktif */}
       <div
-        className={`w-full md:w-87.5 lg:w-100 shrink-0 border-r border-border h-full ${
+        className={`w-full md:w-80 lg:w-96 shrink-0 border-r border-border h-full ${
           activeConvId ? 'hidden md:flex' : 'flex'
         }`}
       >

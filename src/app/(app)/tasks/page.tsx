@@ -1,23 +1,28 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { CheckSquare, Calendar, Clock, RefreshCw, AlertCircle, School, User } from 'lucide-react';
+import { CheckSquare, Calendar, Clock, RefreshCw, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TundaTaskModal } from '@/components/sekolah/TundaTaskModal';
-import { InputAktivitasModal as SekolahInputModal } from '@/components/sekolah/InputAktivitasModal';
-import { InputAktivitasModal as SiswaInputModal } from '@/components/siswa/InputAktivitasModal';
+import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
+import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
+import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
 import apiClient from '@/lib/apiClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type TabKey = 'overdue' | 'today' | 'tomorrow' | 'upcoming' | 'completed';
+type TabKey = 'today' | 'tomorrow' | 'upcoming' | 'overdue' | 'completed';
 
 interface Task {
   tipe: 'sekolah' | 'siswa' | 'homevisit' | 'aktifitas_ekstra';
   id: string;
+  siswaId?: string;
   nama: string;
   status: string;
+  commercialState?: string;
+  intent?: string;
+  priorityScore?: number;
   nextAction: string;
   dueDate: string;
   dueDateISO: string;
@@ -46,22 +51,22 @@ interface TundaTarget {
 // ─── Tab config ──────────────────────────────────────────────────────────────
 
 const TAB_FILTER_MAP: Record<TabKey, string> = {
-  overdue:   'overdue',
   today:     'today',
   tomorrow:  'tomorrow',
   upcoming:  'upcoming',
+  overdue:   'overdue',
   completed: 'done',
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TasksPage() {
-  const [activeTab, setActiveTab]   = useState<TabKey>('overdue');
+  const [activeTab, setActiveTab]   = useState<TabKey>('today');
   const [tasks, setTasks]           = useState<Task[]>([]);
   const [counts, setCounts]         = useState<TaskCounts | null>(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
-  const [tundaTarget, setTundaTarget] = useState<{ id: string; tipe: Task['tipe']; title: string } | null>(null);
+  const [tundaTarget, setTundaTarget] = useState<TundaTarget | null>(null);
 
   const [eksekusiTarget, setEksekusiTarget] = useState<Task | null>(null);
   const [sekolahDetail, setSekolahDetail] = useState<SekolahDetail | null>(null);
@@ -95,49 +100,49 @@ export default function TasksPage() {
 
   const tabs = [
     {
-      id: 'overdue' as TabKey,
-      label: 'Overdue',
-      icon: Clock,
-      count: totalOverdue,
-      activeCls: 'bg-rose-500/10 text-rose-500',
-      badgeCls: 'bg-rose-500/20',
-    },
-    {
       id: 'today' as TabKey,
       label: 'Hari Ini',
       icon: Calendar,
       count: counts?.hari_ini ?? 0,
-      activeCls: 'bg-amber-500/10 text-amber-500',
-      badgeCls: 'bg-amber-500/20',
+      activeCls: 'bg-amber-500/10 text-amber-500 font-bold',
+      badgeCls: 'bg-amber-500/20 text-amber-400',
     },
     {
       id: 'tomorrow' as TabKey,
       label: 'Besok',
       icon: Calendar,
       count: counts?.besok ?? 0,
-      activeCls: 'bg-blue-500/10 text-blue-500',
-      badgeCls: 'bg-blue-500/20',
+      activeCls: 'bg-blue-500/10 text-blue-500 font-bold',
+      badgeCls: 'bg-blue-500/20 text-blue-400',
     },
     {
       id: 'upcoming' as TabKey,
       label: 'Mendatang',
       icon: Calendar,
       count: counts?.akan_datang ?? 0,
-      activeCls: 'bg-emerald-500/10 text-emerald-500',
-      badgeCls: 'bg-emerald-500/20',
+      activeCls: 'bg-emerald-500/10 text-emerald-500 font-bold',
+      badgeCls: 'bg-emerald-500/20 text-emerald-400',
+    },
+    {
+      id: 'overdue' as TabKey,
+      label: 'Overdue',
+      icon: Clock,
+      count: totalOverdue,
+      activeCls: 'bg-rose-500/10 text-rose-500 font-bold',
+      badgeCls: 'bg-rose-500/20 text-rose-400',
     },
     {
       id: 'completed' as TabKey,
       label: 'Selesai',
       icon: CheckSquare,
       count: 0,
-      activeCls: 'bg-slate-500/10 text-slate-500',
-      badgeCls: 'bg-slate-500/20',
+      activeCls: 'bg-slate-500/10 text-slate-400 font-bold',
+      badgeCls: 'bg-slate-500/20 text-slate-400',
     },
   ];
 
   // Handle reschedule berhasil — optimistic update
-  const handleTundaSuccess = (newDate: string) => {
+  const handleTundaSuccess = () => {
     if (!tundaTarget) return;
     setTasks(prev => prev.filter(t => !(t.id === tundaTarget.id && t.tipe === tundaTarget.tipe)));
     setTundaTarget(null);
@@ -147,7 +152,6 @@ export default function TasksPage() {
     if (task.tipe === 'sekolah') {
       setIsFetchingDetail(true);
       try {
-        const { getSekolahDetail } = await import('@/lib/api/sekolah.api');
         const res = await getSekolahDetail(task.id);
         setSekolahDetail(res);
         setEksekusiTarget(task);
@@ -157,7 +161,7 @@ export default function TasksPage() {
       } finally {
         setIsFetchingDetail(false);
       }
-    } else if (task.tipe === 'siswa') {
+    } else if (task.tipe === 'siswa' || task.tipe === 'homevisit') {
       setEksekusiTarget(task);
     } else {
       alert(`Fitur eksekusi untuk tipe ${task.tipe} belum tersedia.`);
@@ -165,7 +169,7 @@ export default function TasksPage() {
   };
 
   const handleEksekusiSuccess = () => {
-    // Hapus task dari list jika sukses
+    // Hapus task dari list jika sukses (Optimistic UI Update)
     if (eksekusiTarget) {
       setTasks(prev => prev.filter(t => !(t.id === eksekusiTarget.id && t.tipe === eksekusiTarget.tipe)));
     }
@@ -184,7 +188,7 @@ export default function TasksPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">Task List</h1>
-            <p className="text-xs text-muted-foreground">Agenda aktivitas lapangan CRO</p>
+            <p className="text-xs text-muted-foreground">Agenda aktivitas operasional lapangan CRO</p>
           </div>
         </div>
         <button
@@ -196,7 +200,7 @@ export default function TasksPage() {
         </button>
       </div>
 
-      {/* ── Tabs ── */}
+      {/* ── Navigation Tabs (Pills) ── */}
       <div className="flex flex-wrap gap-1.5 p-1.5 bg-card border border-border rounded-xl shadow-sm w-full">
         {tabs.map(tab => (
           <button
@@ -231,8 +235,8 @@ export default function TasksPage() {
               </div>
               <div className="w-3/4 h-6 bg-secondary rounded mb-4" />
               <div className="flex gap-2">
-                <div className="flex-1 h-9 bg-secondary rounded" />
-                <div className="flex-1 h-9 bg-secondary rounded" />
+                <div className="flex-1 h-11 bg-secondary rounded" />
+                <div className="flex-1 h-11 bg-secondary rounded" />
               </div>
             </div>
           ))
@@ -249,39 +253,56 @@ export default function TasksPage() {
           </div>
         ) : tasks.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground text-sm border-2 border-dashed border-border rounded-xl">
-            {activeTab === 'overdue'   ? '🎉 Tidak ada task overdue!' :
-             activeTab === 'today'     ? 'Tidak ada agenda untuk hari ini.' :
+            {activeTab === 'today'     ? '🎉 Tidak ada agenda untuk hari ini.' :
              activeTab === 'tomorrow'  ? 'Tidak ada agenda untuk besok.' :
              activeTab === 'upcoming'  ? 'Tidak ada agenda mendatang.' :
-                                        'Riwayat task kosong.'}
+             activeTab === 'overdue'   ? '🎉 Luar biasa! Tidak ada task overdue.' :
+                                         'Riwayat task kosong.'}
           </div>
         ) : (
           tasks.map((task) => (
             <div key={`${task.tipe}-${task.id}`} className="bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
               {/* Card Header */}
               <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5">
-                  {/* Tipe icon */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {/* Pembeda B2B vs B2C sesuai Ontologi & Wireframe */}
                   {task.tipe === 'sekolah' ? (
-                    <School size={13} className="text-blue-400 shrink-0" />
+                    <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1">
+                      🟣 <span>Sekolah (B2B)</span>
+                    </span>
+                  ) : task.tipe === 'siswa' ? (
+                    <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center gap-1">
+                      🟠 <span>Siswa (B2C)</span>
+                    </span>
+                  ) : task.tipe === 'homevisit' ? (
+                    <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center gap-1">
+                      🏠 <span>Home Visit</span>
+                    </span>
                   ) : (
-                    <User size={13} className="text-violet-400 shrink-0" />
+                    <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
+                      ⚡ <span>Ekstra</span>
+                    </span>
                   )}
-                  <span className={cn(
-                    'px-2 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wide',
-                    task.tipe === 'sekolah'         ? 'bg-blue-500/10 text-blue-400' :
-                    task.tipe === 'siswa'           ? 'bg-violet-500/10 text-violet-400' :
-                    task.tipe === 'homevisit'       ? 'bg-teal-500/10 text-teal-400' :
-                                                     'bg-orange-500/10 text-orange-400'
-                  )}>
-                    {task.tipe === 'aktifitas_ekstra' ? 'Ekstra' :
-                     task.tipe === 'homevisit' ? 'Home Visit' :
-                     task.tipe === 'sekolah' ? 'Sekolah' : 'Siswa'}
+
+                  {/* Commercial State / Status */}
+                  <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border border-border">
+                    {task.commercialState || task.status}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-xs bg-primary/10 text-primary border border-primary/20">
-                    {task.status}
-                  </span>
+
+                  {/* Intent Badge */}
+                  {task.intent && (
+                    <span className={cn(
+                      'px-2 py-0.5 rounded-md text-xs font-semibold border',
+                      task.intent === 'High' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                      task.intent === 'Mid' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                      'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                    )}>
+                      {task.intent} Intent
+                    </span>
+                  )}
                 </div>
+
+                {/* Due Date Indicator */}
                 <span className={cn(
                   'text-xs font-bold px-2 py-1 rounded-md shrink-0',
                   activeTab === 'overdue'   ? 'bg-rose-500/10 text-rose-500' :
@@ -321,24 +342,25 @@ export default function TasksPage() {
                 </p>
               </div>
 
-              {/* Card Actions */}
+              {/* Card Actions (SOP Tombol Eksekusi & Tunda) */}
               {activeTab !== 'completed' && (
-                <div className="flex items-center gap-2 pt-3 border-t border-border">
+                <div className="flex items-center gap-2.5 pt-3 border-t border-border">
                   <button
                     onClick={() => setTundaTarget({
                       id: task.id,
                       tipe: task.tipe,
                       title: `[${task.nextAction}] ${task.nama}`
                     })}
-                    className="flex-1 py-2.5 rounded-lg border border-border text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 min-h-11 py-2.5 rounded-xl border border-border text-xs sm:text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground active:scale-95 transition-all flex items-center justify-center gap-1.5"
                   >
-                    <Calendar size={14} /> Tunda
+                    <Calendar size={15} /> 📅 Tunda
                   </button>
                   <button
                     onClick={() => handleEksekusi(task)}
-                    className="flex-1 py-2.5 rounded-lg gradient-primary text-xs font-semibold text-white hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20"
+                    disabled={isFetchingDetail && eksekusiTarget?.id === task.id}
+                    className="flex-1 min-h-11 py-2.5 rounded-xl gradient-primary text-xs sm:text-sm font-semibold text-white hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 disabled:opacity-50"
                   >
-                    <CheckSquare size={14} /> Eksekusi
+                    <CheckSquare size={15} /> ✅ Eksekusi
                   </button>
                 </div>
               )}
@@ -347,7 +369,7 @@ export default function TasksPage() {
         )}
       </div>
 
-      {/* ── Modal Tunda Task ── */}
+      {/* ── Modal Tunda Task (Event-Sourcing: TaskRescheduled) ── */}
       {tundaTarget && (
         <TundaTaskModal
           isOpen={!!tundaTarget}
@@ -359,9 +381,9 @@ export default function TasksPage() {
         />
       )}
 
-      {/* ── Modal Eksekusi Task ── */}
+      {/* ── Modal Eksekusi Sekolah (Event-Sourcing Evidence) ── */}
       {eksekusiTarget?.tipe === 'sekolah' && sekolahDetail && (
-        <SekolahInputModal
+        <CatatInteraksiModal
           isOpen={!!eksekusiTarget}
           onClose={() => { setEksekusiTarget(null); setSekolahDetail(null); }}
           sekolah={sekolahDetail}
@@ -369,11 +391,12 @@ export default function TasksPage() {
         />
       )}
 
-      {eksekusiTarget?.tipe === 'siswa' && (
-        <SiswaInputModal
+      {/* ── Modal Eksekusi Siswa & Home Visit (Event-Sourcing Evidence) ── */}
+      {(eksekusiTarget?.tipe === 'siswa' || eksekusiTarget?.tipe === 'homevisit') && (
+        <CatatInteraksiSiswaModal
           isOpen={!!eksekusiTarget}
           onClose={() => setEksekusiTarget(null)}
-          siswaId={eksekusiTarget.id}
+          siswaId={eksekusiTarget.siswaId || eksekusiTarget.id}
           siswaName={eksekusiTarget.nama}
           onSuccess={handleEksekusiSuccess}
         />

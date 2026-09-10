@@ -14,10 +14,12 @@ import type {
   TambahSekolahPayload,
   EditSekolahPayload,
   InputAktivitasPayload,
+  LogInteractionPayload,
   BuatEkstraPayload,
   SelesaikanEkstraPayload,
   BatalkanEkstraPayload,
 } from '@/lib/types/sekolah.types';
+
 
 // ── Helper: unwrap response ───────────────────────────────────────────────────
 function unwrap<T>(res: { data: { status: string; data: T } }): T {
@@ -111,7 +113,66 @@ export async function reassignCRO(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INPUT AKTIVITAS — POST /api/v1/sekolah/:id/aktivitas
+// LOG INTERACTION (Event-Sourcing) — POST /api/v1/sekolah/:id/interactions
+// Menghasilkan: InteractionLogged, SosialisasiRejected, dll
+// ─────────────────────────────────────────────────────────────────────────────
+export async function logInteraction(
+  sekolahId: string,
+  payload: LogInteractionPayload
+): Promise<SekolahDetail> {
+  const res = await apiClient.post<{ status: string; data: SekolahDetail }>(
+    `/sekolah/${sekolahId}/interactions`,
+    payload
+  );
+  return unwrap(res);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOSIALISASI APPROVE — POST /api/v1/sekolah/:id/sosialisasi/approve
+// EVENT: SosialisasiApproved
+// ─────────────────────────────────────────────────────────────────────────────
+export async function approveSosialisasi(
+  sekolahId: string,
+  payload: { tanggalSosialisasi: string; catatan?: string }
+): Promise<SekolahDetail> {
+  const res = await apiClient.post<{ status: string; data: SekolahDetail }>(
+    `/sekolah/${sekolahId}/sosialisasi/approve`,
+    payload
+  );
+  return unwrap(res);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOSIALISASI COMPLETE — POST /api/v1/sekolah/:id/sosialisasi/complete
+// EVENT: SosialisasiCompleted
+// ─────────────────────────────────────────────────────────────────────────────
+export async function completeSosialisasi(
+  sekolahId: string,
+  payload: { catatan?: string }
+): Promise<SekolahDetail> {
+  const res = await apiClient.post<{ status: string; data: SekolahDetail }>(
+    `/sekolah/${sekolahId}/sosialisasi/complete`,
+    payload
+  );
+  return unwrap(res);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UPDATE INTENT — PATCH /api/v1/sekolah/:id/intent
+// ─────────────────────────────────────────────────────────────────────────────
+export async function updateIntent(
+  sekolahId: string,
+  intent: 'High' | 'Mid' | 'Low'
+): Promise<{ success: boolean; intent: string }> {
+  const res = await apiClient.patch<{ status: string; data: { success: boolean; intent: string } }>(
+    `/sekolah/${sekolahId}/intent`,
+    { intent }
+  );
+  return unwrap(res);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INPUT AKTIVITAS — POST /api/v1/sekolah/:id/aktivitas (BACKWARD COMPAT)
 // ─────────────────────────────────────────────────────────────────────────────
 export async function inputAktivitas(
   sekolahId: string,
