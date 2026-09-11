@@ -145,8 +145,8 @@ export default function UpgradeTierModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-3 sm:p-6 md:p-8 overflow-y-auto">
-      <div className="bg-card border rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-4 sm:my-8 relative">
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm overflow-y-auto p-4 sm:p-6 md:p-8 flex justify-center items-start">
+      <div className="bg-card border rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 mt-6 sm:mt-10 mb-12 relative">
         
         {/* Header Modal */}
         <div className="p-6 md:p-8 border-b bg-secondary/30 relative shrink-0">
