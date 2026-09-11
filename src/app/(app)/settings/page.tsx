@@ -6,12 +6,13 @@ import KelasMapping from '@/components/settings/KelasMapping';
 import KotaMapping from '@/components/settings/KotaMapping';
 import KecamatanMapping from '@/components/settings/KecamatanMapping';
 import ProfileTab from '@/components/settings/ProfileTab';
-import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, ShieldAlert, ArrowLeft } from 'lucide-react';
+import BillingTab from '@/components/settings/BillingTab';
+import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'calendar'>('kelas');
+  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'calendar' | 'billing'>('kelas');
   const { user } = useAuthStore();
 
   const isAuthorized = !user || user.role === 'Admin' || user.role === 'Manager';
@@ -41,6 +42,7 @@ export default function SettingsPage() {
     { id: 'kota', label: 'Master Kota', icon: Building2 },
     { id: 'kecamatan', label: 'Master Kecamatan', icon: MapPin },
     { id: 'calendar', label: 'Integrasi Kalender', icon: Calendar },
+    { id: 'billing', label: 'Langganan & Billing', icon: CreditCard },
   ] as const;
 
   return (
@@ -54,7 +56,7 @@ export default function SettingsPage() {
           <div>
             <h1 className="text-lg font-bold text-foreground">Settings & Master Data</h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              Pusat standardisasi data referensi formulir pendaftaran dan operasional
+              Pusat standardisasi data referensi formulir pendaftaran, operasional & langganan
             </p>
           </div>
         </div>
@@ -74,7 +76,7 @@ export default function SettingsPage() {
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2.5 font-medium text-sm border-b-2 transition-all shrink-0',
+                    'flex items-center gap-2 px-4 py-2.5 font-medium text-sm border-b-2 transition-all shrink-0 cursor-pointer',
                     isActive
                       ? 'border-primary text-primary font-semibold'
                       : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
@@ -93,6 +95,7 @@ export default function SettingsPage() {
             {activeTab === 'kota' && <KotaMapping />}
             {activeTab === 'kecamatan' && <KecamatanMapping />}
             {activeTab === 'calendar' && <ProfileTab />}
+            {activeTab === 'billing' && <BillingTab />}
           </div>
         </div>
       </main>

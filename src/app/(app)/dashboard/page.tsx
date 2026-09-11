@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { 
   Users, School, CheckSquare, TrendingUp, Activity, 
   ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle, 
-  ShieldCheck, Calendar, Clock, Check, Loader2 
+  ShieldCheck, Calendar, Clock, Check, Loader2, Zap 
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { TundaTaskModal } from '@/components/sekolah/TundaTaskModal';
 import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
 import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
+import UpgradeTierModal from '@/components/subscription/UpgradeTierModal';
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
 
@@ -100,6 +101,7 @@ export default function DashboardPage() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // ── Modal & Action States (Event-Sourcing) ──
   const [tundaTarget, setTundaTarget] = useState<TundaTarget | null>(null);
@@ -300,15 +302,25 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-bold text-foreground">Dashboard CRO</h1>
             {quota && (
-              <span className={cn(
-                "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border",
-                quota.tier.toLowerCase() === 'free' ? "bg-slate-500/10 text-slate-500 border-slate-500/20" :
-                quota.tier.toLowerCase() === 'pro' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
-                quota.tier.toLowerCase() === 'business' ? "bg-violet-500/10 text-violet-500 border-violet-500/20" :
-                "bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-sm shadow-amber-500/20"
-              )}>
-                {quota.tier}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border",
+                  quota.tier.toLowerCase() === 'free' ? "bg-slate-500/10 text-slate-500 border-slate-500/20" :
+                  quota.tier.toLowerCase() === 'pro' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
+                  quota.tier.toLowerCase() === 'business' ? "bg-violet-500/10 text-violet-500 border-violet-500/20" :
+                  "bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-sm shadow-amber-500/20"
+                )}>
+                  {quota.tier}
+                </span>
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="px-2.5 py-1 rounded-full text-xs font-bold gradient-primary text-white hover:opacity-90 transition-all shadow-sm shadow-primary/20 flex items-center gap-1 cursor-pointer"
+                  title="Tingkatkan Kapasitas / Upgrade Tier Tenant"
+                >
+                  <Zap size={11} />
+                  <span>Upgrade Tier</span>
+                </button>
+              </div>
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -361,9 +373,19 @@ export default function DashboardPage() {
                 />
               </div>
               
-              <p className="text-xs mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
-                {(quota.usedSiswa / quota.limitSiswa) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
-              </p>
+              <div className="text-xs mt-2 text-right absolute right-0 -bottom-5">
+                {(quota.usedSiswa / quota.limitSiswa) > 0.80 ? (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <span>Mendekati limit. Upgrade tier</span>
+                    <Zap size={10} />
+                  </button>
+                ) : (
+                  <span className="text-muted-foreground/70">Sisa kuota aman.</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -401,9 +423,19 @@ export default function DashboardPage() {
                 />
               </div>
               
-              <p className="text-xs mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
-                {(quota.usedSekolah / quota.limitSekolah) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
-              </p>
+              <div className="text-xs mt-2 text-right absolute right-0 -bottom-5">
+                {(quota.usedSekolah / quota.limitSekolah) > 0.80 ? (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <span>Mendekati limit. Upgrade tier</span>
+                    <Zap size={10} />
+                  </button>
+                ) : (
+                  <span className="text-muted-foreground/70">Sisa kuota aman.</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -441,9 +473,19 @@ export default function DashboardPage() {
                 />
               </div>
               
-              <p className="text-xs mt-2 text-muted-foreground/70 text-right absolute right-0 -bottom-5">
-                {(quota.usedUser / quota.limitUser) > 0.80 ? "Mendekati limit. Upgrade tier." : "Sisa kuota aman."}
-              </p>
+              <div className="text-xs mt-2 text-right absolute right-0 -bottom-5">
+                {(quota.usedUser / quota.limitUser) > 0.80 ? (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <span>Mendekati limit. Upgrade tier</span>
+                    <Zap size={10} />
+                  </button>
+                ) : (
+                  <span className="text-muted-foreground/70">Sisa kuota aman.</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -736,6 +778,16 @@ export default function DashboardPage() {
           onSuccess={handleEksekusiSuccess}
         />
       )}
+
+      {/* ── Modal Upgrade Tier Tenant (Midtrans Payment Gateway) ── */}
+      <UpgradeTierModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentTier={quota?.tier}
+        onUpgradeSuccess={() => {
+          load();
+        }}
+      />
     </div>
   );
 }
