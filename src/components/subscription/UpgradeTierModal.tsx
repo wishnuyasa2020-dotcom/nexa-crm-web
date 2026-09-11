@@ -145,14 +145,15 @@ export default function UpgradeTierModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-card border rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-8">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-3 sm:p-6 md:p-8 overflow-y-auto">
+      <div className="bg-card border rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-4 sm:my-8 relative">
         
         {/* Header Modal */}
-        <div className="p-6 md:p-8 border-b bg-secondary/30 relative">
+        <div className="p-6 md:p-8 border-b bg-secondary/30 relative shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="absolute top-5 right-5 sm:top-6 sm:right-6 p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-10"
+            aria-label="Tutup modal"
           >
             <X size={20} />
           </button>
