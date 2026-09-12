@@ -142,15 +142,15 @@ export default function WhatsAppTab() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-2xl border bg-card p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-              <MessageSquare size={24} />
+      <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-foreground">Integrasi WhatsApp Bisnis</h2>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">Integrasi WhatsApp Bisnis</h2>
                 {status === 'CONNECTED' && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
@@ -175,19 +175,22 @@ export default function WhatsAppTab() {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1 sm:mt-0.5 leading-relaxed">
                 Koneksi nomor resmi WhatsApp Business Platform (Cloud API) untuk Live Chat & Broadcast massal
               </p>
             </div>
           </div>
 
-          <button
-            onClick={loadWhatsappStatus}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border rounded-lg hover:bg-muted/50 transition-colors"
-          >
-            <RefreshCw size={13} />
-            Segarkan
-          </button>
+          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-border/50">
+            <span className="text-xs text-muted-foreground sm:hidden">Sinkronisasi status</span>
+            <button
+              onClick={loadWhatsappStatus}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border rounded-lg hover:bg-muted/50 transition-colors shrink-0"
+            >
+              <RefreshCw size={13} />
+              <span>Segarkan</span>
+            </button>
+          </div>
         </div>
       </div>
 
