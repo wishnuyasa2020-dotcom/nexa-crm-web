@@ -4,13 +4,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search, Plus, ChevronLeft, ChevronRight, Users,
-  ChevronRight as ArrowRight, SlidersHorizontal, Upload,
+  ChevronRight as ArrowRight, SlidersHorizontal, Upload, Layers,
 } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/useAuthStore';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { AddSiswaModal }    from '@/components/siswa/AddSiswaModal';
 import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
+import { AssignKelasModal } from '@/components/siswa/AssignKelasModal';
 import type { Siswa, CommercialState, SiswaIntent } from '@/lib/types/siswa.types';
 
 // ── Intent Badge ──────────────────────────────────────────────────────────────
@@ -25,7 +27,7 @@ function IntentBadge({ intent }: { intent: string }) {
   const config = INTENT_CONFIG[intent];
   if (!config) return null;
   return (
-    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] border font-medium', config.className)}>
+    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-xs border font-medium', config.className)}>
       {config.label}
     </span>
   );
@@ -72,8 +74,12 @@ export default function SiswaPage() {
   const [filterKelas,        setFilterKelas]        = useState('');
   const [isAddModalOpen,     setIsAddModalOpen]     = useState(false);
   const [isImportModalOpen,  setIsImportModalOpen]  = useState(false);
+  const [isAssignModalOpen,  setIsAssignModalOpen]  = useState(false);
   const [showMobileFilter,   setShowMobileFilter]   = useState(false);
   const pageSize = 20;
+
+  const { user } = useAuthStore();
+  const canAssignClass = ['admin', 'manager', 'chief cro'].includes(user?.role?.toLowerCase() || '');
 
   const loadSiswa = useCallback(async () => {
     setLoading(true);
@@ -128,6 +134,17 @@ export default function SiswaPage() {
           >
             <SlidersHorizontal size={16} />
           </button>
+          {canAssignClass && (
+            <button
+              onClick={() => setIsAssignModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary/30 text-xs font-semibold text-primary hover:bg-primary/10 transition-all cursor-pointer"
+              title="Assign Kelas ke CRO (Chief CRO)"
+            >
+              <Layers size={13} />
+              <span className="hidden sm:inline">Assign Kelas</span>
+              <span className="sm:hidden">Kelas</span>
+            </button>
+          )}
           <button
             onClick={() => setIsImportModalOpen(true)}
             className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
@@ -357,6 +374,11 @@ export default function SiswaPage() {
       <ImportSiswaModal
         isOpen={isImportModalOpen}
         onClose={() => { setIsImportModalOpen(false); loadSiswa(); }}
+      />
+      <AssignKelasModal
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+        onSuccess={() => { setPage(1); loadSiswa(); }}
       />
     </div>
   );

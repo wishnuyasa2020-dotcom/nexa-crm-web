@@ -20,6 +20,7 @@ export default function PanduanPage() {
     'admin-smartrouting': true,
     'admin-domains': true,
     'cro-funnel': true,
+    'cro-territorial': true,
     'cro-fnar': true,
     'cro-tasks': true,
     'cro-chat': true,
@@ -65,7 +66,7 @@ export default function PanduanPage() {
                 placeholder="Cari SOP, konsep, fitur..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                className="w-full pl-9 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
               />
               {searchQuery && (
                 <button
@@ -210,7 +211,7 @@ export default function PanduanPage() {
                     </div>
                     <h4 className="text-sm font-bold text-foreground">Eksekusi Presentasi Lapangan</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Tim CRO telah melakukan presentasi di aula atau kelas. Form QR publik dan brosur program telah disebarkan secara terarah kepada para siswa kelas 12.
+                      Tim CRO telah melakukan presentasi di aula atau kelas. Form QR publik dan brosur program telah disebarkan. Mencapai tahap ini membuka akses bagi Chief CRO untuk mengeksekusi penugasan teritorial (<strong>Assign Kelas ke CRO</strong>) di Modul Siswa.
                     </p>
                   </div>
 
@@ -248,7 +249,7 @@ export default function PanduanPage() {
               {expandedSections['b2b-decision'] && (
                 <div className="pt-2 space-y-4 text-sm leading-relaxed">
                   <div className="p-4 rounded-xl bg-secondary/40 border space-y-2">
-                    <h4 className="font-bold text-foreground text-xs uppercase tracking-wider text-purple-600">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-purple-600">
                       Jaring Keputusan Institusi (Decision Environment)
                     </h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
@@ -457,7 +458,7 @@ export default function PanduanPage() {
 
               {expandedSections['admin-waba'] && (
                 <div className="pt-2 space-y-4 text-sm leading-relaxed">
-                  <div className="p-3.5 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 space-y-1.5">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 space-y-1.5">
                     <div className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider">
                       <Phone size={16} className="shrink-0" /> Alur Aktivasi Berbantuan (Assisted Onboarding):
                     </div>
@@ -519,7 +520,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2">
-                    <h4 className="font-bold text-foreground text-xs uppercase tracking-wider text-primary">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-primary">
                       Keamanan Akun & Email Security Alert:
                     </h4>
                     <p className="text-muted-foreground">
@@ -683,7 +684,111 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-secondary/50 border text-xs text-foreground">
-                    🛡️ <strong>Aturan Wilayah 1 Kelas = 1 CRO:</strong> Satu kelas di sekolah binaan hanya dapat diklaim oleh 1 CRO per periode aktif. Jika CRO lain mencoba menginput siswa di kelas tersebut, sistem otomatis menolak untuk mencegah konflik teritorial.
+                    🛡️ <strong>Aturan Wilayah 1 Kelas = 1 CRO:</strong> Satu kelas di sekolah binaan hanya dapat dikelola oleh tepat 1 CRO per periode aktif. Penugasan didistribusikan langsung oleh Chief CRO/Manager melalui fitur <em>Assign Kelas</em> untuk mencegah konflik dan perebutan prospek.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SOP Penugasan Teritorial: 1 Kelas Banyak Siswa = 1 CRO */}
+          {matchesSearch('teritorial kelas assignment penugasan chief cro sekolah sosialisasi replace auto inherit b2c') && (
+            <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
+              <div 
+                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                onClick={() => toggleSection('cro-territorial')}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Layers className="text-primary w-5 h-5 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground">
+                        SOP Penugasan Teritorial: 1 Kelas Banyak Siswa = 1 CRO
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                        Otoritas Chief CRO
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-1 text-muted-foreground shrink-0">
+                  {expandedSections['cro-territorial'] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                </div>
+              </div>
+
+              {expandedSections['cro-territorial'] && (
+                <div className="pt-2 space-y-4 text-xs leading-relaxed">
+                  <div className="p-3.5 rounded-xl bg-secondary/40 border space-y-1.5">
+                    <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                      <Sparkles size={16} className="text-primary shrink-0" />
+                      Prinsip Dasar Kepemilikan Teritorial Nexa OS
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Di CRM konvensional, prospek sering diperebutkan per individu secara liar antar staf sales. Di Nexa OS, unit penugasan hak asuh prospek siswa (B2C) adalah <strong>KELAS</strong> di sekolah binaan tertentu (contoh: <em>Kelas 12 TKJ 1 di SMKS Hasina</em>). Satu kelas berisi banyak siswa dan <strong>wajib dikelola oleh tepat satu CRO</strong> pada periode pemasaran aktif.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* Pilar 1 */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
+                          1. Otoritas Chief CRO &amp; Manajemen
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Distribusi Teritorial Satu Komando</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Hanya pengguna dengan peran <strong>Chief CRO</strong>, <strong>Manager</strong>, atau <strong>Admin</strong> yang berwenang membagikan penugasan kelas melalui tombol <code>Assign Kelas</code> di halaman Master Siswa. Staf CRO biasa tidak dapat mengklaim atau memindahkan kelas secara sepihak.
+                      </p>
+                    </div>
+
+                    {/* Pilar 2 */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                          2. Syarat Sekolah Wajib Sosialisasi
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Hanya Sekolah &apos;Sudah Sosialisasi&apos;</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Fitur penugasan kelas hanya membuka sekolah yang telah mencapai status <strong>Sudah Sosialisasi</strong> atau <strong>Identity Captured</strong>. Ini memastikan bahwa penugasan CRO hanya terjadi ketika presentasi telah dieksekusi dan audiens siswa telah terinput ke sistem.
+                      </p>
+                    </div>
+
+                    {/* Pilar 3 */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                          3. Sistem Auto-Replace Terintegrasi
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Menjaga Integritas 1 Kelas = 1 CRO</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Jika suatu kelas sebelumnya sudah dipegang oleh CRO lain, Chief CRO dapat langsung memindahtangankan kelas tersebut. Sistem secara otomatis <strong>me-replace penanggung jawab seluruh siswa</strong> di kelas tersebut ke CRO tujuan baru. Tidak ada siswa yang tertinggal atau terpecah.
+                      </p>
+                    </div>
+
+                    {/* Pilar 4 */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                          4. Auto-Inherit Ingestion Siswa Baru
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Pewarisan Hak Asuh Otomatis</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Setiap kali ada siswa baru yang mendaftar (baik melalui <strong>Form Publik QR Sosialisasi</strong>, <strong>Import Excel/CSV</strong>, maupun <strong>Input Manual</strong>) pada sekolah dan kelas yang sudah di-assign, siswa tersebut secara otomatis langsung ter-assign ke CRO pemegang kelas itu.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/30 text-xs text-foreground space-y-1">
+                    <p className="font-bold text-purple-600 flex items-center gap-1.5">
+                      <CheckCircle2 size={15} className="shrink-0" /> Audit Trail Event-Sourcing CQRS:
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Setiap mutasi penugasan kelas terekam secara permanen di <code>events_log</code> dengan tipe event <code>ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang ikut dialihkan, dan user Chief CRO yang mengeksekusi penugasan.
+                    </p>
                   </div>
                 </div>
               )}
@@ -819,7 +924,7 @@ export default function PanduanPage() {
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-foreground text-sm flex items-center gap-2 text-emerald-600">
+                      <h4 className="font-bold text-sm flex items-center gap-2 text-emerald-600">
                         <CheckCircle2 size={16} className="shrink-0" /> Tombol [ ✅ EKSEKUSI ]
                       </h4>
                       <p className="text-muted-foreground">
@@ -828,7 +933,7 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-foreground text-sm flex items-center gap-2 text-amber-500">
+                      <h4 className="font-bold text-sm flex items-center gap-2 text-amber-500">
                         <Clock size={16} className="shrink-0" /> Tombol [ 📅 TUNDA ]
                       </h4>
                       <p className="text-muted-foreground">
@@ -838,7 +943,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-4 rounded-xl bg-secondary/40 border space-y-2">
-                    <h4 className="font-bold text-foreground text-xs uppercase tracking-wider text-blue-600">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-blue-600">
                       Weekly Planning Kanban (Senin – Sabtu)
                     </h4>
                     <p className="text-muted-foreground">
@@ -870,7 +975,7 @@ export default function PanduanPage() {
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-foreground text-sm flex items-center gap-2 text-emerald-600">
+                      <div className="font-bold text-sm flex items-center gap-2 text-emerald-600">
                         <MessageSquare size={16} className="shrink-0" /> Live Chat Shared Inbox (Silo System)
                       </div>
                       <p className="text-muted-foreground">
@@ -881,7 +986,7 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-foreground text-sm flex items-center gap-2 text-blue-600">
+                      <div className="font-bold text-sm flex items-center gap-2 text-blue-600">
                         <Radio size={16} className="shrink-0" /> Broadcast WA (Wizard 3 Langkah)
                       </div>
                       <p className="text-muted-foreground">
@@ -890,7 +995,7 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-foreground text-sm flex items-center gap-2 text-purple-600">
+                      <div className="font-bold text-sm flex items-center gap-2 text-purple-600">
                         <TrendingUp size={16} className="shrink-0" /> Automated Nurturing (Drip Probing)
                       </div>
                       <p className="text-muted-foreground">
@@ -899,7 +1004,7 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-foreground text-sm flex items-center gap-2 text-amber-500">
+                      <div className="font-bold text-sm flex items-center gap-2 text-amber-500">
                         <Clock size={16} className="shrink-0" /> Snooze Campaign (Hibernasi Prospek)
                       </div>
                       <p className="text-muted-foreground">

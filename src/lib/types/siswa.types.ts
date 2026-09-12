@@ -125,3 +125,29 @@ export interface SiswaListParams {
   kelas?:          string;
   cro?:            string;
 }
+
+// ── Class Assignment Types (Chief CRO 1 Kelas 1 CRO) ──────────────────────────
+
+export interface SekolahSosialisasiOption {
+  id_sekolah:    string;
+  nama_sekolah:  string;
+  status_terkini: string;
+  pj_sekolah:    string;
+  total_siswa:   number;
+}
+
+export interface KelasOption {
+  nama_kelas:    string;
+  kelas_id:      number | null;
+  student_count: number;
+  current_cro:   string | null;
+}
+
+export interface AssignKelasPayload {
+  id_sekolah:  string;
+  nama_kelas:  string;
+  kelas_id?:   number | null;
+  target_cro:  string;
+  alasan?:     string;
+}
+

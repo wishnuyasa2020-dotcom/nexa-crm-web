@@ -195,7 +195,7 @@ export function GlobalFAB() {
       {/* Quick Search Modal */}
       {(searchAction === 'aktivitas' || searchAction === 'link') && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-border flex flex-col overflow-hidden h-[80vh] max-h-[500px]">
+          <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border flex flex-col overflow-hidden h-[80vh] max-h-125">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border bg-secondary/30">
               <h2 className="font-bold flex items-center gap-2">
@@ -220,7 +220,7 @@ export function GlobalFAB() {
                   placeholder="Cari nama sekolah..."
                   value={searchQuery}
                   onChange={handleSearch}
-                  className="w-full pl-9 pr-4 py-3 bg-secondary/50 border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground"
+                  className="w-full pl-9 pr-4 py-3 bg-secondary/50 border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground"
                 />
               </div>
             </div>
@@ -318,7 +318,7 @@ export function GlobalFAB() {
               <select 
                 value={selectedKelas}
                 onChange={(e) => setSelectedKelas(e.target.value)}
-                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
+                className="w-full px-3 py-2.5 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
               >
                 <option value="" disabled>-- Pilih Kelas --</option>
                 {kelasList.map(k => (
