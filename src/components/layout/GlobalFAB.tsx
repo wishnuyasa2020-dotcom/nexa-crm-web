@@ -94,7 +94,16 @@ export function GlobalFAB() {
   const getFormUrl = () => {
     if (!selectedSekolahForLink) return '';
     const croName = user?.nama || 'CRO-CURRENT';
-    const baseUrl = `${window.location.origin}/public/form-siswa?sekolahId=${selectedSekolahForLink.id}&croId=${encodeURIComponent(croName)}`;
+
+    // Engine URL Form Publik: prioritaskan subdomain form-konfirmasi.nexamos.cloud
+    let baseOrigin = 'https://form-konfirmasi.nexamos.cloud';
+    if (process.env.NEXT_PUBLIC_FORM_URL) {
+      baseOrigin = process.env.NEXT_PUBLIC_FORM_URL;
+    } else if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      baseOrigin = window.location.origin;
+    }
+
+    const baseUrl = `${baseOrigin}/public/form-siswa?sekolahId=${selectedSekolahForLink.id}&croId=${encodeURIComponent(croName)}`;
     if (selectedKelas) {
       return `${baseUrl}&kelas=${encodeURIComponent(selectedKelas)}`;
     }
@@ -331,7 +340,7 @@ export function GlobalFAB() {
                   </div>
                   <button
                     onClick={copyToClipboard}
-                    className="p-2 bg-background border border-border rounded-lg hover:bg-secondary hover:text-primary transition-colors flex-shrink-0"
+                    className="p-2 bg-background border border-border rounded-lg hover:bg-secondary hover:text-primary transition-colors shrink-0"
                     title="Copy Link"
                   >
                     {isCopied ? <CheckCircle2 size={16} className="text-green-500" /> : <Copy size={16} />}
@@ -342,7 +351,7 @@ export function GlobalFAB() {
                   <button
                     onClick={copyToClipboard}
                     className={cn(
-                      "py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all",
+                      "py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer",
                       isCopied ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-secondary text-foreground hover:bg-secondary/80 border border-transparent"
                     )}
                   >
@@ -353,9 +362,14 @@ export function GlobalFAB() {
                   <button
                     onClick={() => {
                       setSearchAction(null);
-                      router.push(getFormUrl().replace(window.location.origin, ''));
+                      const url = getFormUrl();
+                      if (url.startsWith('http')) {
+                        window.open(url, '_blank');
+                      } else {
+                        router.push(url);
+                      }
                     }}
-                    className="py-3 px-4 gradient-primary text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
+                    className="py-3 px-4 gradient-primary text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                   >
                     Buka Form <ExternalLink size={16} />
                   </button>

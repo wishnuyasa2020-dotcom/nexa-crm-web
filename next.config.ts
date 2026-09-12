@@ -4,6 +4,30 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: '/form-siswa',
+        destination: '/public/form-siswa'
+      },
+      {
+        source: '/form-siswa/:path*',
+        destination: '/public/form-siswa/:path*'
+      },
+      {
+        source: '/form-konfirmasi',
+        destination: '/public/form-siswa'
+      },
+      {
+        source: '/form-konfirmasi/:path*',
+        destination: '/public/form-siswa/:path*'
+      },
+      {
+        source: '/konfirmasi',
+        destination: '/public/form-siswa'
+      },
+      {
+        source: '/konfirmasi/:path*',
+        destination: '/public/form-siswa/:path*'
+      },
+      {
         source: '/api/crm/:path*',
         destination: 'http://127.0.0.1:3001/api/crm/:path*'
       },
