@@ -68,10 +68,18 @@ export default function Header({ title }: { title?: string }) {
   return (
     <>
       <header className="h-14 flex items-center justify-between px-6 border-b bg-background/95 backdrop-blur-sm shrink-0 z-30">
-        {/* Title */}
-        <h1 className="text-base font-semibold text-foreground">
-          {title || (user?.tenant_id ? (user.tenant_id.charAt(0).toUpperCase() + user.tenant_id.slice(1)) : 'Dashboard')}
-        </h1>
+        {/* Title & Demo Indicator */}
+        <div className="flex items-center gap-3">
+          <h1 className="text-base font-semibold text-foreground">
+            {title || (user?.tenant_id ? (user.tenant_id.charAt(0).toUpperCase() + user.tenant_id.slice(1)) : 'Dashboard')}
+          </h1>
+          {user?.tenant_id === 'crm-demo' && (
+            <div className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs" title="Lingkungan Sandbox: Data operasional direset otomatis setiap Minggu pukul 21:00 WIB">
+              <span>🔄</span>
+              <span>Demo Sandbox &middot; Reset Minggu 21:00 WIB</span>
+            </div>
+          )}
+        </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-2 sm:gap-3">

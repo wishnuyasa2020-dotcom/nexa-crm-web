@@ -61,6 +61,10 @@ export default function LoginPage() {
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">Masuk ke dasbor operasional</p>
+          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
+            <span>💡</span>
+            <span>Data demo direset otomatis tiap <strong>Minggu 21:00 WIB</strong></span>
+          </div>
         </div>
 
         {/* Login Card */}
