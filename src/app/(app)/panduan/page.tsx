@@ -16,6 +16,7 @@ export default function PanduanPage() {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'b2b-pipeline': true,
     'b2b-decision': true,
+    'admin-assign-kelas': true,
     'admin-waba': true,
     'admin-smartrouting': true,
     'admin-domains': true,
@@ -291,55 +292,275 @@ export default function PanduanPage() {
       {activeTab === 'admin' && (
         <div className="space-y-4 sm:space-y-6 animate-in fade-in-50 duration-200">
           {/* Quick Links Admin */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             <Link
               href="/manajemen-tim"
-              className="p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
+              className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
-                  <Users size={18} />
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                  <Users size={17} />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">Manajemen Tim</h4>
-                  <p className="text-xs text-muted-foreground">Kelola staf & kuota seat</p>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-foreground truncate">Manajemen Tim</h4>
+                  <p className="text-xs text-muted-foreground truncate">Kelola staf &amp; seat</p>
                 </div>
               </div>
-              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
+            </Link>
+
+            <Link
+              href="/siswa"
+              className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
+            >
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+                  <UserCheck size={17} />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-foreground truncate">Penugasan Kelas</h4>
+                  <p className="text-xs text-muted-foreground truncate">Assign Kelas ke CRO</p>
+                </div>
+              </div>
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
             </Link>
 
             <Link
               href="/settings?tab=whatsapp"
-              className="p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
+              className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                  <Phone size={18} />
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Phone size={17} />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">WhatsApp Bisnis</h4>
-                  <p className="text-xs text-muted-foreground">Status WABA & Fresh SIM</p>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-foreground truncate">WhatsApp Bisnis</h4>
+                  <p className="text-xs text-muted-foreground truncate">Status WABA &amp; SIM</p>
                 </div>
               </div>
-              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
             </Link>
 
             <Link
               href="/templates"
-              className="p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
+              className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                  <FileText size={18} />
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                  <FileText size={17} />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">Template Admin</h4>
-                  <p className="text-xs text-muted-foreground">Template & Smart Routing</p>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-foreground truncate">Template Admin</h4>
+                  <p className="text-xs text-muted-foreground truncate">Smart Routing</p>
                 </div>
               </div>
-              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
             </Link>
           </div>
+
+          {/* 🌟 PANDUAN LANGKAH DEMI LANGKAH: CARA CHIEF CRO & ADMIN MELAKUKAN PENUGASAN KELAS KE CRO */}
+          {matchesSearch('assign kelas penugasan teritorial chief cro manager admin replace auto inherit b2c langkah sop panduan') && (
+            <div className="rounded-2xl border-2 border-purple-500/30 bg-card p-4 sm:p-6 md:p-7 shadow-sm space-y-4 sm:space-y-5 relative overflow-hidden">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-600 text-white font-bold text-xs uppercase tracking-wider shadow-sm w-fit mb-1 sm:mb-0 sm:absolute sm:top-0 sm:right-0 sm:rounded-none sm:rounded-bl-xl">
+                Otoritas Khusus Chief CRO, Manager &amp; Admin
+              </div>
+
+              <div 
+                className="flex items-center justify-between cursor-pointer select-none pt-1 sm:pt-2 min-h-11"
+                onClick={() => toggleSection('admin-assign-kelas')}
+              >
+                <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+                  <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                    <UserCheck size={20} className="sm:w-5 sm:h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold text-foreground">
+                      SOP &amp; Panduan Lengkap: Cara Melakukan Penugasan Kelas ke Staf CRO
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Panduan langkah demi langkah bagi Chief CRO, Manager, dan Admin dalam mendistribusikan teritorial kelas (1 Kelas = 1 CRO), mekanisme Auto-Replace, dan pewarisan otomatis siswa baru.
+                    </p>
+                  </div>
+                </div>
+                <div className="p-1 text-muted-foreground shrink-0">
+                  {expandedSections['admin-assign-kelas'] ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                </div>
+              </div>
+
+              {expandedSections['admin-assign-kelas'] && (
+                <div className="pt-2 sm:pt-3 space-y-4 sm:space-y-5">
+                  {/* Banner Ringkasan Filosofi 1 Komando */}
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-2">
+                    <div className="flex items-center gap-2 text-purple-600 font-bold text-xs uppercase tracking-wider">
+                      <Shield size={16} className="shrink-0" />
+                      Prinsip Distribusi Teritorial Satu Komando
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Penugasan hak asuh prospek siswa (B2C) dilakukan berbasis unit <strong>KELAS</strong> di sekolah binaan tertentu (contoh: <em>Kelas 12 TKJ 1 di SMKS Hasina</em>). Tombol eksekusi penugasan ini <strong>hanya dapat diakses oleh akun berkedudukan Chief CRO, Manager, dan Administrator</strong> guna mencegah perebutan prospek liar antar-staf di lapangan.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
+                        <span className="text-foreground"><strong>1 Kelas = 1 CRO:</strong> Menghindari kanibalisasi</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
+                        <span className="text-foreground"><strong>Auto-Replace:</strong> Ganti CRO otomatis seketika</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
+                        <span className="text-foreground"><strong>Auto-Inherit:</strong> Siswa baru otomatis diwariskan</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 6 Langkah Demi Langkah Praktis */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                      <Sparkles size={16} className="text-purple-600 shrink-0" />
+                      Langkah Demi Langkah Eksekusi di Dashboard CRM:
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-xs">
+                      {/* Step 1 */}
+                      <div className="p-4 rounded-xl border bg-background space-y-2 relative">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
+                            Langkah 1
+                          </span>
+                          <Link
+                            href="/siswa"
+                            className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-700 font-semibold text-xs"
+                          >
+                            <span>Buka Halaman Siswa</span>
+                            <ArrowRight size={12} />
+                          </Link>
+                        </div>
+                        <h5 className="font-bold text-foreground text-sm">Masuk ke Menu Data Siswa (/siswa)</h5>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Pastikan Anda login ke CRM menggunakan akun dengan peran <strong>Chief CRO</strong>, <strong>Manager</strong>, atau <strong>Admin</strong>. Klik menu <strong>Siswa</strong> pada sidebar navigasi kiri utama.
+                        </p>
+                      </div>
+
+                      {/* Step 2 */}
+                      <div className="p-4 rounded-xl border bg-background space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
+                            Langkah 2
+                          </span>
+                          <span className="text-muted-foreground text-xs font-mono font-semibold">[ 📑 Assign Kelas ]</span>
+                        </div>
+                        <h5 className="font-bold text-foreground text-sm">Klik Tombol [ Assign Kelas ]</h5>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Di bagian header atas halaman (bersebelahan dengan tombol <em>Tambah Siswa</em>, <em>Import</em>, dan <em>Export</em>), klik tombol <strong>Assign Kelas</strong> berwarna ungu untuk membuka modal dialog penugasan wilayah.
+                        </p>
+                      </div>
+
+                      {/* Step 3 */}
+                      <div className="p-4 rounded-xl border bg-background space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                            Langkah 3
+                          </span>
+                          <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <CheckCircle2 size={13} /> Filter Validasi Otomatis
+                          </span>
+                        </div>
+                        <h5 className="font-bold text-foreground text-sm">Pilih Sekolah Binaan (Sudah Sosialisasi)</h5>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Pilih nama sekolah target dari dropdown <strong>1. Pilih Sekolah</strong>. Sistem secara otomatis hanya menampilkan sekolah yang berstatus minimal <strong>Sudah Sosialisasi</strong> atau <strong>Identity Captured</strong> untuk menjamin data audiens kelas sudah ada di database.
+                        </p>
+                      </div>
+
+                      {/* Step 4 */}
+                      <div className="p-4 rounded-xl border bg-background space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                            Langkah 4
+                          </span>
+                          <span className="text-muted-foreground text-xs">Cek Kuota &amp; CRO Saat Ini</span>
+                        </div>
+                        <h5 className="font-bold text-foreground text-sm">Pilih Kelas yang Hendak Ditugaskan</h5>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Pilih kelas pada dropdown <strong>2. Pilih Kelas</strong>. Sistem akan menyajikan seluruh kelas aktif yang telah terdaftar dari sekolah tersebut (baik hasil form konfirmasi publik QR, import file, maupun input manual), lengkap dengan info jumlah siswa dan pemegang CRO saat ini.
+                        </p>
+                      </div>
+
+                      {/* Step 5 */}
+                      <div className="p-4 rounded-xl border bg-background space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                            Langkah 5
+                          </span>
+                          <span className="text-muted-foreground text-xs">Target CRO</span>
+                        </div>
+                        <h5 className="font-bold text-foreground text-sm">Tentukan Staf CRO Penerima Mandat</h5>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Pilih staf CRO aktif yang akan bertanggung jawab penuh mengelola kelas tersebut dari dropdown <strong>3. Pilih Target CRO</strong>. Staf ini nantinya memegang hak asuh atas seluruh siswa di kelas tersebut.
+                        </p>
+                      </div>
+
+                      {/* Step 6 */}
+                      <div className="p-4 rounded-xl border bg-background space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                            Langkah 6
+                          </span>
+                          <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <Zap size={13} /> Eksekusi Aman &amp; Cepat
+                          </span>
+                        </div>
+                        <h5 className="font-bold text-foreground text-sm">Tinjau Ringkasan &amp; Eksekusi Assign</h5>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Tinjau kotak ringkasan pratinjau. Jika kelas sudah dipegang CRO lama, sistem akan mengonfirmasi <strong>Auto-Replace</strong>. Klik tombol <strong>[ Assign Kelas Sekarang ]</strong>. Seluruh siswa seketika berpindah ke CRO target tanpa ada data yang tertinggal!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Jaminan Otomatisasi & Integritas Pasca Penugasan */}
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-background border space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-purple-600 flex items-center gap-2">
+                      <RefreshCw size={16} className="shrink-0" />
+                      3 Jaminan Otomatisasi &amp; Integritas Sistem Pasca-Penugasan (Must-Know Admin):
+                    </h4>
+
+                    <div className="space-y-2.5 text-xs">
+                      <div className="p-3 rounded-xl bg-secondary/40 border space-y-1">
+                        <div className="font-bold text-foreground flex items-center gap-1.5">
+                          <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                          1. Garansi Pewarisan Hak Asuh Siswa Baru (Auto-Inheritance):
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Setelah kelas di-assign ke seorang CRO, <strong>Chief CRO TIDAK PERLU melakukan assign ulang</strong> jika di kemudian hari ada siswa baru yang menyusul mendaftar. Baik melalui <em>Form Publik QR Sosialisasi (https://form-konfirmasi.nexamos.cloud)</em>, <em>Import Excel</em>, maupun <em>Input Manual</em>, siswa baru pada sekolah &amp; kelas tersebut secara otomatis langsung diwariskan ke CRO pemegang kelas saat ini.
+                        </p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-secondary/40 border space-y-1">
+                        <div className="font-bold text-foreground flex items-center gap-1.5">
+                          <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                          2. Sistem Auto-Replace Terintegrasi (Tanpa Data Tercecer):
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Chief CRO dapat memindahkan hak asuh kelas sewaktu-waktu (misalnya saat rotasi tim atau staf berhalangan). Sistem akan otomatis me-replace penanggung jawab seluruh siswa di kelas tersebut ke CRO baru dalam satu transaksi database atomik yang aman.
+                        </p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-secondary/40 border space-y-1">
+                        <div className="font-bold text-foreground flex items-center gap-1.5">
+                          <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                          3. Audit Trail Permanen Event-Sourcing CQRS:
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Setiap penugasan kelas tercatat permanen di <code>events_log</code> dengan tipe event <code>ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang dialihkan, serta identitas Chief CRO yang melakukan penugasan untuk audit akuntabilitas dan perhitungan insentif kinerja.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 🌟 HIGHLIGHT KHUSUS: SERVICE WINDOW & DUAL SMART ROUTING */}
           {matchesSearch('service window sw open sw closed smart routing dual template hemat biaya fallback') && (
