@@ -2,7 +2,7 @@
 
 import {
   Bell, Search, Users, Radio, TrendingUp, LogOut, Clock,
-  FileText, User, Settings, Calendar, ChevronDown, CalendarDays
+  FileText, User, Settings, Calendar, ChevronDown, CalendarDays, BookOpen
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useEffect, useState, useRef } from 'react';
@@ -232,6 +232,9 @@ export default function Header({ title }: { title?: string }) {
                 </Link>
                 <Link href="/templates" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors md:hidden" onClick={() => setShowMenu(false)}>
                   <FileText size={16} /> Template Admin
+                </Link>
+                <Link href="/panduan" className="flex items-center gap-2 px-3 py-2 text-sm text-primary font-medium hover:bg-primary/10 transition-colors" onClick={() => setShowMenu(false)}>
+                  <BookOpen size={16} className="text-primary" /> Panduan Tenant
                 </Link>
 
                 <div className="h-px bg-border my-1" />
