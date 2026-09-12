@@ -65,129 +65,148 @@ export default function Header({ title }: { title?: string }) {
   const initials = (user?.nama || user?.username || 'U')
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
+  const tenantLabel = title || (user?.tenant_id ? (user.tenant_id.charAt(0).toUpperCase() + user.tenant_id.slice(1)) : 'Dashboard');
+
   return (
     <>
-      <header className="h-14 flex items-center justify-between px-6 border-b bg-background/95 backdrop-blur-sm shrink-0 z-30">
-        {/* Title & Demo Indicator */}
-        <div className="flex items-center gap-3">
-          <h1 className="text-base font-semibold text-foreground">
-            {title || (user?.tenant_id ? (user.tenant_id.charAt(0).toUpperCase() + user.tenant_id.slice(1)) : 'Dashboard')}
-          </h1>
+      <header className="flex flex-col border-b bg-background/95 backdrop-blur-sm shrink-0 z-30">
+        {/* Mobile Top Bar (Row 1): Tenant identity (1 baris sendiri, font reguler kecil) & Demo badge */}
+        <div className="flex md:hidden items-center justify-between px-4 py-1.5 border-b border-border/40 bg-muted/20">
+          <span className="text-xs font-normal text-muted-foreground tracking-wide">
+            {tenantLabel}
+          </span>
           {user?.tenant_id === 'crm-demo' && (
-            <div className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs" title="Lingkungan Sandbox: Data operasional direset otomatis setiap Minggu pukul 21:00 WIB">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
               <span>🔄</span>
-              <span>Demo Sandbox &middot; Reset Minggu 21:00 WIB</span>
+              <span>Demo Sandbox</span>
             </div>
           )}
         </div>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Quick-Switch Session Cohort Dropdown */}
-          <div className="relative" ref={cohortMenuRef}>
-            <button
-              onClick={() => setShowCohortMenu(!showCohortMenu)}
-              className={cn(
-                "h-8 px-2.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer",
-                isHistoricalReadOnly 
-                  ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
-                  : "bg-secondary/50 hover:bg-secondary text-foreground"
-              )}
-              title="Ganti Sesi Periode / Cohort"
-            >
-              <Calendar size={13} className={isHistoricalReadOnly ? "text-amber-500" : "text-primary"} />
-              <span className="hidden sm:inline text-muted-foreground font-normal">Cohort:</span>
-              <span>{selectedCohort?.nama_period || 'Memuat...'}</span>
-              {isHistoricalReadOnly ? (
-                <span className="text-[10px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-600 font-bold">Arsip</span>
-              ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-              )}
-              <ChevronDown size={12} className="text-muted-foreground" />
-            </button>
-
-            {showCohortMenu && (
-              <div className="absolute right-0 top-full mt-2 w-60 bg-card border rounded-2xl shadow-xl overflow-hidden py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3.5 py-2.5 border-b">
-                  <p className="text-xs font-bold text-foreground">Sesi Periode / Cohort</p>
-                  <p className="text-[11px] text-muted-foreground">Pilih tahun ajaran untuk memfilter data</p>
-                </div>
-                <div className="max-h-56 overflow-y-auto py-1 divide-y divide-border/40">
-                  {cohorts.length === 0 ? (
-                    <div className="p-3 text-xs text-center text-muted-foreground">Tidak ada cohort</div>
-                  ) : (
-                    cohorts.map((c) => {
-                      const isSelected = selectedCohort?.id_period === c.id_period || selectedCohort?.nama_period === c.nama_period;
-                      const isAktif = c.status === 'aktif';
-
-                      return (
-                        <button
-                          key={c.id_period}
-                          onClick={() => {
-                            selectCohort(c.id_period);
-                            setShowCohortMenu(false);
-                          }}
-                          className={cn(
-                            "w-full px-3.5 py-2 text-left text-xs flex items-center justify-between hover:bg-secondary/40 transition-colors cursor-pointer",
-                            isSelected && "bg-primary/10 text-primary font-semibold"
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            {isAktif ? (
-                              <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
-                            ) : (
-                              <span className="w-2 h-2 rounded-full bg-muted-foreground/40 shrink-0" />
-                            )}
-                            <span className="truncate">{c.nama_period}</span>
-                          </div>
-                          <span className={cn(
-                            "text-[10px] px-1.5 py-0.5 rounded capitalize font-medium",
-                            isAktif ? "bg-green-500/10 text-green-600" : "bg-secondary text-muted-foreground"
-                          )}>
-                            {c.status}
-                          </span>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-
-                {(user?.role === 'Admin' || user?.role === 'Manager') && (
-                  <div className="border-t pt-1 bg-secondary/20">
-                    <Link
-                      href="/manajemen-periode"
-                      onClick={() => setShowCohortMenu(false)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 text-xs text-primary hover:bg-primary/10 transition-colors font-medium"
-                    >
-                      <Settings size={13} /> Kelola Periode / Re-entry
-                    </Link>
-                  </div>
-                )}
+        {/* Main Header Bar (Row 2 on Mobile; Standard Row on Desktop) */}
+        <div className="h-13 md:h-14 flex items-center justify-between px-4 md:px-6">
+          {/* Title & Demo Indicator (Desktop Only) */}
+          <div className="hidden md:flex items-center gap-3">
+            <h1 className="text-base font-semibold text-foreground">
+              {tenantLabel}
+            </h1>
+            {user?.tenant_id === 'crm-demo' && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs" title="Lingkungan Sandbox: Data operasional direset otomatis setiap Minggu pukul 21:00 WIB">
+                <span>🔄</span>
+                <span>Demo Sandbox &middot; Reset Minggu 21:00 WIB</span>
               </div>
             )}
           </div>
 
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer">
-            <Search size={16} />
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors relative cursor-pointer">
-            <Bell size={16} />
-          </button>
+          {/* Actions Container (Mobile: full width with cohort left & actions right; Desktop: grouped right) */}
+          <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2 sm:gap-3">
+            {/* Quick-Switch Session Cohort Dropdown */}
+            <div className="relative" ref={cohortMenuRef}>
+              <button
+                onClick={() => setShowCohortMenu(!showCohortMenu)}
+                className={cn(
+                  "h-8 px-2.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer",
+                  isHistoricalReadOnly 
+                    ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                    : "bg-secondary/50 hover:bg-secondary text-foreground"
+                )}
+                title="Ganti Sesi Periode / Cohort"
+              >
+                <Calendar size={13} className={isHistoricalReadOnly ? "text-amber-500" : "text-primary"} />
+                <span className="hidden sm:inline text-muted-foreground font-normal">Cohort:</span>
+                <span>{selectedCohort?.nama_period || 'Memuat...'}</span>
+                {isHistoricalReadOnly ? (
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 font-bold">Arsip</span>
+                ) : (
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                )}
+                <ChevronDown size={12} className="text-muted-foreground" />
+              </button>
 
-          {/* Profile Menu */}
-          <div className="relative" ref={menuRef}>
-            <button 
-              onClick={() => setShowMenu(!showMenu)}
-              className="flex items-center gap-2.5 pl-2 border-l ml-1 hover:bg-secondary/50 rounded-lg pr-2 py-1 transition-colors text-left cursor-pointer"
-            >
-              <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
-                {initials}
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-xs font-medium text-foreground leading-tight">{user?.nama || user?.username}</p>
-                <p className="text-xs text-muted-foreground">{user?.role}</p>
-              </div>
-            </button>
+              {showCohortMenu && (
+                <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 w-60 bg-card border rounded-2xl shadow-xl overflow-hidden py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3.5 py-2.5 border-b">
+                    <p className="text-xs font-bold text-foreground">Sesi Periode / Cohort</p>
+                    <p className="text-xs text-muted-foreground">Pilih tahun ajaran untuk memfilter data</p>
+                  </div>
+                  <div className="max-h-56 overflow-y-auto py-1 divide-y divide-border/40">
+                    {cohorts.length === 0 ? (
+                      <div className="p-3 text-xs text-center text-muted-foreground">Tidak ada cohort</div>
+                    ) : (
+                      cohorts.map((c) => {
+                        const isSelected = selectedCohort?.id_period === c.id_period || selectedCohort?.nama_period === c.nama_period;
+                        const isAktif = c.status === 'aktif';
+
+                        return (
+                          <button
+                            key={c.id_period}
+                            onClick={() => {
+                              selectCohort(c.id_period);
+                              setShowCohortMenu(false);
+                            }}
+                            className={cn(
+                              "w-full px-3.5 py-2 text-left text-xs flex items-center justify-between hover:bg-secondary/40 transition-colors cursor-pointer",
+                              isSelected && "bg-primary/10 text-primary font-semibold"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              {isAktif ? (
+                                <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+                              ) : (
+                                <span className="w-2 h-2 rounded-full bg-muted-foreground/40 shrink-0" />
+                              )}
+                              <span className="truncate">{c.nama_period}</span>
+                            </div>
+                            <span className={cn(
+                              "text-xs px-1.5 py-0.5 rounded capitalize font-medium",
+                              isAktif ? "bg-green-500/10 text-green-600" : "bg-secondary text-muted-foreground"
+                            )}>
+                              {c.status}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {(user?.role === 'Admin' || user?.role === 'Manager') && (
+                    <div className="border-t pt-1 bg-secondary/20">
+                      <Link
+                        href="/manajemen-periode"
+                        onClick={() => setShowCohortMenu(false)}
+                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs text-primary hover:bg-primary/10 transition-colors font-medium"
+                      >
+                        <Settings size={13} /> Kelola Periode / Re-entry
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Action Icons & Profile */}
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer">
+                <Search size={16} />
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors relative cursor-pointer">
+                <Bell size={16} />
+              </button>
+
+              {/* Profile Menu */}
+              <div className="relative" ref={menuRef}>
+                <button 
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="flex items-center gap-2.5 pl-2 border-l ml-1 hover:bg-secondary/50 rounded-lg pr-2 py-1 transition-colors text-left cursor-pointer"
+                >
+                  <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    {initials}
+                  </div>
+                  <div className="hidden sm:block">
+                    <p className="text-xs font-medium text-foreground leading-tight">{user?.nama || user?.username}</p>
+                    <p className="text-xs text-muted-foreground">{user?.role}</p>
+                  </div>
+                </button>
 
             {/* Popup Menu */}
             {showMenu && (
@@ -253,7 +272,9 @@ export default function Header({ title }: { title?: string }) {
             )}
           </div>
         </div>
-      </header>
+      </div>
+    </div>
+  </header>
 
       {/* Historical Read-Only Session Banner */}
       {isHistoricalReadOnly && selectedCohort && (

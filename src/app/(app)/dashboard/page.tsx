@@ -297,14 +297,16 @@ export default function DashboardPage() {
     <div className="space-y-6 w-full min-w-0">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold text-foreground">Dashboard CRO</h1>
+      <div className="flex items-start sm:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+            <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+              Dashboard<span className="hidden sm:inline"> CRO</span>
+            </h1>
             {quota && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className={cn(
-                  "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border",
+                  "h-6 px-2 sm:px-2.5 inline-flex items-center justify-center rounded-full text-xs font-bold uppercase tracking-wider border leading-none shrink-0",
                   quota.tier.toLowerCase() === 'free' ? "bg-slate-500/10 text-slate-500 border-slate-500/20" :
                   quota.tier.toLowerCase() === 'pro' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
                   quota.tier.toLowerCase() === 'business' ? "bg-violet-500/10 text-violet-500 border-violet-500/20" :
@@ -314,22 +316,22 @@ export default function DashboardPage() {
                 </span>
                 <button
                   onClick={() => setShowUpgradeModal(true)}
-                  className="px-2.5 py-1 rounded-full text-xs font-bold gradient-primary text-white hover:opacity-90 transition-all shadow-sm shadow-primary/20 flex items-center gap-1 cursor-pointer"
+                  className="h-6 px-2 sm:px-2.5 inline-flex items-center justify-center gap-1 rounded-full text-xs font-bold gradient-primary text-white hover:opacity-90 transition-all shadow-sm shadow-primary/20 cursor-pointer leading-none shrink-0"
                   title="Tingkatkan Kapasitas / Upgrade Tier Tenant"
                 >
-                  <Zap size={11} />
-                  <span>Upgrade Tier</span>
+                  <Zap size={11} className="shrink-0" />
+                  <span>Upgrade<span className="hidden sm:inline"> Tier</span></span>
                 </button>
               </div>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
             Data real-time dari database · Diperbarui {lastRefresh.toLocaleTimeString('id-ID')}
           </p>
         </div>
         <button
           onClick={load}
-          className="p-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+          className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
           title="Refresh data"
         >
           <RefreshCw size={15} />
