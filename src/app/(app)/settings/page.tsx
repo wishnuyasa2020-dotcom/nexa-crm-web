@@ -7,12 +7,13 @@ import KotaMapping from '@/components/settings/KotaMapping';
 import KecamatanMapping from '@/components/settings/KecamatanMapping';
 import ProfileTab from '@/components/settings/ProfileTab';
 import BillingTab from '@/components/settings/BillingTab';
-import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft } from 'lucide-react';
+import WhatsAppTab from '@/components/settings/WhatsAppTab';
+import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'calendar' | 'billing'>('kelas');
+  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'whatsapp' | 'calendar' | 'billing'>('kelas');
   const { user } = useAuthStore();
 
   const isAuthorized = !user || user.role === 'Admin' || user.role === 'Manager';
@@ -41,6 +42,7 @@ export default function SettingsPage() {
     { id: 'kelas', label: 'Master Kelas', icon: BookOpen },
     { id: 'kota', label: 'Master Kota', icon: Building2 },
     { id: 'kecamatan', label: 'Master Kecamatan', icon: MapPin },
+    { id: 'whatsapp', label: 'WhatsApp Bisnis', icon: MessageSquare },
     { id: 'calendar', label: 'Integrasi Kalender', icon: Calendar },
     { id: 'billing', label: 'Langganan & Billing', icon: CreditCard },
   ] as const;
@@ -94,6 +96,7 @@ export default function SettingsPage() {
             {activeTab === 'kelas' && <KelasMapping />}
             {activeTab === 'kota' && <KotaMapping />}
             {activeTab === 'kecamatan' && <KecamatanMapping />}
+            {activeTab === 'whatsapp' && <WhatsAppTab />}
             {activeTab === 'calendar' && <ProfileTab />}
             {activeTab === 'billing' && <BillingTab />}
           </div>
