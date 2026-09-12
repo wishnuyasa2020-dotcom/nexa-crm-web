@@ -10,16 +10,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit2, User, Tag, ToggleLeft, ToggleRight } from "lucide-react";
+import { Edit2, User, Tag, ToggleLeft, ToggleRight, AtSign } from "lucide-react";
 
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user?: { id: string; nama: string; email: string; role: string; status: string; supervisor_id?: number | null } | null;
+  user?: { id: string; username?: string; nama: string; email: string; role: string; status: string; supervisor_id?: number | null } | null;
   onSuccess?: () => void;
 }
 
 export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModalProps) {
+  const [username, setUsername] = useState('');
   const [nama, setNama] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('CRO');
@@ -30,6 +31,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
 
   useEffect(() => {
     if (user && isOpen) {
+      setUsername(user.username || '');
       setNama(user.nama);
       setEmail(user.email || '');
       setRole(user.role);
@@ -56,6 +58,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
     try {
       setLoading(true);
       await apiClient.put(`/users/${user.id}`, { 
+        username: username.trim(),
         nama, 
         email,
         role, 
@@ -101,6 +104,28 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <AtSign size={14} /> Username Akun
+              </label>
+              <span className="text-xs text-amber-500 font-medium flex items-center gap-1">
+                🔒 Security Alert Aktif
+              </span>
+            </div>
+            <input 
+              required
+              type="text" 
+              placeholder="Ketik username (tanpa spasi)..." 
+              value={username}
+              onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono"
+            />
+            <p className="text-xs text-muted-foreground">
+              Perubahan username akan mengirimkan notifikasi keamanan otomatis ke email Admin CRM.
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <User size={14} /> Nama Lengkap
             </label>
@@ -110,7 +135,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
               placeholder="Ketik nama lengkap..." 
               value={nama}
               onChange={e => setNama(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -124,7 +149,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
               placeholder="Ketik alamat email..." 
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 

@@ -222,7 +222,12 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
                 )}
               </div>
 
-              <div className="bg-secondary/30 border border-border/50 rounded-2xl p-4">
+              <div className="flex items-center gap-2.5 p-3 bg-secondary/40 border rounded-xl text-xs text-muted-foreground">
+                <ShieldCheck size={16} className="text-primary shrink-0" />
+                <span>Sistem proteksi aktif: Mutasi username/password dicatat dalam audit log dan dilaporkan via email ke Admin CRM.</span>
+              </div>
+
+              <div className="bg-secondary/30 border rounded-2xl p-4">
                 <p className="text-xs text-muted-foreground text-center leading-relaxed">
                   Untuk memperbarui identitas utama atau izin akses akun,<br />
                   silakan menghubungi <span className="text-primary font-medium">Administrator</span>.
@@ -234,10 +239,15 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
           {/* Tab 2: Password */}
           {tab === 'password' && (
             <form onSubmit={handleChangePassword} className="px-5 pb-6 space-y-4">
+              <div className="flex items-center gap-2.5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-500">
+                <ShieldCheck size={16} className="shrink-0" />
+                <span>Pemberitahuan keamanan otomatis akan dikirimkan ke email Admin CRM saat password diperbarui.</span>
+              </div>
+
               {status === 'success' && (
                 <div className="flex items-center gap-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs px-3.5 py-3 rounded-xl">
                   <Check size={16} className="shrink-0" />
-                  <span>Password berhasil diperbarui. Gunakan password baru untuk login berikutnya.</span>
+                  <span>Password berhasil diperbarui. Email security alert telah dikirim ke Admin CRM.</span>
                 </div>
               )}
               {status === 'error' && (

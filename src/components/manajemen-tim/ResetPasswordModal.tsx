@@ -66,7 +66,7 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
                 placeholder="Masukkan password baru..." 
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                className="w-full px-3 pr-10 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full px-3 pr-10 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-amber-500"
               />
               <button
                 type="button"
@@ -76,6 +76,9 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              🛡️ Email konfirmasi peringatan keamanan akan dikirimkan otomatis ke Administrator CRM.
+            </p>
           </div>
 
           <DialogFooter className="mt-4 flex flex-row gap-2 justify-end sm:justify-end">
