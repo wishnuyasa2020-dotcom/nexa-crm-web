@@ -20,6 +20,7 @@ export default function PanduanPage() {
     'admin-smartrouting': true,
     'admin-domains': true,
     'cro-funnel': true,
+    'cro-fnar': true,
     'cro-tasks': true,
     'cro-chat': true,
   });
@@ -447,7 +448,7 @@ export default function PanduanPage() {
               >
                 <div className="flex items-center gap-2.5">
                   <Phone className="text-primary w-5 h-5 shrink-0" />
-                  <h3 className="text-sm sm:text-base font-bold text-foreground">Integrasi WABA Pola A (Assisted Onboarding) & PIN 2FA Meta</h3>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">Ketentuan Integrasi Nomor WhatsApp Bisnis (WABA Pola A)</h3>
                 </div>
                 <div className="p-1 text-muted-foreground shrink-0">
                   {expandedSections['admin-waba'] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
@@ -456,16 +457,13 @@ export default function PanduanPage() {
 
               {expandedSections['admin-waba'] && (
                 <div className="pt-2 space-y-4 text-sm leading-relaxed">
-                  <div className="p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 space-y-1.5">
-                    <div className="font-bold flex items-center gap-2">
-                      <Key size={16} className="shrink-0" /> CATATAN KREDENSIAL PENTING (INGAT & SIMPAN):
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 space-y-1.5">
+                    <div className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider">
+                      <Phone size={16} className="shrink-0" /> Alur Aktivasi Berbantuan (Assisted Onboarding):
                     </div>
-                    <div className="text-xs space-y-1 text-foreground">
-                      <p>• <strong>Default PIN 2-Step Verification (2FA Meta):</strong> <code className="px-2 py-0.5 rounded bg-muted font-bold text-primary">137950</code></p>
-                      <p className="text-xs text-muted-foreground">
-                        PIN ini dipasang otomatis oleh backend saat Cloud API diaktifkan. Jika Meta Console meminta PIN 2-Step Verification, selalu masukkan angka di atas.
-                      </p>
-                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Pihak admin tenant cukup mendaftarkan nomor kartu perdana baru melalui menu <strong>Pengaturan ➔ Integrasi WhatsApp</strong>. Tim support teknis Nexa MOS akan membantu sinkronisasi Cloud API dan meminta kode OTP SMS saat verifikasi nomor dilakukan.
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -513,20 +511,18 @@ export default function PanduanPage() {
               {expandedSections['admin-domains'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="p-3.5 sm:p-4 rounded-xl bg-secondary/40 border space-y-2">
-                    <h4 className="font-bold text-foreground text-sm">3 Domain Resmi Ekosistem Nexa MOS:</h4>
+                    <h4 className="font-bold text-foreground text-sm">2 Domain Resmi Ekosistem Nexa MOS:</h4>
                     <div className="space-y-1.5 text-muted-foreground">
                       <p>• 🌐 <strong>Landing Page Pemasaran:</strong> <code className="text-primary font-bold">https://nexamos.cloud</code> (Website statis promosi. <em>Jangan pernah gunakan untuk rute internal aplikasi!</em>)</p>
                       <p>• 💻 <strong>Aplikasi CRM Tenant:</strong> <code className="text-emerald-600 font-bold">https://crm.nexamos.cloud</code> (Tempat operasional seluruh modul CRM dan target semua tombol link email alert).</p>
-                      <p>• 🛡️ <strong>Superadmin Command Centre:</strong> <code className="text-purple-600 font-bold">https://admin.nexamos.cloud</code> (Kokpit internal kontrol database, lisensi, dan provisi nomor WABA).</p>
                     </div>
                   </div>
 
                   <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2">
                     <h4 className="font-bold text-foreground text-xs uppercase tracking-wider text-primary">
-                      Keamanan Akun & Hak Khusus Superadmin:
+                      Keamanan Akun & Email Security Alert:
                     </h4>
                     <p className="text-muted-foreground">
-                      • <strong>Hak Khusus Email Superadmin:</strong> Seluruh alert permohonan WABA tenant baru otomatis dikirimkan ke <code className="text-foreground font-semibold">wishnuyasa2020@gmail.com</code>.<br />
                       • <strong>Security Alert Mutasi Kredensial:</strong> Jika terjadi pergantian password atau username pada staf CRM, email alert otomatis terkirim dengan direct button menuju panel Manajemen Tim di <code className="text-foreground font-semibold">https://crm.nexamos.cloud/manajemen-tim</code>.
                     </p>
                   </div>
@@ -688,6 +684,115 @@ export default function PanduanPage() {
 
                   <div className="p-3.5 rounded-xl bg-secondary/50 border text-xs text-foreground">
                     🛡️ <strong>Aturan Wilayah 1 Kelas = 1 CRO:</strong> Satu kelas di sekolah binaan hanya dapat diklaim oleh 1 CRO per periode aktif. Jika CRO lain mencoba menginput siswa di kelas tersebut, sistem otomatis menolak untuk mencegah konflik teritorial.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Framework Kualifikasi FNAR */}
+          {matchesSearch('fnar fit need ability readiness kualifikasi lead prospect gate lolos diskualifikasi') && (
+            <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
+              <div 
+                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                onClick={() => toggleSection('cro-fnar')}
+              >
+                <div className="flex items-center gap-2.5">
+                  <UserCheck className="text-primary w-5 h-5 shrink-0" />
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">
+                    Framework FNAR — 4 Pilar Kualifikasi Objektif (Lead ➔ Prospect)
+                  </h3>
+                </div>
+                <div className="p-1 text-muted-foreground shrink-0">
+                  {expandedSections['cro-fnar'] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                </div>
+              </div>
+
+              {expandedSections['cro-fnar'] && (
+                <div className="pt-2 space-y-4 text-xs leading-relaxed">
+                  <div className="p-3.5 rounded-xl bg-secondary/40 border space-y-1.5">
+                    <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                      <Sparkles size={16} className="text-primary shrink-0" />
+                      Apa itu Framework FNAR?
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      <strong>FNAR (Fit, Need, Ability, Readiness)</strong> adalah kerangka kerja asesmen berbasis bukti objektif yang digunakan oleh CRO untuk membedakan antara siswa yang sekadar <em>"berminat/penasaran"</em> dengan calon peserta yang memang <em>"layak, mampu, dan siap berangkat"</em>. Siswa yang berstatus <strong>Lead</strong> tidak dapat dinaikkan menjadi <strong>Prospect</strong> sebelum ke-4 pilar ini diverifikasi:
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* F: FIT */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                          F — FIT (Kesesuaian Syarat)
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Kesesuaian Kriteria Dasar Program</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        • <strong>Bukti Wajib:</strong> Ada foto/salinan ijazah SMA/SMK sederajat, rentang usia masuk batas regulasi visa kerja (18–27 tahun), dan tinggi/berat badan proporsional.
+                      </p>
+                      <div className="p-2 rounded-lg bg-muted/60 text-xs text-muted-foreground">
+                        ❌ <em>Jika usia &gt; 28 tahun atau belum berijazah SMA ➔ Otomatis Disqualified (Gugur).</em>
+                      </div>
+                    </div>
+
+                    {/* N: NEED */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                          N — NEED (Kebutuhan Nyata)
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Motivasi & Dorongan Ekonomi Nyata</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        • <strong>Bukti Wajib:</strong> Catatan wawancara telepon/tatap muka yang menunjukkan motivasi ekonomi kuat (kebutuhan membantu keluarga, modal usaha mandiri, bukan sekadar ikut tren teman).
+                      </p>
+                      <div className="p-2 rounded-lg bg-muted/60 text-xs text-muted-foreground">
+                        ⚠️ <em>Jika motif masih ragu-ragu ➔ Tetap di Lead & dialirkan ke kampanye Drip Nurturing.</em>
+                      </div>
+                    </div>
+
+                    {/* A: ABILITY */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
+                          A — ABILITY (Kemampuan Fisik & Medis)
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Kelayakan Fisik, Medis & Finansial</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        • <strong>Bukti Wajib:</strong> Deklarasi medis tidak pernah patah tulang mayor, tidak buta warna, tidak bertindik/bertato, lolos pra-MCU, serta kemampuan pendanaan keluarga yang realistis.
+                      </p>
+                      <div className="p-2 rounded-lg bg-muted/60 text-xs text-muted-foreground">
+                        ❌ <em>Patah tulang mayor / buta warna total ➔ Hard Gate Disqualified (Ditolak sistem).</em>
+                      </div>
+                    </div>
+
+                    {/* R: READINESS */}
+                    <div className="p-4 rounded-xl border bg-background space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                          R — READINESS (Kesiapan Waktu)
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-foreground text-sm">Kesiapan Waktu Memulai Pelatihan</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        • <strong>Bukti Wajib:</strong> Siswa kelas 12 semester akhir yang siap masuk asrama pelatihan setelah kelulusan, dan siap dijadwalkan sesi konsultasi keputusan bersama orang tua minggu ini.
+                      </p>
+                      <div className="p-2 rounded-lg bg-muted/60 text-xs text-muted-foreground">
+                        💤 <em>Jika masih kelas 10 atau 11 ➔ Masuk status Hibernasi (Snooze Campaign 60–90 hari).</em>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/30 text-xs text-foreground space-y-1">
+                    <p className="font-bold text-emerald-600 flex items-center gap-1.5">
+                      <CheckCircle2 size={15} className="shrink-0" /> Mekanisme Event CQRS Nexa OS:
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Sistem tidak mengizinkan CRO mengubah status prospek secara manual. Perpindahan status <code>LEAD ➔ PROSPECT</code> dipicu otomatis oleh event sistem <code>QualificationPassed</code> hanya ketika CRO telah mengisi dan mengunggah checklist verifikasi 4 dimensi FNAR di atas.
+                    </p>
                   </div>
                 </div>
               )}
