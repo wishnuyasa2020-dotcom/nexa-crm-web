@@ -5,6 +5,8 @@ import { Radio, Send, Search, ArrowLeft, Loader2, Info, RotateCcw, X, CheckCircl
 import { cn } from '@/lib/utils';
 import { broadcastApi, type AudienceItem, type BroadcastCampaign, type MetaTemplate, type CrmTemplate } from '@/lib/broadcastApi';
 import { TemplatePreviewBubble, buildPreviewText, type ButtonType } from '@/components/templates/TemplatePreviewBubble';
+import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
+import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 
 // Status dari GAS Worker: antri, proses, selesai, gagal
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -42,12 +44,21 @@ function Toast({ msg, type, onClose }: { msg: string; type: 'success' | 'error';
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function BroadcastPage() {
+  const { data: waData, isConnected: isWaConnected, loading: waLoading } = useWhatsAppStatus();
   const [view, setView] = useState<'history' | 'new'>('history');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type });
   }, []);
+
+  const handleNewBroadcastClick = () => {
+    if (!isWaConnected) {
+      showToast('Nomor WhatsApp Bisnis belum terhubung. Hubungkan nomor di Pengaturan.', 'error');
+      return;
+    }
+    setView('new');
+  };
 
   return (
     <div className="space-y-4">
@@ -64,8 +75,13 @@ export default function BroadcastPage() {
         </div>
         {view === 'history' ? (
           <button
-            onClick={() => setView('new')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-white text-sm font-medium shadow-md shadow-primary/20 hover:opacity-90 transition-all shrink-0"
+            onClick={handleNewBroadcastClick}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium shadow-md transition-all shrink-0",
+              !isWaConnected
+                ? "bg-muted text-muted-foreground opacity-70 cursor-not-allowed"
+                : "gradient-primary shadow-primary/20 hover:opacity-90"
+            )}
           >
             <Send size={16} /> Broadcast Baru
           </button>
@@ -79,9 +95,22 @@ export default function BroadcastPage() {
         )}
       </div>
 
+      {/* Gating Banner jika WhatsApp belum terhubung */}
+      {!isWaConnected && !waLoading && (
+        <WhatsAppGatingBanner
+          featureName="Broadcast Pesan WhatsApp"
+          status={waData?.whatsappStatus}
+        />
+      )}
+
       {view === 'history'
-        ? <HistoryView onNewBroadcast={() => setView('new')} />
-        : <NewBroadcastWizard onBack={() => { setView('history'); }} onSuccess={(msg) => { showToast(msg, 'success'); setView('history'); }} />
+        ? <HistoryView onNewBroadcast={handleNewBroadcastClick} />
+        : <NewBroadcastWizard
+            onBack={() => { setView('history'); }}
+            onSuccess={(msg) => { showToast(msg, 'success'); setView('history'); }}
+            isWaConnected={isWaConnected}
+            waStatus={waData?.whatsappStatus}
+          />
       }
 
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
@@ -370,7 +399,17 @@ function SchoolCombobox({
 // ==========================================
 // NEW BROADCAST WIZARD
 // ==========================================
-function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSuccess: (msg: string) => void }) {
+function NewBroadcastWizard({
+  onBack,
+  onSuccess,
+  isWaConnected = true,
+  waStatus,
+}: {
+  onBack: () => void;
+  onSuccess: (msg: string) => void;
+  isWaConnected?: boolean;
+  waStatus?: string;
+}) {
   // ── Audience state ──
   const [audience, setAudience]         = useState<AudienceItem[]>([]);
   const [audienceMeta, setAudienceMeta] = useState({ total: 0, totalPages: 1, page: 1 });
@@ -529,6 +568,10 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
   };
 
   const handleSend = async () => {
+    if (isWaConnected === false) {
+      setAudienceError('Nomor WhatsApp Bisnis belum terhubung atau belum aktif. Hubungkan nomor di menu Pengaturan.');
+      return;
+    }
     if (selectedIds.size === 0) return;
     setIsSending(true);
     try {
@@ -551,6 +594,15 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
+      {isWaConnected === false && (
+        <div className="lg:col-span-3">
+          <WhatsAppGatingBanner
+            compact
+            featureName="Broadcast Pesan WhatsApp"
+            status={waStatus}
+          />
+        </div>
+      )}
 
       {/* ── KIRI: Form Wizard ── */}
       <div className="lg:col-span-2 space-y-6 pb-40 lg:pb-0">
@@ -994,7 +1046,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
 
           <button
             onClick={handleSend}
-            disabled={isSending || selectedIds.size === 0}
+            disabled={isSending || selectedIds.size === 0 || isWaConnected === false}
             className="w-full mt-4 py-3 rounded-xl gradient-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSending
@@ -1026,7 +1078,7 @@ function NewBroadcastWizard({ onBack, onSuccess }: { onBack: () => void; onSucce
           </div>
           <button
             onClick={handleSend}
-            disabled={isSending || selectedIds.size === 0}
+            disabled={isSending || selectedIds.size === 0 || isWaConnected === false}
             className="w-full py-3 rounded-xl gradient-primary text-white font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isSending

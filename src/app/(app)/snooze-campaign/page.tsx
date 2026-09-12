@@ -16,6 +16,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { nurturingApi, SnoozeStats, SnoozeLead } from '@/lib/nurturingApi';
+import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
+import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -71,6 +73,7 @@ function SisaHariLabel({ hari }: { hari: number }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function SnoozeCampaignPage() {
+  const { data: waData, isConnected: isWaConnected, loading: waLoading } = useWhatsAppStatus();
   const router                          = useRouter();
   const [stats, setStats]               = useState<SnoozeStats | null>(null);
   const [leads, setLeads]               = useState<SnoozeLead[]>([]);
@@ -161,6 +164,10 @@ export default function SnoozeCampaignPage() {
   };
 
   const handleAddSnooze = async () => {
+    if (!isWaConnected) {
+      alert('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      return;
+    }
     if (!addIdSiswa.trim()) return;
     setAddLoading(true);
     try {
@@ -212,6 +219,14 @@ export default function SnoozeCampaignPage() {
         </div>
       </div>
 
+      {/* Gating Banner jika WhatsApp belum terhubung */}
+      {!isWaConnected && !waLoading && (
+        <WhatsAppGatingBanner
+          featureName="Snooze Campaign WhatsApp"
+          status={waData?.whatsappStatus}
+        />
+      )}
+
       {/* ── STAT CARDS + TOMBOL AKSI ────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
         <div className="col-span-1 lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -239,8 +254,20 @@ export default function SnoozeCampaignPage() {
         {/* CTA Tambah Snooze */}
         <div className="col-span-1 flex items-center justify-start lg:justify-end">
           <Button
-            className="w-full lg:w-auto h-12 md:h-10 rounded-xl gradient-primary text-white shadow-lg shadow-primary/20 text-sm"
-            onClick={() => setShowAddModal(true)}
+            className={cn(
+              "w-full lg:w-auto h-12 md:h-10 rounded-xl text-white shadow-lg text-sm transition-all",
+              !isWaConnected
+                ? "bg-muted text-muted-foreground opacity-70 cursor-not-allowed"
+                : "gradient-primary shadow-primary/20 hover:opacity-90"
+            )}
+            onClick={() => {
+              if (!isWaConnected) {
+                alert('Nomor WhatsApp Bisnis belum terhubung. Silakan hubungkan nomor terlebih dahulu di Pengaturan.');
+                return;
+              }
+              setShowAddModal(true);
+            }}
+            disabled={!isWaConnected}
             id="btn-tambah-snooze"
           >
             <Plus size={18} className="mr-2 shrink-0" /> Tambah Snooze Manual

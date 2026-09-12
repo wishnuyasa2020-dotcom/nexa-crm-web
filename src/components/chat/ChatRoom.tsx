@@ -24,16 +24,19 @@ import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SwCountdown } from './SwCountdown';
+import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 
 interface ChatRoomProps {
   conversation:   Conversation | null;
   onBack:         () => void;
   onMessageSent:  () => void; // callback agar ChatLayout refresh conversation list
+  isWaConnected?: boolean;
+  waStatus?:      string;
 }
 
 const MESSAGES_POLL_MS = 5000;
 
-export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps) {
+export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, waStatus }: ChatRoomProps) {
   const [messages,     setMessages]     = useState<ChatMessage[]>([]);
   const [inputText,    setInputText]    = useState('');
   const [isSending,    setIsSending]    = useState(false); // anti double-send
@@ -133,6 +136,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
   // ── Kirim Pesan Teks ───────────────────────────────────────────────────
   const handleSendText = async () => {
+    if (isWaConnected === false) {
+      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      return;
+    }
     if (selectedFile) {
       return handleSendMedia();
     }
@@ -172,6 +179,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   };
 
   const handleSendMedia = async () => {
+    if (isWaConnected === false) {
+      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      return;
+    }
     if (!selectedFile || isSending || !convId) return;
     setIsSending(true);
     try {
@@ -194,6 +205,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
   };
 
   const handleSendLocation = async () => {
+    if (isWaConnected === false) {
+      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      return;
+    }
     if (!locationData.lat || !locationData.lng || isSending || !convId) return;
     setIsSending(true);
     try {
@@ -226,6 +241,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
 
   // ── Kirim Template ─────────────────────────────────────────────────────
   const handleSendTemplate = async (templateId: string | number) => {
+    if (isWaConnected === false) {
+      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      return;
+    }
     if (isSending || !convId) return;
     setIsSending(true);
     try {
@@ -560,141 +579,151 @@ export function ChatRoom({ conversation, onBack, onMessageSent }: ChatRoomProps)
       </div>
 
       {/* Composer */}
-      <div className="bg-card px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full relative border-t border-border">
-        {!isSwOpen ? (
-          // SW CLOSED — hanya ikon ⓘ + tombol template
-          <>
-            {/* Info icon kecil */}
-            <div className="relative shrink-0">
-              <button
-                onClick={() => setShowSwInfo(v => !v)}
-                className="h-8 w-8 flex items-center justify-center rounded-full text-rose-400 hover:bg-rose-950/40 transition-colors"
-                title="Info service window"
-              >
-                <Info className="h-4 w-4" />
-              </button>
-              {/* Popover info */}
-              {showSwInfo && (
-                <div className="absolute bottom-10 left-0 w-64 bg-accent border border-rose-900/50 text-rose-300 text-xs px-3 py-2.5 rounded-lg shadow-xl z-50">
-                  <p className="leading-relaxed">Jeda waktu respon telah melewati 24 jam. Anda hanya dapat membalas menggunakan <span className="font-semibold text-rose-200">Template Pesan</span> resmi.</p>
-                  <div className="absolute -bottom-1.5 left-3 w-3 h-3 bg-accent border-b border-r border-rose-900/50 rotate-45" />
-                </div>
-              )}
-            </div>
-            <TemplatePicker
-              buttonText={isSending ? 'Mengirim...' : 'Pilih & Kirim Template'}
-              buttonClassName="flex-1 h-9 md:h-11 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50 text-xs md:text-sm"
-              studentName={conversation.student_name}
-              disabled={isSending}
-              onSendTemplate={handleSendTemplate}
-            />
-          </>
-        ) : (
-          // SW OPEN
-          <>
-            <TemplatePicker
-              buttonText=""
-              iconOnly
-              studentName={conversation.student_name}
-              disabled={isSending}
-              onSendTemplate={handleSendTemplate}
-            />
-            <div className="relative shrink-0">
-              <Button
-                variant="ghost" size="icon"
-                onClick={() => { setShowEmojiMenu(!showEmojiMenu); setShowAttachMenu(false); }}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-10 w-10"
-              >
-                <Smile className="h-5 w-5" />
-              </Button>
-              {showEmojiMenu && (
-                <div className="absolute bottom-12 left-0 bg-accent border rounded-xl shadow-xl flex flex-wrap gap-2 p-3 w-56 z-50">
-                  {['👍', '❤️', '😂', '😮', '😢', '🙏', '🔥', '🎉', '✅', '❌', '😊', '🙌', '👌', '💯'].map(e => (
-                    <button key={e} onClick={() => { setInputText(prev => prev + e); setShowEmojiMenu(false); }} className="text-xl hover:scale-125 transition-transform flex items-center justify-center h-8 w-8">
-                      {e}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="relative shrink-0">
-              <Button
-                variant="ghost" size="icon"
-                onClick={() => { setShowAttachMenu(!showAttachMenu); setShowEmojiMenu(false); }}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-10 w-10"
-              >
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              {showAttachMenu && (
-                <div className="absolute bottom-12 left-0 bg-accent border rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
-                  <button
-                    onClick={() => { setAttachAccept('image/*,video/*'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
-                  >
-                    <ImageIcon className="h-4 w-4 text-violet-400" /> Gambar/Video
-                  </button>
-                  <button
-                    onClick={() => { setAttachAccept('.pdf,.doc,.docx,.xls,.xlsx'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
-                  >
-                    <FileText className="h-4 w-4 text-orange-400" /> Dokumen
-                  </button>
-                  <button
-                    onClick={() => { setShowAttachMenu(false); setShowLocationModal(true); }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
-                  >
-                    <MapPin className="h-4 w-4 text-emerald-400" /> Lokasi
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              accept={attachAccept}
-              onChange={handleFileChange}
-            />
-
-            <div className="flex-1 relative flex flex-col">
-              {selectedFile && (
-                <div className={`absolute left-0 bg-accent px-3 py-2 rounded-t-xl border border-b-0 border-border flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
-                  {selectedFile.type.startsWith('image/') ? (
-                    <img src={URL.createObjectURL(selectedFile)} alt="preview" className="h-16 w-16 object-cover rounded-md" />
-                  ) : selectedFile.type.startsWith('video/') ? (
-                    <Video className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <span className="truncate max-w-40 text-xs text-foreground">{selectedFile.name}</span>
-                  <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300 ml-2 bg-card p-1 rounded-full">
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
-              <Input
-                placeholder={selectedFile ? "Tambah keterangan..." : "Ketik pesan..."}
-                className={`w-full bg-accent text-foreground border-none focus-visible:ring-1 focus-visible:ring-primary pr-10 py-5 ${selectedFile ? 'rounded-b-xl rounded-tr-xl rounded-tl-none' : 'rounded-full'}`}
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
+      {isWaConnected === false ? (
+        <div className="bg-card p-3 w-full border-t border-border">
+          <WhatsAppGatingBanner
+            compact
+            featureName="Live Chat WhatsApp"
+            status={waStatus}
+          />
+        </div>
+      ) : (
+        <div className="bg-card px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full relative border-t border-border">
+          {!isSwOpen ? (
+            // SW CLOSED — hanya ikon ⓘ + tombol template
+            <>
+              {/* Info icon kecil */}
+              <div className="relative shrink-0">
+                <button
+                  onClick={() => setShowSwInfo(v => !v)}
+                  className="h-8 w-8 flex items-center justify-center rounded-full text-rose-400 hover:bg-rose-950/40 transition-colors"
+                  title="Info service window"
+                >
+                  <Info className="h-4 w-4" />
+                </button>
+                {/* Popover info */}
+                {showSwInfo && (
+                  <div className="absolute bottom-10 left-0 w-64 bg-accent border border-rose-900/50 text-rose-300 text-xs px-3 py-2.5 rounded-lg shadow-xl z-50">
+                    <p className="leading-relaxed">Jeda waktu respon telah melewati 24 jam. Anda hanya dapat membalas menggunakan <span className="font-semibold text-rose-200">Template Pesan</span> resmi.</p>
+                    <div className="absolute -bottom-1.5 left-3 w-3 h-3 bg-accent border-b border-r border-rose-900/50 rotate-45" />
+                  </div>
+                )}
+              </div>
+              <TemplatePicker
+                buttonText={isSending ? 'Mengirim...' : 'Pilih & Kirim Template'}
+                buttonClassName="flex-1 h-9 md:h-11 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50 text-xs md:text-sm"
+                studentName={conversation.student_name}
                 disabled={isSending}
+                onSendTemplate={handleSendTemplate}
               />
-            </div>
-            {/* ANTI DOUBLE-SEND: disabled saat isSending */}
-            <Button
-              className="shrink-0 rounded-full h-11 w-11 p-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm disabled:opacity-50"
-              disabled={(!inputText.trim() && !selectedFile) || isSending}
-              onClick={handleSendText}
-            >
-              {isSending
-                ? <Loader2 className="h-5 w-5 animate-spin" />
-                : <Send className="h-5 w-5 ml-1" />}
-            </Button>
-          </>
-        )}
-      </div>
+            </>
+          ) : (
+            // SW OPEN
+            <>
+              <TemplatePicker
+                buttonText=""
+                iconOnly
+                studentName={conversation.student_name}
+                disabled={isSending}
+                onSendTemplate={handleSendTemplate}
+              />
+              <div className="relative shrink-0">
+                <Button
+                  variant="ghost" size="icon"
+                  onClick={() => { setShowEmojiMenu(!showEmojiMenu); setShowAttachMenu(false); }}
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-10 w-10"
+                >
+                  <Smile className="h-5 w-5" />
+                </Button>
+                {showEmojiMenu && (
+                  <div className="absolute bottom-12 left-0 bg-accent border rounded-xl shadow-xl flex flex-wrap gap-2 p-3 w-56 z-50">
+                    {['👍', '❤️', '😂', '😮', '😢', '🙏', '🔥', '🎉', '✅', '❌', '😊', '🙌', '👌', '💯'].map(e => (
+                      <button key={e} onClick={() => { setInputText(prev => prev + e); setShowEmojiMenu(false); }} className="text-xl hover:scale-125 transition-transform flex items-center justify-center h-8 w-8">
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="relative shrink-0">
+                <Button
+                  variant="ghost" size="icon"
+                  onClick={() => { setShowAttachMenu(!showAttachMenu); setShowEmojiMenu(false); }}
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-10 w-10"
+                >
+                  <Paperclip className="h-5 w-5" />
+                </Button>
+                {showAttachMenu && (
+                  <div className="absolute bottom-12 left-0 bg-accent border rounded-xl shadow-xl flex flex-col overflow-hidden w-40 z-50">
+                    <button
+                      onClick={() => { setAttachAccept('image/*,video/*'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
+                    >
+                      <ImageIcon className="h-4 w-4 text-violet-400" /> Gambar/Video
+                    </button>
+                    <button
+                      onClick={() => { setAttachAccept('.pdf,.doc,.docx,.xls,.xlsx'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
+                    >
+                      <FileText className="h-4 w-4 text-orange-400" /> Dokumen
+                    </button>
+                    <button
+                      onClick={() => { setShowAttachMenu(false); setShowLocationModal(true); }}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
+                    >
+                      <MapPin className="h-4 w-4 text-emerald-400" /> Lokasi
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept={attachAccept}
+                onChange={handleFileChange}
+              />
+
+              <div className="flex-1 relative flex flex-col">
+                {selectedFile && (
+                  <div className={`absolute left-0 bg-accent px-3 py-2 rounded-t-xl border border-b-0 border-border flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
+                    {selectedFile.type.startsWith('image/') ? (
+                      <img src={URL.createObjectURL(selectedFile)} alt="preview" className="h-16 w-16 object-cover rounded-md" />
+                    ) : selectedFile.type.startsWith('video/') ? (
+                      <Video className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="truncate max-w-40 text-xs text-foreground">{selectedFile.name}</span>
+                    <button onClick={() => setSelectedFile(null)} className="text-rose-400 hover:text-rose-300 ml-2 bg-card p-1 rounded-full">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                <Input
+                  placeholder={selectedFile ? "Tambah keterangan..." : "Ketik pesan..."}
+                  className={`w-full bg-accent text-foreground border-none focus-visible:ring-1 focus-visible:ring-primary pr-10 py-5 ${selectedFile ? 'rounded-b-xl rounded-tr-xl rounded-tl-none' : 'rounded-full'}`}
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={isSending}
+                />
+              </div>
+              {/* ANTI DOUBLE-SEND: disabled saat isSending */}
+              <Button
+                className="shrink-0 rounded-full h-11 w-11 p-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm disabled:opacity-50"
+                disabled={(!inputText.trim() && !selectedFile) || isSending}
+                onClick={handleSendText}
+              >
+                {isSending
+                  ? <Loader2 className="h-5 w-5 animate-spin" />
+                  : <Send className="h-5 w-5 ml-1" />}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
 
       <InputAktivitasModal 
         isOpen={showAktivitasModal} 

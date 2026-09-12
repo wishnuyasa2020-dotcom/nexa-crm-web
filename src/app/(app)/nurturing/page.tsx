@@ -16,6 +16,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { nurturingApi, NurturingStats, NurturingLead } from '@/lib/nurturingApi';
+import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
+import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -79,6 +81,7 @@ function SkeletonCardMobile() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function NurturingPage() {
+  const { data: waData, isConnected: isWaConnected, loading: waLoading } = useWhatsAppStatus();
   const router                          = useRouter();
   const [stats, setStats]               = useState<NurturingStats | null>(null);
   const [leads, setLeads]               = useState<NurturingLead[]>([]);
@@ -158,6 +161,10 @@ export default function NurturingPage() {
   };
 
   const handleForceTrigger = async () => {
+    if (!isWaConnected) {
+      setTriggerResult('❌ Nomor WhatsApp Bisnis belum terhubung atau belum aktif. Hubungkan nomor di menu Pengaturan.');
+      return;
+    }
     setTriggerLoading(true);
     setTriggerResult(null);
     try {
@@ -211,9 +218,9 @@ export default function NurturingPage() {
         <Button
           variant="outline"
           size="sm"
-          className="h-9 md:h-10 text-xs md:text-sm gap-1.5 border-primary/30 text-primary hover:bg-primary/10 shrink-0 shadow-sm"
+          className="h-9 md:h-10 text-xs md:text-sm gap-1.5 border-primary/30 text-primary hover:bg-primary/10 shrink-0 shadow-sm disabled:opacity-50"
           onClick={handleForceTrigger}
-          disabled={triggerLoading}
+          disabled={triggerLoading || !isWaConnected}
           id="btn-force-trigger"
         >
           {triggerLoading
@@ -223,6 +230,14 @@ export default function NurturingPage() {
           <span className="hidden sm:inline">Force Trigger</span>
         </Button>
       </div>
+
+      {/* Gating Banner jika WhatsApp belum terhubung */}
+      {!isWaConnected && !waLoading && (
+        <WhatsAppGatingBanner
+          featureName="Automated Nurturing WhatsApp"
+          status={waData?.whatsappStatus}
+        />
+      )}
 
       {/* Force trigger result */}
       {triggerResult && (
