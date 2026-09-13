@@ -156,7 +156,7 @@ export function AssignKelasModal({ isOpen, onClose, onSuccess }: AssignKelasModa
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground">Assign Kelas ke CRO</h2>
-              <p className="text-xs text-muted-foreground">Konsep Teritorial 1 Kelas Banyak Siswa = 1 CRO</p>
+              <p className="text-xs text-muted-foreground">1 Kelas = 1 CRO</p>
             </div>
           </div>
           <button
