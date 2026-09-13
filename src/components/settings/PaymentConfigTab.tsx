@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { 
   Building2, CreditCard, Banknote, ShieldCheck, CheckCircle2, 
   AlertCircle, Loader2, Copy, Sparkles, HelpCircle, Tag,
-  Pencil, Lock
+  Pencil
 } from 'lucide-react';
 import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
@@ -737,13 +737,9 @@ export default function PaymentConfigTab() {
         {/* Action Button Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border bg-card shadow-sm">
           <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-muted-foreground w-full sm:w-auto">
-            {isEditingAny ? (
+            {isEditingAny && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 font-semibold border border-amber-500/20">
                 <Pencil size={12} /> Mode Edit Aktif
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary text-muted-foreground font-medium border border-border/60">
-                <Lock size={12} /> Data Terkunci<span className="hidden sm:inline"> (Mode Baca)</span>
               </span>
             )}
             <span className="hidden sm:inline">
