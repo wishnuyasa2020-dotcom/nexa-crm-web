@@ -114,7 +114,8 @@ export default function SiswaPage() {
     <div className="space-y-4 pb-24 md:pb-6">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Row 1 (Mobile): Judul & Subtitle */}
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 shrink-0">
             <Users size={17} className="text-white" />
@@ -124,42 +125,50 @@ export default function SiswaPage() {
             <p className="text-xs text-muted-foreground">{total} siswa ditemukan</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowMobileFilter(v => !v)}
-            className={cn(
-              'sm:hidden p-2 rounded-lg border border-border text-muted-foreground transition-colors',
-              showMobileFilter && 'bg-primary/10 text-primary border-primary/40'
-            )}
-          >
-            <SlidersHorizontal size={16} />
-          </button>
-          {canAssignClass && (
+
+        {/* Row 2 (Mobile): Action Buttons */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsAssignModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary/30 text-xs font-semibold text-primary hover:bg-primary/10 transition-all cursor-pointer"
-              title="Assign Kelas ke CRO (Chief CRO)"
+              onClick={() => setShowMobileFilter(v => !v)}
+              className={cn(
+                'sm:hidden p-2 rounded-lg border border-border text-muted-foreground transition-colors',
+                showMobileFilter && 'bg-primary/10 text-primary border-primary/40'
+              )}
+              title="Filter Pencarian"
             >
-              <Layers size={13} />
-              <span className="hidden sm:inline">Assign Kelas</span>
-              <span className="sm:hidden">Kelas</span>
+              <SlidersHorizontal size={16} />
             </button>
-          )}
-          <button
-            onClick={() => setIsImportModalOpen(true)}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
-          >
-            <Upload size={13} />
-            Import Excel
-          </button>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
-          >
-            <Plus size={15} />
-            <span className="hidden sm:inline">Tambah Siswa</span>
-            <span className="sm:hidden">Tambah</span>
-          </button>
+            {canAssignClass && (
+              <button
+                onClick={() => setIsAssignModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg border border-primary/30 text-xs font-semibold text-primary hover:bg-primary/10 transition-all cursor-pointer"
+                title="Assign Kelas ke CRO (Chief CRO)"
+              >
+                <Layers size={13} />
+                <span className="hidden sm:inline">Assign Kelas</span>
+                <span className="sm:hidden">Kelas</span>
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
+            >
+              <Upload size={13} />
+              Import Excel
+            </button>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
+              title="Tambah Siswa"
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">Tambah Siswa</span>
+            </button>
+          </div>
         </div>
       </div>
 

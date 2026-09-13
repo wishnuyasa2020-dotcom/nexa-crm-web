@@ -187,22 +187,24 @@ export default function SekolahPage() {
     <div className="w-full space-y-4">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Row 1 (Mobile): Judul & Subtitle */}
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 shrink-0">
             <School size={17} className="text-white" />
           </div>
           <div className="min-w-0">
             <h1 className="text-base sm:text-lg font-bold text-foreground truncate">Master Sekolah</h1>
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {loadingStats ? '…' : `${stats?.total ?? 0} sekolah`}
               {user?.selectedPeriod ? ` · ${user.selectedPeriod}` : ''}
             </p>
           </div>
         </div>
 
+        {/* Row 2 (Mobile): Action Buttons */}
         {!isCRO && (
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center justify-end gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setIsImportModalOpen(true)}
               className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
@@ -218,11 +220,11 @@ export default function SekolahPage() {
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
+              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
+              title="Tambah Sekolah"
             >
-              <Plus size={15} />
+              <Plus size={16} />
               <span className="hidden sm:inline">Tambah Sekolah</span>
-              <span className="sm:hidden">Tambah</span>
             </button>
           </div>
         )}

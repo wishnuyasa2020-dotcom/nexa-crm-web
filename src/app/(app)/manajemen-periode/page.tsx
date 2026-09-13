@@ -89,27 +89,31 @@ export default function ManajemenPeriodePage() {
   return (
     <div className="flex flex-col h-full bg-background overflow-y-auto">
       {/* Header */}
-      <header className="shrink-0 h-16 border-b bg-card px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md shadow-primary/20">
+      <header className="shrink-0 min-h-16 sm:h-16 border-b bg-card px-4 sm:px-6 py-3 sm:py-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Row 1 (Mobile) / Left (Desktop) */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
             <CalendarDays className="w-5 h-5 text-white" />
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">Manajemen Periode (Cohort)</h1>
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-lg font-bold text-foreground leading-tight">Manajemen Periode (Cohort)</h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
               Pusat kontrol siklus tahun ajaran komersial, status aktif, dan eksekusi Re-entry
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => setIsCreateOpen(true)}
-          className="h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all shrink-0 cursor-pointer"
-        >
-          <Plus size={16} />
-          <span className="hidden sm:inline">Buat Cohort Baru</span>
-          <span className="sm:hidden">Baru</span>
-        </button>
+        {/* Row 2 (Mobile) / Right (Desktop) */}
+        <div className="flex items-center justify-end w-full sm:w-auto shrink-0">
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            className="h-9 sm:h-10 px-3 sm:px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all shrink-0 cursor-pointer"
+            title="Buat Cohort Baru"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Buat Cohort Baru</span>
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -117,26 +121,26 @@ export default function ManajemenPeriodePage() {
         {/* Active Cohort Banner */}
         {activeCohort && (
           <div className="p-4 sm:p-5 rounded-2xl border bg-linear-to-r from-primary/10 via-primary/5 to-transparent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
-                <CheckCircle2 size={24} />
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 self-start sm:self-auto mt-0.5 sm:mt-0">
+                <CheckCircle2 size={22} className="sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-base sm:text-lg font-bold text-foreground">
                     Cohort Aktif: {activeCohort.nama_period}
                   </h2>
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-500/10 text-green-600 border border-green-500/20">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/10 text-green-600 border border-green-500/20">
                     🟢 Aktif Operasional
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Seluruh alur kerja CRM (Data Siswa, Sekolah, Task List, Weekly Planning) saat ini berjalan pada cohort ini.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground shrink-0">
+            <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground shrink-0 w-full sm:w-auto justify-start sm:justify-end pt-2 sm:pt-0 border-t border-border/30 sm:border-0">
               <div className="flex items-center gap-1.5 font-medium text-foreground">
                 <Users size={15} className="text-primary" />
                 <span>{activeCohort.total_siswa.toLocaleString('id-ID')} Siswa</span>
@@ -173,7 +177,7 @@ export default function ManajemenPeriodePage() {
 
         {/* Table of Cohorts */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-0.5">
             <h3 className="text-sm sm:text-base font-bold text-foreground">
               Daftar Periode / Cohort Tersedia
             </h3>
