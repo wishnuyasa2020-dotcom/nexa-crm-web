@@ -618,9 +618,9 @@ export default function DashboardPage() {
 
       {/* ── Mini TaskList (Tasks Prioritas dengan Aksi Cepat) ── */}
       <div className="bg-card border rounded-xl overflow-hidden min-w-0 shadow-sm">
-        <div className="flex items-center justify-between px-5 py-4 border-b bg-secondary/10">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-5 py-4 border-b bg-secondary/10">
           <div className="flex items-center gap-2 flex-wrap">
-            <CheckSquare size={16} className="text-primary" />
+            <CheckSquare size={16} className="text-primary shrink-0" />
             <h2 className="text-sm font-semibold text-foreground">Tasks Prioritas (Fokus Hari Ini)</h2>
             {taskCounts && taskCounts.hari_ini > 0 && (
               <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-400">
@@ -633,8 +633,8 @@ export default function DashboardPage() {
               </span>
             )}
           </div>
-          <Link href="/tasks" className="text-xs text-primary hover:underline flex items-center gap-1 font-medium">
-            Lihat semua di Task List <ArrowUpRight size={13} />
+          <Link href="/tasks" className="text-xs text-primary hover:underline flex items-center gap-1 font-medium shrink-0 self-start sm:self-auto">
+            Lihat semua <ArrowUpRight size={13} />
           </Link>
         </div>
         <div className="overflow-x-auto">
@@ -646,18 +646,18 @@ export default function DashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-secondary/20">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Target Entitas</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Pipeline State</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Next Action</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Due Date</th>
-                  <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground">Aksi Cepat</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Target Entitas</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Pipeline State</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Next Action</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Due Date</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
                 {tasks.map((t, i) => (
                   <tr key={`${t.tipe}-${t.id}-${i}`} className="hover:bg-secondary/30 transition-colors">
                     {/* Target & Entity Badge */}
-                    <td className="px-5 py-3 text-foreground font-medium max-w-56 truncate">
+                    <td className="px-4 py-3 text-foreground font-medium max-w-44 sm:max-w-56">
                       <div className="flex items-center gap-2 flex-wrap">
                         {t.tipe === 'sekolah' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1">
@@ -681,7 +681,7 @@ export default function DashboardPage() {
                     </td>
 
                     {/* Pipeline State & Intent */}
-                    <td className="px-5 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border">
                           {t.commercialState || t.status}
@@ -700,12 +700,12 @@ export default function DashboardPage() {
                     </td>
 
                     {/* Next Action */}
-                    <td className="px-5 py-3 text-muted-foreground text-xs max-w-44 truncate">
+                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-44 truncate hidden md:table-cell">
                       {t.nextAction || '-'}
                     </td>
 
                     {/* Due Date */}
-                    <td className="px-5 py-3 text-muted-foreground text-xs whitespace-nowrap">
+                    <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap hidden sm:table-cell">
                       {t.dueDate ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/80 text-foreground/80 border">
                           <Clock size={11} className="text-muted-foreground" />
@@ -715,7 +715,7 @@ export default function DashboardPage() {
                     </td>
 
                     {/* Aksi Cepat: Tunda & Eksekusi */}
-                    <td className="px-5 py-3 text-right">
+                    <td className="px-4 py-3 text-right">
                       <div className="inline-flex items-center gap-1.5 justify-end">
                         <button
                           onClick={() => handleTundaClick(t)}
