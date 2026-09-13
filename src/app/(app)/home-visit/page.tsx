@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  Home, Building2, School, Plus, Search, Filter,
-  Users, CheckCircle2, AlertCircle, Clock, ArrowUpRight,
+  Home, Building2, School, Plus, Search, SlidersHorizontal,
+  CheckCircle2, AlertCircle, Clock, ArrowUpRight,
   Loader2, Phone, Calendar, Handshake, ChevronRight, XCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -49,6 +49,39 @@ interface HomeVisitStats {
   conversionRate: number;
 }
 
+// ── Skeleton Desktop Row ──────────────────────────────────────────────────────
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-border/50 animate-pulse">
+      {Array.from({ length: 7 }).map((_, i) => (
+        <td key={i} className="px-4 py-3">
+          <div className="h-3 bg-secondary rounded w-full max-w-28" />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+// ── Skeleton Mobile Card ──────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="bg-card border rounded-xl p-3.5 space-y-3 animate-pulse">
+      <div className="flex justify-between items-center">
+        <div className="h-3 bg-secondary rounded w-1/3" />
+        <div className="h-5 bg-secondary rounded w-24" />
+      </div>
+      <div className="flex justify-between items-start pt-2 border-t border-border/30">
+        <div className="space-y-1.5 w-1/2">
+          <div className="h-4 bg-secondary rounded w-3/4" />
+          <div className="h-3 bg-secondary rounded w-1/2" />
+        </div>
+        <div className="h-4 bg-secondary rounded w-1/4" />
+      </div>
+      <div className="h-10 bg-secondary/40 rounded-lg w-full" />
+    </div>
+  );
+}
+
 export default function HomeVisitPage() {
   const [data, setData] = useState<HomeVisitItem[]>([]);
   const [stats, setStats] = useState<HomeVisitStats>({
@@ -65,6 +98,7 @@ export default function HomeVisitPage() {
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('ALL');
   const [outcomeFilter, setOutcomeFilter] = useState('ALL');
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,138 +140,175 @@ export default function HomeVisitPage() {
     fetchData();
   }, [fetchData]);
 
+  const hasActiveFilter = channelFilter !== 'ALL' || outcomeFilter !== 'ALL';
+
   return (
-    <div className="space-y-6">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-500">
-              <Home size={18} />
-            </div>
-            <h1 className="text-xl font-bold text-foreground">Home Visit & Konsultasi Ortu</h1>
+    <div className="space-y-4 pb-24 md:pb-6">
+      {/* ── Header Bar (Pola Halaman Siswa) ─────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Row 1 (Mobile): Icon, Title, & Subtitle */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-pink-500/15 flex items-center justify-center text-pink-500 border border-pink-500/20 shadow-xs shrink-0">
+            <Home size={18} />
           </div>
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            <span className="font-semibold text-foreground">Commitment Threshold:</span> Validasi keputusan bersama orang tua untuk menaikkan status <span className="font-semibold text-blue-400">Prospect</span> menjadi <span className="font-semibold text-violet-400">Opportunity</span>.
-          </p>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-foreground leading-tight">Home Visit & Konsultasi Ortu</h1>
+            <p className="text-xs text-muted-foreground truncate">
+              Commitment Threshold: Validasi keputusan orang tua (Prospect ➔ Opportunity)
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow hover:bg-primary/90 transition-all shrink-0"
-        >
-          <Plus size={16} />
-          <span>Catat Konsultasi Baru</span>
-        </button>
+        {/* Row 2 (Mobile): Action Buttons & Filter Toggle */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0">
+          <button
+            onClick={() => setShowMobileFilter((v) => !v)}
+            className={cn(
+              'sm:hidden p-2 rounded-lg border text-muted-foreground transition-colors cursor-pointer',
+              (showMobileFilter || hasActiveFilter) && 'bg-primary/10 text-primary border-primary/40'
+            )}
+            title="Filter Pencarian"
+          >
+            <SlidersHorizontal size={16} />
+          </button>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 cursor-pointer"
+            title="Catat Konsultasi Baru"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Catat Konsultasi Baru</span>
+            <span className="sm:hidden">Catat Konsultasi</span>
+          </button>
+        </div>
       </div>
 
-      {/* KPI Cards / Metrik Ontologi */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+      {/* ── KPI Cards / Metrik Ontologi ──────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        {/* Total Konsultasi */}
+        <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Konsultasi</span>
             <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
               <Handshake size={14} />
             </div>
           </div>
-          <div className="mt-3">
-            <span className="text-2xl font-bold text-foreground">{stats.total}</span>
+          <div className="mt-2 sm:mt-3">
+            <span className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</span>
             <p className="text-xs text-muted-foreground mt-0.5">Tercatat di periode ini</p>
           </div>
         </div>
 
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        {/* Komitmen Disetujui */}
+        <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-wider">Komitmen Disetujui</span>
             <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
               <CheckCircle2 size={14} />
             </div>
           </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-emerald-500">{stats.komitCount}</span>
-              <span className="text-xs font-bold text-violet-400">➔ Opportunity</span>
+          <div className="mt-2 sm:mt-3">
+            <div className="flex items-baseline gap-1.5 sm:gap-2">
+              <span className="text-xl sm:text-2xl font-bold text-emerald-500">{stats.komitCount}</span>
+              <span className="text-xs font-bold text-violet-400">➔ Opp.</span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">Lolos Commitment Gate</p>
           </div>
         </div>
 
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        {/* Pertimbangan Ortu */}
+        <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-wider">Pertimbangan Ortu</span>
             <div className="w-7 h-7 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500">
               <Clock size={14} />
             </div>
           </div>
-          <div className="mt-3">
-            <span className="text-2xl font-bold text-yellow-500">{stats.followUpCount}</span>
+          <div className="mt-2 sm:mt-3">
+            <span className="text-xl sm:text-2xl font-bold text-yellow-500">{stats.followUpCount}</span>
             <p className="text-xs text-muted-foreground mt-0.5">Perlu Diskusi Lanjutan</p>
           </div>
         </div>
 
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        {/* Conversion Rate */}
+        <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-wider">Conversion Rate</span>
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               <ArrowUpRight size={14} />
             </div>
           </div>
-          <div className="mt-3">
-            <span className="text-2xl font-bold text-primary">{stats.conversionRate}%</span>
+          <div className="mt-2 sm:mt-3">
+            <span className="text-xl sm:text-2xl font-bold text-primary">{stats.conversionRate}%</span>
             <p className="text-xs text-muted-foreground mt-0.5">Prospect ➔ Opportunity</p>
           </div>
         </div>
       </div>
 
-      {/* Toolbar Filter & Search */}
-      <div className="bg-card border rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex flex-col md:flex-row gap-3">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Cari nama siswa, sekolah, atau nama orang tua..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-secondary/50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-            />
-          </div>
-
-          {/* Filter Channel */}
-          <div className="flex items-center gap-2">
-            <select
-              value={channelFilter}
-              onChange={(e) => setChannelFilter(e.target.value)}
-              className="px-3.5 py-2 bg-secondary/50 border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-            >
-              <option value="ALL">Semua Lokasi</option>
-              <option value="Home Visit">Home Visit</option>
-              <option value="Kantor Derma">Kantor Derma</option>
-              <option value="Sekolah Siswa">Sekolah Siswa</option>
-            </select>
-
-            {/* Filter Outcome */}
-            <select
-              value={outcomeFilter}
-              onChange={(e) => setOutcomeFilter(e.target.value)}
-              className="px-3.5 py-2 bg-secondary/50 border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-            >
-              <option value="ALL">Semua Status Komitmen</option>
-              <option value="Disetujui">Komitmen Disetujui</option>
-              <option value="Pertimbangan">Pertimbangan Ortu</option>
-              <option value="Ditolak">Ditolak Ortu</option>
-            </select>
-          </div>
-        </div>
+      {/* ── Search Bar ──────────────────────────────────────────────────────── */}
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <input
+          type="text"
+          placeholder="Cari nama siswa, sekolah, atau nama orang tua..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+        />
       </div>
 
-      {/* Content Table / Cards */}
-      <div className="bg-card border rounded-2xl shadow-sm overflow-hidden">
+      {/* ── Filter Bar (Collapsible di Mobile sesuai Pola Siswa) ─────────────── */}
+      <div className={cn('flex-col sm:flex-row gap-2', showMobileFilter ? 'flex' : 'hidden sm:flex')}>
+        {/* Filter Channel */}
+        <select
+          value={channelFilter}
+          onChange={(e) => setChannelFilter(e.target.value)}
+          className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
+        >
+          <option value="ALL">Semua Lokasi / Channel</option>
+          <option value="Home Visit">🏠 Home Visit</option>
+          <option value="Kantor Derma">🏢 Kantor Derma</option>
+          <option value="Sekolah Siswa">🏫 Sekolah Siswa</option>
+        </select>
+
+        {/* Filter Outcome */}
+        <select
+          value={outcomeFilter}
+          onChange={(e) => setOutcomeFilter(e.target.value)}
+          className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
+        >
+          <option value="ALL">Semua Status Komitmen</option>
+          <option value="Disetujui">🟢 Komitmen Disetujui</option>
+          <option value="Pertimbangan">🟡 Pertimbangan Ortu</option>
+          <option value="Ditolak">🔴 Ditolak Ortu</option>
+        </select>
+      </div>
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          DESKTOP TABLE (hidden sm:block)
+      ═════════════════════════════════════════════════════════════════════ */}
+      <div className="hidden sm:block bg-card border rounded-xl overflow-hidden shadow-xs">
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-            <Loader2 size={32} className="animate-spin text-primary" />
-            <p className="text-sm font-medium">Memuat riwayat konsultasi...</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-secondary/60 text-muted-foreground font-semibold border-b">
+                <tr>
+                  <th className="py-3.5 px-4">Tanggal & Lokasi</th>
+                  <th className="py-3.5 px-4">Siswa & Sekolah</th>
+                  <th className="py-3.5 px-4">Wali / Orang Tua (Veto)</th>
+                  <th className="py-3.5 px-4">Hasil Validasi Komitmen</th>
+                  <th className="py-3.5 px-4">Kesepakatan & Next Action</th>
+                  <th className="py-3.5 px-4">PJ CRO</th>
+                  <th className="py-3.5 px-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonRow key={i} />
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : error ? (
           <div className="py-16 text-center text-rose-500 space-y-3">
@@ -245,7 +316,7 @@ export default function HomeVisitPage() {
             <p className="text-sm">{error}</p>
             <button
               onClick={fetchData}
-              className="px-4 py-2 rounded-lg bg-secondary text-xs font-semibold text-foreground hover:bg-secondary/80 transition-all"
+              className="px-4 py-2 rounded-lg bg-secondary text-xs font-semibold text-foreground hover:bg-secondary/80 transition-all cursor-pointer"
             >
               Muat Ulang
             </button>
@@ -264,7 +335,7 @@ export default function HomeVisitPage() {
             <div>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow hover:bg-primary/90 transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow hover:bg-primary/90 transition-all cursor-pointer"
               >
                 <Plus size={14} />
                 <span>Catat Konsultasi Pertama</span>
@@ -327,7 +398,7 @@ export default function HomeVisitPage() {
                             href={`https://wa.me/${item.wa.replace(/\D/g, '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-emerald-500 text-xs hover:underline inline-flex items-center gap-1 mt-0.5"
+                            className="text-emerald-500 text-xs hover:underline inline-flex items-center gap-1 mt-0.5 font-medium"
                           >
                             <Phone size={10} />
                             <span>{item.wa}</span>
@@ -410,6 +481,167 @@ export default function HomeVisitPage() {
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          MOBILE CARD LIST (sm:hidden - Pola Halaman Siswa)
+      ═════════════════════════════════════════════════════════════════════ */}
+      <div className="sm:hidden space-y-2.5">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+        ) : error ? (
+          <div className="py-12 text-center text-rose-500 space-y-3 bg-card border rounded-xl p-4">
+            <AlertCircle size={28} className="mx-auto" />
+            <p className="text-xs">{error}</p>
+            <button
+              onClick={fetchData}
+              className="px-3.5 py-1.5 rounded-lg bg-secondary text-xs font-semibold text-foreground hover:bg-secondary/80 transition-all cursor-pointer"
+            >
+              Muat Ulang
+            </button>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground space-y-3 bg-card border rounded-xl p-4">
+            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mx-auto text-muted-foreground/40">
+              <Home size={24} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-foreground">Belum ada riwayat konsultasi</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Catat konsultasi ortu untuk memenuhi Commitment Threshold.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg gradient-primary text-white text-xs font-semibold shadow hover:opacity-90 transition-all cursor-pointer"
+            >
+              <Plus size={14} />
+              <span>Catat Konsultasi Baru</span>
+            </button>
+          </div>
+        ) : (
+          data.map((item) => {
+            const isKomit = item.hasilAktivitas.includes('Disetujui');
+            const isFollowUp = item.hasilAktivitas.includes('Pertimbangan');
+            const isReject = item.hasilAktivitas.includes('Ditolak');
+
+            return (
+              <div
+                key={item.id}
+                className="bg-card border rounded-xl p-3.5 space-y-2.5 shadow-xs hover:border-primary/30 transition-all"
+              >
+                {/* Header Card: Tanggal, Lokasi, dan Status Komitmen */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Calendar size={12} />
+                    <span className="font-semibold text-foreground">{item.tanggal}</span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-1">
+                      {item.channel === 'Home Visit' ? (
+                        <Home size={11} className="text-pink-400" />
+                      ) : item.channel === 'Kantor Derma' ? (
+                        <Building2 size={11} className="text-blue-400" />
+                      ) : (
+                        <School size={11} className="text-emerald-400" />
+                      )}
+                      <span>{item.channel}</span>
+                    </span>
+                  </div>
+
+                  {/* Outcome Badge */}
+                  {isKomit ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold text-xs">
+                      <CheckCircle2 size={11} />
+                      <span>Disetujui</span>
+                    </span>
+                  ) : isFollowUp ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-semibold text-xs">
+                      <Clock size={11} />
+                      <span>Pertimbangan</span>
+                    </span>
+                  ) : isReject ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 font-semibold text-xs">
+                      <XCircle size={11} />
+                      <span>Ditolak</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">{item.hasilAktivitas}</span>
+                  )}
+                </div>
+
+                {/* Info Siswa & Wali */}
+                <div className="flex items-start justify-between gap-2 pt-2 border-t border-border/40">
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/siswa/${item.idSiswa}`}
+                      className="font-bold text-sm text-foreground hover:text-primary transition-colors inline-flex items-center gap-1 group"
+                    >
+                      <span className="truncate">{item.namaSiswa || item.idSiswa}</span>
+                      <ChevronRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                    </Link>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {item.namaSekolah} {item.kelas ? `(${item.kelas})` : ''}
+                    </p>
+                    {item.wa && (
+                      <a
+                        href={`https://wa.me/${item.wa.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-500 text-xs hover:underline inline-flex items-center gap-1 mt-1 font-medium"
+                      >
+                        <Phone size={10} />
+                        <span>{item.wa}</span>
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <p className="text-xs font-semibold text-foreground">
+                      {item.detailWali?.nama_wali || 'Orang Tua / Wali'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Peran: {item.detailWali?.peran_wali || 'Orang Tua'}
+                    </p>
+                    <div className="mt-1 flex justify-end">
+                      <CommercialStateBadge state={item.commercialState} size="sm" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Box Kesepakatan & Next Action (jika ada) */}
+                {(item.detailWali?.kesepakatan || item.nextAction) && (
+                  <div className="bg-secondary/40 border border-border/40 rounded-lg p-2.5 text-xs space-y-1">
+                    {item.detailWali?.kesepakatan && (
+                      <p className="text-foreground leading-relaxed">
+                        <span className="font-semibold text-muted-foreground">Catatan:</span> {item.detailWali.kesepakatan}
+                      </p>
+                    )}
+                    {item.nextAction && (
+                      <p className="text-muted-foreground flex items-center gap-1">
+                        <span className="font-semibold text-foreground/80">Next Action:</span> {item.nextAction}
+                        {item.dueDate ? ` (${item.dueDate})` : ''}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Footer: CRO & Aksi Lihat Siswa */}
+                <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40 text-muted-foreground">
+                  <span>
+                    PJ CRO: <strong className="text-foreground font-medium">{item.pjCro || '—'}</strong>
+                  </span>
+                  <Link
+                    href={`/siswa/${item.idSiswa}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground font-semibold text-xs transition-colors"
+                  >
+                    <span>Detail Siswa</span>
+                    <ChevronRight size={13} />
+                  </Link>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 

@@ -221,10 +221,9 @@ export default function ManajemenTimPage() {
                     <MoreVertical size={16} />
                   </button>
                 </div>
-                <div className="text-xs text-muted-foreground mb-2">
-                  <span>@{u.username}</span>
-                  {u.email && <span className="mx-1">•</span>}
-                  {u.email && <span>{u.email}</span>}
+                <div className="text-xs text-muted-foreground mb-2 flex flex-col gap-0.5">
+                  <span className="font-medium text-foreground/80">@{u.username}</span>
+                  {u.email && <span className="truncate text-muted-foreground">{u.email}</span>}
                 </div>
                 
                 <div className="flex items-center gap-2 flex-wrap">
@@ -238,10 +237,19 @@ export default function ManajemenTimPage() {
                 </div>
 
                 {u.role === 'CRO' && u.supervisor_nama && (
-                  <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1 bg-secondary/40 px-2 py-1 rounded-md">
+                  <div className="text-xs text-muted-foreground mt-2 flex flex-wrap items-center gap-1 bg-secondary/40 px-2 py-1 rounded-md">
                     <span>Atasan:</span>
-                    <span className="font-semibold text-foreground">{u.supervisor_nama}</span>
+                    <span className="font-semibold text-foreground truncate max-w-40">{u.supervisor_nama}</span>
                     <span className="text-primary text-xs">(Chief CRO)</span>
+                  </div>
+                )}
+
+                {u.role === 'Chief CRO' && (
+                  <div className="text-xs text-muted-foreground mt-2 flex flex-col gap-0.5 bg-secondary/40 px-2 py-1 rounded-md">
+                    <span className="font-medium text-muted-foreground">Area Kecamatan:</span>
+                    <span className="text-foreground font-medium truncate">
+                      {u.kecamatan_list?.length ? u.kecamatan_list.join(', ') : <span className="text-amber-500 italic">Belum diatur</span>}
+                    </span>
                   </div>
                 )}
 
