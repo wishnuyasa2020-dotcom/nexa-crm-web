@@ -132,7 +132,7 @@ export default function PanduanPage() {
           {/* Intro Card */}
           <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-4 border-b">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3">
                 <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
                   <School size={18} className="sm:w-5 sm:h-5" />
                 </div>
@@ -155,8 +155,9 @@ export default function PanduanPage() {
                 Di dalam filosofi Nexa OS, <strong>Sekolah (B2B) dan Siswa (B2C) adalah dua alam yang berbeda</strong>. Sekolah bukanlah pihak yang membeli paket pelatihan atau membayar biaya formulir. Sekolah berfungsi sebagai <em>Decision Environment</em> dan penyedia izin sosialisasi.
               </p>
               <div className="p-3.5 rounded-xl bg-secondary/50 border text-xs text-foreground space-y-1.5">
-                <p className="font-semibold text-purple-600 flex items-center gap-1.5">
-                  <Info size={14} className="shrink-0" /> Aturan Baku Ontologi Nexa OS:
+                <p className="font-semibold text-purple-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                  <Info size={14} className="shrink-0" />
+                  <span>Aturan Baku Ontologi Nexa OS:</span>
                 </p>
                 <p>
                   Status sekolah yang "Mendukung" atau "Aktif MoU" <strong>TIDAK OTOMATIS</strong> membuat siswanya berstatus Qualified/Prospect. Siswa tetap wajib melewati kualifikasi individu berbasis bukti (FNAR Framework).
@@ -169,10 +170,10 @@ export default function PanduanPage() {
           {matchesSearch('pipeline sekolah tahapan identified engaged sosialisasi') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('b2b-pipeline')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <Layers className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">4 Tahapan Siklus Kemitraan Sekolah</h3>
                 </div>
@@ -235,10 +236,10 @@ export default function PanduanPage() {
           {matchesSearch('guru bk kepsek validator peran cro chief manager') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('b2b-decision')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <UserCheck className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">Peran Guru BK sebagai "Validator" & Pembagian Tugas</h3>
                 </div>
@@ -297,7 +298,7 @@ export default function PanduanPage() {
               href="/manajemen-tim"
               className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
             >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
                 <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
                   <Users size={17} />
                 </div>
@@ -306,14 +307,14 @@ export default function PanduanPage() {
                   <p className="text-xs text-muted-foreground truncate">Kelola staf &amp; seat</p>
                 </div>
               </div>
-              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1 hidden sm:block" />
             </Link>
 
             <Link
               href="/siswa"
               className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
             >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
                 <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
                   <UserCheck size={17} />
                 </div>
@@ -322,14 +323,14 @@ export default function PanduanPage() {
                   <p className="text-xs text-muted-foreground truncate">Assign Kelas ke CRO</p>
                 </div>
               </div>
-              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1 hidden sm:block" />
             </Link>
 
             <Link
               href="/settings?tab=whatsapp"
               className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
             >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
                 <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                   <Phone size={17} />
                 </div>
@@ -338,14 +339,14 @@ export default function PanduanPage() {
                   <p className="text-xs text-muted-foreground truncate">Status WABA &amp; SIM</p>
                 </div>
               </div>
-              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1 hidden sm:block" />
             </Link>
 
             <Link
               href="/templates"
               className="p-3.5 sm:p-4 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center justify-between group shadow-sm"
             >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
                 <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
                   <FileText size={17} />
                 </div>
@@ -354,7 +355,7 @@ export default function PanduanPage() {
                   <p className="text-xs text-muted-foreground truncate">Smart Routing</p>
                 </div>
               </div>
-              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1" />
+              <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5 shrink-0 ml-1 hidden sm:block" />
             </Link>
           </div>
 
@@ -366,11 +367,11 @@ export default function PanduanPage() {
               </div>
 
               <div 
-                className="flex items-center justify-between cursor-pointer select-none pt-1 sm:pt-2 min-h-11"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none pt-1 sm:pt-2 min-h-11"
                 onClick={() => toggleSection('admin-assign-kelas')}
               >
-                <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
-                  <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
                     <UserCheck size={20} className="sm:w-5 sm:h-5" />
                   </div>
                   <div>
@@ -391,23 +392,23 @@ export default function PanduanPage() {
                 <div className="pt-2 sm:pt-3 space-y-4 sm:space-y-5">
                   {/* Banner Ringkasan Filosofi 1 Komando */}
                   <div className="p-3.5 sm:p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-2">
-                    <div className="flex items-center gap-2 text-purple-600 font-bold text-xs uppercase tracking-wider">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-purple-600 font-bold text-xs uppercase tracking-wider">
                       <Shield size={16} className="shrink-0" />
-                      Prinsip Distribusi Teritorial Satu Komando
+                      <span>Prinsip Distribusi Teritorial Satu Komando</span>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Penugasan hak asuh prospek siswa (B2C) dilakukan berbasis unit <strong>KELAS</strong> di sekolah binaan tertentu (contoh: <em>Kelas 12 TKJ 1 di SMKS Hasina</em>). Tombol eksekusi penugasan ini <strong>hanya dapat diakses oleh akun berkedudukan Chief CRO, Manager, dan Administrator</strong> guna mencegah perebutan prospek liar antar-staf di lapangan.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
-                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
+                      <div className="p-2.5 rounded-lg bg-background border flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2">
                         <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
                         <span className="text-foreground"><strong>1 Kelas = 1 CRO:</strong> Menghindari kanibalisasi</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
+                      <div className="p-2.5 rounded-lg bg-background border flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2">
                         <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
                         <span className="text-foreground"><strong>Auto-Replace:</strong> Ganti CRO otomatis seketika</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
+                      <div className="p-2.5 rounded-lg bg-background border flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2">
                         <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
                         <span className="text-foreground"><strong>Auto-Inherit:</strong> Siswa baru otomatis diwariskan</span>
                       </div>
@@ -416,15 +417,15 @@ export default function PanduanPage() {
 
                   {/* 6 Langkah Demi Langkah Praktis */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-foreground flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
                       <Sparkles size={16} className="text-purple-600 shrink-0" />
-                      Langkah Demi Langkah Eksekusi di Dashboard CRM:
+                      <span>Langkah Demi Langkah Eksekusi di Dashboard CRM:</span>
                     </h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-xs">
                       {/* Step 1 */}
                       <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 relative min-w-0">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
                             Langkah 1
                           </span>
@@ -444,7 +445,7 @@ export default function PanduanPage() {
 
                       {/* Step 2 */}
                       <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
                             Langkah 2
                           </span>
@@ -458,7 +459,7 @@ export default function PanduanPage() {
 
                       {/* Step 3 */}
                       <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
                             Langkah 3
                           </span>
@@ -474,7 +475,7 @@ export default function PanduanPage() {
 
                       {/* Step 4 */}
                       <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
                             Langkah 4
                           </span>
@@ -488,7 +489,7 @@ export default function PanduanPage() {
 
                       {/* Step 5 */}
                       <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-amber-500/10 text-amber-600 border border-amber-500/20">
                             Langkah 5
                           </span>
@@ -502,7 +503,7 @@ export default function PanduanPage() {
 
                       {/* Step 6 */}
                       <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                             Langkah 6
                           </span>
@@ -520,16 +521,16 @@ export default function PanduanPage() {
 
                   {/* Jaminan Otomatisasi & Integritas Pasca Penugasan */}
                   <div className="p-3.5 sm:p-4 rounded-xl bg-background border space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-purple-600 flex items-center gap-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-purple-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
                       <RefreshCw size={16} className="shrink-0" />
-                      3 Jaminan Otomatisasi &amp; Integritas Sistem Pasca-Penugasan (Must-Know Admin):
+                      <span>3 Jaminan Otomatisasi &amp; Integritas Sistem Pasca-Penugasan (Must-Know Admin):</span>
                     </h4>
 
                     <div className="space-y-2.5 text-xs">
                       <div className="p-3 rounded-xl bg-secondary/40 border space-y-1">
-                        <div className="font-bold text-foreground flex items-center gap-1.5">
+                        <div className="font-bold text-foreground flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                          1. Garansi Pewarisan Hak Asuh Siswa Baru (Auto-Inheritance):
+                          <span>1. Garansi Pewarisan Hak Asuh Siswa Baru (Auto-Inheritance):</span>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
                           Setelah kelas di-assign ke seorang CRO, <strong>Chief CRO TIDAK PERLU melakukan assign ulang</strong> jika di kemudian hari ada siswa baru yang menyusul mendaftar. Baik melalui <em>Form Publik QR Sosialisasi (<span className="break-all font-mono">https://form-konfirmasi.nexamos.cloud</span>)</em>, <em>Import Excel</em>, maupun <em>Input Manual</em>, siswa baru pada sekolah &amp; kelas tersebut secara otomatis langsung diwariskan ke CRO pemegang kelas saat ini.
@@ -537,9 +538,9 @@ export default function PanduanPage() {
                       </div>
 
                       <div className="p-3 rounded-xl bg-secondary/40 border space-y-1 min-w-0">
-                        <div className="font-bold text-foreground flex items-center gap-1.5">
+                        <div className="font-bold text-foreground flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                          2. Sistem Auto-Replace Terintegrasi (Tanpa Data Tercecer):
+                          <span>2. Sistem Auto-Replace Terintegrasi (Tanpa Data Tercecer):</span>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
                           Chief CRO dapat memindahkan hak asuh kelas sewaktu-waktu (misalnya saat rotasi tim atau staf berhalangan). Sistem akan otomatis me-replace penanggung jawab seluruh siswa di kelas tersebut ke CRO baru dalam satu transaksi database atomik yang aman.
@@ -547,9 +548,9 @@ export default function PanduanPage() {
                       </div>
 
                       <div className="p-3 rounded-xl bg-secondary/40 border space-y-1 min-w-0">
-                        <div className="font-bold text-foreground flex items-center gap-1.5">
+                        <div className="font-bold text-foreground flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                          3. Audit Trail Permanen Event-Sourcing CQRS:
+                          <span>3. Audit Trail Permanen Event-Sourcing CQRS:</span>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
                           Setiap penugasan kelas tercatat permanen di <code className="break-all">events_log</code> dengan tipe event <code className="break-all">ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang dialihkan, serta identitas Chief CRO yang melakukan penugasan untuk audit akuntabilitas dan perhitungan insentif kinerja.
@@ -570,11 +571,11 @@ export default function PanduanPage() {
               </div>
 
               <div 
-                className="flex items-center justify-between cursor-pointer select-none pt-1 sm:pt-2 min-h-11"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none pt-1 sm:pt-2 min-h-11"
                 onClick={() => toggleSection('admin-smartrouting')}
               >
-                <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
-                  <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                     <Zap size={20} className="sm:w-5 sm:h-5" />
                   </div>
                   <div>
@@ -595,8 +596,9 @@ export default function PanduanPage() {
                 <div className="pt-2 sm:pt-3 space-y-4 sm:space-y-5">
                   {/* Penjelasan Service Window 24 Jam Meta */}
                   <div className="p-3.5 sm:p-4 rounded-xl bg-background border space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
-                      <Clock size={16} className="shrink-0" /> 1. Mengenal Regulasi 24-Hour Service Window (SW) Meta
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <Clock size={16} className="shrink-0" />
+                      <span>1. Mengenal Regulasi 24-Hour Service Window (SW) Meta</span>
                     </h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       WhatsApp Cloud API memberlakukan batasan ketat percakapan berbasis <strong>Service Window (SW)</strong> yang dihitung 24 jam sejak pesan terakhir diterima dari audiens:
@@ -626,30 +628,31 @@ export default function PanduanPage() {
 
                   {/* Solusi Dual Smart Routing */}
                   <div className="p-3.5 sm:p-4 rounded-xl bg-background border space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-2">
-                      <Sparkles size={16} className="shrink-0" /> 2. Mengapa Dual Smart Routing Nexa MOS Sangat Unggul?
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <Sparkles size={16} className="shrink-0" />
+                      <span>2. Mengapa Dual Smart Routing Nexa MOS Sangat Unggul?</span>
                     </h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Pada CRM WhatsApp konvensional, setiap kali staf menekan kirim template, sistem langsung memanggil Meta API berbayar meskipun Service Window siswa sedang terbuka. <strong>Nexa MOS menghentikan pemborosan ini:</strong>
                     </p>
 
                     <div className="space-y-2.5 pt-1 text-xs">
-                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-secondary/40 border">
-                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div className="flex flex-col items-start sm:flex-row sm:items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
+                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 sm:mt-0.5" />
                         <div>
                           <strong className="text-foreground">Dual-Template Pairing:</strong> Setiap broadcast dan template di Nexa dipasangkan menjadi 2 format: <em>Meta Template</em> (untuk audiens dengan SW Tutup) dan <em>CRM Template</em> (untuk audiens dengan SW Buka).
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-secondary/40 border">
-                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div className="flex flex-col items-start sm:flex-row sm:items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
+                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 sm:mt-0.5" />
                         <div>
                           <strong className="text-foreground">Pencegatan Otomatis (Smart Interception):</strong> Backend Nexa OS secara otomatis mendeteksi status <code>is_sw_open = true</code>. Permintaan pengiriman template dicegat seketika dan diubah menjadi pesan <em>Interactive Quick Reply Button</em> yang gratis, menghemat anggaran operasional hingga <strong>60%–80%</strong>.
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-secondary/40 border">
-                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div className="flex flex-col items-start sm:flex-row sm:items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
+                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 sm:mt-0.5" />
                         <div>
                           <strong className="text-foreground">Zero-Failure Fallback System:</strong> Jika API Meta menolak format interaktif (karena limit karakter header Meta &gt; 60 huruf atau pembatasan tombol), sistem tidak membiarkan pesan gagal kirim. Sistem otomatis mengonversinya menjadi teks murni dengan pilihan nomor (<em>Numbered List</em>). <strong>Tingkat keberhasilan kirim dijamin 100%!</strong>
                         </div>
@@ -665,10 +668,10 @@ export default function PanduanPage() {
           {matchesSearch('waba whatsapp onboarding pola a graph api pin 2fa fresh sim') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('admin-waba')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <Phone className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">Ketentuan Integrasi Nomor WhatsApp Bisnis (WABA Pola A)</h3>
                 </div>
@@ -680,8 +683,9 @@ export default function PanduanPage() {
               {expandedSections['admin-waba'] && (
                 <div className="pt-2 space-y-4 text-sm leading-relaxed">
                   <div className="p-3.5 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 space-y-1.5">
-                    <div className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider">
-                      <Phone size={16} className="shrink-0" /> Alur Aktivasi Berbantuan (Assisted Onboarding):
+                    <div className="font-bold flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs uppercase tracking-wider">
+                      <Phone size={16} className="shrink-0" />
+                      <span>Alur Aktivasi Berbantuan (Assisted Onboarding):</span>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Pihak admin tenant cukup mendaftarkan nomor kartu perdana baru melalui menu <strong>Pengaturan ➔ Integrasi WhatsApp</strong>. Tim support teknis Nexa MOS akan membantu sinkronisasi Cloud API dan meminta kode OTP SMS saat verifikasi nomor dilakukan.
@@ -690,9 +694,9 @@ export default function PanduanPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                      <h4 className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
                         <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
-                        Wajib Fresh SIM (Nomor Baru)
+                        <span>Wajib Fresh SIM (Nomor Baru)</span>
                       </h4>
                       <p className="text-muted-foreground leading-relaxed">
                         Satu nomor telepon tidak dapat aktif di aplikasi WhatsApp ponsel dan WhatsApp Cloud API secara bersamaan. Wajib menggunakan kartu perdana baru atau menghapus akun WA ponsel terlebih dahulu via menu <em>Setelan ➔ Akun ➔ Hapus Akun Saya</em>.
@@ -700,9 +704,9 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                      <h4 className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
                         <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
-                        Display Name Kepatuhan Meta
+                        <span>Display Name Kepatuhan Meta</span>
                       </h4>
                       <p className="text-muted-foreground leading-relaxed">
                         Nama tampilan wajib mencerminkan brand/lembaga resmi (contoh: <em>LPK Amanah Bandung</em>). Dilarang keras memakai nama produk atau promo seperti <em>Kursus Jepang Murah</em> karena akan ditolak secara otomatis oleh Meta.
@@ -718,10 +722,10 @@ export default function PanduanPage() {
           {matchesSearch('domain produksi url 404 crm nexamos nexamos.cloud crm.nexamos.cloud admin email superadmin') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('admin-domains')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <Mail className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">Pemisahan Domain Produksi (Cegah 404) & Email Security Alert</h3>
                 </div>
@@ -764,7 +768,7 @@ export default function PanduanPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             <Link
               href="/tasks"
-              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center gap-2.5 sm:gap-3 group shadow-sm"
+              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 group shadow-sm"
             >
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
                 <CheckSquare size={16} />
@@ -777,7 +781,7 @@ export default function PanduanPage() {
 
             <Link
               href="/weekly"
-              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center gap-2.5 sm:gap-3 group shadow-sm"
+              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 group shadow-sm"
             >
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
                 <Calendar size={16} />
@@ -790,7 +794,7 @@ export default function PanduanPage() {
 
             <Link
               href="/live-chat"
-              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center gap-2.5 sm:gap-3 group shadow-sm"
+              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 group shadow-sm"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                 <MessageSquare size={16} />
@@ -803,7 +807,7 @@ export default function PanduanPage() {
 
             <Link
               href="/siswa"
-              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex items-center gap-2.5 sm:gap-3 group shadow-sm"
+              className="p-3 sm:p-3.5 rounded-2xl border bg-card hover:bg-secondary/40 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 group shadow-sm"
             >
               <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
                 <Users size={16} />
@@ -819,10 +823,10 @@ export default function PanduanPage() {
           {matchesSearch('pipeline siswa b2c lead prospect opportunity registered customer fnar komitmen dp') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('cro-funnel')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <TrendingUp className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">Universal State Model Siswa (B2C) — Menolak Ilusi "Perasaan" CRO</h3>
                 </div>
@@ -916,10 +920,10 @@ export default function PanduanPage() {
           {matchesSearch('teritorial kelas assignment penugasan chief cro sekolah sosialisasi replace auto inherit b2c') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('cro-territorial')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <Layers className="text-primary w-5 h-5 shrink-0" />
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -940,9 +944,9 @@ export default function PanduanPage() {
               {expandedSections['cro-territorial'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="p-3.5 rounded-xl bg-secondary/40 border space-y-1.5">
-                    <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                    <p className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
                       <Sparkles size={16} className="text-primary shrink-0" />
-                      Prinsip Dasar Kepemilikan Teritorial Nexa OS
+                      <span>Prinsip Dasar Kepemilikan Teritorial Nexa OS</span>
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
                       Di CRM konvensional, prospek sering diperebutkan per individu secara liar antar staf sales. Di Nexa OS, unit penugasan hak asuh prospek siswa (B2C) adalah <strong>KELAS</strong> di sekolah binaan tertentu (contoh: <em>Kelas 12 TKJ 1 di SMKS Hasina</em>). Satu kelas berisi banyak siswa dan <strong>wajib dikelola oleh tepat satu CRO</strong> pada periode pemasaran aktif.
@@ -1004,8 +1008,9 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/30 text-xs text-foreground space-y-1 min-w-0">
-                    <p className="font-bold text-purple-600 flex items-center gap-1.5">
-                      <CheckCircle2 size={15} className="shrink-0" /> Audit Trail Event-Sourcing CQRS:
+                    <p className="font-bold text-purple-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                      <CheckCircle2 size={15} className="shrink-0" />
+                      <span>Audit Trail Event-Sourcing CQRS:</span>
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
                       Setiap mutasi penugasan kelas terekam secara permanen di <code className="break-all">events_log</code> dengan tipe event <code className="break-all">ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang ikut dialihkan, dan user Chief CRO yang mengeksekusi penugasan.
@@ -1020,10 +1025,10 @@ export default function PanduanPage() {
           {matchesSearch('fnar fit need ability readiness kualifikasi lead prospect gate lolos diskualifikasi') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('cro-fnar')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <UserCheck className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">
                     Framework FNAR — 4 Pilar Kualifikasi Objektif (Lead ➔ Prospect)
@@ -1037,9 +1042,9 @@ export default function PanduanPage() {
               {expandedSections['cro-fnar'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="p-3.5 rounded-xl bg-secondary/40 border space-y-1.5">
-                    <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                    <p className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
                       <Sparkles size={16} className="text-primary shrink-0" />
-                      Apa itu Framework FNAR?
+                      <span>Apa itu Framework FNAR?</span>
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
                       <strong>FNAR (Fit, Need, Ability, Readiness)</strong> adalah kerangka kerja asesmen berbasis bukti objektif yang digunakan oleh CRO untuk membedakan antara siswa yang sekadar <em>"berminat/penasaran"</em> dengan calon peserta yang memang <em>"layak, mampu, dan siap berangkat"</em>. Siswa yang berstatus <strong>Lead</strong> tidak dapat dinaikkan menjadi <strong>Prospect</strong> sebelum ke-4 pilar ini diverifikasi:
@@ -1113,8 +1118,9 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/30 text-xs text-foreground space-y-1 min-w-0">
-                    <p className="font-bold text-emerald-600 flex items-center gap-1.5">
-                      <CheckCircle2 size={15} className="shrink-0" /> Mekanisme Event CQRS Nexa OS:
+                    <p className="font-bold text-emerald-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                      <CheckCircle2 size={15} className="shrink-0" />
+                      <span>Mekanisme Event CQRS Nexa OS:</span>
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
                       Sistem tidak mengizinkan CRO mengubah status prospek secara manual. Perpindahan status <code className="break-all">LEAD ➔ PROSPECT</code> dipicu otomatis oleh event sistem <code className="break-all">QualificationPassed</code> hanya ketika CRO telah mengisi dan mengunggah checklist verifikasi 4 dimensi FNAR di atas.
@@ -1129,10 +1135,10 @@ export default function PanduanPage() {
           {matchesSearch('task list weekly planning kanban eksekusi tunda bukti') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('cro-tasks')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <CheckSquare className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">SOP Task List Harian & Weekly Planning Kanban</h3>
                 </div>
@@ -1145,8 +1151,9 @@ export default function PanduanPage() {
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <h4 className="font-bold text-sm flex flex-wrap items-center gap-2 text-emerald-600">
-                        <CheckCircle2 size={16} className="shrink-0" /> Tombol [ ✅ EKSEKUSI ]
+                      <h4 className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-emerald-600">
+                        <CheckCircle2 size={16} className="shrink-0" />
+                        <span>Tombol [ ✅ EKSEKUSI ]</span>
                       </h4>
                       <p className="text-muted-foreground">
                         Ditekan oleh CRO saat berada di lokasi atau sesaat setelah aktivitas selesai. Sistem menampilkan modal wajib unggah bukti observasi dan catatan lapangan. Kartu tugas otomatis berpindah ke tab "Selesai".
@@ -1154,8 +1161,9 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <h4 className="font-bold text-sm flex flex-wrap items-center gap-2 text-amber-500">
-                        <Clock size={16} className="shrink-0" /> Tombol [ 📅 TUNDA ]
+                      <h4 className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-amber-500">
+                        <Clock size={16} className="shrink-0" />
+                        <span>Tombol [ 📅 TUNDA ]</span>
                       </h4>
                       <p className="text-muted-foreground">
                         Ditekan jika pertemuan batal karena kendala pihak prospek/keluarga. CRO wajib memasukkan tanggal baru dan <strong>alasan spesifik penundaan</strong>. Riwayat penundaan abadi di log audit sistem.
@@ -1180,10 +1188,10 @@ export default function PanduanPage() {
           {matchesSearch('live chat shared inbox broadcast nurture snooze drip gating') && (
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div 
-                className="flex items-center justify-between cursor-pointer select-none min-h-10 py-1"
+                className="flex items-start sm:items-center justify-between cursor-pointer select-none min-h-10 py-1"
                 onClick={() => toggleSection('cro-chat')}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0">
                   <MessageSquare className="text-primary w-5 h-5 shrink-0" />
                   <h3 className="text-sm sm:text-base font-bold text-foreground">SOP Live Chat, Broadcast, Nurturing & Snooze Campaign</h3>
                 </div>
@@ -1196,8 +1204,9 @@ export default function PanduanPage() {
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-emerald-600">
-                        <MessageSquare size={16} className="shrink-0" /> Live Chat Shared Inbox (Silo System)
+                      <div className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-emerald-600">
+                        <MessageSquare size={16} className="shrink-0" />
+                        <span>Live Chat Shared Inbox (Silo System)</span>
                       </div>
                       <p className="text-muted-foreground">
                         • <strong>Silo Privasi:</strong> CRO hanya melihat roomchat prospek binaannya sendiri.<br />
@@ -1207,8 +1216,9 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-blue-600">
-                        <Radio size={16} className="shrink-0" /> Broadcast WA (Wizard 3 Langkah)
+                      <div className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-blue-600">
+                        <Radio size={16} className="shrink-0" />
+                        <span>Broadcast WA (Wizard 3 Langkah)</span>
                       </div>
                       <p className="text-muted-foreground">
                         Pengiriman pesan massal menggunakan wizard 3 langkah: 1) Pilih Audiens Berdasarkan Sekolah/Status, 2) Pilih Pasangan Dual Template (Meta Template & CRM Template), 3) Kirim ke antrean latar belakang.
@@ -1216,8 +1226,9 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-purple-600">
-                        <TrendingUp size={16} className="shrink-0" /> Automated Nurturing (Drip Probing)
+                      <div className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-purple-600">
+                        <TrendingUp size={16} className="shrink-0" />
+                        <span>Automated Nurturing (Drip Probing)</span>
                       </div>
                       <p className="text-muted-foreground">
                         Mesin mengirim pesan probing bertahap (Probe 1 hingga Probe 5). Begitu siswa membalas, automasi seketika berhenti (*interupsi otomatis*) dan mengirim alert ke CRO untuk penanganan manual.
@@ -1225,8 +1236,9 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-amber-500">
-                        <Clock size={16} className="shrink-0" /> Snooze Campaign (Hibernasi Prospek)
+                      <div className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-amber-500">
+                        <Clock size={16} className="shrink-0" />
+                        <span>Snooze Campaign (Hibernasi Prospek)</span>
                       </div>
                       <p className="text-muted-foreground">
                         Untuk siswa yang meminta jeda ("Belum saatnya"), sistem menidurkan kontak selama 30, 60, atau 90 hari, lalu otomatis menyapa kembali saat jatuh tempo. Jika izin WA dicabut, prospek seketika dikeluarkan dari antrean snooze.
