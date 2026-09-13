@@ -213,41 +213,41 @@ export default function PaymentConfigTab() {
           
           {/* ── KARTU 1: REKENING BANK TRANSFER RESMI ── */}
           <div className="bg-card border rounded-xl p-5 space-y-4 shadow-sm">
-            {/* Header Card 1: 2-Row di Mobile (Ikon di Row 1) & Inline di Desktop */}
+            {/* Header Card 1: Khusus Mobile (Judul, Deskripsi, Tombol Edit Full-Width) & Inline di Desktop */}
             <div className="border-b pb-3.5">
-              {/* Khusus Mobile (< sm): Row 1 = Ikon + Judul + Tombol Edit, Row 2 = Subtitle */}
-              <div className="sm:hidden space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
+              {/* Khusus Mobile (< sm): Judul, Deskripsi, lalu Tombol Edit Full-Width */}
+              <div className="sm:hidden space-y-2.5">
+                <div>
+                  <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 shrink-0">
                       <Building2 size={16} />
                     </div>
-                    <h2 className="text-sm font-semibold text-foreground truncate">Rekening Bank Resmi Tenant</h2>
+                    <h2 className="text-sm font-semibold text-foreground">Rekening Bank Resmi Tenant</h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isEditingBank) {
-                        handleCancelBank();
-                      } else {
-                        setIsEditingBank(true);
-                      }
-                    }}
-                    className={cn(
-                      "px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
-                      isEditingBank
-                        ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
-                        : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
-                    )}
-                    title={isEditingBank ? "Batal ubah data rekening" : "Klik untuk mengubah rekening bank"}
-                  >
-                    <Pencil size={12} className={isEditingBank ? "text-amber-500" : "text-blue-500"} />
-                    <span>{isEditingBank ? 'Batal' : 'Edit'}</span>
-                  </button>
+                  <p className="text-xs text-muted-foreground mt-1 pl-8">
+                    Tujuan transfer bank untuk calon siswa &amp; wali
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground pl-8">
-                  Tujuan transfer bank untuk calon siswa &amp; wali
-                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isEditingBank) {
+                      handleCancelBank();
+                    } else {
+                      setIsEditingBank(true);
+                    }
+                  }}
+                  className={cn(
+                    "w-full px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                    isEditingBank
+                      ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
+                      : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
+                  )}
+                  title={isEditingBank ? "Batal ubah data rekening" : "Klik untuk mengubah rekening bank"}
+                >
+                  <Pencil size={12} className={isEditingBank ? "text-amber-500" : "text-blue-500"} />
+                  <span>{isEditingBank ? 'Batal' : 'Edit'}</span>
+                </button>
               </div>
 
               {/* Desktop (>= sm): Tampilan Asli Sejajar Inline */}
@@ -433,41 +433,41 @@ export default function PaymentConfigTab() {
 
           {/* ── KARTU 2: PRICING CONFIG (BIAYA FORMULIR & DP PELATIHAN) ── */}
           <div className="bg-card border rounded-xl p-5 space-y-4 shadow-sm">
-            {/* Header Card 2: 2-Row di Mobile (Ikon di Row 1) & Inline di Desktop */}
+            {/* Header Card 2: Khusus Mobile (Judul, Deskripsi, Tombol Edit Full-Width) & Inline di Desktop */}
             <div className="border-b pb-3.5">
-              {/* Khusus Mobile (< sm): Row 1 = Ikon + Judul + Tombol Edit, Row 2 = Subtitle */}
-              <div className="sm:hidden space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
+              {/* Khusus Mobile (< sm): Judul, Deskripsi, lalu Tombol Edit Full-Width */}
+              <div className="sm:hidden space-y-2.5">
+                <div>
+                  <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
                       <Banknote size={16} />
                     </div>
-                    <h2 className="text-sm font-semibold text-foreground truncate">Standarisasi Biaya Program</h2>
+                    <h2 className="text-sm font-semibold text-foreground">Standarisasi Biaya Program</h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isEditingPricing) {
-                        handleCancelPricing();
-                      } else {
-                        setIsEditingPricing(true);
-                      }
-                    }}
-                    className={cn(
-                      "px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
-                      isEditingPricing
-                        ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
-                        : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
-                    )}
-                    title={isEditingPricing ? "Batal ubah nominal biaya" : "Klik untuk mengubah standardisasi biaya"}
-                  >
-                    <Pencil size={12} className={isEditingPricing ? "text-amber-500" : "text-emerald-500"} />
-                    <span>{isEditingPricing ? 'Batal' : 'Edit'}</span>
-                  </button>
+                  <p className="text-xs text-muted-foreground mt-1 pl-8">
+                    Kustomisasi tahapan konversi komersial tenant
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground pl-8">
-                  Kustomisasi tahapan konversi komersial tenant
-                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isEditingPricing) {
+                      handleCancelPricing();
+                    } else {
+                      setIsEditingPricing(true);
+                    }
+                  }}
+                  className={cn(
+                    "w-full px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                    isEditingPricing
+                      ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
+                      : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
+                  )}
+                  title={isEditingPricing ? "Batal ubah nominal biaya" : "Klik untuk mengubah standardisasi biaya"}
+                >
+                  <Pencil size={12} className={isEditingPricing ? "text-amber-500" : "text-emerald-500"} />
+                  <span>{isEditingPricing ? 'Batal' : 'Edit'}</span>
+                </button>
               </div>
 
               {/* Desktop (>= sm): Tampilan Asli Sejajar Inline */}
@@ -735,21 +735,26 @@ export default function PaymentConfigTab() {
         </div>
 
         {/* Action Button Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl border bg-card shadow-sm">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border bg-card shadow-sm">
+          <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-muted-foreground w-full sm:w-auto">
             {isEditingAny ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 font-semibold border border-amber-500/20">
                 <Pencil size={12} /> Mode Edit Aktif
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary text-muted-foreground font-medium border border-border/60">
-                <Lock size={12} /> Data Terkunci (Mode Baca)
+                <Lock size={12} /> Data Terkunci<span className="hidden sm:inline"> (Mode Baca)</span>
               </span>
             )}
             <span className="hidden sm:inline">
               Terakhir diupdate: <span className="font-medium text-foreground">{formData.updatedAt ? new Date(formData.updatedAt).toLocaleString('id-ID') : 'Belum pernah'}</span>
               {formData.updatedBy && <span> oleh <span className="font-medium text-foreground">{formData.updatedBy}</span></span>}
             </span>
+            {formData.updatedAt && (
+              <span className="sm:hidden text-muted-foreground">
+                Diupdate: <span className="font-medium text-foreground">{new Date(formData.updatedAt).toLocaleDateString('id-ID')}</span>
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -791,7 +796,7 @@ export default function PaymentConfigTab() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border bg-primary/10 hover:bg-primary/15 text-primary border-primary/25 text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
               >
                 <Pencil size={14} />
-                <span>Ubah Konfigurasi (Klik untuk Edit)</span>
+                <span>Ubah Konfigurasi<span className="hidden sm:inline"> (Klik untuk Edit)</span></span>
               </button>
             )}
           </div>
