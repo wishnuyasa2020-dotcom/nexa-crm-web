@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Building2, CreditCard, Banknote, ShieldCheck, CheckCircle2, 
-  AlertCircle, Loader2, Copy, Sparkles, HelpCircle
+  AlertCircle, Loader2, Copy, Sparkles, HelpCircle, Tag
 } from 'lucide-react';
 import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
@@ -18,6 +18,9 @@ interface PaymentConfigData {
   registrationFee: number;
   coreDepositAmount: number;
   totalProgramFee: number;
+  discountAmount: number;
+  discountLabel: string;
+  discountEndDate: string;
   qrisImageUrl?: string | null;
   updatedBy?: string | null;
   updatedAt?: string | null;
@@ -58,6 +61,9 @@ export default function PaymentConfigTab() {
     registrationFee: 500000,
     coreDepositAmount: 1500000,
     totalProgramFee: 15000000,
+    discountAmount: 0,
+    discountLabel: '',
+    discountEndDate: '',
     qrisImageUrl: null
   });
 
@@ -76,6 +82,9 @@ export default function PaymentConfigTab() {
           registrationFee: Number(res.data.data.registrationFee) || 500000,
           coreDepositAmount: Number(res.data.data.coreDepositAmount) || 1500000,
           totalProgramFee: Number(res.data.data.totalProgramFee) || 15000000,
+          discountAmount: Number(res.data.data.discountAmount) || 0,
+          discountLabel: res.data.data.discountLabel || '',
+          discountEndDate: res.data.data.discountEndDate || '',
         });
       }
     } catch (err: unknown) {
@@ -366,6 +375,105 @@ export default function PaymentConfigTab() {
                 </p>
               </div>
 
+              {/* ── Diskon Program (Single, Label Bebas) ── */}
+              <div className="p-3.5 rounded-xl border bg-secondary/15 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Tag size={13} className="text-rose-500" />
+                    Diskon Program (Opsional)
+                  </label>
+                  {formData.discountAmount > 0 && (
+                    <span className="text-xs font-semibold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                      Promo Aktif
+                    </span>
+                  )}
+                </div>
+
+                {/* Judul / Label Promo */}
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                    Judul Program Diskon
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.discountLabel}
+                    onChange={(e) => setFormData({ ...formData, discountLabel: e.target.value })}
+                    placeholder="Contoh: Early Bird Batch 3, Promo Lebaran, Diskon Alumni..."
+                    className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Label ini yang akan tampil pada invoice formulir pendaftaran siswa.
+                  </p>
+                </div>
+
+                {/* Nominal Diskon */}
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                    Nominal Potongan Harga
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+                      Rp
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="50000"
+                      value={formData.discountAmount}
+                      onChange={(e) => setFormData({ ...formData, discountAmount: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                      placeholder="0"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Tanggal Akhir Berlaku */}
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                    Berlaku Sampai (Tanggal Akhir)
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.discountEndDate}
+                    onChange={(e) => setFormData({ ...formData, discountEndDate: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Kosongkan jika tidak ada batas waktu. Jika diisi, formulir publik akan otomatis menyembunyikan diskon setelah tanggal ini.
+                  </p>
+                </div>
+
+                {/* Preview Simulasi */}
+                {formData.discountAmount > 0 && (
+                  <div className="p-3 rounded-lg bg-rose-500/5 border border-rose-500/20 space-y-1.5 text-xs">
+                    <p className="font-bold text-foreground flex items-center gap-1.5">
+                      <Sparkles size={12} className="text-rose-500" />
+                      Simulasi Harga Program:
+                    </p>
+                    <div className="space-y-1 border-t border-rose-500/10 pt-2">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Harga Normal</span>
+                        <span className="font-semibold line-through">{formatRupiah(formData.totalProgramFee)}</span>
+                      </div>
+                      <div className="flex justify-between text-rose-500 font-semibold">
+                        <span>Potongan "{formData.discountLabel || 'Promo'}"</span>
+                        <span>- {formatRupiah(formData.discountAmount)}</span>
+                      </div>
+                      <div className="flex justify-between text-emerald-500 font-bold border-t border-rose-500/10 pt-1">
+                        <span>Harga Setelah Diskon</span>
+                        <span>{formatRupiah(Math.max(0, formData.totalProgramFee - formData.discountAmount))}</span>
+                      </div>
+                    </div>
+                    {formData.discountEndDate && (
+                      <p className="text-muted-foreground pt-1">
+                        ⏰ Berlaku s.d. <span className="font-semibold text-foreground">{new Date(formData.discountEndDate + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+              </div>
+
               {/* Ringkasan Skema Konversi Ontologi */}
               <div className="p-3 rounded-lg border bg-background/50 space-y-1.5 text-xs text-muted-foreground">
                 <p className="font-semibold text-foreground flex items-center gap-1">
@@ -397,7 +505,7 @@ export default function PaymentConfigTab() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <>

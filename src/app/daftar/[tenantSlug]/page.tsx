@@ -20,6 +20,7 @@ import {
   RotateCcw,
   Info,
   Phone,
+  Tag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
@@ -46,6 +47,9 @@ interface PaymentConfig {
   registrationFee: number;
   coreDepositAmount: number;
   totalProgramFee: number;
+  discountAmount?: number;
+  discountLabel?: string;
+  discountEndDate?: string | null;
   qrisImageUrl: string | null;
 }
 
@@ -55,6 +59,13 @@ type PageStep = 'loading' | 'step1_form' | 'step2_invoice' | 'success' | 'error'
 
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+}
+
+function isDiscountActive(config?: PaymentConfig | null): boolean {
+  if (!config || !config.discountAmount || config.discountAmount <= 0) return false;
+  if (!config.discountEndDate) return true;
+  const end = new Date(config.discountEndDate + 'T23:59:59');
+  return !isNaN(end.getTime()) && new Date() <= end;
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -520,26 +531,62 @@ export default function PublicRegistrationPage() {
           </div>
 
           {/* Summary Biaya Program */}
-          {paymentConfig && (
-            <div className="bg-card border rounded-2xl p-5 space-y-3 shadow-sm">
-              <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ringkasan Biaya Program</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Biaya Formulir (sekarang)</span>
-                  <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.registrationFee)}</span>
+          {paymentConfig && (() => {
+            const hasPromo = isDiscountActive(paymentConfig);
+            const discount = hasPromo ? (paymentConfig.discountAmount || 0) : 0;
+            const finalTotal = Math.max(0, paymentConfig.totalProgramFee - discount);
+            const promoName = paymentConfig.discountLabel || 'Promo Khusus';
+
+            return (
+              <div className="bg-card border rounded-2xl p-5 space-y-3 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ringkasan Biaya Program</p>
+                  {hasPromo && (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                      <Tag size={11} /> {promoName}
+                    </span>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Down Payment Pelatihan</span>
-                  <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.coreDepositAmount)}</span>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Biaya Formulir (sekarang)</span>
+                    <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.registrationFee)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Down Payment Pelatihan</span>
+                    <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.coreDepositAmount)}</span>
+                  </div>
+                  {hasPromo ? (
+                    <>
+                      <div className="flex justify-between text-muted-foreground text-xs">
+                        <span>Total Biaya Pelatihan Normal</span>
+                        <span className="line-through">{formatRupiah(paymentConfig.totalProgramFee)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-rose-500 font-semibold">
+                        <span>Potongan "{promoName}"</span>
+                        <span>- {formatRupiah(discount)}</span>
+                      </div>
+                      <div className="border-t pt-2 flex justify-between">
+                        <span className="font-bold text-foreground">Total Setelah Diskon</span>
+                        <span className="font-bold text-emerald-500">{formatRupiah(finalTotal)}</span>
+                      </div>
+                      {paymentConfig.discountEndDate && (
+                        <p className="text-xs text-muted-foreground pt-0.5">
+                          ⏰ Promo berlaku s.d. <span className="font-semibold text-foreground">{new Date(paymentConfig.discountEndDate + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="border-t pt-2 flex justify-between">
+                      <span className="text-muted-foreground">Total Biaya Program</span>
+                      <span className="font-bold text-primary">{formatRupiah(paymentConfig.totalProgramFee)}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="border-t pt-2 flex justify-between">
-                  <span className="text-muted-foreground">Total Biaya Program</span>
-                  <span className="font-bold text-primary">{formatRupiah(paymentConfig.totalProgramFee)}</span>
-                </div>
+                <p className="text-xs text-muted-foreground/70">* Biaya Formulir dihitung sebagai bagian dari total program.</p>
               </div>
-              <p className="text-xs text-muted-foreground/70">* Biaya Formulir dihitung sebagai bagian dari total program.</p>
-            </div>
-          )}
+            );
+          })()}
 
         </div>
       </PageShell>
@@ -738,19 +785,42 @@ export default function PublicRegistrationPage() {
         </div>
 
         {/* Info Preview Biaya */}
-        {paymentConfig && (
-          <div className="bg-card border rounded-2xl p-4 space-y-2 shadow-sm text-sm">
-            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Biaya yang Perlu Disiapkan</p>
-            <div className="flex justify-between text-muted-foreground">
-              <span>Biaya Formulir Pendaftaran</span>
-              <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.registrationFee)}</span>
+        {paymentConfig && (() => {
+          const hasPromo = isDiscountActive(paymentConfig);
+          const discount = hasPromo ? (paymentConfig.discountAmount || 0) : 0;
+          const finalTotal = Math.max(0, paymentConfig.totalProgramFee - discount);
+          const promoName = paymentConfig.discountLabel || 'Promo Diskon';
+
+          return (
+            <div className="bg-card border rounded-2xl p-4 space-y-2.5 shadow-sm text-sm">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide">Biaya yang Perlu Disiapkan</p>
+                {hasPromo && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                    <Tag size={11} /> {promoName}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Biaya Formulir Pendaftaran</span>
+                <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.registrationFee)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground text-xs">
+                <span className="text-muted-foreground/70">DP Pelatihan (setelah diterima)</span>
+                <span className="text-muted-foreground/70">{formatRupiah(paymentConfig.coreDepositAmount)}</span>
+              </div>
+              {hasPromo && (
+                <div className="border-t pt-2 flex justify-between text-xs">
+                  <span className="text-muted-foreground">Total Biaya Program</span>
+                  <div className="text-right">
+                    <span className="line-through text-muted-foreground/70 mr-1.5">{formatRupiah(paymentConfig.totalProgramFee)}</span>
+                    <span className="font-bold text-emerald-500">{formatRupiah(finalTotal)}</span>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex justify-between text-muted-foreground text-xs">
-              <span className="text-muted-foreground/70">DP Pelatihan (setelah diterima)</span>
-              <span className="text-muted-foreground/70">{formatRupiah(paymentConfig.coreDepositAmount)}</span>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
       </div>
     </PageShell>
