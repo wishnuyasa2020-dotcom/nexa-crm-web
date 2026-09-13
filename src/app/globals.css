@@ -122,7 +122,7 @@
   }
   html {
     @apply font-sans;
-    font-size: 120%; /* Mobile first: Perbesar font 20% (berlaku untuk semua teks di Tailwind) */
+    font-size: 140%; /* Mobile first: Perbesar font 40% (berlaku untuk semua teks di Tailwind) */
   }
   /* Kembalikan ke ukuran normal 100% saat di layar tablet/desktop (md: 768px ke atas) */
   @media (min-width: 768px) {
