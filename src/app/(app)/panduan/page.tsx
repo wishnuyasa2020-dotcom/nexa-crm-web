@@ -155,7 +155,7 @@ export default function PanduanPage() {
                 Di dalam filosofi Nexa OS, <strong>Sekolah (B2B) dan Siswa (B2C) adalah dua alam yang berbeda</strong>. Sekolah bukanlah pihak yang membeli paket pelatihan atau membayar biaya formulir. Sekolah berfungsi sebagai <em>Decision Environment</em> dan penyedia izin sosialisasi.
               </p>
               <div className="p-3.5 rounded-xl bg-secondary/50 border text-xs text-foreground space-y-1.5">
-                <p className="font-semibold text-purple-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                <p className="font-semibold text-purple-600 flex items-center gap-1.5">
                   <Info size={14} className="shrink-0" />
                   <span>Aturan Baku Ontologi Nexa OS:</span>
                 </p>
@@ -400,15 +400,15 @@ export default function PanduanPage() {
                       Penugasan hak asuh prospek siswa (B2C) dilakukan berbasis unit <strong>KELAS</strong> di sekolah binaan tertentu (contoh: <em>Kelas 12 TKJ 1 di SMKS Hasina</em>). Tombol eksekusi penugasan ini <strong>hanya dapat diakses oleh akun berkedudukan Chief CRO, Manager, dan Administrator</strong> guna mencegah perebutan prospek liar antar-staf di lapangan.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
-                      <div className="p-2.5 rounded-lg bg-background border flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
                         <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
                         <span className="text-foreground"><strong>1 Kelas = 1 CRO:</strong> Menghindari kanibalisasi</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-background border flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
                         <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
                         <span className="text-foreground"><strong>Auto-Replace:</strong> Ganti CRO otomatis seketika</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-background border flex flex-col items-start sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+                      <div className="p-2.5 rounded-lg bg-background border flex items-center gap-2">
                         <CheckCircle2 size={14} className="text-purple-600 shrink-0" />
                         <span className="text-foreground"><strong>Auto-Inherit:</strong> Siswa baru otomatis diwariskan</span>
                       </div>
@@ -528,7 +528,7 @@ export default function PanduanPage() {
 
                     <div className="space-y-2.5 text-xs">
                       <div className="p-3 rounded-xl bg-secondary/40 border space-y-1">
-                        <div className="font-bold text-foreground flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                        <div className="font-bold text-foreground flex items-center gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
                           <span>1. Garansi Pewarisan Hak Asuh Siswa Baru (Auto-Inheritance):</span>
                         </div>
@@ -538,7 +538,7 @@ export default function PanduanPage() {
                       </div>
 
                       <div className="p-3 rounded-xl bg-secondary/40 border space-y-1 min-w-0">
-                        <div className="font-bold text-foreground flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                        <div className="font-bold text-foreground flex items-center gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
                           <span>2. Sistem Auto-Replace Terintegrasi (Tanpa Data Tercecer):</span>
                         </div>
@@ -548,7 +548,7 @@ export default function PanduanPage() {
                       </div>
 
                       <div className="p-3 rounded-xl bg-secondary/40 border space-y-1 min-w-0">
-                        <div className="font-bold text-foreground flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                        <div className="font-bold text-foreground flex items-center gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
                           <span>3. Audit Trail Permanen Event-Sourcing CQRS:</span>
                         </div>
@@ -637,22 +637,22 @@ export default function PanduanPage() {
                     </p>
 
                     <div className="space-y-2.5 pt-1 text-xs">
-                      <div className="flex flex-col items-start sm:flex-row sm:items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
-                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 sm:mt-0.5" />
+                      <div className="flex items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
+                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-foreground">Dual-Template Pairing:</strong> Setiap broadcast dan template di Nexa dipasangkan menjadi 2 format: <em>Meta Template</em> (untuk audiens dengan SW Tutup) dan <em>CRM Template</em> (untuk audiens dengan SW Buka).
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-start sm:flex-row sm:items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
-                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 sm:mt-0.5" />
+                      <div className="flex items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
+                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-foreground">Pencegatan Otomatis (Smart Interception):</strong> Backend Nexa OS secara otomatis mendeteksi status <code>is_sw_open = true</code>. Permintaan pengiriman template dicegat seketika dan diubah menjadi pesan <em>Interactive Quick Reply Button</em> yang gratis, menghemat anggaran operasional hingga <strong>60%–80%</strong>.
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-start sm:flex-row sm:items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
-                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 sm:mt-0.5" />
+                      <div className="flex items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
+                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-foreground">Zero-Failure Fallback System:</strong> Jika API Meta menolak format interaktif (karena limit karakter header Meta &gt; 60 huruf atau pembatasan tombol), sistem tidak membiarkan pesan gagal kirim. Sistem otomatis mengonversinya menjadi teks murni dengan pilihan nomor (<em>Numbered List</em>). <strong>Tingkat keberhasilan kirim dijamin 100%!</strong>
                         </div>
@@ -694,7 +694,7 @@ export default function PanduanPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                      <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
                         <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
                         <span>Wajib Fresh SIM (Nomor Baru)</span>
                       </h4>
@@ -704,7 +704,7 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                      <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
                         <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
                         <span>Display Name Kepatuhan Meta</span>
                       </h4>
@@ -1008,7 +1008,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/30 text-xs text-foreground space-y-1 min-w-0">
-                    <p className="font-bold text-purple-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                    <p className="font-bold text-purple-600 flex items-center gap-1.5">
                       <CheckCircle2 size={15} className="shrink-0" />
                       <span>Audit Trail Event-Sourcing CQRS:</span>
                     </p>
@@ -1042,7 +1042,7 @@ export default function PanduanPage() {
               {expandedSections['cro-fnar'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="p-3.5 rounded-xl bg-secondary/40 border space-y-1.5">
-                    <p className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <p className="font-bold text-foreground text-sm flex items-center gap-2">
                       <Sparkles size={16} className="text-primary shrink-0" />
                       <span>Apa itu Framework FNAR?</span>
                     </p>
@@ -1118,7 +1118,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/30 text-xs text-foreground space-y-1 min-w-0">
-                    <p className="font-bold text-emerald-600 flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                    <p className="font-bold text-emerald-600 flex items-center gap-1.5">
                       <CheckCircle2 size={15} className="shrink-0" />
                       <span>Mekanisme Event CQRS Nexa OS:</span>
                     </p>
@@ -1151,7 +1151,7 @@ export default function PanduanPage() {
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <h4 className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-emerald-600">
+                      <h4 className="font-bold text-sm flex items-center gap-2 text-emerald-600">
                         <CheckCircle2 size={16} className="shrink-0" />
                         <span>Tombol [ ✅ EKSEKUSI ]</span>
                       </h4>
@@ -1161,7 +1161,7 @@ export default function PanduanPage() {
                     </div>
 
                     <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
-                      <h4 className="font-bold text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2 text-amber-500">
+                      <h4 className="font-bold text-sm flex items-center gap-2 text-amber-500">
                         <Clock size={16} className="shrink-0" />
                         <span>Tombol [ 📅 TUNDA ]</span>
                       </h4>
