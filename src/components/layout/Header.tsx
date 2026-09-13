@@ -2,7 +2,7 @@
 
 import {
   Bell, Search, Users, Radio, TrendingUp, LogOut, Clock,
-  FileText, User, Settings, Calendar, ChevronDown, CalendarDays, BookOpen
+  FileText, User, Settings, Calendar, ChevronDown, CalendarDays, BookOpen, Home
 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
@@ -59,7 +59,7 @@ export default function Header({ title }: { title?: string }) {
 
   return (
     <>
-      <header className="flex flex-col border-b bg-background/95 backdrop-blur-sm shrink-0 z-30">
+      <header className={cn("flex flex-col border-b bg-background/95 backdrop-blur-sm shrink-0", (showMenu || showCohortMenu) ? "z-50" : "z-40")}>
         {/* Mobile Top Bar (Row 1): Tenant identity (1 baris sendiri, font reguler kecil) & Demo badge */}
         <div className="flex md:hidden items-center justify-between px-4 py-1.5 border-b border-border/40 bg-muted/20">
           <span className="text-xs font-normal text-muted-foreground tracking-wide">
@@ -114,7 +114,7 @@ export default function Header({ title }: { title?: string }) {
               </button>
 
               {showCohortMenu && (
-                <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 w-60 bg-card border rounded-2xl shadow-xl overflow-hidden py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 w-60 bg-card border rounded-2xl shadow-xl overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3.5 py-2.5 border-b">
                     <p className="text-xs font-bold text-foreground">Sesi Periode / Cohort</p>
                     <p className="text-xs text-muted-foreground">Pilih tahun ajaran untuk memfilter data</p>
@@ -194,7 +194,7 @@ export default function Header({ title }: { title?: string }) {
               </button>
 
               {/* Profile Menu */}
-              <div className="relative" ref={menuRef}>
+              <div className="relative z-50" ref={menuRef}>
                 <button 
                   onClick={() => setShowMenu(!showMenu)}
                   className="flex items-center gap-2.5 pl-2 border-l ml-1 hover:bg-secondary/50 rounded-lg pr-2 py-1 transition-colors text-left cursor-pointer"
@@ -210,7 +210,7 @@ export default function Header({ title }: { title?: string }) {
 
             {/* Popup Menu */}
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 w-52 bg-card border rounded-2xl shadow-xl overflow-hidden flex flex-col py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute right-0 top-full mt-2 w-52 bg-card border rounded-2xl shadow-xl overflow-hidden flex flex-col py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
                 {/* User info (mobile only) */}
                 <div className="px-3 py-2.5 border-b sm:hidden">
                   <p className="text-sm font-medium text-foreground truncate">{user?.nama || user?.username}</p>
@@ -240,6 +240,9 @@ export default function Header({ title }: { title?: string }) {
                     </Link>
                   </>
                 )}
+                <Link href="/home-visit" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
+                  <Home size={16} /> Home Visit
+                </Link>
                 <Link href="/broadcast" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
                   <Radio size={16} /> Broadcast
                 </Link>
