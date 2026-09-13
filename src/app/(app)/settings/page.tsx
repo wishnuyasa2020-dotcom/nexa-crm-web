@@ -8,12 +8,13 @@ import KecamatanMapping from '@/components/settings/KecamatanMapping';
 import ProfileTab from '@/components/settings/ProfileTab';
 import BillingTab from '@/components/settings/BillingTab';
 import WhatsAppTab from '@/components/settings/WhatsAppTab';
-import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft, MessageSquare } from 'lucide-react';
+import PaymentConfigTab from '@/components/settings/PaymentConfigTab';
+import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft, MessageSquare, Banknote } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'whatsapp' | 'calendar' | 'billing'>('kelas');
+  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'payment' | 'whatsapp' | 'calendar' | 'billing'>('kelas');
   const { user } = useAuthStore();
 
   const isAuthorized = !user || user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'manager';
@@ -42,6 +43,7 @@ export default function SettingsPage() {
     { id: 'kelas', label: 'Master Kelas', icon: BookOpen },
     { id: 'kota', label: 'Master Kota', icon: Building2 },
     { id: 'kecamatan', label: 'Master Kecamatan', icon: MapPin },
+    { id: 'payment', label: 'Rekening & Biaya', icon: Banknote },
     { id: 'whatsapp', label: 'WhatsApp Bisnis', icon: MessageSquare },
     { id: 'calendar', label: 'Integrasi Kalender', icon: Calendar },
     { id: 'billing', label: 'Langganan & Billing', icon: CreditCard },
@@ -96,6 +98,7 @@ export default function SettingsPage() {
             {activeTab === 'kelas' && <KelasMapping />}
             {activeTab === 'kota' && <KotaMapping />}
             {activeTab === 'kecamatan' && <KecamatanMapping />}
+            {activeTab === 'payment' && <PaymentConfigTab />}
             {activeTab === 'whatsapp' && <WhatsAppTab />}
             {activeTab === 'calendar' && <ProfileTab />}
             {activeTab === 'billing' && <BillingTab />}
