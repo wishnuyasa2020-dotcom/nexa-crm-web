@@ -184,7 +184,7 @@ export default function PanduanPage() {
               {expandedSections['b2b-pipeline'] && (
                 <div className="pt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
-                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                       <span className="text-xs font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground border shrink-0">Tahap 1</span>
                       <span className="text-xs font-semibold text-amber-500">Belum Visit (Identified)</span>
                     </div>
@@ -195,7 +195,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
-                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                       <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0">Tahap 2</span>
                       <span className="text-xs font-semibold text-blue-500">Tunggu Visit Ulang (Engaged)</span>
                     </div>
@@ -206,7 +206,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
-                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                       <span className="text-xs font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 border border-purple-500/20 shrink-0">Tahap 3</span>
                       <span className="text-xs font-semibold text-purple-500">Sudah Sosialisasi</span>
                     </div>
@@ -217,7 +217,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
-                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5">
                       <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0">Tahap 4</span>
                       <span className="text-xs font-semibold text-emerald-500">Identity Captured / Active Partner</span>
                     </div>
