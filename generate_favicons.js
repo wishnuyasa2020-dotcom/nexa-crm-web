@@ -1,4 +1,25 @@
-const sharp = require('sharp');
+/**
+ * Utility Script: Favicon & App Icon Generator for Nexa CRM
+ * 
+ * Script utilitas lokal (one-off) untuk menghasilkan aset favicon & PWA icon dari logo.
+ * Memerlukan package 'sharp' yang tidak dipasang di dependensi runtime CRM.
+ * 
+ * Penggunaan:
+ *   npx -p sharp node generate_favicons.js
+ *   atau:
+ *   npm install -D sharp && node generate_favicons.js
+ */
+
+let sharp;
+try {
+  sharp = require('sharp');
+} catch (e) {
+  console.error('⚠️  Package "sharp" belum terpasang.');
+  console.error('Script ini adalah utilitas opsional/one-off. Jalankan via:');
+  console.error('  npx -p sharp node generate_favicons.js');
+  process.exit(0);
+}
+
 const fs = require('fs');
 const path = require('path');
 

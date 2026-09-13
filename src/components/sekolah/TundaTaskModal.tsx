@@ -66,9 +66,9 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-      <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border border-border flex flex-col">
+      <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
               <CalendarIcon size={16} />

@@ -158,7 +158,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
               <Tag size={14} /> Role / Hak Akses
             </label>
             <select 
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
               value={role}
               onChange={e => setRole(e.target.value)}
             >
@@ -175,7 +175,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
                 <User size={14} /> Atasan (Chief CRO)
               </label>
               <select 
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
                 value={supervisorId}
                 onChange={e => setSupervisorId(e.target.value)}
               >
@@ -187,7 +187,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
             </div>
           )}
 
-          <div className="space-y-2 pt-2 border-t border-border">
+          <div className="space-y-2 pt-2 border-t">
             <div className="flex items-center justify-between">
               <div>
                 <label className="text-sm font-medium text-foreground">Status Akun</label>

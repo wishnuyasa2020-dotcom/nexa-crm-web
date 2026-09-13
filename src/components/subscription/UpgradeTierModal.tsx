@@ -265,7 +265,7 @@ export default function UpgradeTierModal({
                       ? 'bg-secondary/40 border-muted-foreground/30 ring-1 ring-muted-foreground/20' 
                       : isBusiness
                         ? 'bg-card border-primary/40 shadow-xl shadow-primary/5 ring-1 ring-primary/30'
-                        : 'bg-card border-border hover:border-border/80 shadow-sm'
+                        : 'bg-card hover:border-border/80 shadow-sm'
                   )}
                 >
                   {/* Badge */}

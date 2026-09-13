@@ -3,14 +3,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDragScroll } from '@/hooks/useDragScroll';
+import Link from 'next/link';
 import {
   ArrowLeft, Edit2, UserCheck, Plus, Trash2,
   Phone, MapPin, Users, Calendar, Clock,
   CheckCircle, XCircle, AlertCircle,
   MessageSquare, PhoneCall, Handshake, Loader2,
-  Play, RotateCcw
+  Play, RotateCcw, ExternalLink, Copy, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import apiClient from '@/lib/apiClient';
 import {
   StatusBadge, AgingBadge,
   AktivitasEkstraModal, ReassignCROModal, DeleteSekolahModal,
@@ -18,6 +20,7 @@ import {
 } from '@/components/sekolah';
 import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
 import { IntentBadge } from '@/components/sekolah/IntentBadge';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail, Aktivitas, AktivitasEkstra } from '@/lib/types/sekolah.types';
 import { isManagerOrAdmin, EVENT_TYPE_CONFIG } from '@/lib/constants/sekolah';
@@ -61,7 +64,7 @@ function EkstraStatusBadge({ status }: { status: string }) {
     'Dibatalkan':   'text-rose-400 bg-rose-500/10 border-rose-500/20',
   };
   return (
-    <span className={cn('text-[11px] px-2 py-0.5 rounded border font-medium', map[status] ?? 'text-muted-foreground')}>
+    <span className={cn('text-xs px-2 py-0.5 rounded border font-medium', map[status] ?? 'text-muted-foreground')}>
       {status}
     </span>
   );
@@ -159,7 +162,7 @@ export default function SekolahDetailPage() {
       </button>
 
       {/* ── Page Header ── */}
-      <div className="bg-card border border-border rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm sm:shadow-none relative z-10">
+      <div className="bg-card border rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm sm:shadow-none relative z-10">
         {/* Title row */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-1 min-w-0">
@@ -184,19 +187,19 @@ export default function SekolahDetailPage() {
         {/* Info Grid - hidden on mobile when sticky? We'll just hide it on very small screens or keep it scrollable */}
         <div className="hidden sm:grid sm:grid-cols-4 grid-cols-2 gap-3">
           <div className="bg-secondary/30 rounded-xl p-3 space-y-0.5">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Next Action</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Next Action</p>
             <p className="text-sm font-medium text-foreground">{sekolah.nextAction ?? '—'}</p>
           </div>
           <div className="bg-secondary/30 rounded-xl p-3 space-y-0.5">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Due Date</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Due Date</p>
             <AgingBadge dueDate={sekolah.dueDate} className="text-sm font-medium" />
           </div>
           <div className="bg-secondary/30 rounded-xl p-3 space-y-0.5">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">PJ CRO</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">PJ CRO</p>
             <p className="text-sm font-medium text-foreground">{sekolah.pjCro}</p>
           </div>
           <div className="bg-secondary/30 rounded-xl p-3 space-y-0.5">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Status Sekolah</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Status Sekolah</p>
             <p className="text-sm font-medium">
               {sekolah.statusAktif === 'Aktif' ? (
                 <span className="text-emerald-400">🟢 Aktif</span>
@@ -211,10 +214,10 @@ export default function SekolahDetailPage() {
 
         {/* Action Buttons */}
         {!isCRO && (
-          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border">
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t">
             <button 
               onClick={() => setShowEdit(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
             >
               <Edit2 size={13} /> Edit Sekolah
             </button>
@@ -222,13 +225,13 @@ export default function SekolahDetailPage() {
               <>
                 <button
                   onClick={() => setShowReassign(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
                 >
                   <UserCheck size={13} /> Reassign CRO
                 </button>
                 <button
                   onClick={() => setShowDelete(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-rose-500/70 hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/10 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-rose-500/70 hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/10 transition-all"
                 >
                   <Trash2 size={13} /> Hapus
                 </button>
@@ -237,7 +240,7 @@ export default function SekolahDetailPage() {
             {canEkstra && (
               <button
                 onClick={() => setShowAktivitasEkstra(true)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-emerald-500/30 transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-emerald-500/30 transition-all"
               >
                 <Plus size={13} /> Aktivitas Ekstra
                 {hasEkstraActive && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
@@ -245,7 +248,7 @@ export default function SekolahDetailPage() {
             )}
             <button
               onClick={() => setShowCatatInteraksi(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg gradient-primary text-white text-xs font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20 ml-auto"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg gradient-primary text-white text-xs font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 ml-auto"
             >
               <Play size={13} /> Catat Interaksi
             </button>
@@ -257,10 +260,10 @@ export default function SekolahDetailPage() {
       <div className="mt-4 min-h-dvh">
         {/* Tab Nav (Sticky on Mobile) */}
         <div className="sticky -top-4 z-40 py-2 -mx-4 px-4 bg-background/95 backdrop-blur-md md:static md:bg-transparent md:mx-0 md:px-0 md:py-0">
-          <div className="bg-card border border-border rounded-xl md:rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-card border rounded-xl md:rounded-2xl overflow-hidden shadow-sm">
             <div
               ref={scrollContainerRef}
-              className="flex border-b border-border overflow-x-auto scrollbar-none"
+              className="flex border-b overflow-x-auto scrollbar-none"
             >
               {TABS.map(tab => (
                 <button
@@ -271,7 +274,7 @@ export default function SekolahDetailPage() {
                     activeTab === tab.key
                       ? 'border-primary text-primary bg-primary/5'
                       : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-secondary/50',
-                    tab.key === 'ekstra' && hasEkstraActive && 'after:content-["●"] after:text-amber-400 after:text-[8px] after:ml-1'
+                    tab.key === 'ekstra' && hasEkstraActive && 'after:content-["●"] after:text-amber-400 after:text-xs after:ml-1'
                   )}
                 >
                   {tab.label}
@@ -285,11 +288,11 @@ export default function SekolahDetailPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-card border border-border rounded-2xl mt-2 md:mt-4 p-4 sm:p-5">
+        <div className="bg-card border rounded-2xl mt-2 md:mt-4 p-4 sm:p-5">
           {activeTab === 'info'      && (
             <div className="space-y-8">
               <TabDetail sekolah={sekolah} />
-              <div className="border-t border-border pt-6">
+              <div className="border-t pt-6">
                 <TabPIC sekolah={sekolah} />
               </div>
             </div>
@@ -299,7 +302,7 @@ export default function SekolahDetailPage() {
               aktivitas={sekolah.aktivitas}
             />
           )}
-          {activeTab === 'siswa'     && <TabSiswa />}
+          {activeTab === 'siswa'     && <TabSiswa sekolahId={sekolah.id} namaSekolah={sekolah.nama} />}
           {activeTab === 'ekstra'    && (
             <TabEkstra
               ekstra={sekolah.aktivitasEkstra}
@@ -399,7 +402,7 @@ function TabDetail({ sekolah }: { sekolah: SekolahDetail }) {
           </div>
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Alamat</dt>
-            <dd className="font-medium text-foreground text-right max-w-[60%]">{sekolah.alamat || '—'}</dd>
+            <dd className="font-medium text-foreground text-right max-w-xs">{sekolah.alamat || '—'}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Siswa Kls 12</dt>
@@ -419,7 +422,7 @@ function TabDetail({ sekolah }: { sekolah: SekolahDetail }) {
           </div>
           <div className="flex justify-between">
             <dt className="text-muted-foreground">ID Sekolah</dt>
-            <dd className="font-mono text-[11px] text-muted-foreground">{sekolah.id}</dd>
+            <dd className="font-mono text-xs text-muted-foreground">{sekolah.id}</dd>
           </div>
         </dl>
       </div>
@@ -479,7 +482,7 @@ function TabAktivitas({
       {/* Append-Only label */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Event Log (Append-Only)</h3>
-        <span className="text-[10px] text-muted-foreground/60">{aktivitas.length} entri</span>
+        <span className="text-xs text-muted-foreground/60">{aktivitas.length} entri</span>
       </div>
       {aktivitas.map((ak, i) => {
         const evCfg = EVENT_TYPE_CONFIG[ak.eventType] ?? EVENT_TYPE_CONFIG['InteractionLogged'];
@@ -504,7 +507,7 @@ function TabAktivitas({
                   {formatDate(ak.tanggal)}
                 </span>
                 {/* Event Type Badge */}
-                <span className={cn('text-[10px] px-2 py-0.5 rounded border font-semibold', evCfg.color, 'bg-secondary border-border')} title={ak.eventType}>
+                <span className={cn('text-xs px-2 py-0.5 rounded border font-semibold', evCfg.color, 'bg-secondary')} title={ak.eventType}>
                   {evCfg.icon} {evCfg.label}
                 </span>
                 {ak.jenisAktivitas && (
@@ -589,12 +592,218 @@ function TabPIC({ sekolah }: { sekolah: SekolahDetail }) {
   );
 }
 
-function TabSiswa() {
+interface SiswaItem {
+  id: string;
+  idRecord?: string;
+  nama: string;
+  namaSekolah?: string;
+  kelas?: string;
+  cro?: string;
+  status?: string;
+  commercialState?: string;
+  intent?: string;
+  priorityScore?: number;
+  nextAction?: string;
+  prioritas?: string;
+  dueDate?: string;
+  wa?: string;
+  bsuid?: string;
+}
+
+function TabSiswa({ sekolahId, namaSekolah }: { sekolahId: string; namaSekolah: string }) {
+  const [siswaList, setSiswaList] = useState<SiswaItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const fetchSiswa = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.get<{ status: string; data: { data: SiswaItem[]; total: number } }>(
+        '/api/v1/siswa',
+        { params: { sekolahId, pageSize: 50 } }
+      );
+      if (res.data.status === 'ok') {
+        setSiswaList(res.data.data.data || []);
+        setTotal(res.data.data.total || 0);
+      } else {
+        setError('Gagal memuat data siswa');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Gagal memuat data siswa');
+    } finally {
+      setLoading(false);
+    }
+  }, [sekolahId]);
+
+  useEffect(() => {
+    fetchSiswa();
+  }, [fetchSiswa]);
+
+  const handleCopyFormLink = () => {
+    if (typeof window === 'undefined') return;
+    const url = `${window.location.origin}/public/form-siswa?sekolahId=${sekolahId}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  if (loading) {
+    return (
+      <div className="py-16 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Loader2 size={28} className="animate-spin text-primary" />
+        <p className="text-sm font-medium">Memuat data siswa...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-12 text-center text-rose-500 space-y-3">
+        <AlertCircle size={28} className="mx-auto" />
+        <p className="text-sm">{error}</p>
+        <button
+          onClick={fetchSiswa}
+          className="px-4 py-2 text-xs font-semibold rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-all"
+        >
+          Coba Lagi
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="py-12 text-center text-muted-foreground text-sm">
-      <Users size={28} className="mx-auto mb-2 opacity-20" />
-      <p>Modul Data Siswa</p>
-      <p className="text-xs mt-1">Tersedia di modul terpisah — akan terhubung otomatis.</p>
+    <div className="space-y-4">
+      {/* Header Action Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Users size={16} className="text-primary" />
+            Daftar Siswa Terdaftar
+            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary">
+              {total} Siswa
+            </span>
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Siswa yang terhubung dengan {namaSekolah} pada periode ini.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopyFormLink}
+            type="button"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+            title="Salin tautan formulir kehadiran untuk dibagikan ke siswa"
+          >
+            {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+            {copied ? 'Tersalin!' : 'Salin Form Siswa'}
+          </button>
+          <Link
+            href={`/siswa?search=${encodeURIComponent(namaSekolah)}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-xs font-semibold transition-all"
+          >
+            <span>Buka Modul Siswa</span>
+            <ExternalLink size={13} />
+          </Link>
+        </div>
+      </div>
+
+      {/* Empty State */}
+      {siswaList.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-secondary/80 flex items-center justify-center mx-auto text-muted-foreground/40">
+            <Users size={24} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Belum ada siswa terdaftar</p>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+              Siswa akan otomatis masuk ke sini ketika mengisi formulir konfirmasi kehadiran sosialisasi atau diimpor melalui modul siswa.
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={handleCopyFormLink}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow hover:bg-primary/90 transition-all"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              {copied ? 'Tersalin!' : 'Salin Tautan Formulir Siswa'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Table of Students */
+        <div className="overflow-x-auto rounded-xl border">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-secondary/60 text-muted-foreground font-semibold border-b">
+              <tr>
+                <th className="py-3 px-4">Nama Siswa</th>
+                <th className="py-3 px-3">Kelas</th>
+                <th className="py-3 px-3">Kontak WA</th>
+                <th className="py-3 px-3">Status Komersial</th>
+                <th className="py-3 px-3">PJ CRO</th>
+                <th className="py-3 px-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {siswaList.map((siswa) => (
+                <tr key={siswa.id} className="hover:bg-secondary/30 transition-colors">
+                  <td className="py-3 px-4 font-medium text-foreground">
+                    <Link
+                      href={`/siswa/${siswa.id}`}
+                      className="hover:underline hover:text-primary font-semibold"
+                    >
+                      {siswa.nama || '—'}
+                    </Link>
+                    {siswa.id && (
+                      <span className="block text-xs text-muted-foreground font-normal">
+                        {siswa.id}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-3 text-muted-foreground whitespace-nowrap">
+                    {siswa.kelas || '—'}
+                  </td>
+                  <td className="py-3 px-3 whitespace-nowrap">
+                    {siswa.wa ? (
+                      <a
+                        href={`https://wa.me/${siswa.wa.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-500 hover:underline flex items-center gap-1"
+                      >
+                        <Phone size={12} />
+                        <span>{siswa.wa}</span>
+                      </a>
+                    ) : siswa.bsuid ? (
+                      <span className="text-muted-foreground text-xs">BSUID: {siswa.bsuid.slice(0, 10)}...</span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-3 whitespace-nowrap">
+                    <CommercialStateBadge state={siswa.commercialState || 'Lead'} size="sm" />
+                  </td>
+                  <td className="py-3 px-3 text-muted-foreground whitespace-nowrap">
+                    {siswa.cro || '—'}
+                  </td>
+                  <td className="py-3 px-3 text-right whitespace-nowrap">
+                    <Link
+                      href={`/siswa/${siswa.id}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground font-medium text-xs transition-colors"
+                    >
+                      <span>Detail</span>
+                      <ExternalLink size={11} />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -615,7 +824,7 @@ function TabEkstra({
         <div className="flex justify-end">
           <button
             onClick={onAdd}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-emerald-500/30 transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-emerald-500/30 transition-all"
           >
             <Plus size={13} /> Aktivitas Ekstra
           </button>
@@ -629,7 +838,7 @@ function TabEkstra({
         </div>
       ) : (
         ekstra.map(ae => (
-          <div key={ae.id} className="border border-border rounded-xl p-4 space-y-2.5">
+          <div key={ae.id} className="border rounded-xl p-4 space-y-2.5">
             {/* Header */}
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
@@ -722,11 +931,11 @@ function KonfirmasiEkstraModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl shadow-xl border border-border flex flex-col">
+      <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl shadow-xl border flex flex-col">
 
         {/* Header */}
         <div className={cn(
-          'flex items-center gap-3 p-4 sm:p-5 border-b border-border',
+          'flex items-center gap-3 p-4 sm:p-5 border-b',
           isSelesai ? 'bg-emerald-500/5' : 'bg-rose-500/5'
         )}>
           {isSelesai
@@ -785,7 +994,7 @@ function KonfirmasiEkstraModal({
           ) : (
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">
-                Alasan Pembatalan * <span className="text-rose-500 text-[10px]">min 5 karakter</span>
+                Alasan Pembatalan * <span className="text-rose-500 text-xs">min 5 karakter</span>
               </label>
               <textarea
                 required
@@ -803,7 +1012,7 @@ function KonfirmasiEkstraModal({
         </form>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3">
+        <div className="p-4 sm:p-5 border-t flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}

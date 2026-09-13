@@ -171,7 +171,7 @@ export default function TemplatesPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-bold text-foreground">Template Manager</h1>
               {approvedTotal !== null && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
                   {approvedTotal} Approved
                 </span>
@@ -210,7 +210,7 @@ export default function TemplatesPage() {
               'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all',
               activeTab === tab.value
                 ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card border-border text-muted-foreground hover:border-primary/50'
+                : 'bg-card text-muted-foreground hover:border-primary/50'
             )}
           >
             {tab.label}
@@ -379,7 +379,7 @@ function TemplateCard({
         </div>
 
         {/* Footer */}
-        <div className="mt-3 pt-3 border-t border-border flex justify-between items-center text-xs">
+        <div className="mt-3 pt-3 border-t flex justify-between items-center text-xs">
           <button
             onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
             className={cn(
@@ -464,11 +464,11 @@ function TemplatePreviewModal({
 
       {/* Modal */}
       <div
-        className="relative z-10 bg-card border rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+        className="relative z-10 bg-card border rounded-2xl shadow-2xl w-full max-w-4xl max-h-dvh overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header — sticky supaya tidak ikut scroll */}
-        <div className="sticky top-0 z-10 bg-card rounded-t-2xl flex items-start justify-between p-5 border-b border-border">
+        <div className="sticky top-0 z-10 bg-card rounded-t-2xl flex items-start justify-between p-5 border-b">
           <div>
             <h2 className="font-bold text-base text-foreground">{t.nama_template}</h2>
             <p className="text-xs text-muted-foreground mt-0.5 font-mono">{t.template_name_api}</p>

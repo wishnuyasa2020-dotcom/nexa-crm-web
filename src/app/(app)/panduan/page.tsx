@@ -82,7 +82,7 @@ export default function PanduanPage() {
         </div>
 
         {/* Tab Navigation Buttons (Touch Friendly & Horizontally Scrollable on Mobile) */}
-        <div className="w-full min-w-0 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-border overflow-x-auto scrollbar-none pb-1 touch-pan-x">
+        <div className="w-full min-w-0 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 mt-5 sm:mt-6 pt-5 sm:pt-6 border-t overflow-x-auto scrollbar-none pb-1 touch-pan-x">
           <button
             onClick={() => setActiveTab('sekolah')}
             className={cn(

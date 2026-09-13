@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Zap, Search, Plus, School, X, Link as LinkIcon, Copy, QrCode, ExternalLink, CheckCircle2, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import QRCode from 'react-qr-code';
-import { getMockSekolahList, MockSekolah } from '@/lib/mock/sekolah';
-import { InputAktivitasModal } from '@/components/sekolah/InputAktivitasModal';
+import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
 import { AddSekolahModal } from '@/components/sekolah/AddSekolahModal';
 import { usePathname } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
@@ -140,10 +139,10 @@ export function GlobalFAB() {
               }}
               className="flex items-center gap-3 group"
             >
-              <span className="px-3 py-1.5 bg-background border border-border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="px-3 py-1.5 bg-background border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                 Catat Aktivitas
               </span>
-              <div className="w-12 h-12 bg-card border border-border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
+              <div className="w-12 h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
                 <Zap size={20} className="text-amber-500" />
               </div>
             </button>
@@ -154,10 +153,10 @@ export function GlobalFAB() {
               }}
               className="flex items-center gap-3 group"
             >
-              <span className="px-3 py-1.5 bg-background border border-border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="px-3 py-1.5 bg-background border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                 Link Sosialisasi
               </span>
-              <div className="w-12 h-12 bg-card border border-border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
+              <div className="w-12 h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
                 <LinkIcon size={20} className="text-primary" />
               </div>
             </button>
@@ -168,10 +167,10 @@ export function GlobalFAB() {
               }}
               className="flex items-center gap-3 group"
             >
-              <span className="px-3 py-1.5 bg-background border border-border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="px-3 py-1.5 bg-background border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                 Broadcast Pesan
               </span>
-              <div className="w-12 h-12 bg-card border border-border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
+              <div className="w-12 h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
                 <Radio size={20} className="text-violet-500" />
               </div>
             </button>
@@ -195,9 +194,9 @@ export function GlobalFAB() {
       {/* Quick Search Modal */}
       {(searchAction === 'aktivitas' || searchAction === 'link') && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border flex flex-col overflow-hidden h-[80vh] max-h-125">
+          <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border flex flex-col overflow-hidden h-4/5 max-h-125">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border bg-secondary/30">
+            <div className="flex items-center justify-between p-4 border-b bg-secondary/30">
               <h2 className="font-bold flex items-center gap-2">
                 {searchAction === 'aktivitas' ? (
                   <><Zap size={16} className="text-amber-500" /> Quick Log Aktivitas</>
@@ -211,7 +210,7 @@ export function GlobalFAB() {
             </div>
 
             {/* Search Input */}
-            <div className="p-4 border-b border-border">
+            <div className="p-4 border-b">
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
@@ -277,7 +276,7 @@ export function GlobalFAB() {
 
       {/* Actual Modals */}
       {selectedSekolah && (
-        <InputAktivitasModal
+        <CatatInteraksiModal
           isOpen={!!selectedSekolah}
           onClose={() => setSelectedSekolah(null)}
           sekolah={selectedSekolah as any}
@@ -296,7 +295,7 @@ export function GlobalFAB() {
       {/* Show Link & QR Modal */}
       {searchAction === 'show-link' && selectedSekolahForLink && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl border border-border p-6 flex flex-col items-center text-center relative overflow-hidden">
+          <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl border p-6 flex flex-col items-center text-center relative overflow-hidden">
             {/* Header / Background Decoration */}
             <div className="absolute top-0 left-0 right-0 h-24 gradient-primary opacity-10" />
 
@@ -329,18 +328,18 @@ export function GlobalFAB() {
 
             {selectedKelas ? (
               <>
-                <div className="bg-white p-3 rounded-2xl flex items-center justify-center mb-4 z-10 shadow-sm border border-border">
+                <div className="bg-white p-3 rounded-2xl flex items-center justify-center mb-4 z-10 shadow-sm border">
                   <QRCode value={getFormUrl()} size={140} />
                 </div>
 
                 {/* Link Container */}
-                <div className="w-full bg-secondary/50 border border-border rounded-xl p-3 mb-4 flex items-center gap-3 z-10">
+                <div className="w-full bg-secondary/50 border rounded-xl p-3 mb-4 flex items-center gap-3 z-10">
                   <div className="flex-1 truncate text-xs text-muted-foreground font-mono text-left">
                     {getFormUrl()}
                   </div>
                   <button
                     onClick={copyToClipboard}
-                    className="p-2 bg-background border border-border rounded-lg hover:bg-secondary hover:text-primary transition-colors shrink-0"
+                    className="p-2 bg-background border rounded-lg hover:bg-secondary hover:text-primary transition-colors shrink-0"
                     title="Copy Link"
                   >
                     {isCopied ? <CheckCircle2 size={16} className="text-green-500" /> : <Copy size={16} />}
@@ -376,7 +375,7 @@ export function GlobalFAB() {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center w-full py-8 text-muted-foreground bg-secondary/30 border border-dashed border-border rounded-xl z-10 mb-2">
+              <div className="flex flex-col items-center justify-center w-full py-8 text-muted-foreground bg-secondary/30 border border-dashed rounded-xl z-10 mb-2">
                 <School size={32} className="mb-2 opacity-50" />
                 <p className="text-sm font-medium">Pilih kelas terlebih dahulu</p>
                 <p className="text-xs opacity-70">QR Code akan muncul setelah kelas dipilih</p>

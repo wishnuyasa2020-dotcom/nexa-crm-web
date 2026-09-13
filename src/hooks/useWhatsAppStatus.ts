@@ -37,7 +37,7 @@ export function useWhatsAppStatus() {
     fetchStatus();
   }, [fetchStatus]);
 
-  const isConnected = data?.whatsappStatus === 'CONNECTED' || data?.tenantId === 'derma-indonesia';
+  const isConnected = data?.whatsappStatus === 'CONNECTED';
 
   return {
     data,

@@ -50,7 +50,7 @@ export function ConversationList({
     <div className="flex flex-col w-full bg-background" style={{ height: '100%' }}>
 
       {/* ── Header + Search ── shrink-0 agar tidak ikut flex-grow */}
-      <div className="shrink-0 px-3 py-2 md:p-4 border-b border-border">
+      <div className="shrink-0 px-3 py-2 md:p-4 border-b">
         <div className="flex items-center justify-between mb-2 md:mb-4">
           <h2 className="text-base md:text-xl font-bold text-foreground">CRM Inbox</h2>
           {isLoading && <Loader2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground animate-spin" />}
@@ -67,7 +67,7 @@ export function ConversationList({
       </div>
 
       {/* ── Tab Bar ── shrink-0 */}
-      <div className="shrink-0 flex border-b border-border h-9 md:h-12">
+      <div className="shrink-0 flex border-b h-9 md:h-12">
         {TABS.map(t => (
           <button
             key={t.value}

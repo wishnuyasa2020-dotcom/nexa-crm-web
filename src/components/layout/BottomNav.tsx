@@ -43,7 +43,7 @@ export function BottomNav() {
 
   return (
     <div className={cn(
-      "md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border z-30 flex items-center justify-around px-2 pb-safe transition-transform duration-300",
+      "md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t z-30 flex items-center justify-around px-2 pb-safe transition-transform duration-300",
       !isVisible && "translate-y-full"
     )}>
       {navItems.map((item) => {
@@ -60,7 +60,7 @@ export function BottomNav() {
             )}
           >
             <Icon size={20} className={cn(isActive && "fill-primary/20")} />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <span className="text-xs font-medium">{item.label}</span>
           </Link>
         );
       })}

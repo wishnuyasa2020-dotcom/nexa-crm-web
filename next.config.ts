@@ -1,6 +1,30 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/public/form-siswa/:sekolahId',
+        destination: '/public/form-siswa?sekolahId=:sekolahId',
+        permanent: false,
+      },
+      {
+        source: '/form-siswa/:sekolahId',
+        destination: '/public/form-siswa?sekolahId=:sekolahId',
+        permanent: false,
+      },
+      {
+        source: '/form-konfirmasi/:sekolahId',
+        destination: '/public/form-siswa?sekolahId=:sekolahId',
+        permanent: false,
+      },
+      {
+        source: '/konfirmasi/:sekolahId',
+        destination: '/public/form-siswa?sekolahId=:sekolahId',
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
@@ -8,32 +32,20 @@ const nextConfig: NextConfig = {
         destination: '/public/form-siswa'
       },
       {
-        source: '/form-siswa/:path*',
-        destination: '/public/form-siswa/:path*'
-      },
-      {
         source: '/form-konfirmasi',
         destination: '/public/form-siswa'
-      },
-      {
-        source: '/form-konfirmasi/:path*',
-        destination: '/public/form-siswa/:path*'
       },
       {
         source: '/konfirmasi',
         destination: '/public/form-siswa'
       },
       {
-        source: '/konfirmasi/:path*',
-        destination: '/public/form-siswa/:path*'
-      },
-      {
         source: '/api/crm/:path*',
-        destination: 'http://127.0.0.1:3001/api/crm/:path*'
+        destination: `${process.env.BACKEND_INTERNAL_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:3001' : 'https://nexa-os-pmr8.onrender.com')}/api/crm/:path*`
       },
       {
         source: '/api/v1/:path*',
-        destination: 'http://127.0.0.1:3001/api/v1/:path*'
+        destination: `${process.env.BACKEND_INTERNAL_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:3001' : 'https://nexa-os-pmr8.onrender.com')}/api/v1/:path*`
       }
     ];
   },

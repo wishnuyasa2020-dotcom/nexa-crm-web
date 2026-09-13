@@ -22,7 +22,7 @@ export default function ManajemenPeriodePage() {
   const [actionError, setActionError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
 
-  const isAuthorized = !user || user.role === 'Admin' || user.role === 'Manager';
+  const isAuthorized = !user || user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'manager';
 
   useEffect(() => {
     fetchCohorts();

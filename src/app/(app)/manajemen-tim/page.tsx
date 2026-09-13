@@ -36,7 +36,7 @@ export default function ManajemenTimPage() {
   
   const router = useRouter();
   const { user } = useAuthStore();
-  const isFullAdmin = user?.role === 'Admin' || user?.role === 'Manager';
+  const isFullAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'manager';
 
   const fetchQuota = async () => {
     try {
@@ -268,7 +268,7 @@ export default function ManajemenTimPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-secondary/30">
+              <tr className="border-b bg-secondary/30">
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Info Staf</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Email</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Role</th>

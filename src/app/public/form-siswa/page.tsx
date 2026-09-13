@@ -22,6 +22,7 @@ function FormSosialisasiContent() {
   });
   
   const [namaSekolah, setNamaSekolah] = useState('');
+  const [wabaNumber, setWabaNumber] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -33,14 +34,19 @@ function FormSosialisasiContent() {
         .then(res => {
           if (res.data.status === 'ok') {
             setNamaSekolah(res.data.data.nama_sekolah);
+            // Ambil WABA number dari tenant config sekolah jika tersedia
+            const tenantWa = res.data.data.tenant_wa_number || res.data.data.whatsapp_number;
+            setWabaNumber(tenantWa || process.env.NEXT_PUBLIC_WABA_NUMBER || null);
           }
           setLoading(false);
         })
         .catch(err => {
           console.error(err);
+          setWabaNumber(process.env.NEXT_PUBLIC_WABA_NUMBER || null);
           setLoading(false);
         });
     } else {
+      setWabaNumber(process.env.NEXT_PUBLIC_WABA_NUMBER || null);
       setLoading(false);
     }
   }, [sekolahId]);
@@ -63,13 +69,13 @@ function FormSosialisasiContent() {
       if (res.data.status === 'ok') {
         setSuccess(true);
         
-        // Redirect to WhatsApp to open Service Window
         const text = `Halo, saya ${formData.nama_lengkap} dari kelas ${formData.kelas}. Saya hadir di sosialisasi.`;
-        // TODO: Get actual WABA number from tenant settings, for now using placeholder or env var
-        const wabaNumber = process.env.NEXT_PUBLIC_WABA_NUMBER || '628123456789';
+        if (!wabaNumber) {
+          // WABA number belum dikonfigurasi di tenant, tampilkan pesan sukses tanpa redirect WA
+          console.warn('[FormSiswa] WABA number tidak tersedia, skip redirect WhatsApp.');
+          return;
+        }
         const waUrl = `https://wa.me/${wabaNumber}?text=${encodeURIComponent(text)}`;
-        
-        // Use window.location.href to redirect directly on mobile
         window.location.href = waUrl;
       } else {
         alert(res.data.message || 'Gagal menyimpan data');
@@ -92,7 +98,7 @@ function FormSosialisasiContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30 p-4">
-        <div className="bg-card border border-border rounded-3xl p-10 shadow-2xl max-w-sm w-full text-center space-y-4">
+        <div className="bg-card border rounded-3xl p-10 shadow-2xl max-w-sm w-full text-center space-y-4">
           <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={40} className="text-emerald-500" />
           </div>
@@ -106,10 +112,12 @@ function FormSosialisasiContent() {
           <button 
             onClick={() => {
               const text = `Halo, saya ${formData.nama_lengkap} dari kelas ${formData.kelas}. Saya hadir di sosialisasi.`;
-              const wabaNumber = process.env.NEXT_PUBLIC_WABA_NUMBER || '628123456789';
-              window.location.href = `https://wa.me/${wabaNumber}?text=${encodeURIComponent(text)}`;
+              if (wabaNumber) {
+                window.location.href = `https://wa.me/${wabaNumber}?text=${encodeURIComponent(text)}`;
+              }
             }}
-            className="mt-6 w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+            disabled={!wabaNumber}
+            className="mt-6 w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:pointer-events-none"
           >
             <Send size={16} /> Buka WhatsApp
           </button>
@@ -121,7 +129,7 @@ function FormSosialisasiContent() {
   return (
     <div className="min-h-screen bg-secondary/30 pb-20 sm:pb-0">
       {/* Mobile-first Container */}
-      <div className="w-full max-w-md mx-auto min-h-screen bg-background sm:border-x border-border shadow-2xl flex flex-col relative overflow-hidden">
+      <div className="w-full max-w-md mx-auto min-h-screen bg-background sm:border-x shadow-2xl flex flex-col relative overflow-hidden">
         
         {/* Dekorasi Latar Atas */}
         <div className="absolute top-0 left-0 right-0 h-48 gradient-primary -z-10 rounded-b-3xl opacity-90 shadow-inner" />
@@ -230,7 +238,7 @@ function FormSosialisasiContent() {
                       "py-2.5 rounded-xl border text-sm font-medium transition-all",
                       formData.minat_awal === opt 
                         ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20" 
-                        : "bg-background border-border text-foreground hover:bg-secondary"
+                        : "bg-background text-foreground hover:bg-secondary"
                     )}
                   >
                     {opt}

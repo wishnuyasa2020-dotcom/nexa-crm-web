@@ -9,9 +9,10 @@ import apiClient from '@/lib/apiClient';
 interface ImportSiswaModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
+export function ImportSiswaModal({ isOpen, onClose, onSuccess }: ImportSiswaModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successCount, setSuccessCount] = useState(0);
@@ -91,6 +92,7 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
           setTimeout(() => {
             setIsSuccess(false);
             onClose();
+            onSuccess?.(); // Refresh list siswa setelah import berhasil
           }, 3000);
         }
       } catch (err: any) {
@@ -112,10 +114,10 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm sm:items-center sm:p-0">
-      <div className="relative w-full max-w-md bg-card border border-border rounded-xl shadow-lg sm:rounded-2xl flex flex-col overflow-hidden max-h-[90vh]">
+      <div className="relative w-full max-w-md bg-card border rounded-xl shadow-lg sm:rounded-2xl flex flex-col overflow-hidden max-h-dvh">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b">
           <h2 className="text-lg font-bold text-foreground">Import Massal (Excel)</h2>
           <button 
             onClick={onClose}
@@ -147,7 +149,7 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
                   required
                   value={selectedCro}
                   onChange={e => setSelectedCro(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full px-3 py-2.5 bg-secondary/50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                   <option value="unassigned">-- Tanpa CRO (Antrian Bebas / Unassigned) --</option>
                   <option value="Budi Santoso">Budi Santoso</option>
@@ -159,7 +161,7 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
                 </p>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-secondary/50 border border-border rounded-xl mt-4">
+              <div className="flex items-center justify-between p-4 bg-secondary/50 border rounded-xl mt-4">
                 <div className="flex items-center gap-3">
                   <FileSpreadsheet size={24} className="text-emerald-600" />
                   <div>
@@ -178,7 +180,7 @@ export function ImportSiswaModal({ isOpen, onClose }: ImportSiswaModalProps) {
 
               <div 
                 onClick={handleBoxClick}
-                className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-secondary/40 transition-colors cursor-pointer group"
+                className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-secondary/40 transition-colors cursor-pointer group"
               >
                 <input 
                   type="file" 

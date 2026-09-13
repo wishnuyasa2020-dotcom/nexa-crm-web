@@ -62,10 +62,10 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-border flex flex-col">
+      <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border flex flex-col">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border">
+        <div className="flex items-center justify-between p-5 border-b">
           <div className="flex items-center gap-2.5">
             <div className={cn(
               "w-8 h-8 rounded-lg flex items-center justify-center",
@@ -81,7 +81,7 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
               <h2 className="text-sm font-bold text-foreground">
                 {isBlocked ? 'Tidak Bisa Dihapus' : 'Hapus Sekolah'}
               </h2>
-              <p className="text-[11px] text-muted-foreground">{sekolah.nama}</p>
+              <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -108,14 +108,14 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
               <p className="text-xs font-medium text-muted-foreground">Gunakan alternatif:</p>
               <button 
                 onClick={() => alert('Fitur Input Aktivitas: Set status ke Tidak Bisa Sosialisasi')}
-                className="w-full text-left px-4 py-2.5 rounded-lg border border-border hover:border-primary/30 hover:bg-secondary/50 text-sm transition-colors flex items-center justify-between"
+                className="w-full text-left px-4 py-2.5 rounded-lg border hover:border-primary/30 hover:bg-secondary/50 text-sm transition-colors flex items-center justify-between"
               >
                 Set Status "Tidak Bisa Sosialisasi"
                 <span className="text-muted-foreground text-xs">→</span>
               </button>
               <button 
                 onClick={() => alert('Fitur Input Aktivitas: Set status ke Nonaktif / Tutup / Merger')}
-                className="w-full text-left px-4 py-2.5 rounded-lg border border-border hover:border-primary/30 hover:bg-secondary/50 text-sm transition-colors flex items-center justify-between"
+                className="w-full text-left px-4 py-2.5 rounded-lg border hover:border-primary/30 hover:bg-secondary/50 text-sm transition-colors flex items-center justify-between"
               >
                 Set Status "Nonaktif / Tutup / Merger"
                 <span className="text-muted-foreground text-xs">→</span>
@@ -154,10 +154,14 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
                         value={opt}
                         checked={alasan === opt}
                         onChange={(e) => setAlasan(e.target.value)}
-                        className="peer sr-only"
+                        className="sr-only"
                       />
-                      <div className="w-4 h-4 rounded-full border border-border peer-checked:border-rose-500 peer-checked:bg-rose-500 transition-colors"></div>
-                      <div className="absolute w-1.5 h-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                      <div className={cn(
+                        "w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
+                        alasan === opt ? "border-rose-500 bg-rose-500" : "border-muted-foreground/40"
+                      )}>
+                        {alasan === opt && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
                     </div>
                     <span className="text-sm text-foreground group-hover:text-rose-400 transition-colors">{opt}</span>
                   </label>
@@ -172,7 +176,7 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
                     value={catatanAlasan}
                     onChange={(e) => setCatatanAlasan(e.target.value)}
                     placeholder="Tuliskan alasan spesifik..."
-                    className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500 outline-none transition-colors placeholder:text-muted-foreground"
+                    className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500 outline-none transition-colors placeholder:text-muted-foreground"
                   />
                 </div>
               )}

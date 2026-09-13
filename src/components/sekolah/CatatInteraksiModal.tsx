@@ -27,7 +27,7 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
+  'w-full px-3 py-2.5 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -121,10 +121,10 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-background sm:bg-card w-full sm:max-w-xl sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[95vh]">
+      <div className="bg-background sm:bg-card w-full sm:max-w-xl sm:rounded-2xl shadow-xl sm:border flex flex-col max-h-dvh">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card rounded-t-2xl shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b bg-card rounded-t-2xl shrink-0">
           <div>
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
               <MessageSquare size={16} className="text-primary" />
@@ -282,8 +282,8 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 Catatan Fakta *
-                {meta?.isDowngrade && <span className="text-rose-500 text-[10px]">↩️ Wajib min. 10 karakter</span>}
-                <span className={cn('ml-auto text-[10px]', catatanOk ? 'text-emerald-400' : 'text-muted-foreground')}>
+                {meta?.isDowngrade && <span className="text-rose-500 text-xs">↩️ Wajib min. 10 karakter</span>}
+                <span className={cn('ml-auto text-xs', catatanOk ? 'text-emerald-400' : 'text-muted-foreground')}>
                   {catatanFakta.trim().length}/5 min
                 </span>
               </label>
@@ -311,7 +311,7 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
         </div>
 
         {/* Footer */}
-        <div className="fixed sm:static bottom-0 left-0 right-0 p-4 sm:p-5 border-t border-border flex justify-end gap-3 shrink-0 bg-card z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-none">
+        <div className="fixed sm:static bottom-0 left-0 right-0 p-4 sm:p-5 border-t flex justify-end gap-3 shrink-0 bg-card z-10 shadow-lg sm:shadow-none">
           <button
             type="button"
             onClick={onClose}

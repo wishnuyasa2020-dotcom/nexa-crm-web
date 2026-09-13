@@ -114,7 +114,7 @@ export function TemplatePreviewBubble({
 
           {/* ── Timestamp ────────────────────────────────────── */}
           <div className="flex justify-end items-center gap-1 px-3 pb-1.5">
-            <span className="text-[10px] text-emerald-700 opacity-70">
+            <span className="text-xs text-emerald-700 opacity-70">
               {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
             </span>
             {/* Double-check (delivered) */}
@@ -149,7 +149,7 @@ export function TemplatePreviewBubble({
       </div>
 
       {/* Sender label */}
-      <span className="text-[10px] text-muted-foreground mt-1">{brandName}</span>
+      <span className="text-xs text-muted-foreground mt-1">{brandName}</span>
     </div>
   );
 }

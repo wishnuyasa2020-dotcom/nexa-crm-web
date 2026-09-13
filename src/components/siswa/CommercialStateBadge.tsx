@@ -20,17 +20,17 @@ const STATE_CONFIG: Record<string, { label: string; className: string; dot: stri
 };
 
 export function CommercialStateBadge({ state, size = 'sm' }: CommercialStateBadgeProps) {
-  const config = STATE_CONFIG[state] ?? { label: state, dot: '⚪', className: 'bg-secondary text-muted-foreground border-border' };
+  const config = STATE_CONFIG[state] ?? { label: state, dot: '⚪', className: 'bg-secondary text-muted-foreground' };
 
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-md border font-medium',
-        size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs',
+        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-xs',
         config.className
       )}
     >
-      <span className="text-[10px]">{config.dot}</span>
+      <span className="text-xs">{config.dot}</span>
       {config.label}
     </span>
   );

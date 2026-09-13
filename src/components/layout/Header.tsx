@@ -4,23 +4,16 @@ import {
   Bell, Search, Users, Radio, TrendingUp, LogOut, Clock,
   FileText, User, Settings, Calendar, ChevronDown, CalendarDays, BookOpen
 } from 'lucide-react';
-import Cookies from 'js-cookie';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ProfileModal } from './ProfileModal';
 import { useCohortStore } from '@/store/useCohortStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 
-interface User {
-  nama?: string;
-  username: string;
-  role: string;
-  tenant_id?: string;
-}
-
 export default function Header({ title }: { title?: string }) {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loadFromCookie, logout } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
   const [showCohortMenu, setShowCohortMenu] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -38,12 +31,9 @@ export default function Header({ title }: { title?: string }) {
   } = useCohortStore();
 
   useEffect(() => {
-    const raw = Cookies.get('nexa_user');
-    if (raw) {
-      try { setUser(JSON.parse(raw)); } catch {}
-    }
+    loadFromCookie();
     fetchCohorts();
-  }, [fetchCohorts]);
+  }, [loadFromCookie, fetchCohorts]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -169,7 +159,7 @@ export default function Header({ title }: { title?: string }) {
                     )}
                   </div>
 
-                  {(user?.role === 'Admin' || user?.role === 'Manager') && (
+                  {(user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'manager') && (
                     <div className="border-t pt-1 bg-secondary/20">
                       <Link
                         href="/manajemen-periode"
@@ -186,10 +176,20 @@ export default function Header({ title }: { title?: string }) {
 
             {/* Quick Action Icons & Profile */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer">
+              {/* TODO: Implement global search (command palette / spotlight) */}
+              <button
+                title="Cari (coming soon)"
+                disabled
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 <Search size={16} />
               </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors relative cursor-pointer">
+              {/* TODO: Implement notification center (in-app alerts, unread badge) */}
+              <button
+                title="Notifikasi (coming soon)"
+                disabled
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors relative disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 <Bell size={16} />
               </button>
 
@@ -260,8 +260,7 @@ export default function Header({ title }: { title?: string }) {
 
                 <button 
                   onClick={() => {
-                    Cookies.remove('nexa_token');
-                    Cookies.remove('nexa_user');
+                    logout();
                     router.push('/login');
                   }} 
                   className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors w-full text-left cursor-pointer"

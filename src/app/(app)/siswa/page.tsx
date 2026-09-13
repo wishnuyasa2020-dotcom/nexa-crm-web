@@ -132,7 +132,7 @@ export default function SiswaPage() {
             <button
               onClick={() => setShowMobileFilter(v => !v)}
               className={cn(
-                'sm:hidden p-2 rounded-lg border border-border text-muted-foreground transition-colors',
+                'sm:hidden p-2 rounded-lg border text-muted-foreground transition-colors',
                 showMobileFilter && 'bg-primary/10 text-primary border-primary/40'
               )}
               title="Filter Pencarian"
@@ -155,14 +155,14 @@ export default function SiswaPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
             >
               <Upload size={13} />
               Import Excel
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
+              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20"
               title="Tambah Siswa"
             >
               <Plus size={16} />
@@ -219,11 +219,11 @@ export default function SiswaPage() {
       {/* ═════════════════════════════════════════════════════════════════════
           DESKTOP TABLE
       ═════════════════════════════════════════════════════════════════════ */}
-      <div className="hidden sm:block bg-card border border-border rounded-xl overflow-hidden">
+      <div className="hidden sm:block bg-card border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-secondary/30">
+              <tr className="border-b bg-secondary/30">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Nama Siswa</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Sekolah</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Commercial State</th>
@@ -255,7 +255,7 @@ export default function SiswaPage() {
                       </span>
                       {!s.wa && s.bsuid ? (
                         <div className="mt-1">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-secondary/50 text-muted-foreground border border-border">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary/50 text-muted-foreground border">
                             📱 Hidden by User
                           </span>
                         </div>
@@ -280,7 +280,7 @@ export default function SiswaPage() {
 
         {/* Pagination desktop */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+          <div className="flex items-center justify-between px-4 py-3 border-t">
             <p className="text-xs text-muted-foreground">Halaman {page} dari {totalPages} · {total} total</p>
             <div className="flex items-center gap-1">
               <button
@@ -317,14 +317,14 @@ export default function SiswaPage() {
             <button
               key={s.idRecord}
               onClick={() => router.push(`/siswa/${s.id}`)}
-              className="w-full text-left bg-card border border-border rounded-xl p-3.5 hover:bg-secondary/20 active:scale-[0.98] transition-all"
+              className="w-full text-left bg-card border rounded-xl p-3.5 hover:bg-secondary/20 active:scale-95 transition-all"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-semibold text-sm text-foreground truncate">{s.nama}</p>
                     {!s.wa && s.bsuid && (
-                      <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-secondary/50 text-muted-foreground border border-border">
+                      <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary/50 text-muted-foreground border">
                         📱 Hidden
                       </span>
                     )}
@@ -342,7 +342,7 @@ export default function SiswaPage() {
 
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/40">
                 <IntentBadge intent={s.intent} />
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {s.dueDate ? `📅 ${s.dueDate}` : s.nextAction || ''}
                 </span>
               </div>
@@ -358,14 +358,14 @@ export default function SiswaPage() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-lg border text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
               >
                 <ChevronLeft size={15} />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-lg border text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
               >
                 <ChevronRight size={15} />
               </button>
@@ -382,7 +382,8 @@ export default function SiswaPage() {
       />
       <ImportSiswaModal
         isOpen={isImportModalOpen}
-        onClose={() => { setIsImportModalOpen(false); loadSiswa(); }}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => { setPage(1); loadSiswa(); }}
       />
       <AssignKelasModal
         isOpen={isAssignModalOpen}

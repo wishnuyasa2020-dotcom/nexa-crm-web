@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'whatsapp' | 'calendar' | 'billing'>('kelas');
   const { user } = useAuthStore();
 
-  const isAuthorized = !user || user.role === 'Admin' || user.role === 'Manager';
+  const isAuthorized = !user || user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'manager';
 
   if (user && !isAuthorized) {
     return (

@@ -258,7 +258,7 @@ export default function DashboardPage() {
       <div className="space-y-6 w-full min-w-0 animate-pulse">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-4 h-28">
+            <div key={i} className="bg-card border rounded-xl p-4 h-28">
               <div className="w-8 h-8 bg-secondary rounded-lg mb-3" />
               <div className="w-16 h-7 bg-secondary rounded mb-1" />
               <div className="w-24 h-3 bg-secondary rounded" />
@@ -266,11 +266,11 @@ export default function DashboardPage() {
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <div className="lg:col-span-2 bg-card border border-border rounded-xl h-96" />
-          <div className="bg-card border border-border rounded-xl h-96" />
-          <div className="bg-card border border-border rounded-xl h-96" />
+          <div className="lg:col-span-2 bg-card border rounded-xl h-96" />
+          <div className="bg-card border rounded-xl h-96" />
+          <div className="bg-card border rounded-xl h-96" />
         </div>
-        <div className="bg-card border border-border rounded-xl h-48" />
+        <div className="bg-card border rounded-xl h-48" />
       </div>
     );
   }
@@ -342,7 +342,7 @@ export default function DashboardPage() {
       {quota && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {/* Kuota Siswa */}
-          <div className="bg-card border border-border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
+          <div className="bg-card border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
             <div className="flex items-center gap-4 min-w-48">
               <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500">
                 <Users size={20} />
@@ -392,7 +392,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Kuota Sekolah */}
-          <div className="bg-card border border-border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
+          <div className="bg-card border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
             <div className="flex items-center gap-4 min-w-48">
               <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
                 <School size={20} />
@@ -442,7 +442,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Kuota User */}
-          <div className="bg-card border border-border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
+          <div className="bg-card border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
             <div className="flex items-center gap-4 min-w-48">
               <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500">
                 <ShieldCheck size={20} />
@@ -498,7 +498,7 @@ export default function DashboardPage() {
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.label} className="bg-card border border-border rounded-xl p-4 card-hover min-w-0">
+            <div key={card.label} className="bg-card border rounded-xl p-4 card-hover min-w-0">
               <div className="flex items-start justify-between mb-3">
                 <div className={cn('p-2 rounded-lg bg-secondary', card.color)}>
                   <Icon size={16} />
@@ -516,7 +516,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
         {/* Funnel Bar Chart */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5 flex flex-col h-96 min-w-0">
+        <div className="lg:col-span-2 bg-card border rounded-xl p-5 flex flex-col h-96 min-w-0">
           <div className="flex items-center gap-2 mb-4 shrink-0">
             <Activity size={16} className="text-primary" />
             <h2 className="text-sm font-semibold text-foreground">Funnel Siswa (B2C Pipeline)</h2>
@@ -548,7 +548,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Distribusi Donut */}
-        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-96 min-w-0">
+        <div className="bg-card border rounded-xl p-5 flex flex-col h-96 min-w-0">
           <h2 className="text-sm font-semibold text-foreground mb-4 shrink-0">Distribusi Pipeline</h2>
           <div className="flex-1 min-h-0 min-w-0">
             {funnels.length > 0 ? (
@@ -584,7 +584,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Leaderboard */}
-        <div className="bg-card border border-border rounded-xl p-5 flex flex-col h-96 lg:col-span-3 xl:col-span-1 min-w-0">
+        <div className="bg-card border rounded-xl p-5 flex flex-col h-96 lg:col-span-3 xl:col-span-1 min-w-0">
           <div className="flex items-center gap-2 mb-4 shrink-0">
             <Trophy size={16} className="text-amber-500" />
             <h2 className="text-sm font-semibold text-foreground">Top CRO (Closing DP)</h2>
@@ -617,8 +617,8 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Mini TaskList (Tasks Prioritas dengan Aksi Cepat) ── */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden min-w-0 shadow-sm">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-secondary/10">
+      <div className="bg-card border rounded-xl overflow-hidden min-w-0 shadow-sm">
+        <div className="flex items-center justify-between px-5 py-4 border-b bg-secondary/10">
           <div className="flex items-center gap-2 flex-wrap">
             <CheckSquare size={16} className="text-primary" />
             <h2 className="text-sm font-semibold text-foreground">Tasks Prioritas (Fokus Hari Ini)</h2>
@@ -645,7 +645,7 @@ export default function DashboardPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-secondary/20">
+                <tr className="border-b bg-secondary/20">
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Target Entitas</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Pipeline State</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground">Next Action</th>
@@ -683,7 +683,7 @@ export default function DashboardPage() {
                     {/* Pipeline State & Intent */}
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border border-border">
+                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border">
                           {t.commercialState || t.status}
                         </span>
                         {t.intent && (
@@ -707,7 +707,7 @@ export default function DashboardPage() {
                     {/* Due Date */}
                     <td className="px-5 py-3 text-muted-foreground text-xs whitespace-nowrap">
                       {t.dueDate ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/80 text-foreground/80 border border-border">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/80 text-foreground/80 border">
                           <Clock size={11} className="text-muted-foreground" />
                           {t.dueDate}
                         </span>
@@ -719,7 +719,7 @@ export default function DashboardPage() {
                       <div className="inline-flex items-center gap-1.5 justify-end">
                         <button
                           onClick={() => handleTundaClick(t)}
-                          className="px-2.5 py-1.5 rounded-lg border border-border bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition-all inline-flex items-center gap-1"
+                          className="px-2.5 py-1.5 rounded-lg border bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition-all inline-flex items-center gap-1"
                           title="Tunda Jadwal Task"
                         >
                           <Calendar size={13} />

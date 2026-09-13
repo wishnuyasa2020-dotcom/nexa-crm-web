@@ -3,14 +3,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
-  ArrowLeft, MessageCircle, Plus, ClipboardList, Trash2,
+  ArrowLeft, MessageCircle, Plus, ClipboardList, Trash2, Pencil,
   Calendar, User, Phone, School, AlertCircle, Clock
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
 import { AssessmentFNARModal } from '@/components/siswa/AssessmentFNARModal';
 import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
+import { EditSiswaModal } from '@/components/siswa/EditSiswaModal';
 import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 import type { SiswaDetail, AktivitasSiswa } from '@/lib/types/siswa.types';
@@ -52,6 +54,7 @@ export default function SiswaDetailPage() {
   const [isInteraksiOpen,       setIsInteraksiOpen]       = useState(false);
   const [isAssessmentOpen,      setIsAssessmentOpen]      = useState(false);
   const [isDeleteModalOpen,     setIsDeleteModalOpen]     = useState(false);
+  const [isEditModalOpen,       setIsEditModalOpen]       = useState(false);
   const [isChatLoading,         setIsChatLoading]         = useState(false);
 
   const handleChatSiswa = async () => {
@@ -60,13 +63,13 @@ export default function SiswaDetailPage() {
       setIsChatLoading(true);
       const res = await initiateConversation(id);
       if (res?.conv_id) {
-        window.location.href = `/live-chat?conv_id=${res.conv_id}`;
+        router.push(`/live-chat?conv_id=${res.conv_id}`);
       } else {
         throw new Error('Gagal mendapatkan ID percakapan dari server');
       }
     } catch (e: unknown) {
       const err = e as { response?: { data?: { message?: string } }; message?: string };
-      alert(err.response?.data?.message || err.message || 'Gagal memulai percakapan');
+      toast.error(err.response?.data?.message || err.message || 'Gagal memulai percakapan');
     } finally {
       setIsChatLoading(false);
     }
@@ -113,6 +116,14 @@ export default function SiswaDetailPage() {
             <School size={12} /> {siswaDetail.nama_sekolah} · {siswaDetail.id_siswa}
           </p>
         </div>
+        <button
+          onClick={() => setIsEditModalOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg text-foreground hover:bg-secondary transition-colors shadow-xs"
+          title="Edit Data Siswa"
+        >
+          <Pencil size={13} />
+          <span className="hidden sm:inline">Edit Siswa</span>
+        </button>
       </div>
 
       {/* ── State & Intent Badges ───────────────────────────────────────────── */}
@@ -120,12 +131,12 @@ export default function SiswaDetailPage() {
         <CommercialStateBadge state={siswaDetail.commercial_state || 'Lead'} size="md" />
         <IntentBadge intent={siswaDetail.intent} />
         {siswaDetail.due_date && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-secondary text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border bg-secondary text-xs text-muted-foreground">
             <Calendar size={12} /> {siswaDetail.due_date}
           </span>
         )}
         {siswaDetail.next_action && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-secondary text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border bg-secondary text-xs text-muted-foreground">
             Next: <span className="font-medium text-foreground">{siswaDetail.next_action}</span>
           </span>
         )}
@@ -134,8 +145,8 @@ export default function SiswaDetailPage() {
       {/* ── Profile Grid ────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Kontak */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">Informasi Kontak</h2>
+        <div className="bg-card border rounded-xl p-4 space-y-4">
+          <h2 className="text-sm font-semibold text-foreground border-b pb-2">Informasi Kontak</h2>
           <div className="space-y-3">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Nomor WhatsApp</p>
@@ -145,7 +156,12 @@ export default function SiswaDetailPage() {
                     <AlertCircle size={15} />
                     <span>[📱 Nomor Disembunyikan]</span>
                   </div>
-                  <button className="flex justify-center items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium shadow-sm hover:opacity-90 transition-opacity w-full sm:w-auto">
+                  {/* TODO: Implement alur "Minta No. WA" — kirim request ke siswa (via form link / notifikasi) agar mau share nomor WA-nya */}
+                  <button
+                    disabled
+                    title="Minta No. WA (coming soon)"
+                    className="flex justify-center items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium shadow-sm hover:opacity-90 transition-opacity w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
                     Minta No. WA
                   </button>
                 </div>
@@ -172,8 +188,8 @@ export default function SiswaDetailPage() {
         </div>
 
         {/* Info Lanjutan */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">Informasi Lanjutan</h2>
+        <div className="bg-card border rounded-xl p-4 space-y-4">
+          <h2 className="text-sm font-semibold text-foreground border-b pb-2">Informasi Lanjutan</h2>
           <div className="grid grid-cols-2 gap-y-4 gap-x-3">
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Rencana Lulus</p>
@@ -192,7 +208,7 @@ export default function SiswaDetailPage() {
       </div>
 
       {/* ── Action Buttons ──────────────────────────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t border-border z-10 sm:relative sm:p-0 sm:bg-transparent sm:border-t-0 sm:backdrop-blur-none flex gap-2">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-10 sm:relative sm:p-0 sm:bg-transparent sm:border-t-0 sm:backdrop-blur-none flex gap-2">
         <button
           onClick={handleChatSiswa}
           disabled={isChatLoading}
@@ -224,6 +240,14 @@ export default function SiswaDetailPage() {
         </button>
 
         <button
+          onClick={() => setIsEditModalOpen(true)}
+          className="flex items-center justify-center p-2.5 bg-secondary text-foreground hover:bg-secondary/80 border rounded-lg transition-colors"
+          title="Edit Data Siswa"
+        >
+          <Pencil size={15} />
+        </button>
+
+        <button
           onClick={() => setIsDeleteModalOpen(true)}
           className="hidden sm:flex items-center justify-center p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors"
         >
@@ -232,10 +256,10 @@ export default function SiswaDetailPage() {
       </div>
 
       {/* ── Event / Audit Log ───────────────────────────────────────────────── */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
-        <h2 className="text-sm font-semibold text-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
+      <div className="bg-card border rounded-xl p-4 sm:p-5">
+        <h2 className="text-sm font-semibold text-foreground border-b pb-3 mb-4 flex items-center gap-2">
           📋 Event / Audit Log
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary border border-border text-muted-foreground font-normal">
+          <span className="text-xs px-1.5 py-0.5 rounded bg-secondary border text-muted-foreground font-normal">
             Append-Only
           </span>
         </h2>
@@ -257,22 +281,22 @@ export default function SiswaDetailPage() {
                     <div className="absolute left-3 top-6 -bottom-5 w-px bg-border z-0" />
                   )}
                   {/* Dot */}
-                  <div className="relative z-10 w-6 h-6 shrink-0 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-[10px]">
+                  <div className="relative z-10 w-6 h-6 shrink-0 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-xs">
                     {evConfig.dot}
                   </div>
                   {/* Content */}
-                  <div className="flex-1 bg-secondary/30 border border-border rounded-lg p-3">
+                  <div className="flex-1 bg-secondary/30 border rounded-lg p-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={cn('text-xs font-semibold', evConfig.color)}>{evConfig.label}</span>
                         <span className="text-xs text-muted-foreground">{log.jenis_aktivitas}</span>
                         {log.channel && log.channel !== 'WhatsApp' && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] bg-secondary border border-border text-muted-foreground">
+                          <span className="px-1.5 py-0.5 rounded text-xs bg-secondary border text-muted-foreground">
                             {log.channel}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
                         <Clock size={11} /> {log.created_at}
                       </div>
                     </div>
@@ -280,7 +304,7 @@ export default function SiswaDetailPage() {
                     {log.catatan && (
                       <p className="text-xs text-muted-foreground mt-1">{log.catatan}</p>
                     )}
-                    <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                       <User size={10} /> {log.pj_cro}
                     </p>
                   </div>
@@ -310,6 +334,14 @@ export default function SiswaDetailPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         siswaName={siswaDetail.nama_lengkap}
+        siswaId={id}
+        onSuccess={() => router.push('/siswa')}
+      />
+      <EditSiswaModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={() => reloadDetail()}
+        idSiswa={id}
       />
     </div>
   );

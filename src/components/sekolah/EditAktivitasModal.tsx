@@ -1,3 +1,15 @@
+/**
+ * @deprecated — JANGAN DIGUNAKAN
+ *
+ * Komponen ini melanggar prinsip Append-Only Event Log (Ontologi Fase 1).
+ * Semua riwayat aktivitas bersifat immutable setelah dicatat (Event-Sourcing).
+ * Mengedit aktivitas yang sudah ada akan merusak audit trail dan integritas data.
+ *
+ * File ini TIDAK diekspor dari barrel (index.ts) dan TIDAK boleh di-mount.
+ * Disimpan hanya sebagai referensi historis. Hapus file ini jika tidak diperlukan.
+ *
+ * Lihat: ARCHITECTURE.md → Event-Sourcing Engine, ONTOLOGY.md → Auditability Layer
+ */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,7 +27,7 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
+  'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -49,7 +61,7 @@ export function EditAktivitasModal({
   if (!withinWindow) {
     return (
       <div className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border border-border p-5 space-y-4">
+        <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border p-5 space-y-4">
           <div className="flex items-center gap-3 text-rose-400">
             <AlertCircle size={20} />
             <h2 className="font-semibold">Waktu Edit Habis</h2>
@@ -82,10 +94,10 @@ export function EditAktivitasModal({
 
   return (
     <div className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-card w-full sm:w-auto sm:min-w-100 max-w-lg sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[92vh]">
+      <div className="bg-card w-full sm:w-auto sm:min-w-100 max-w-lg sm:rounded-2xl shadow-xl sm:border flex flex-col max-h-dvh">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Edit2 size={15} className="text-primary" />
@@ -109,11 +121,11 @@ export function EditAktivitasModal({
           {/* Info readonly */}
           <div className="grid grid-cols-2 gap-3 p-3 bg-secondary/30 rounded-xl text-sm">
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Hasil Aktivitas</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Hasil Aktivitas</p>
               <p className="font-medium text-foreground text-xs">{aktivitas.hasilAktivitas}</p>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Status Setelah</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Status Setelah</p>
               <p className="font-medium text-foreground text-xs">{aktivitas.statusSesudah}</p>
             </div>
           </div>
@@ -164,7 +176,7 @@ export function EditAktivitasModal({
         </form>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3 shrink-0">
+        <div className="p-4 sm:p-5 border-t flex justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}

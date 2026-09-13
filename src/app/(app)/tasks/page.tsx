@@ -135,7 +135,7 @@ export default function TasksPage() {
       id: 'completed' as TabKey,
       label: 'Selesai',
       icon: CheckSquare,
-      count: 0,
+      count: activeTab === 'completed' ? tasks.length : null,
       activeCls: 'bg-slate-500/10 text-slate-400 font-bold',
       badgeCls: 'bg-slate-500/20 text-slate-400',
     },
@@ -201,7 +201,7 @@ export default function TasksPage() {
       </div>
 
       {/* ── Navigation Tabs (Pills) ── */}
-      <div className="flex flex-wrap gap-1.5 p-1.5 bg-card border border-border rounded-xl shadow-sm w-full">
+      <div className="flex flex-wrap gap-1.5 p-1.5 bg-card border rounded-xl shadow-sm w-full">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -228,7 +228,7 @@ export default function TasksPage() {
         {loading ? (
           // Skeleton loading
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-4 animate-pulse">
+            <div key={i} className="bg-card border rounded-xl p-4 animate-pulse">
               <div className="flex justify-between mb-3">
                 <div className="w-20 h-5 bg-secondary rounded" />
                 <div className="w-24 h-5 bg-secondary rounded" />
@@ -241,7 +241,7 @@ export default function TasksPage() {
             </div>
           ))
         ) : error ? (
-          <div className="py-16 flex flex-col items-center gap-3 text-center border-2 border-dashed border-border rounded-xl">
+          <div className="py-16 flex flex-col items-center gap-3 text-center border-2 border-dashed rounded-xl">
             <AlertCircle size={24} className="text-rose-400" />
             <p className="text-sm text-muted-foreground">{error}</p>
             <button
@@ -252,7 +252,7 @@ export default function TasksPage() {
             </button>
           </div>
         ) : tasks.length === 0 ? (
-          <div className="py-16 text-center text-muted-foreground text-sm border-2 border-dashed border-border rounded-xl">
+          <div className="py-16 text-center text-muted-foreground text-sm border-2 border-dashed rounded-xl">
             {activeTab === 'today'     ? '🎉 Tidak ada agenda untuk hari ini.' :
              activeTab === 'tomorrow'  ? 'Tidak ada agenda untuk besok.' :
              activeTab === 'upcoming'  ? 'Tidak ada agenda mendatang.' :
@@ -261,7 +261,7 @@ export default function TasksPage() {
           </div>
         ) : (
           tasks.map((task) => (
-            <div key={`${task.tipe}-${task.id}`} className="bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
+            <div key={`${task.tipe}-${task.id}`} className="bg-card border rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
               {/* Card Header */}
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -285,7 +285,7 @@ export default function TasksPage() {
                   )}
 
                   {/* Commercial State / Status */}
-                  <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border border-border">
+                  <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border">
                     {task.commercialState || task.status}
                   </span>
 
@@ -344,14 +344,14 @@ export default function TasksPage() {
 
               {/* Card Actions (SOP Tombol Eksekusi & Tunda) */}
               {activeTab !== 'completed' && (
-                <div className="flex items-center gap-2.5 pt-3 border-t border-border">
+                <div className="flex items-center gap-2.5 pt-3 border-t">
                   <button
                     onClick={() => setTundaTarget({
                       id: task.id,
                       tipe: task.tipe,
                       title: `[${task.nextAction}] ${task.nama}`
                     })}
-                    className="flex-1 min-h-11 py-2.5 rounded-xl border border-border text-xs sm:text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 min-h-11 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground active:scale-95 transition-all flex items-center justify-center gap-1.5"
                   >
                     <Calendar size={15} /> 📅 Tunda
                   </button>

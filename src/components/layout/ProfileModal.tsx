@@ -79,7 +79,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
   const initials = (activeUser?.nama || activeUser?.username || 'U')
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-  const roleClass = ROLE_COLOR[activeUser?.role ?? ''] ?? 'bg-secondary text-muted-foreground border-border';
+  const roleClass = ROLE_COLOR[activeUser?.role ?? ''] ?? 'bg-secondary text-muted-foreground';
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +122,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
       {/* Dialog Card Container */}
-      <div className="w-full max-w-md bg-card border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-card border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-dvh animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header Bar */}
         <div className="flex items-center justify-between px-5 h-14 border-b shrink-0 bg-background/95 backdrop-blur-sm">

@@ -13,7 +13,7 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
+  'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
@@ -52,17 +52,17 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border border-border flex flex-col">
+      <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border flex flex-col">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border">
+        <div className="flex items-center justify-between p-5 border-b">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
               <UserCheck size={15} className="text-primary" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground">Reassign PJ CRO</h2>
-              <p className="text-[11px] text-muted-foreground">{sekolah.nama}</p>
+              <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">

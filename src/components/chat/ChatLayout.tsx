@@ -135,7 +135,7 @@ export function ChatLayout() {
     <div className="flex flex-col h-full flex-1 w-full overflow-hidden bg-background text-foreground relative">
       {/* Banner Notifikasi */}
       {showPushBanner && (
-        <div className="w-full z-50 bg-card border-b border-border px-4 py-2 flex items-center justify-between shadow-md shrink-0">
+        <div className="w-full z-50 bg-card border-b px-4 py-2 flex items-center justify-between shadow-md shrink-0">
           <div className="flex items-center text-sm">
             <Bell className="w-4 h-4 mr-2 text-primary" />
             <span>Aktifkan notifikasi desktop untuk menerima pesan masuk</span>
@@ -149,7 +149,7 @@ export function ChatLayout() {
 
       {/* Banner Gating WhatsApp */}
       {!isWaConnected && !waLoading && (
-        <div className="w-full p-2.5 bg-card border-b border-border z-40 shrink-0">
+        <div className="w-full p-2.5 bg-card border-b z-40 shrink-0">
           <WhatsAppGatingBanner
             compact
             featureName="Live Chat WhatsApp"
@@ -161,7 +161,7 @@ export function ChatLayout() {
       <div className="flex flex-1 w-full min-h-0 overflow-hidden relative">
         {/* List Pane — lebar fixed di desktop, full-screen di mobile saat tidak ada chat aktif */}
         <div
-          className={`w-full md:w-80 lg:w-96 shrink-0 border-r border-border h-full ${
+          className={`w-full md:w-80 lg:w-96 shrink-0 border-r h-full ${
             activeConvId ? 'hidden md:flex' : 'flex'
           }`}
         >

@@ -61,10 +61,10 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
         className="fixed inset-0" 
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md bg-card border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md bg-card border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b">
           <div>
             <h2 className="text-lg font-bold text-foreground">Atur Area Kecamatan</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Untuk Chief CRO: {userToAssign.nama}</p>
@@ -130,7 +130,7 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-border bg-secondary/20">
+        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t bg-secondary/20">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"

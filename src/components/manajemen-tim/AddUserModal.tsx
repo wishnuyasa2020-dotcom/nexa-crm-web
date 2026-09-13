@@ -109,7 +109,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               placeholder="Ketik nama lengkap..." 
               value={nama}
               onChange={e => setNama(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -123,7 +123,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               placeholder="Ketik alamat email..." 
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -137,7 +137,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               placeholder="Ketik username..." 
               value={username}
               onChange={e => setUsername(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -146,7 +146,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               <Tag size={14} /> Role / Hak Akses
             </label>
             <select 
-              className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
               value={role}
               onChange={e => setRole(e.target.value)}
             >
@@ -163,7 +163,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                 <User size={14} /> Atasan (Chief CRO)
               </label>
               <select 
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
                 value={supervisorId}
                 onChange={e => setSupervisorId(e.target.value)}
               >
@@ -186,7 +186,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                 placeholder="Masukkan password" 
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full px-3 pr-10 py-2 text-sm bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
+                className="w-full px-3 pr-10 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
               />
               <button
                 type="button"

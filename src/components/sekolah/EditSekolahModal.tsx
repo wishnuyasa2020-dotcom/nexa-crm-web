@@ -13,7 +13,7 @@ interface Props {
 }
 
 const FIELD_CLASS =
-  'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
+  'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props) {
   const [loading, setLoading] = useState(false);
@@ -123,10 +123,10 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-border flex flex-col max-h-[90vh] overflow-y-auto scrollbar-thin">
+      <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border flex flex-col max-h-dvh overflow-y-auto scrollbar-thin">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
+        <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-card z-10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shadow-sm shadow-primary/20">
               <Edit2 size={15} className="text-white" />
@@ -260,7 +260,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
         </form>
 
         {/* Footer */}
-        <div className="p-5 border-t border-border flex justify-end gap-3 sticky bottom-0 bg-card z-10">
+        <div className="p-5 border-t flex justify-end gap-3 sticky bottom-0 bg-card z-10">
           <button
             type="button"
             onClick={onClose}

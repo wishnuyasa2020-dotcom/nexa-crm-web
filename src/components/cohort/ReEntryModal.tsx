@@ -119,7 +119,7 @@ export function ReEntryModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-card border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+      <div className="bg-card border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-dvh flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 h-14 border-b shrink-0">
           <div className="flex items-center gap-2">
@@ -280,7 +280,7 @@ export function ReEntryModal({
                   <div className="text-xl font-bold text-foreground">
                     {simResult.eligible_students.toLocaleString('id-ID')}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     dari total {simResult.total_source_students.toLocaleString('id-ID')} siswa sumber
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export function ReEntryModal({
                   <div className="text-xl font-bold text-foreground">
                     {simResult.eligible_schools.toLocaleString('id-ID')}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     akan dihubungkan ke cohort baru
                   </div>
                 </div>

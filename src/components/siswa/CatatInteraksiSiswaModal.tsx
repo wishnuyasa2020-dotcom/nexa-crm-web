@@ -78,9 +78,9 @@ export function CatatInteraksiSiswaModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-card rounded-2xl border border-border shadow-2xl">
+      <div className="w-full max-w-md bg-card rounded-2xl border shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b">
           <div>
             <h2 className="font-semibold text-foreground text-sm">➕ Catat Interaksi</h2>
             <p className="text-xs text-muted-foreground mt-0.5">{siswaName}</p>
@@ -119,7 +119,7 @@ export function CatatInteraksiSiswaModal({
             <select
               value={outcome}
               onChange={e => setOutcome(e.target.value as InteractionOutcome)}
-              className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+              className="w-full px-3 py-2.5 bg-secondary border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
             >
               <option value="">Pilih outcome...</option>
               {groups.map(group => (
@@ -141,7 +141,7 @@ export function CatatInteraksiSiswaModal({
                 value={nextAction}
                 onChange={e => setNextAction(e.target.value)}
                 placeholder="Misal: Follow Up WA"
-                className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                className="w-full px-3 py-2.5 bg-secondary border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
               />
             </div>
             <div>
@@ -150,7 +150,7 @@ export function CatatInteraksiSiswaModal({
                 type="date"
                 value={dueDate}
                 onChange={e => setDueDate(e.target.value)}
-                className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                className="w-full px-3 py-2.5 bg-secondary border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
               />
             </div>
           </div>
@@ -163,12 +163,12 @@ export function CatatInteraksiSiswaModal({
               onChange={e => setCatatan(e.target.value)}
               rows={3}
               placeholder="Catat fakta dari interaksi ini (bukan asumsi)..."
-              className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+              className="w-full px-3 py-2.5 bg-secondary border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
             />
           </div>
 
           {/* Notice */}
-          <p className="text-[11px] text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2 border border-border/50">
+          <p className="text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2 border">
             ⚠️ Log ini tidak otomatis mengubah Commercial State. Gunakan <strong>Isi Assessment FNAR</strong> jika siswa siap dikualifikasi.
           </p>
 
@@ -179,7 +179,7 @@ export function CatatInteraksiSiswaModal({
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 py-2.5 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex-1 py-2.5 rounded-lg border text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Batal
             </button>

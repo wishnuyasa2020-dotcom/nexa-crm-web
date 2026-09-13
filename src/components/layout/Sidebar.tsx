@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, School, CheckSquare, Calendar,
   Home, TrendingUp, Radio, FileText, LogOut, ChevronLeft, ChevronRight, Zap, Clock, MessageSquare,
-  Settings as SettingsIcon, CalendarDays, BookOpen,
+  Settings as SettingsIcon, CalendarDays, BookOpen, UserCheck,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
@@ -26,6 +26,7 @@ const navItems = [
   { label: 'Template Admin', href: '/templates', icon: FileText },
   { label: 'Panduan Tenant', href: '/panduan', icon: BookOpen },
   { label: 'Manajemen Periode', href: '/manajemen-periode', icon: CalendarDays },
+  { label: 'Manajemen Tim', href: '/manajemen-tim', icon: UserCheck },
   { label: 'Settings', href: '/settings', icon: SettingsIcon },
 ];
 
@@ -34,7 +35,7 @@ export default function Sidebar() {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const { user, loadFromCookie } = useAuthStore();
-  const isFullAdmin = user?.role === 'Admin' || user?.role === 'Manager';
+  const isFullAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'manager';
 
   useEffect(() => {
     loadFromCookie();
@@ -72,7 +73,7 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-3 px-2">
         <div className="space-y-0.5">
-          {navItems.filter(item => !['/settings', '/manajemen-periode'].includes(item.href) || isFullAdmin).map((item) => {
+          {navItems.filter(item => !['/settings', '/manajemen-periode', '/manajemen-tim'].includes(item.href) || isFullAdmin).map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (

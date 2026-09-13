@@ -388,7 +388,7 @@ export default function PublicRegistrationPage() {
                   'w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white shadow-lg transition-all flex items-center justify-center gap-2',
                   isSubmitDisabled
                     ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50 shadow-none'
-                    : 'gradient-primary shadow-primary/20 hover:opacity-90 active:scale-[0.99]'
+                    : 'gradient-primary shadow-primary/20 hover:opacity-90 active:scale-95'
                 )}
               >
                 {isSubmitting ? (

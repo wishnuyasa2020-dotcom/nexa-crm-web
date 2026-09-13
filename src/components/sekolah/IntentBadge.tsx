@@ -19,10 +19,10 @@ export function IntentBadge({ intent, size = 'sm', showIcon = true }: IntentBadg
       className={cn(
         'inline-flex items-center gap-1 rounded-md border font-medium',
         cfg.bg, cfg.text, cfg.border,
-        size === 'sm' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-1 text-xs',
+        size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2 py-1 text-xs',
       )}
     >
-      {showIcon && <span className="text-[10px]">{cfg.icon}</span>}
+      {showIcon && <span className="text-xs">{cfg.icon}</span>}
       {cfg.label}
     </span>
   );

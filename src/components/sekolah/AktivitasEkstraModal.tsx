@@ -15,7 +15,7 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
+  'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -86,10 +86,10 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
 
   return (
     <div className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-card w-full sm:w-auto sm:min-w-100 max-w-lg sm:rounded-2xl shadow-xl sm:border border-border flex flex-col max-h-[92vh]">
+      <div className="bg-card w-full sm:w-auto sm:min-w-100 max-w-lg sm:rounded-2xl shadow-xl sm:border flex flex-col max-h-dvh">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b shrink-0">
           <div>
             <h2 className="text-base font-bold text-foreground">➕ Aktivitas Ekstra</h2>
             <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
@@ -147,7 +147,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
                       <span className="text-lg">
                         {jenis === 'WhatsApp PIC' ? '💬' : jenis === 'Telepon PIC' ? '📞' : '🤝'}
                       </span>
-                      <span className="text-[11px] font-medium leading-tight">{jenis}</span>
+                      <span className="text-xs font-medium leading-tight">{jenis}</span>
                     </label>
                   ))}
                 </div>
@@ -209,7 +209,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
             </form>
 
             {/* Footer */}
-            <div className="p-4 sm:p-5 border-t border-border flex justify-end gap-3 shrink-0">
+            <div className="p-4 sm:p-5 border-t flex justify-end gap-3 shrink-0">
               <button onClick={onClose} type="button" className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
                 Batal
               </button>

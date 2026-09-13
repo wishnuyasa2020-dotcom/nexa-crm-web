@@ -31,7 +31,10 @@ export type EventType =
   | 'QualificationAssessmentSubmitted'
   | 'StateTransitionedToProspect'
   | 'LeadDisqualified'
-  | 'ManualStateOverridden';
+  | 'ManualStateOverridden'
+  | 'DecisionConsultationCompleted'
+  | 'DecisionConsultationFollowUp'
+  | 'DecisionConsultationRejected';
 
 // ── List & Detail Types ───────────────────────────────────────────────────────
 

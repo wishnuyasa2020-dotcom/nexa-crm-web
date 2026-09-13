@@ -255,7 +255,7 @@ export default function WeeklyPage() {
   const isThisWeek = toYMD(getMondayOf(new Date())) === startDate;
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col space-y-4">
+    <div className="flex-1 flex flex-col space-y-4 min-h-0 overflow-y-auto">
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between shrink-0 flex-wrap gap-3">
@@ -275,7 +275,7 @@ export default function WeeklyPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={goToPrevWeek}
-            className="p-2 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
+            className="p-2 rounded-lg border hover:bg-secondary/50 transition-colors"
             title="Minggu sebelumnya"
           >
             <ChevronLeft size={16} />
@@ -294,7 +294,7 @@ export default function WeeklyPage() {
           </button>
           <button
             onClick={goToNextWeek}
-            className="p-2 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
+            className="p-2 rounded-lg border hover:bg-secondary/50 transition-colors"
             title="Minggu berikutnya"
           >
             <ChevronRight size={16} />
@@ -307,8 +307,8 @@ export default function WeeklyPage() {
         <div className="flex-1 flex flex-col sm:flex-row gap-4 overflow-hidden">
 
           {/* ── Sidebar Backlog ── */}
-          <div className="w-full sm:w-64 h-56 sm:h-auto shrink-0 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
-            <div className="p-3 border-b border-border bg-secondary/30">
+          <div className="w-full sm:w-64 h-56 sm:h-auto shrink-0 flex flex-col bg-card border rounded-xl overflow-hidden">
+            <div className="p-3 border-b bg-secondary/30">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-foreground text-sm">Belum Terjadwal</h2>
                 <span className="text-xs px-2 py-0.5 bg-secondary text-muted-foreground rounded-full">
@@ -394,12 +394,12 @@ export default function WeeklyPage() {
                       'w-56 shrink-0 flex flex-col rounded-xl overflow-hidden border',
                       isToday
                         ? 'border-primary/40 bg-primary/5'
-                        : 'bg-card/50 border-border'
+                        : 'bg-card/50'
                     )}
                   >
                     <div className={cn(
                       'p-2.5 border-b flex items-center justify-between',
-                      isToday ? 'border-primary/20 bg-primary/10' : 'border-border bg-secondary/30',
+                      isToday ? 'border-primary/20 bg-primary/10' : 'bg-secondary/30',
                       isOverloaded && 'bg-amber-500/10 border-amber-400/20'
                     )}>
                       <div>
@@ -483,7 +483,7 @@ function BacklogCard({ item, index }: { item: BacklogItem; index: number }) {
                 {cfg.icon} {cfg.label}
               </span>
               {item.commercialState && (
-                <span className="text-xs text-foreground/80 bg-secondary px-1.5 py-0.5 rounded-full border border-border truncate max-w-28 font-medium">
+                <span className="text-xs text-foreground/80 bg-secondary px-1.5 py-0.5 rounded-full border truncate max-w-28 font-medium">
                   {item.commercialState}
                 </span>
               )}

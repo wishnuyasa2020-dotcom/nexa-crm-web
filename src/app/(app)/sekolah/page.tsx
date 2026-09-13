@@ -36,7 +36,7 @@ function SkeletonRow() {
 
 function SkeletonCard() {
   return (
-    <div className="bg-card border border-border rounded-xl p-3.5 animate-pulse space-y-2">
+    <div className="bg-card border rounded-xl p-3.5 animate-pulse space-y-2">
       <div className="h-3.5 bg-secondary rounded w-3/4" />
       <div className="flex gap-2"><div className="h-5 bg-secondary rounded w-24" /><div className="h-5 bg-secondary rounded w-16" /></div>
       <div className="h-3 bg-secondary rounded w-1/2" />
@@ -62,7 +62,7 @@ function StatCard({ label, value, color, onClick, active, loading }: StatCardPro
         'flex flex-col gap-1 px-3 py-3 rounded-xl border text-left transition-all duration-150',
         active
           ? 'bg-primary/10 border-primary/30 shadow-sm shadow-primary/10'
-          : 'bg-card border-border hover:border-primary/20 hover:bg-card/80',
+          : 'bg-card hover:border-primary/20 hover:bg-card/80',
       )}
     >
       {loading ? (
@@ -70,7 +70,7 @@ function StatCard({ label, value, color, onClick, active, loading }: StatCardPro
       ) : (
         <span className={cn('text-xl font-bold tabular-nums', color)}>{value}</span>
       )}
-      <span className="text-[10px] text-muted-foreground leading-tight">{label}</span>
+      <span className="text-xs text-muted-foreground leading-tight">{label}</span>
     </button>
   );
 }
@@ -139,7 +139,7 @@ export default function SekolahPage() {
     } finally {
       setLoadingList(false);
     }
-  }, [page, filterStatus, filterKecamatan, filterCro, debouncedSearch]);
+  }, [page, filterStatus, filterKecamatan, filterCro, filterIntent, debouncedSearch]);
 
   // ── Fetch stats + utils (sekali mount) ──────────────────────────────────────
   useEffect(() => {
@@ -207,20 +207,23 @@ export default function SekolahPage() {
           <div className="flex items-center justify-end gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
             >
               <Upload size={13} />
               <span>Import</span>
             </button>
+            {/* TODO: Implement export sekolah ke Excel/CSV (gunakan XLSX.writeFile) */}
             <button
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
+              disabled
+              title="Export (coming soon)"
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Download size={13} />
               <span>Export</span>
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
+              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20"
               title="Tambah Sekolah"
             >
               <Plus size={16} />
@@ -337,11 +340,11 @@ export default function SekolahPage() {
       )}
 
       {/* ── Desktop Table ── */}
-      <div className="hidden sm:block bg-card border border-border rounded-xl overflow-hidden">
+      <div className="hidden sm:block bg-card border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-secondary/30">
+              <tr className="border-b bg-secondary/30">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">ID</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Nama Sekolah</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Jenjang</th>
@@ -377,7 +380,7 @@ export default function SekolahPage() {
                     onClick={() => router.push(`/sekolah/${s.id}`)}
                     className="border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer group"
                   >
-                    <td className="px-4 py-3 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{s.id}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground font-mono whitespace-nowrap">{s.id}</td>
                     <td className="px-4 py-3 min-w-50">
                       <span className="font-medium text-foreground group-hover:text-primary transition-colors">
                         {s.nama}
@@ -406,7 +409,7 @@ export default function SekolahPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-secondary/10">
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-secondary/10">
             <p className="text-xs text-muted-foreground">
               Halaman {page} dari {totalPages} · {total} sekolah
             </p>
@@ -435,7 +438,7 @@ export default function SekolahPage() {
         {loadingList ? (
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
         ) : sekolahList.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl py-16 text-center text-muted-foreground text-sm">
+          <div className="bg-card border rounded-xl py-16 text-center text-muted-foreground text-sm">
             <div className="flex flex-col items-center gap-2">
               <School size={32} className="opacity-20" />
               <p>Tidak ada sekolah ditemukan</p>
@@ -451,11 +454,11 @@ export default function SekolahPage() {
             <button
               key={s.id}
               onClick={() => router.push(`/sekolah/${s.id}`)}
-              className="w-full text-left bg-card border border-border rounded-xl p-3.5 hover:border-primary/30 hover:bg-card/80 active:scale-[0.99] transition-all"
+              className="w-full text-left bg-card border rounded-xl p-3.5 hover:border-primary/30 hover:bg-card/80 active:scale-95 transition-all"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span className="font-medium text-sm text-foreground leading-snug flex-1">{s.nama}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0 mt-0.5">
+                <span className="text-xs px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0 mt-0.5">
                   {s.tingkat}
                 </span>
               </div>
@@ -464,7 +467,7 @@ export default function SekolahPage() {
                 <IntentBadge intent={s.intent} />
                 <AgingBadge dueDate={s.dueDate} />
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{s.kecamatan}</span>
                 {s.pjCro && <><span>·</span><span>{s.pjCro}</span></>}
                 {s.nextAction && <><span>·</span><span className="truncate">{s.nextAction}</span></>}
@@ -480,14 +483,14 @@ export default function SekolahPage() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1 || loadingList}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border border-border"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border"
               >
                 <ChevronLeft size={15} />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || loadingList}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border border-border"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border"
               >
                 <ChevronRight size={15} />
               </button>

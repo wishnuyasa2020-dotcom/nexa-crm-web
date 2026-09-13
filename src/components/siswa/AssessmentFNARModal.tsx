@@ -115,9 +115,9 @@ export function AssessmentFNARModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-lg bg-card rounded-2xl border border-border shadow-2xl my-4">
+      <div className="w-full max-w-lg bg-card rounded-2xl border shadow-2xl my-4">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b">
           <div>
             <h2 className="font-semibold text-foreground text-sm">📝 Assessment Kualifikasi (FNAR)</h2>
             <p className="text-xs text-muted-foreground mt-0.5">{siswaName}</p>
@@ -128,20 +128,20 @@ export function AssessmentFNARModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
-            <p className="text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2 border border-border/50">
+          <div className="p-5 space-y-4 max-h-dvh overflow-y-auto">
+            <p className="text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2 border">
               💡 Berikan bukti objektif untuk setiap dimensi. Sistem akan menentukan transisi status secara otomatis.
               <strong className="text-foreground"> 🔒 FIT & ABILITY adalah Hard Gate</strong> — tidak bisa dinego.
             </p>
 
             {FNAR_DIMENSIONS.map(dim => (
-              <div key={dim.key} className="rounded-xl border border-border p-4 space-y-3">
+              <div key={dim.key} className="rounded-xl border p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold text-foreground flex items-center gap-2">
                       {dim.label}
                       {dim.isHardGate && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">
                           Hard Gate
                         </span>
                       )}
@@ -176,7 +176,7 @@ export function AssessmentFNARModal({
                   onChange={e => setCatatan(dim.catatanKey, e.target.value)}
                   rows={2}
                   placeholder={`Bukti / catatan untuk dimensi ${dim.label}...`}
-                  className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-xs resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  className="w-full px-3 py-2 bg-secondary border rounded-lg text-xs resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                 />
               </div>
             ))}
@@ -203,7 +203,7 @@ export function AssessmentFNARModal({
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 py-2.5 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex-1 py-2.5 rounded-lg border text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Batal
             </button>

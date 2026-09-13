@@ -327,10 +327,10 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
-      <div className="bg-card border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-card border rounded-2xl shadow-2xl w-full max-w-3xl max-h-dvh flex flex-col overflow-hidden">
 
         {/* ── Header Modal ──────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <div>
             <h2 className="text-base font-bold text-foreground">{isEdit ? 'Edit Template' : 'Buat Template Baru'}</h2>
             <p className="text-xs text-muted-foreground">Format: Meta WhatsApp Cloud API</p>
@@ -497,7 +497,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                       key={bt.value}
                       onClick={() => addButton(bt.value)}
                       title={bt.description}
-                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed text-xs text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
                     >
                       <Plus size={10} />
                       <bt.icon size={10} />
@@ -508,7 +508,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
               </div>
 
               {form.buttons.length === 0 ? (
-                <div className="border border-dashed border-border rounded-lg p-4 text-center text-xs text-muted-foreground">
+                <div className="border border-dashed rounded-lg p-4 text-center text-xs text-muted-foreground">
                   Belum ada button. Tambahkan Quick Reply, URL, atau Telepon di atas.
                 </div>
               ) : (
@@ -591,8 +591,8 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
           </div>
 
           {/* ─ Kolom Kanan: Preview ─────────────────────────────────────── */}
-          <div className="w-72 border-l border-border bg-secondary/20 flex flex-col shrink-0">
-            <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <div className="w-72 border-l bg-secondary/20 flex flex-col shrink-0">
+            <div className="px-4 py-3 border-b flex items-center gap-2">
               <Eye size={14} className="text-muted-foreground" />
               <span className="text-xs font-medium text-muted-foreground">Live Preview</span>
               {previewButtonObjects.length > 0 && (
@@ -618,7 +618,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
-        <div className="px-6 py-4 border-t border-border shrink-0 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-t shrink-0 flex items-center justify-between gap-3">
           <button onClick={handleClose} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground border rounded-lg hover:border-primary/50 transition-all">
             Batal
           </button>

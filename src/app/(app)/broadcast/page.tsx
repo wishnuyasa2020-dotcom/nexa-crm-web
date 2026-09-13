@@ -158,7 +158,7 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
 
   return (
     <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
-      <div className="px-5 py-4 border-b border-border bg-secondary/30 flex items-center justify-between">
+      <div className="px-5 py-4 border-b bg-secondary/30 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground">Riwayat Broadcast</h2>
         <button
           onClick={() => fetchHistory(page)}
@@ -197,7 +197,7 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-secondary/10">
+                <tr className="border-b bg-secondary/10">
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Template</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Status</th>
                   <th className="text-center px-5 py-3 text-xs font-medium text-muted-foreground">Sukses / Target</th>
@@ -247,7 +247,7 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 px-5 py-3 border-t border-border bg-secondary/10">
+            <div className="flex items-center justify-center gap-3 px-5 py-3 border-t bg-secondary/10">
               <button
                 onClick={() => fetchHistory(page - 1)}
                 disabled={page <= 1}
@@ -745,7 +745,7 @@ function NewBroadcastWizard({
                       audience.map(a => (
                         <tr
                           key={a.id}
-                          className="border-t border-border hover:bg-secondary/20 cursor-pointer"
+                          className="border-t hover:bg-secondary/20 cursor-pointer"
                           onClick={() => toggleSelect(a.id)}
                         >
                           <td className="px-4 py-3">
@@ -1058,7 +1058,7 @@ function NewBroadcastWizard({
       </div>
 
       {/* ── Mobile: Sticky Bottom Bar ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur-xl">
         <div className="px-4 py-3 space-y-2.5">
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1">

@@ -20,7 +20,7 @@ import {
   Image as ImageIcon, Video, MapPin, X, FileText, Smile, MousePointer2
 } from 'lucide-react';
 
-import { InputAktivitasModal } from '@/components/siswa/InputAktivitasModal';
+import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SwCountdown } from './SwCountdown';
@@ -316,7 +316,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
   return (
     <div className="flex flex-col h-full bg-background w-full relative">
       {/* Header */}
-      <div className="bg-card border-b border-border px-2 py-2 md:px-4 md:py-3 flex items-center shadow-sm z-10 w-full">
+      <div className="bg-card border-b px-2 py-2 md:px-4 md:py-3 flex items-center shadow-sm z-10 w-full">
         <Button
           variant="ghost" size="icon"
           className="mr-1 md:mr-2 md:hidden text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8"
@@ -355,10 +355,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
 
         {/* Info Siswa Panel */}
         <Sheet>
-          <SheetTrigger className={buttonVariants({ variant: 'outline', size: 'sm', className: 'hidden sm:flex bg-transparent border-border text-foreground hover:bg-accent hover:text-white' })}>
+          <SheetTrigger className={buttonVariants({ variant: 'outline', size: 'sm', className: 'hidden sm:flex bg-transparent text-foreground hover:bg-accent hover:text-white' })}>
             Info Siswa
           </SheetTrigger>
-          <SheetContent className="bg-background border-l border-border text-foreground p-0 overflow-y-auto sm:max-w-md w-full">
+          <SheetContent className="bg-background border-l text-foreground p-0 overflow-y-auto sm:max-w-md w-full">
             <SheetHeader className="sr-only">
               <SheetTitle>Info Siswa</SheetTitle>
             </SheetHeader>
@@ -429,7 +429,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                     onClick={() => setShowAktivitasModal(true)}
                   >
-                    + Input Aktivitas
+                    + Catat Interaksi
                   </Button>
                 </div>
 
@@ -465,7 +465,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 </div>
               )}
               <div
-                className={`max-w-[88%] sm:max-w-[75%] rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 shadow-sm relative ${
+                className={`max-w-xs sm:max-w-md md:max-w-lg rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 shadow-sm relative ${
                   msg.direction === 'outgoing'
                     ? 'bg-primary/80 text-primary-foreground rounded-tr-none'
                     : 'bg-card text-foreground rounded-tl-none'
@@ -580,7 +580,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
 
       {/* Composer */}
       {isWaConnected === false ? (
-        <div className="bg-card p-3 w-full border-t border-border">
+        <div className="bg-card p-3 w-full border-t">
           <WhatsAppGatingBanner
             compact
             featureName="Live Chat WhatsApp"
@@ -588,7 +588,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
           />
         </div>
       ) : (
-        <div className="bg-card px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full relative border-t border-border">
+        <div className="bg-card px-2 py-2 md:p-3 flex items-end space-x-1.5 md:space-x-2 z-10 w-full relative border-t">
           {!isSwOpen ? (
             // SW CLOSED — hanya ikon ⓘ + tombol template
             <>
@@ -687,7 +687,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
 
               <div className="flex-1 relative flex flex-col">
                 {selectedFile && (
-                  <div className={`absolute left-0 bg-accent px-3 py-2 rounded-t-xl border border-b-0 border-border flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
+                  <div className={`absolute left-0 bg-accent px-3 py-2 rounded-t-xl border border-b-0 flex items-center gap-3 ${selectedFile.type.startsWith('image/') ? '-top-20' : '-top-12'}`}>
                     {selectedFile.type.startsWith('image/') ? (
                       <img src={URL.createObjectURL(selectedFile)} alt="preview" className="h-16 w-16 object-cover rounded-md" />
                     ) : selectedFile.type.startsWith('video/') ? (
@@ -725,16 +725,20 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
         </div>
       )}
 
-      <InputAktivitasModal 
+      <CatatInteraksiSiswaModal 
         isOpen={showAktivitasModal} 
         onClose={() => setShowAktivitasModal(false)} 
+        onSuccess={() => {
+          setShowAktivitasModal(false);
+          onMessageSent();
+        }}
         siswaId={String(conversation?.id_siswa || '')}
         siswaName={conversation?.student_name || conversation?.wa_number || ''}
       />
 
       {/* Location Modal */}
       <Dialog open={showLocationModal} onOpenChange={setShowLocationModal}>
-        <DialogContent className="bg-background border-border text-foreground">
+        <DialogContent className="bg-background text-foreground">
           <DialogHeader>
             <DialogTitle>Kirim Lokasi</DialogTitle>
           </DialogHeader>
@@ -750,7 +754,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                   placeholder="Tempel Link Google Maps..." 
                   value={mapsLink} 
                   onChange={e => setMapsLink(e.target.value)}
-                  className="bg-muted border-border flex-1 text-xs"
+                  className="bg-muted flex-1 text-xs"
                 />
                 <Button onClick={handleExtractMapsLink} disabled={!mapsLink} variant="secondary" className="text-xs">
                   Ekstrak
@@ -996,10 +1000,10 @@ function TemplateReviewDialog({
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onBack(); }}>
       {/* flex-col + max-h agar konten bisa scroll jika panjang */}
-      <DialogContent className="sm:max-w-sm bg-background border-border text-foreground p-0 flex flex-col max-h-dvh overflow-hidden">
+      <DialogContent className="sm:max-w-sm bg-background text-foreground p-0 flex flex-col max-h-dvh overflow-hidden">
 
         {/* Header — fixed, tidak ikut scroll */}
-        <DialogHeader className="px-5 pt-5 pb-3 shrink-0 border-b border-border">
+        <DialogHeader className="px-5 pt-5 pb-3 shrink-0 border-b">
           <DialogTitle className="text-foreground flex items-center gap-2 text-sm">
             <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-semibold">PREVIEW</span>
             {t.nama_template}
@@ -1012,7 +1016,7 @@ function TemplateReviewDialog({
           <div className="mx-5 my-4 rounded-xl overflow-hidden shadow-inner bg-muted">
             <div className="p-3 flex justify-start">
               {/* Bubble penerima */}
-              <div className="max-w-[90%] bg-card rounded-lg rounded-tl-none shadow-sm overflow-hidden">
+              <div className="max-w-sm bg-card rounded-lg rounded-tl-none shadow-sm overflow-hidden">
 
                 {/* Header: image */}
                 {finalHeaderType === 'image' && finalHeaderUrl && (
@@ -1067,12 +1071,12 @@ function TemplateReviewDialog({
 
                 {/* Buttons */}
                 {buttons.length > 0 && (
-                  <div className="border-t border-border">
+                  <div className="border-t">
                     {buttons.map((btn, i) => (
                       <div
                         key={i}
                         className={`flex items-center justify-center px-3 py-2 text-blue-400 text-sm font-medium gap-1.5 ${
-                          i < buttons.length - 1 ? 'border-b border-border' : ''
+                          i < buttons.length - 1 ? 'border-b' : ''
                         }`}
                       >
                         {btn.type === 'URL' ? (
@@ -1099,7 +1103,7 @@ function TemplateReviewDialog({
         </div>
 
         {/* Action buttons — fixed di bawah */}
-        <div className="px-5 py-4 shrink-0 border-t border-border flex gap-2">
+        <div className="px-5 py-4 shrink-0 border-t flex gap-2">
           <Button
             variant="outline"
             className="flex-1"
@@ -1195,7 +1199,7 @@ function TemplatePicker({
         >
           {iconOnly ? <Clock className="h-5 w-5" /> : buttonText}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md bg-background border-border text-foreground">
+        <DialogContent className="sm:max-w-md bg-background text-foreground">
           <DialogHeader>
             <DialogTitle className="text-foreground">Pilih Template Pesan</DialogTitle>
           </DialogHeader>

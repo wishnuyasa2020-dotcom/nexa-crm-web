@@ -11,7 +11,7 @@ interface Props {
 }
 
 const FIELD_CLASS =
-  'w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
+  'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
@@ -92,10 +92,10 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-border flex flex-col">
+      <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border flex flex-col">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border">
+        <div className="flex items-center justify-between p-5 border-b">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shadow-sm shadow-primary/20">
               <School size={15} className="text-white" />
@@ -190,7 +190,7 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
                 Alamat
-                <span className="text-[11px] text-muted-foreground font-normal">(opsional)</span>
+                <span className="text-xs text-muted-foreground font-normal">(opsional)</span>
               </label>
               <input
                 name="alamat"
@@ -203,8 +203,8 @@ export function AddSekolahModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           {/* Preview Status Otomatis */}
-          <div className="rounded-xl border border-border bg-secondary/30 p-3.5 space-y-1.5">
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Status CRM yang akan dibuat otomatis</p>
+          <div className="rounded-xl border bg-secondary/30 p-3.5 space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status CRM yang akan dibuat otomatis</p>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
                 <p className="text-muted-foreground">Status</p>

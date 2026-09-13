@@ -146,7 +146,7 @@ export function AssignKelasModal({ isOpen, onClose, onSuccess }: AssignKelasModa
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card border rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-card border rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-dvh">
 
         {/* ── Header ───────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-secondary/30 shrink-0">
@@ -352,7 +352,7 @@ export function AssignKelasModal({ isOpen, onClose, onSuccess }: AssignKelasModa
             <button
               type="submit"
               disabled={submitting || loadingInitial || !selectedSekolahId || !selectedKelasKey || !targetCro || isSameCro}
-              className="px-4 py-2 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
+              className="px-4 py-2 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
             >
               {submitting ? (
                 <>
