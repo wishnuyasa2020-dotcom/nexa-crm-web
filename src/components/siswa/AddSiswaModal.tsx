@@ -112,8 +112,8 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card w-full max-w-xl rounded-2xl shadow-xl border flex flex-col max-h-dvh">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+      <div className="bg-card w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl shadow-xl border flex flex-col max-h-[90dvh]">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-bold text-foreground">Tambah Siswa Baru</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">

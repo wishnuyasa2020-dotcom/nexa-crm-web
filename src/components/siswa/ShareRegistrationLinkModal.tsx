@@ -112,11 +112,11 @@ export function ShareRegistrationLinkModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4">
-      <div className="w-full max-w-lg rounded-2xl border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
+      <div className="w-full sm:max-w-lg bg-card sm:rounded-2xl rounded-t-2xl border shadow-2xl flex flex-col max-h-[90dvh]">
         
         {/* Header Modal */}
-        <div className="flex items-center justify-between p-5 border-b">
+        <div className="flex items-center justify-between p-5 border-b shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Link2 size={18} />
@@ -135,7 +135,7 @@ export function ShareRegistrationLinkModal({
         </div>
 
         {/* Body Modal */}
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 overflow-y-auto flex-1">
 
           {/* Student Info Card */}
           <div className="p-3.5 rounded-xl border bg-secondary/30 space-y-1.5">
@@ -237,7 +237,7 @@ export function ShareRegistrationLinkModal({
         </div>
 
         {/* Footer Modal */}
-        <div className="p-4 border-t bg-secondary/20 flex justify-end">
+        <div className="p-4 border-t bg-secondary/20 flex justify-end shrink-0">
           <button
             type="button"
             onClick={onClose}

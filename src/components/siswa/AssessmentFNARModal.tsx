@@ -115,8 +115,8 @@ export function AssessmentFNARModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-lg bg-card rounded-2xl border shadow-2xl my-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-full sm:max-w-lg bg-card sm:rounded-2xl rounded-t-2xl border shadow-2xl flex flex-col max-h-[90dvh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
           <div>
@@ -128,8 +128,8 @@ export function AssessmentFNARModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="p-5 space-y-4 max-h-dvh overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-5 space-y-4 overflow-y-auto flex-1">
             <p className="text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2 border">
               💡 Berikan bukti objektif untuk setiap dimensi. Sistem akan menentukan transisi status secara otomatis.
               <strong className="text-foreground"> 🔒 FIT & ABILITY adalah Hard Gate</strong> — tidak bisa dinego.
@@ -181,26 +181,26 @@ export function AssessmentFNARModal({
                 />
               </div>
             ))}
+
+            {/* Preview hasil */}
+            {allAnswered && (
+              <div className={cn(
+                'px-4 py-3 rounded-xl border text-sm font-medium',
+                allPass ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
+                anyHardFail ? 'border-rose-500/30 bg-rose-500/10 text-rose-400' :
+                'border-amber-500/30 bg-amber-500/10 text-amber-400'
+              )}>
+                {allPass ? '🎯 Semua dimensi lulus → Status berubah ke PROSPECT' :
+                 anyHardFail ? '🔴 Hard Gate gagal → Status berubah ke DISQUALIFIED' :
+                 '⏳ Beberapa dimensi belum terpenuhi → Tetap di status saat ini'}
+              </div>
+            )}
           </div>
 
-          {/* Preview hasil */}
-          {allAnswered && (
-            <div className={cn(
-              'mx-5 mb-3 px-4 py-3 rounded-xl border text-sm font-medium',
-              allPass ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
-              anyHardFail ? 'border-rose-500/30 bg-rose-500/10 text-rose-400' :
-              'border-amber-500/30 bg-amber-500/10 text-amber-400'
-            )}>
-              {allPass ? '🎯 Semua dimensi lulus → Status berubah ke PROSPECT' :
-               anyHardFail ? '🔴 Hard Gate gagal → Status berubah ke DISQUALIFIED' :
-               '⏳ Beberapa dimensi belum terpenuhi → Tetap di status saat ini'}
-            </div>
-          )}
+          {error && <p className="mx-5 text-xs text-rose-400 pb-1">{error}</p>}
 
-          {error && <p className="mx-5 text-xs text-rose-400 mb-2">{error}</p>}
-
-          {/* Actions */}
-          <div className="flex gap-2 p-5 pt-0">
+          {/* Actions — sticky footer */}
+          <div className="flex gap-2 px-5 py-4 border-t bg-card shrink-0">
             <button
               type="button"
               onClick={handleClose}

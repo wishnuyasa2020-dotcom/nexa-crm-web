@@ -150,8 +150,8 @@ export function DecisionConsultationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-xl bg-card rounded-2xl border shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-full sm:max-w-xl bg-card sm:rounded-2xl rounded-t-2xl border shadow-2xl flex flex-col max-h-[90dvh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-secondary/30">
           <div className="flex items-center gap-3">
@@ -173,7 +173,8 @@ export function DecisionConsultationModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs flex items-center gap-2">
               <AlertCircle size={16} className="shrink-0" />
@@ -375,8 +376,10 @@ export function DecisionConsultationModal({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t">
+          </div>{/* end scrollable body */}
+
+          {/* Action Buttons — sticky footer */}
+          <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-4 border-t bg-card shrink-0">
             <button
               type="button"
               onClick={onClose}
