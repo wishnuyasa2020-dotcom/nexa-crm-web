@@ -210,10 +210,10 @@ export default function WhatsAppTab() {
 
       {/* ── STATE 2: CONNECTED (SUDAH AKTIF) ── */}
       {status === 'CONNECTED' && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl border bg-muted/20 space-y-1">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="border-0 sm:border bg-transparent sm:bg-card p-0 sm:p-6 shadow-none sm:shadow-sm rounded-none sm:rounded-2xl space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Nomor WhatsApp Resmi</span>
                 <p className="text-base font-bold text-foreground font-mono">
                   {data?.whatsappNumber ? `+${data.whatsappNumber}` : 'Nomor Terdaftar'}
@@ -221,7 +221,7 @@ export default function WhatsAppTab() {
                 <p className="text-xs text-muted-foreground">Nomor aktif pengiriman pesan Cloud API</p>
               </div>
 
-              <div className="p-4 rounded-xl border bg-muted/20 space-y-1">
+              <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Nama Tampilan (Display Name)</span>
                 <p className="text-base font-bold text-foreground">
                   {data?.whatsappDisplayName || data?.brandName}
@@ -229,7 +229,7 @@ export default function WhatsAppTab() {
                 <p className="text-xs text-muted-foreground">Nama profil verified yang muncul di WA penerima</p>
               </div>
 
-              <div className="p-4 rounded-xl border bg-muted/20 space-y-1">
+              <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">WhatsApp Phone ID (Meta)</span>
                 <p className="text-xs font-mono text-emerald-600 font-semibold truncate">
                   {data?.whatsappPhoneId || '-'}
@@ -237,7 +237,7 @@ export default function WhatsAppTab() {
                 <p className="text-xs text-muted-foreground">Identitas unik saluran perpesanan Meta</p>
               </div>
 
-              <div className="p-4 rounded-xl border bg-muted/20 space-y-1">
+              <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Tanggal Terhubung</span>
                 <p className="text-xs font-medium text-foreground">
                   {data?.whatsappConnectedAt ? new Date(data.whatsappConnectedAt).toLocaleDateString('id-ID', {
@@ -249,7 +249,7 @@ export default function WhatsAppTab() {
             </div>
 
             {/* Ready Modules Callout */}
-            <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
                   <CheckCircle2 size={20} />
@@ -264,7 +264,7 @@ export default function WhatsAppTab() {
             </div>
 
             {/* BSUID Notice for Connected State */}
-            <div className="p-4 rounded-xl border bg-muted/30 flex items-start gap-3">
+            <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/30 flex items-start gap-3">
               <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">Dukungan Meta BSUID Aktif:</strong> Sesuai kebijakan Meta terbaru, jika siswa baru yang menghubungi bisnis menyembunyikan nomor telepon mereka, sistem Nexa CRM akan otomatis mengidentifikasi siswa tersebut melalui <em>Business-Scoped User ID (BSUID)</em> secara transparan.
@@ -272,7 +272,7 @@ export default function WhatsAppTab() {
             </div>
 
             {/* Danger Zone: Disconnect */}
-            <div className="pt-4 border-t flex items-center justify-between">
+            <div className="p-3.5 sm:p-4 rounded-xl border border-destructive/20 bg-destructive/5 sm:border-0 sm:border-t sm:rounded-none sm:bg-transparent sm:pt-4 sm:p-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div>
                 <p className="text-xs font-semibold text-foreground">Putuskan Integrasi WhatsApp</p>
                 <p className="text-xs text-muted-foreground">
@@ -283,7 +283,7 @@ export default function WhatsAppTab() {
                 type="button"
                 onClick={handleDisconnect}
                 disabled={disconnecting}
-                className="px-3.5 py-2 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 text-xs font-semibold transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto px-3.5 py-2 rounded-lg border border-destructive/30 bg-card sm:bg-transparent text-destructive hover:bg-destructive/10 text-xs font-semibold transition-colors disabled:opacity-50 shrink-0 cursor-pointer text-center"
               >
                 {disconnecting ? 'Memutuskan...' : 'Putuskan Nomor'}
               </button>
@@ -294,8 +294,8 @@ export default function WhatsAppTab() {
 
       {/* ── STATE 3: PENDING PROVISIONING (DALAM PROSES) ── */}
       {status === 'PENDING_PROVISIONING' && (
-        <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
-          <div className="flex items-center gap-3">
+        <div className="border-0 sm:border bg-transparent sm:bg-card p-0 sm:p-6 shadow-none sm:shadow-sm rounded-none sm:rounded-2xl space-y-4 sm:space-y-6">
+          <div className="p-3.5 sm:p-0 rounded-xl border sm:border-0 bg-card sm:bg-transparent flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
               <Clock size={20} />
             </div>
@@ -325,13 +325,13 @@ export default function WhatsAppTab() {
               <p className="text-xs text-muted-foreground">Proses pendaftaran WABA</p>
             </div>
 
-            <div className="p-3.5 rounded-xl border bg-muted/40 space-y-1">
+            <div className="p-3.5 rounded-xl border bg-card sm:bg-muted/40 space-y-1">
               <span className="text-xs font-semibold text-muted-foreground">Langkah 3</span>
               <p className="text-xs font-medium text-muted-foreground">Verifikasi SMS OTP</p>
               <p className="text-xs text-muted-foreground">Kode 6 digit ke HP Anda</p>
             </div>
 
-            <div className="p-3.5 rounded-xl border bg-muted/40 space-y-1">
+            <div className="p-3.5 rounded-xl border bg-card sm:bg-muted/40 space-y-1">
               <span className="text-xs font-semibold text-muted-foreground">Langkah 4</span>
               <p className="text-xs font-medium text-muted-foreground">Siap Digunakan</p>
               <p className="text-xs text-muted-foreground">Sinkronisasi Live Chat</p>
@@ -339,7 +339,7 @@ export default function WhatsAppTab() {
           </div>
 
           {/* Submitted Summary */}
-          <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
+          <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-2">
             <h4 className="text-xs font-semibold text-foreground">Ringkasan Pengajuan:</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div>
@@ -358,7 +358,7 @@ export default function WhatsAppTab() {
           </div>
 
           {/* Crucial OTP Instruction Alert */}
-          <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex items-start gap-3">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex items-start gap-3">
             <Smartphone className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs space-y-1">
               <p className="font-semibold text-foreground">Penting: Siapkan Ponsel Penerima SMS OTP</p>
@@ -373,7 +373,7 @@ export default function WhatsAppTab() {
               type="button"
               onClick={handleDisconnect}
               disabled={disconnecting}
-              className="px-4 py-2 rounded-xl border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer text-center"
             >
               {disconnecting ? 'Membatalkan...' : 'Batalkan Pengajuan'}
             </button>
@@ -383,14 +383,14 @@ export default function WhatsAppTab() {
 
       {/* ── STATE 4: NOT_CONFIGURED OR REJECTED (FORMULIR REGISTRASI) ── */}
       {(status === 'NOT_CONFIGURED' || status === 'REJECTED') && (
-        <form onSubmit={handleSubmitRegister} className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
-          <div className="flex items-center gap-2">
+        <form onSubmit={handleSubmitRegister} className="border-0 sm:border bg-transparent sm:bg-card p-0 sm:p-6 shadow-none sm:shadow-sm rounded-none sm:rounded-2xl space-y-4 sm:space-y-6">
+          <div className="p-3.5 sm:p-0 rounded-xl border sm:border-0 bg-card sm:bg-transparent flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
             <h3 className="text-base font-bold text-foreground">Formulir Pendaftaran Nomor WhatsApp Bisnis</h3>
           </div>
 
           {/* ── CALLOUT 1: REKOMENDASI MUTLAK NOMOR BARU (FRESH SIM) ── */}
-          <div className="p-4.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+          <div className="p-3.5 sm:p-4.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
             <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs">
               <Smartphone size={16} />
               <span>SANGAT DIREKOMENDASIKAN: GUNAKAN NOMOR PERDANA / BARU (FRESH SIM)</span>
@@ -409,7 +409,7 @@ export default function WhatsAppTab() {
           </div>
 
           {/* ── CALLOUT 2: KESESUAIAN DISPLAY NAME DENGAN META POLICY ── */}
-          <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
             <div className="flex items-center gap-2 text-amber-600 font-bold text-xs">
               <Building size={16} />
               <span>KETENTUAN DISPLAY NAME (NAMA BRAND RESMI META)</span>
@@ -420,7 +420,7 @@ export default function WhatsAppTab() {
           </div>
 
           {/* ── CALLOUT 3: KESIAPAN BSUID META 2026 ── */}
-          <div className="p-4 rounded-xl border bg-muted/30 flex items-start gap-2.5">
+          <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/30 flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground leading-relaxed">
               <strong className="text-foreground">Arsitektur Kesiapan Meta BSUID 2026:</strong> Sistem Nexa OS telah terintegrasi dengan standar privasi <em>Business-Scoped User ID (BSUID)</em>. Pesan masuk dari audiens/siswa yang menyembunyikan nomor ponselnya tetap akan terarsip rapi di ruang Live Chat Anda.
@@ -428,7 +428,7 @@ export default function WhatsAppTab() {
           </div>
 
           {/* Form Fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3.5 sm:p-0 rounded-xl border sm:border-0 bg-card sm:bg-transparent grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
                 Nama Tampilan Brand (Display Name) <span className="text-destructive">*</span>
@@ -482,7 +482,7 @@ export default function WhatsAppTab() {
           </div>
 
           {/* Declarations (Mandatory Checkboxes) */}
-          <div className="space-y-3 pt-2 border-t">
+          <div className="p-3.5 sm:p-0 rounded-xl border sm:border-0 bg-card sm:bg-transparent space-y-3 pt-3 sm:pt-2 sm:border-t">
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -510,11 +510,11 @@ export default function WhatsAppTab() {
             </label>
           </div>
 
-          <div className="pt-4 border-t flex justify-end">
+          <div className="pt-2 sm:pt-4 sm:border-t flex justify-end">
             <button
               type="submit"
               disabled={submitting || !checkFreshNumber || !checkDisplayNameCompliance}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold shadow-md shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold shadow-md shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>

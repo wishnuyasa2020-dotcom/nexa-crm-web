@@ -40,15 +40,15 @@ export default function PanduanPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto pb-16 md:pb-12">
+    <div className="w-full max-w-6xl mx-auto min-w-0 space-y-4 sm:space-y-6 pb-16 md:pb-12 wrap-break-word overflow-x-clip">
       {/* Header Banner */}
-      <div className="rounded-2xl border bg-card p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
+      <div className="w-full min-w-0 rounded-2xl border bg-card p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
         <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+          <div className="space-y-2 min-w-0">
+            <div className="inline-flex max-w-full items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               <BookOpen size={13} className="shrink-0" />
-              <span>SOP & KNOWLEDGE BASE NEXA CRM</span>
+              <span className="truncate">SOP & KNOWLEDGE BASE NEXA CRM</span>
             </div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
               Panduan Penggunaan Tenant
@@ -82,7 +82,7 @@ export default function PanduanPage() {
         </div>
 
         {/* Tab Navigation Buttons (Touch Friendly & Horizontally Scrollable on Mobile) */}
-        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-border overflow-x-auto scrollbar-none pb-1 touch-pan-x">
+        <div className="w-full min-w-0 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-border overflow-x-auto scrollbar-none pb-1 touch-pan-x">
           <button
             onClick={() => setActiveTab('sekolah')}
             className={cn(
@@ -183,9 +183,9 @@ export default function PanduanPage() {
 
               {expandedSections['b2b-pipeline'] && (
                 <div className="pt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl border bg-background/50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground border">Tahap 1</span>
+                  <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground border shrink-0">Tahap 1</span>
                       <span className="text-xs font-semibold text-amber-500">Belum Visit (Identified)</span>
                     </div>
                     <h4 className="text-sm font-bold text-foreground">Identifikasi Data Sekolah</h4>
@@ -194,9 +194,9 @@ export default function PanduanPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-xl border bg-background/50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 border border-blue-500/20">Tahap 2</span>
+                  <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0">Tahap 2</span>
                       <span className="text-xs font-semibold text-blue-500">Tunggu Visit Ulang (Engaged)</span>
                     </div>
                     <h4 className="text-sm font-bold text-foreground">Kunjungan Penjajakan Awal</h4>
@@ -205,9 +205,9 @@ export default function PanduanPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-xl border bg-background/50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 border border-purple-500/20">Tahap 3</span>
+                  <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 border border-purple-500/20 shrink-0">Tahap 3</span>
                       <span className="text-xs font-semibold text-purple-500">Sudah Sosialisasi</span>
                     </div>
                     <h4 className="text-sm font-bold text-foreground">Eksekusi Presentasi Lapangan</h4>
@@ -216,9 +216,9 @@ export default function PanduanPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-xl border bg-background/50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">Tahap 4</span>
+                  <div className="p-3.5 sm:p-4 rounded-xl border bg-background/50 space-y-2 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0">Tahap 4</span>
                       <span className="text-xs font-semibold text-emerald-500">Identity Captured / Active Partner</span>
                     </div>
                     <h4 className="text-sm font-bold text-foreground">Penyerapan Audiens & Kemitraan Sah</h4>
@@ -259,7 +259,7 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl border bg-card space-y-1.5">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-card space-y-1.5 min-w-0">
                       <div className="font-bold text-foreground text-xs flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                         Peran CRO (Read-Only di Modul Sekolah)
@@ -269,7 +269,7 @@ export default function PanduanPage() {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border bg-card space-y-1.5">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-card space-y-1.5 min-w-0">
                       <div className="font-bold text-foreground text-xs flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                         Peran Chief CRO, Manager & Admin
@@ -423,8 +423,8 @@ export default function PanduanPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-xs">
                       {/* Step 1 */}
-                      <div className="p-4 rounded-xl border bg-background space-y-2 relative">
-                        <div className="flex items-center justify-between">
+                      <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 relative min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
                             Langkah 1
                           </span>
@@ -443,8 +443,8 @@ export default function PanduanPage() {
                       </div>
 
                       {/* Step 2 */}
-                      <div className="p-4 rounded-xl border bg-background space-y-2">
-                        <div className="flex items-center justify-between">
+                      <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
                             Langkah 2
                           </span>
@@ -457,8 +457,8 @@ export default function PanduanPage() {
                       </div>
 
                       {/* Step 3 */}
-                      <div className="p-4 rounded-xl border bg-background space-y-2">
-                        <div className="flex items-center justify-between">
+                      <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
                             Langkah 3
                           </span>
@@ -473,8 +473,8 @@ export default function PanduanPage() {
                       </div>
 
                       {/* Step 4 */}
-                      <div className="p-4 rounded-xl border bg-background space-y-2">
-                        <div className="flex items-center justify-between">
+                      <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
                             Langkah 4
                           </span>
@@ -487,8 +487,8 @@ export default function PanduanPage() {
                       </div>
 
                       {/* Step 5 */}
-                      <div className="p-4 rounded-xl border bg-background space-y-2">
-                        <div className="flex items-center justify-between">
+                      <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-amber-500/10 text-amber-600 border border-amber-500/20">
                             Langkah 5
                           </span>
@@ -501,8 +501,8 @@ export default function PanduanPage() {
                       </div>
 
                       {/* Step 6 */}
-                      <div className="p-4 rounded-xl border bg-background space-y-2">
-                        <div className="flex items-center justify-between">
+                      <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                             Langkah 6
                           </span>
@@ -532,11 +532,11 @@ export default function PanduanPage() {
                           1. Garansi Pewarisan Hak Asuh Siswa Baru (Auto-Inheritance):
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
-                          Setelah kelas di-assign ke seorang CRO, <strong>Chief CRO TIDAK PERLU melakukan assign ulang</strong> jika di kemudian hari ada siswa baru yang menyusul mendaftar. Baik melalui <em>Form Publik QR Sosialisasi (https://form-konfirmasi.nexamos.cloud)</em>, <em>Import Excel</em>, maupun <em>Input Manual</em>, siswa baru pada sekolah &amp; kelas tersebut secara otomatis langsung diwariskan ke CRO pemegang kelas saat ini.
+                          Setelah kelas di-assign ke seorang CRO, <strong>Chief CRO TIDAK PERLU melakukan assign ulang</strong> jika di kemudian hari ada siswa baru yang menyusul mendaftar. Baik melalui <em>Form Publik QR Sosialisasi (<span className="break-all font-mono">https://form-konfirmasi.nexamos.cloud</span>)</em>, <em>Import Excel</em>, maupun <em>Input Manual</em>, siswa baru pada sekolah &amp; kelas tersebut secara otomatis langsung diwariskan ke CRO pemegang kelas saat ini.
                         </p>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-secondary/40 border space-y-1">
+                      <div className="p-3 rounded-xl bg-secondary/40 border space-y-1 min-w-0">
                         <div className="font-bold text-foreground flex items-center gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
                           2. Sistem Auto-Replace Terintegrasi (Tanpa Data Tercecer):
@@ -546,13 +546,13 @@ export default function PanduanPage() {
                         </p>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-secondary/40 border space-y-1">
+                      <div className="p-3 rounded-xl bg-secondary/40 border space-y-1 min-w-0">
                         <div className="font-bold text-foreground flex items-center gap-1.5">
                           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
                           3. Audit Trail Permanen Event-Sourcing CQRS:
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
-                          Setiap penugasan kelas tercatat permanen di <code>events_log</code> dengan tipe event <code>ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang dialihkan, serta identitas Chief CRO yang melakukan penugasan untuk audit akuntabilitas dan perhitungan insentif kinerja.
+                          Setiap penugasan kelas tercatat permanen di <code className="break-all">events_log</code> dengan tipe event <code className="break-all">ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang dialihkan, serta identitas Chief CRO yang melakukan penugasan untuk audit akuntabilitas dan perhitungan insentif kinerja.
                         </p>
                       </div>
                     </div>
@@ -732,20 +732,20 @@ export default function PanduanPage() {
 
               {expandedSections['admin-domains'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
-                  <div className="p-3.5 sm:p-4 rounded-xl bg-secondary/40 border space-y-2">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-secondary/40 border space-y-2 min-w-0">
                     <h4 className="font-bold text-foreground text-sm">2 Domain Resmi Ekosistem Nexa MOS:</h4>
                     <div className="space-y-1.5 text-muted-foreground">
-                      <p>• 🌐 <strong>Landing Page Pemasaran:</strong> <code className="text-primary font-bold">https://nexamos.cloud</code> (Website statis promosi. <em>Jangan pernah gunakan untuk rute internal aplikasi!</em>)</p>
-                      <p>• 💻 <strong>Aplikasi CRM Tenant:</strong> <code className="text-emerald-600 font-bold">https://crm.nexamos.cloud</code> (Tempat operasional seluruh modul CRM dan target semua tombol link email alert).</p>
+                      <p>• 🌐 <strong>Landing Page Pemasaran:</strong> <code className="text-primary font-bold break-all">https://nexamos.cloud</code> (Website statis promosi. <em>Jangan pernah gunakan untuk rute internal aplikasi!</em>)</p>
+                      <p>• 💻 <strong>Aplikasi CRM Tenant:</strong> <code className="text-emerald-600 font-bold break-all">https://crm.nexamos.cloud</code> (Tempat operasional seluruh modul CRM dan target semua tombol link email alert).</p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2">
+                  <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
                     <h4 className="font-bold text-xs uppercase tracking-wider text-primary">
-                      Keamanan Akun & Email Security Alert:
+                      Keamanan Akun &amp; Email Security Alert:
                     </h4>
-                    <p className="text-muted-foreground">
-                      • <strong>Security Alert Mutasi Kredensial:</strong> Jika terjadi pergantian password atau username pada staf CRM, email alert otomatis terkirim dengan direct button menuju panel Manajemen Tim di <code className="text-foreground font-semibold">https://crm.nexamos.cloud/manajemen-tim</code>.
+                    <p className="text-muted-foreground leading-relaxed">
+                      • <strong>Security Alert Mutasi Kredensial:</strong> Jika terjadi pergantian password atau username pada staf CRM, email alert otomatis terkirim dengan direct button menuju panel Manajemen Tim di <code className="text-foreground font-semibold break-all">https://crm.nexamos.cloud/manajemen-tim</code>.
                     </p>
                   </div>
                 </div>
@@ -838,9 +838,9 @@ export default function PanduanPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 font-bold border border-amber-500/20">LEAD</span>
                           <span className="font-semibold text-foreground text-sm">Verified Initial Interest + Valid Contact</span>
                         </div>
@@ -851,9 +851,9 @@ export default function PanduanPage() {
                       <span className="text-xs font-semibold text-muted-foreground shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-muted/60 sm:bg-transparent">Syarat: Kontak Valid</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 font-bold border border-blue-500/20">PROSPECT</span>
                           <span className="font-semibold text-foreground text-sm">Lulus Kualifikasi FNAR Framework</span>
                         </div>
@@ -864,9 +864,9 @@ export default function PanduanPage() {
                       <span className="text-xs font-semibold text-blue-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-blue-500/10 sm:bg-transparent">Syarat: FNAR Assessment</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 font-bold border border-purple-500/20">OPPORTUNITY</span>
                           <span className="font-semibold text-foreground text-sm">Lolos Commitment Threshold (Konsultasi Keputusan)</span>
                         </div>
@@ -877,9 +877,9 @@ export default function PanduanPage() {
                       <span className="text-xs font-semibold text-purple-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-purple-500/10 sm:bg-transparent">Syarat: Ortu Hadir</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">REGISTERED</span>
                           <span className="font-semibold text-foreground text-sm">Beli Formulir Pendaftaran (Rp500.000)</span>
                         </div>
@@ -890,9 +890,9 @@ export default function PanduanPage() {
                       <span className="text-xs font-semibold text-emerald-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-emerald-500/10 sm:bg-transparent">Bukti: Formulir Lunas</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                    <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold">CUSTOMER</span>
                           <span className="font-semibold text-foreground text-sm">Pelunasan DP Pelatihan (Rp1.500.000 Core Conversion)</span>
                         </div>
@@ -951,8 +951,8 @@ export default function PanduanPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* Pilar 1 */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
                           1. Otoritas Chief CRO &amp; Manajemen
                         </span>
@@ -964,8 +964,8 @@ export default function PanduanPage() {
                     </div>
 
                     {/* Pilar 2 */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
                           2. Syarat Sekolah Wajib Sosialisasi
                         </span>
@@ -977,8 +977,8 @@ export default function PanduanPage() {
                     </div>
 
                     {/* Pilar 3 */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-amber-500/10 text-amber-600 border border-amber-500/20">
                           3. Sistem Auto-Replace Terintegrasi
                         </span>
@@ -990,8 +990,8 @@ export default function PanduanPage() {
                     </div>
 
                     {/* Pilar 4 */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                           4. Auto-Inherit Ingestion Siswa Baru
                         </span>
@@ -1003,12 +1003,12 @@ export default function PanduanPage() {
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/30 text-xs text-foreground space-y-1">
+                  <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/30 text-xs text-foreground space-y-1 min-w-0">
                     <p className="font-bold text-purple-600 flex items-center gap-1.5">
                       <CheckCircle2 size={15} className="shrink-0" /> Audit Trail Event-Sourcing CQRS:
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      Setiap mutasi penugasan kelas terekam secara permanen di <code>events_log</code> dengan tipe event <code>ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang ikut dialihkan, dan user Chief CRO yang mengeksekusi penugasan.
+                      Setiap mutasi penugasan kelas terekam secara permanen di <code className="break-all">events_log</code> dengan tipe event <code className="break-all">ClassAssignedToCro</code>. Log ini mencatat ID sekolah, nama kelas, CRO lama, CRO baru, total siswa yang ikut dialihkan, dan user Chief CRO yang mengeksekusi penugasan.
                     </p>
                   </div>
                 </div>
@@ -1048,8 +1048,8 @@ export default function PanduanPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* F: FIT */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                           F — FIT (Kesesuaian Syarat)
                         </span>
@@ -1064,8 +1064,8 @@ export default function PanduanPage() {
                     </div>
 
                     {/* N: NEED */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
                           N — NEED (Kebutuhan Nyata)
                         </span>
@@ -1080,8 +1080,8 @@ export default function PanduanPage() {
                     </div>
 
                     {/* A: ABILITY */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-purple-500/10 text-purple-600 border border-purple-500/20">
                           A — ABILITY (Kemampuan Fisik & Medis)
                         </span>
@@ -1096,8 +1096,8 @@ export default function PanduanPage() {
                     </div>
 
                     {/* R: READINESS */}
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <span className="px-2.5 py-0.5 rounded-md font-bold text-xs bg-amber-500/10 text-amber-600 border border-amber-500/20">
                           R — READINESS (Kesiapan Waktu)
                         </span>
@@ -1112,12 +1112,12 @@ export default function PanduanPage() {
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/30 text-xs text-foreground space-y-1">
+                  <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/30 text-xs text-foreground space-y-1 min-w-0">
                     <p className="font-bold text-emerald-600 flex items-center gap-1.5">
                       <CheckCircle2 size={15} className="shrink-0" /> Mekanisme Event CQRS Nexa OS:
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      Sistem tidak mengizinkan CRO mengubah status prospek secara manual. Perpindahan status <code>LEAD ➔ PROSPECT</code> dipicu otomatis oleh event sistem <code>QualificationPassed</code> hanya ketika CRO telah mengisi dan mengunggah checklist verifikasi 4 dimensi FNAR di atas.
+                      Sistem tidak mengizinkan CRO mengubah status prospek secara manual. Perpindahan status <code className="break-all">LEAD ➔ PROSPECT</code> dipicu otomatis oleh event sistem <code className="break-all">QualificationPassed</code> hanya ketika CRO telah mengisi dan mengunggah checklist verifikasi 4 dimensi FNAR di atas.
                     </p>
                   </div>
                 </div>
@@ -1144,8 +1144,8 @@ export default function PanduanPage() {
               {expandedSections['cro-tasks'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-sm flex items-center gap-2 text-emerald-600">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <h4 className="font-bold text-sm flex flex-wrap items-center gap-2 text-emerald-600">
                         <CheckCircle2 size={16} className="shrink-0" /> Tombol [ ✅ EKSEKUSI ]
                       </h4>
                       <p className="text-muted-foreground">
@@ -1153,8 +1153,8 @@ export default function PanduanPage() {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <h4 className="font-bold text-sm flex items-center gap-2 text-amber-500">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <h4 className="font-bold text-sm flex flex-wrap items-center gap-2 text-amber-500">
                         <Clock size={16} className="shrink-0" /> Tombol [ 📅 TUNDA ]
                       </h4>
                       <p className="text-muted-foreground">
@@ -1163,12 +1163,12 @@ export default function PanduanPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-secondary/40 border space-y-2">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-secondary/40 border space-y-2 min-w-0">
                     <h4 className="font-bold text-xs uppercase tracking-wider text-blue-600">
                       Weekly Planning Kanban (Senin – Sabtu)
                     </h4>
                     <p className="text-muted-foreground">
-                      Setiap awal pekan, CRO menarik kartu tugas dari bilah <strong>Backlog (Kiri)</strong> menuju kolom <strong>Hari Kerja (Kanan)</strong>. Perubahan jadwal antar hari memicu event CQRS <code>WeeklyTaskRescheduled</code> secara transparan kepada Chief CRO dan Manager.
+                      Setiap awal pekan, CRO menarik kartu tugas dari bilah <strong>Backlog (Kiri)</strong> menuju kolom <strong>Hari Kerja (Kanan)</strong>. Perubahan jadwal antar hari memicu event CQRS <code className="break-all">WeeklyTaskRescheduled</code> secara transparan kepada Chief CRO dan Manager.
                     </p>
                   </div>
                 </div>
@@ -1195,8 +1195,8 @@ export default function PanduanPage() {
               {expandedSections['cro-chat'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-sm flex items-center gap-2 text-emerald-600">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-emerald-600">
                         <MessageSquare size={16} className="shrink-0" /> Live Chat Shared Inbox (Silo System)
                       </div>
                       <p className="text-muted-foreground">
@@ -1206,8 +1206,8 @@ export default function PanduanPage() {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-sm flex items-center gap-2 text-blue-600">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-blue-600">
                         <Radio size={16} className="shrink-0" /> Broadcast WA (Wizard 3 Langkah)
                       </div>
                       <p className="text-muted-foreground">
@@ -1215,8 +1215,8 @@ export default function PanduanPage() {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-sm flex items-center gap-2 text-purple-600">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-purple-600">
                         <TrendingUp size={16} className="shrink-0" /> Automated Nurturing (Drip Probing)
                       </div>
                       <p className="text-muted-foreground">
@@ -1224,8 +1224,8 @@ export default function PanduanPage() {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl border bg-background space-y-2">
-                      <div className="font-bold text-sm flex items-center gap-2 text-amber-500">
+                    <div className="p-3.5 sm:p-4 rounded-xl border bg-background space-y-2 min-w-0">
+                      <div className="font-bold text-sm flex flex-wrap items-center gap-2 text-amber-500">
                         <Clock size={16} className="shrink-0" /> Snooze Campaign (Hibernasi Prospek)
                       </div>
                       <p className="text-muted-foreground">

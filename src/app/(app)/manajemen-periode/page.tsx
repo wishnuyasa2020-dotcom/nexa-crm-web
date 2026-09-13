@@ -104,14 +104,15 @@ export default function ManajemenPeriodePage() {
         </div>
 
         {/* Row 2 (Mobile) / Right (Desktop) */}
-        <div className="flex items-center justify-end w-full sm:w-auto shrink-0">
+        <div className="w-full sm:w-auto shrink-0">
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="h-9 sm:h-10 px-3 sm:px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all shrink-0 cursor-pointer"
+            className="w-full sm:w-auto h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all cursor-pointer"
             title="Buat Cohort Baru"
           >
             <Plus size={16} />
             <span className="hidden sm:inline">Buat Cohort Baru</span>
+            <span className="sm:hidden">Tambah</span>
           </button>
         </div>
       </header>
