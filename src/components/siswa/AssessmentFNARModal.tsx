@@ -9,7 +9,7 @@ import type { FNARResult, AssessmentFNARPayload } from '@/lib/types/siswa.types'
 interface AssessmentFNARModalProps {
   isOpen:    boolean;
   onClose:   () => void;
-  onSuccess: (result: { allPass: boolean; anyFail: boolean; commercialState: string }) => void;
+  onSuccess: (result: { allPass: boolean; anyFail: boolean; commercialState: string }) => void | Promise<void>;
   siswaId:   string;
   siswaName: string;
 }
@@ -101,7 +101,8 @@ export function AssessmentFNARModal({
       onSuccess(res.data.data);
       handleClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal menyimpan assessment.';
+      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const msg = axiosErr?.response?.data?.message || axiosErr?.message || 'Gagal menyimpan assessment.';
       setError(msg);
     } finally {
       setLoading(false);

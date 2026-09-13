@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, MessageCircle, Plus, ClipboardList, Trash2, Pencil,
-  Calendar, User, Phone, School, AlertCircle, Clock
+  Calendar, User, Phone, School, AlertCircle, Clock, Link2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswa
 import { AssessmentFNARModal } from '@/components/siswa/AssessmentFNARModal';
 import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
 import { EditSiswaModal } from '@/components/siswa/EditSiswaModal';
+import { ShareRegistrationLinkModal } from '@/components/siswa/ShareRegistrationLinkModal';
 import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 import type { SiswaDetail, AktivitasSiswa } from '@/lib/types/siswa.types';
@@ -55,6 +56,7 @@ export default function SiswaDetailPage() {
   const [isAssessmentOpen,      setIsAssessmentOpen]      = useState(false);
   const [isDeleteModalOpen,     setIsDeleteModalOpen]     = useState(false);
   const [isEditModalOpen,       setIsEditModalOpen]       = useState(false);
+  const [isShareLinkOpen,       setIsShareLinkOpen]       = useState(false);
   const [isChatLoading,         setIsChatLoading]         = useState(false);
 
   const handleChatSiswa = async () => {
@@ -116,6 +118,14 @@ export default function SiswaDetailPage() {
             <School size={12} /> {siswaDetail.nama_sekolah} · {siswaDetail.id_siswa}
           </p>
         </div>
+        <button
+          onClick={() => setIsShareLinkOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors shadow-xs"
+          title="Bagikan Link Formulir & Invoice Pendaftaran"
+        >
+          <Link2 size={13} />
+          <span className="hidden sm:inline">Link Pendaftaran</span>
+        </button>
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg text-foreground hover:bg-secondary transition-colors shadow-xs"
@@ -240,6 +250,16 @@ export default function SiswaDetailPage() {
         </button>
 
         <button
+          onClick={() => setIsShareLinkOpen(true)}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+          title="Kirim / Salin Link Formulir & Invoice Siswa"
+        >
+          <Link2 size={15} />
+          <span className="hidden sm:inline">Link Pendaftaran</span>
+          <span className="sm:hidden">Formulir</span>
+        </button>
+
+        <button
           onClick={() => setIsEditModalOpen(true)}
           className="flex items-center justify-center p-2.5 bg-secondary text-foreground hover:bg-secondary/80 border rounded-lg transition-colors"
           title="Edit Data Siswa"
@@ -319,14 +339,20 @@ export default function SiswaDetailPage() {
       <CatatInteraksiSiswaModal
         isOpen={isInteraksiOpen}
         onClose={() => setIsInteraksiOpen(false)}
-        onSuccess={reloadDetail}
+        onSuccess={() => {
+          reloadDetail();
+          toast.success('Interaksi berhasil dicatat!');
+        }}
         siswaId={id}
         siswaName={siswaDetail.nama_lengkap}
       />
       <AssessmentFNARModal
         isOpen={isAssessmentOpen}
         onClose={() => setIsAssessmentOpen(false)}
-        onSuccess={() => reloadDetail()}
+        onSuccess={async (result) => {
+          toast.success(result?.allPass ? 'Kualifikasi FNAR Lulus! Status siswa naik ke Prospect.' : 'Assessment FNAR berhasil disimpan.');
+          await reloadDetail();
+        }}
         siswaId={id}
         siswaName={siswaDetail.nama_lengkap}
       />
@@ -342,6 +368,14 @@ export default function SiswaDetailPage() {
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={() => reloadDetail()}
         idSiswa={id}
+      />
+      <ShareRegistrationLinkModal
+        isOpen={isShareLinkOpen}
+        onClose={() => setIsShareLinkOpen(false)}
+        siswaId={id}
+        siswaName={siswaDetail.nama_lengkap}
+        siswaWa={siswaDetail.wa}
+        namaSekolah={siswaDetail.nama_sekolah}
       />
     </div>
   );

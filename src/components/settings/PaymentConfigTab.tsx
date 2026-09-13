@@ -4,10 +4,11 @@
 import { useState, useEffect } from 'react';
 import { 
   Building2, CreditCard, Banknote, ShieldCheck, CheckCircle2, 
-  AlertCircle, Loader2, Copy, Sparkles, HelpCircle, Tag
+  AlertCircle, Loader2, Copy, Sparkles, HelpCircle, Tag, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface PaymentConfigData {
   id?: number;
@@ -52,6 +53,12 @@ export default function PaymentConfigTab() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+
+  const user = useAuthStore((s) => s.user);
+  const tenantSlug = user?.tenant_id || 'derma';
+  const publicFormUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/daftar/${tenantSlug}`
+    : `/daftar/${tenantSlug}`;
 
   const [formData, setFormData] = useState<PaymentConfigData>({
     bankName: 'BCA',
@@ -143,7 +150,7 @@ export default function PaymentConfigTab() {
   return (
     <div className="space-y-6">
       {/* Alert Banner / Overview */}
-      <div className="bg-primary/5 border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+      <div className="bg-primary/5 border rounded-xl p-4 sm:p-5 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0 mt-0.5 sm:mt-0">
             <Sparkles size={18} />
@@ -151,9 +158,35 @@ export default function PaymentConfigTab() {
           <div>
             <h3 className="text-sm font-semibold text-foreground">Standardisasi Rekening & Biaya Pendaftaran</h3>
             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-              Nomor rekening dan nominal biaya di bawah ini akan otomatis muncul pada formulir publik (<code className="text-primary font-mono">daftar.nexamos.cloud</code>) dan tagihan pembayaran calon siswa.
+              Nomor rekening dan nominal biaya di bawah ini otomatis tampil pada formulir pendaftaran publik (<span className="font-mono text-primary font-medium">/daftar/{tenantSlug}</span>) dan tagihan pembayaran calon siswa.
             </p>
           </div>
+        </div>
+
+        {/* Action Buttons: Salin & Buka Formulir Publik */}
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0">
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(publicFormUrl);
+              toast.success('Link formulir pendaftaran publik disalin!');
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-card hover:bg-secondary text-xs font-semibold text-foreground transition-colors shadow-xs"
+            title="Salin Link Publik untuk Brosur / Medsos"
+          >
+            <Copy size={13} />
+            <span>Salin Link Publik</span>
+          </button>
+          <a
+            href={publicFormUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity shadow-xs"
+            title="Buka Halaman Formulir Pendaftaran Publik"
+          >
+            <ExternalLink size={13} />
+            <span>Buka Formulir</span>
+          </a>
         </div>
       </div>
 

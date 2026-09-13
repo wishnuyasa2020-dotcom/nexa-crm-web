@@ -21,6 +21,8 @@ import {
   Info,
   Phone,
   Tag,
+  School,
+  Pencil,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
@@ -129,6 +131,8 @@ export default function PublicRegistrationPage() {
     idSiswa: string;
     namaLengkap: string;
     noWa: string;
+    namaSekolah?: string;
+    kelas?: string;
   } | null>(null);
 
   // ── Load initial data ──────────────────────────────────────────────────────
@@ -171,11 +175,26 @@ export default function PublicRegistrationPage() {
           idSiswa: d.idSiswa,
           namaLengkap: d.namaLengkap,
           noWa: d.noWa,
+          namaSekolah: d.namaSekolah || '',
+          kelas: d.kelas || '',
         });
         if (d.paymentConfig) setPaymentConfig(d.paymentConfig);
         if (d.brandName && !tenantInfo) {
           setTenantInfo({ tenantId: tenantSlug, brandName: d.brandName, whatsappNumber: '' });
         }
+
+        // Pre-fill state form Step 1 dari database tenant
+        if (d.namaLengkap) setNamaLengkap(d.namaLengkap);
+        if (d.noWa) setNoWa(d.noWa);
+        if (d.idSekolah) {
+          setSelectedSekolah(d.idSekolah);
+          setIsManualSekolah(false);
+        }
+        if (d.kelas) setKelas(d.kelas);
+        if (d.minatAwal) setMinatAwal(d.minatAwal);
+        if (d.rencanaLulus) setRencanaLulus(d.rencanaLulus);
+        setConsentWa(true);
+
         setStep('step2_invoice');
       }
     } catch (err: any) {
@@ -234,6 +253,18 @@ export default function PublicRegistrationPage() {
     setIsSubmitting(true);
 
     try {
+      // Jika siswa sudah terdaftar / resume mode dari token, tidak perlu register ulang
+      if (invoiceData?.idSiswa) {
+        setInvoiceData(prev => prev ? {
+          ...prev,
+          namaLengkap: namaLengkap.trim(),
+          noWa: noWa.trim(),
+        } : null);
+        setStep('step2_invoice');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
       // 1. Register siswa ke sistem
       const registerRes = await apiClient.post(`/api/public/${tenantSlug}/register`, {
         nama_lengkap: namaLengkap.trim(),
@@ -390,18 +421,46 @@ export default function PublicRegistrationPage() {
           <StepIndicator currentStep={2} />
 
           {/* Greeting Card */}
-          <div className="bg-card border rounded-2xl p-5 shadow-sm space-y-1">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <GraduationCap size={20} />
+          <div className="bg-card border rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <GraduationCap size={20} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Pendaftar Terverifikasi:</p>
+                  <p className="font-bold text-foreground text-base">{invoiceData.namaLengkap}</p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
+                    <span className="flex items-center gap-1">
+                      <Phone size={11} /> {invoiceData.noWa}
+                    </span>
+                    {invoiceData.namaSekolah && (
+                      <span className="flex items-center gap-1 text-foreground font-medium">
+                        <School size={11} className="text-primary" /> {invoiceData.namaSekolah}
+                      </span>
+                    )}
+                    {invoiceData.kelas && (
+                      <span className="px-1.5 py-0.5 rounded bg-secondary text-xs">
+                        {invoiceData.kelas}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Data berhasil disimpan! Pendaftar:</p>
-                <p className="font-bold text-foreground">{invoiceData.namaLengkap}</p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Phone size={11} /> {invoiceData.noWa}
-                </p>
-              </div>
+
+              {/* Tombol Periksa / Edit Data */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('step1_form');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="shrink-0 text-xs px-2.5 py-1.5 rounded-lg border bg-secondary/60 hover:bg-secondary text-foreground transition-colors flex items-center gap-1.5"
+                title="Periksa atau perbarui data pendaftaran"
+              >
+                <Pencil size={12} />
+                <span className="hidden sm:inline">Periksa Data</span>
+              </button>
             </div>
           </div>
 
@@ -616,6 +675,16 @@ export default function PublicRegistrationPage() {
               </div>
             )}
 
+            {/* Banner Data Terverifikasi dari Sistem (Resume Mode) */}
+            {invoiceData?.idSiswa && (
+              <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground">
+                <CheckCircle2 size={16} className="shrink-0 text-primary mt-0.5" />
+                <div>
+                  <span className="font-semibold text-primary">Data Pendaftaran Terverifikasi.</span> Kolom di bawah ini telah terisi otomatis dari sistem resmi. Anda dapat mengubahnya jika ada data yang perlu diperbarui.
+                </div>
+              </div>
+            )}
+
             {/* Nama Lengkap */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-foreground">
@@ -766,6 +835,12 @@ export default function PublicRegistrationPage() {
                   <>
                     <Loader2 size={16} className="animate-spin" />
                     <span>Menyimpan Data...</span>
+                  </>
+                ) : invoiceData?.idSiswa ? (
+                  <>
+                    <CheckCircle2 size={16} />
+                    <span>Simpan & Kembali ke Tagihan</span>
+                    <ChevronRight size={15} />
                   </>
                 ) : (
                   <>
