@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  Home, Building2, School, Plus, Search, SlidersHorizontal,
+  Home, Building2, School, Plus, Search,
   CheckCircle2, AlertCircle, Clock, ArrowUpRight,
   Loader2, Phone, Calendar, Handshake, ChevronRight, XCircle
 } from 'lucide-react';
@@ -98,7 +98,6 @@ export default function HomeVisitPage() {
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('ALL');
   const [outcomeFilter, setOutcomeFilter] = useState('ALL');
-  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -140,8 +139,6 @@ export default function HomeVisitPage() {
     fetchData();
   }, [fetchData]);
 
-  const hasActiveFilter = channelFilter !== 'ALL' || outcomeFilter !== 'ALL';
-
   return (
     <div className="space-y-4 pb-24 md:pb-6">
       {/* ── Header Bar (Pola Halaman Siswa) ─────────────────────────────────── */}
@@ -159,27 +156,15 @@ export default function HomeVisitPage() {
           </div>
         </div>
 
-        {/* Row 2 (Mobile): Action Buttons & Filter Toggle */}
-        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0">
-          <button
-            onClick={() => setShowMobileFilter((v) => !v)}
-            className={cn(
-              'sm:hidden p-2 rounded-lg border text-muted-foreground transition-colors cursor-pointer',
-              (showMobileFilter || hasActiveFilter) && 'bg-primary/10 text-primary border-primary/40'
-            )}
-            title="Filter Pencarian"
-          >
-            <SlidersHorizontal size={16} />
-          </button>
-
+        {/* Row 2 (Mobile): Action Button Full Width */}
+        <div className="w-full sm:w-auto shrink-0">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 sm:px-3.5 sm:py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 cursor-pointer"
             title="Catat Konsultasi Baru"
           >
             <Plus size={16} />
-            <span className="hidden sm:inline">Catat Konsultasi Baru</span>
-            <span className="sm:hidden">Catat Konsultasi</span>
+            <span>Catat Konsultasi Baru</span>
           </button>
         </div>
       </div>
@@ -258,8 +243,8 @@ export default function HomeVisitPage() {
         />
       </div>
 
-      {/* ── Filter Bar (Collapsible di Mobile sesuai Pola Siswa) ─────────────── */}
-      <div className={cn('flex-col sm:flex-row gap-2', showMobileFilter ? 'flex' : 'hidden sm:flex')}>
+      {/* ── Filter Bar (Permanen) ────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-2">
         {/* Filter Channel */}
         <select
           value={channelFilter}
@@ -531,43 +516,49 @@ export default function HomeVisitPage() {
                 key={item.id}
                 className="bg-card border rounded-xl p-3.5 space-y-2.5 shadow-xs hover:border-primary/30 transition-all"
               >
-                {/* Header Card: Tanggal, Lokasi, dan Status Komitmen */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Calendar size={12} />
-                    <span className="font-semibold text-foreground">{item.tanggal}</span>
-                    <span>•</span>
-                    <span className="inline-flex items-center gap-1">
-                      {item.channel === 'Home Visit' ? (
-                        <Home size={11} className="text-pink-400" />
-                      ) : item.channel === 'Kantor Derma' ? (
-                        <Building2 size={11} className="text-blue-400" />
-                      ) : (
-                        <School size={11} className="text-emerald-400" />
-                      )}
-                      <span>{item.channel}</span>
-                    </span>
+                {/* Header Card: 2 Baris (Row 1: Tanggal & Badge Komitmen, Row 2: Channel Lokasi) */}
+                <div className="space-y-1.5">
+                  {/* Row 1: Tanggal di kiri & Badge Komitmen di kanan */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Calendar size={12} className="text-muted-foreground shrink-0" />
+                      <span className="font-semibold text-foreground">{item.tanggal}</span>
+                    </div>
+
+                    {/* Outcome Badge */}
+                    {isKomit ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold text-xs shrink-0">
+                        <CheckCircle2 size={11} />
+                        <span>Disetujui</span>
+                      </span>
+                    ) : isFollowUp ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-semibold text-xs shrink-0">
+                        <Clock size={11} />
+                        <span>Pertimbangan</span>
+                      </span>
+                    ) : isReject ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 font-semibold text-xs shrink-0">
+                        <XCircle size={11} />
+                        <span>Ditolak</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground shrink-0">{item.hasilAktivitas}</span>
+                    )}
                   </div>
 
-                  {/* Outcome Badge */}
-                  {isKomit ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold text-xs">
-                      <CheckCircle2 size={11} />
-                      <span>Disetujui</span>
+                  {/* Row 2: Lokasi / Channel */}
+                  <div className="flex items-center text-xs">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/50 border border-border/40 text-muted-foreground">
+                      {item.channel === 'Home Visit' ? (
+                        <Home size={11} className="text-pink-400 shrink-0" />
+                      ) : item.channel === 'Kantor Derma' ? (
+                        <Building2 size={11} className="text-blue-400 shrink-0" />
+                      ) : (
+                        <School size={11} className="text-emerald-400 shrink-0" />
+                      )}
+                      <span className="font-medium text-foreground/80">{item.channel}</span>
                     </span>
-                  ) : isFollowUp ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-semibold text-xs">
-                      <Clock size={11} />
-                      <span>Pertimbangan</span>
-                    </span>
-                  ) : isReject ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 font-semibold text-xs">
-                      <XCircle size={11} />
-                      <span>Ditolak</span>
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">{item.hasilAktivitas}</span>
-                  )}
+                  </div>
                 </div>
 
                 {/* Info Siswa & Wali */}
