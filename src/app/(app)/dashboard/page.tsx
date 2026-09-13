@@ -639,7 +639,7 @@ export default function DashboardPage() {
         </div>
         <div className="overflow-x-auto">
           {tasks.length === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
+            <div className="py-12 px-5 text-center text-sm text-muted-foreground">
               Tidak ada task yang perlu dieksekusi hari ini 🎉
             </div>
           ) : (
