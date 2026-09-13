@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, MessageCircle, Plus, ClipboardList, Trash2, Pencil,
-  Calendar, User, Phone, School, AlertCircle, Clock, Link2
+  Calendar, User, Phone, School, AlertCircle, Clock, Link2, Handshake
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,17 +14,21 @@ import { AssessmentFNARModal } from '@/components/siswa/AssessmentFNARModal';
 import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
 import { EditSiswaModal } from '@/components/siswa/EditSiswaModal';
 import { ShareRegistrationLinkModal } from '@/components/siswa/ShareRegistrationLinkModal';
+import { DecisionConsultationModal } from '@/components/home-visit/DecisionConsultationModal';
 import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 import type { SiswaDetail, AktivitasSiswa } from '@/lib/types/siswa.types';
 
 // ── Event Type Configuration ──────────────────────────────────────────────────
 const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
-  'InteractionLogged':           { label: 'Interaksi',          color: 'text-yellow-400',  dot: '🟡' },
-  'QualificationAssessmentSubmitted': { label: 'Assessment FNAR', color: 'text-blue-400', dot: '🔵' },
-  'StateTransitionedToProspect': { label: 'Naik ke Prospect',   color: 'text-emerald-400', dot: '🟢' },
-  'LeadDisqualified':            { label: 'Didiskualifikasi',   color: 'text-rose-400',    dot: '🔴' },
-  'ManualStateOverridden':       { label: 'Override Manual',    color: 'text-orange-400',  dot: '⚠️' },
+  'InteractionLogged':                { label: 'Interaksi',                                 color: 'text-yellow-400',  dot: '🟡' },
+  'QualificationAssessmentSubmitted': { label: 'Assessment FNAR',                           color: 'text-blue-400',    dot: '🔵' },
+  'StateTransitionedToProspect':      { label: 'Naik ke Prospect',                          color: 'text-emerald-400', dot: '🟢' },
+  'DecisionConsultationCompleted':    { label: 'Konsultasi Ortu (Komitmen Disetujui)',      color: 'text-emerald-400', dot: '🤝' },
+  'DecisionConsultationFollowUp':     { label: 'Konsultasi Ortu (Pertimbangan)',            color: 'text-amber-400',   dot: '⏳' },
+  'DecisionConsultationRejected':     { label: 'Konsultasi Ortu (Keberatan / Ditolak)',     color: 'text-rose-400',    dot: '❌' },
+  'LeadDisqualified':                 { label: 'Didiskualifikasi',                          color: 'text-rose-400',    dot: '🔴' },
+  'ManualStateOverridden':            { label: 'Override Manual',                           color: 'text-orange-400',  dot: '⚠️' },
 };
 
 // ── Intent Badge ──────────────────────────────────────────────────────────────
@@ -54,6 +58,7 @@ export default function SiswaDetailPage() {
   const [loading,               setLoading]               = useState(true);
   const [isInteraksiOpen,       setIsInteraksiOpen]       = useState(false);
   const [isAssessmentOpen,      setIsAssessmentOpen]      = useState(false);
+  const [isConsultationOpen,    setIsConsultationOpen]    = useState(false);
   const [isDeleteModalOpen,     setIsDeleteModalOpen]     = useState(false);
   const [isEditModalOpen,       setIsEditModalOpen]       = useState(false);
   const [isShareLinkOpen,       setIsShareLinkOpen]       = useState(false);
@@ -250,6 +255,16 @@ export default function SiswaDetailPage() {
         </button>
 
         <button
+          onClick={() => setIsConsultationOpen(true)}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+          title="Catat Konsultasi Keputusan / Home Visit dengan Orang Tua (Prospect ➔ Opportunity)"
+        >
+          <Handshake size={15} />
+          <span className="hidden sm:inline">Konsultasi Ortu</span>
+          <span className="sm:hidden">Konsul</span>
+        </button>
+
+        <button
           onClick={() => setIsShareLinkOpen(true)}
           className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
           title="Kirim / Salin Link Formulir & Invoice Siswa"
@@ -376,6 +391,16 @@ export default function SiswaDetailPage() {
         siswaName={siswaDetail.nama_lengkap}
         siswaWa={siswaDetail.wa}
         namaSekolah={siswaDetail.nama_sekolah}
+      />
+      <DecisionConsultationModal
+        isOpen={isConsultationOpen}
+        onClose={() => setIsConsultationOpen(false)}
+        onSuccess={async () => {
+          toast.success('Hasil konsultasi keputusan berhasil dicatat!');
+          await reloadDetail();
+        }}
+        preselectedSiswaId={id}
+        preselectedSiswaName={siswaDetail.nama_lengkap}
       />
     </div>
   );
