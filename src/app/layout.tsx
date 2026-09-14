@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     template: "%s — Nexa CRM",
   },
   description: "Sistem CRM Internal Nexa OS — Dashboard operasional CRO",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/icon.png?v=2", type: "image/png", sizes: "512x512" },
@@ -42,6 +43,7 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark">
       <head>
+        <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/favicon-32x32.png?v=2" type="image/png" sizes="32x32" />
         <link rel="icon" href="/icon.png?v=2" type="image/png" sizes="512x512" />
         <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
