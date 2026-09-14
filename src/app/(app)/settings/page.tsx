@@ -22,7 +22,9 @@ export default function SettingsPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get('tab');
-      if (tab && ['kelas', 'kota', 'kecamatan', 'payment', 'verification', 'whatsapp', 'calendar', 'billing'].includes(tab)) {
+      if (tab === 'payment-verification' || tab === 'verification') {
+        setActiveTab('verification');
+      } else if (tab && ['kelas', 'kota', 'kecamatan', 'payment', 'whatsapp', 'calendar', 'billing'].includes(tab)) {
         setActiveTab(tab as typeof activeTab);
       }
     }

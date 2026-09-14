@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
         destination: '/public/form-siswa?sekolahId=:sekolahId',
         permanent: false,
       },
+      {
+        source: '/setting',
+        destination: '/settings',
+        permanent: false,
+      },
     ];
   },
   async rewrites() {

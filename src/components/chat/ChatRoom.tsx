@@ -537,7 +537,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
             <Link
-              href="/setting?tab=payment-verification"
+              href="/settings?tab=verification"
               className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4 px-2 py-1"
               target="_blank"
             >
