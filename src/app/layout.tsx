@@ -22,16 +22,16 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/icon.png?v=2", type: "image/png", sizes: "512x512" },
-      { url: "/favicon-32x32.png?v=2", type: "image/png", sizes: "32x32" },
-      { url: "/favicon-16x16.png?v=2", type: "image/png", sizes: "16x16" },
-      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
-      { url: "/favicon.ico?v=2", sizes: "any" },
+      { url: "/icon.png?v=3", type: "image/png", sizes: "512x512" },
+      { url: "/favicon-32x32.png?v=3", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png?v=3", type: "image/png", sizes: "16x16" },
+      { url: "/favicon.svg?v=3", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=3", sizes: "any" },
     ],
     apple: [
-      { url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon.png?v=3", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/favicon.ico?v=2",
+    shortcut: "/favicon.ico?v=3",
   },
 };
 
@@ -44,10 +44,10 @@ export default function RootLayout({
     <html lang="id" className="dark">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/favicon-32x32.png?v=2" type="image/png" sizes="32x32" />
-        <link rel="icon" href="/icon.png?v=2" type="image/png" sizes="512x512" />
-        <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
+        <link rel="icon" href="/favicon-32x32.png?v=3" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/icon.png?v=3" type="image/png" sizes="512x512" />
+        <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
       </head>
       <body className={`${outfit.variable} ${robotoMono.variable} antialiased bg-background text-foreground font-sans`}>
         {children}
