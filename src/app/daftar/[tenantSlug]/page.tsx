@@ -30,6 +30,8 @@ import {
   Hash,
   X,
   Sparkles,
+  AlertTriangle,
+  Flame,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
@@ -101,6 +103,40 @@ function isDiscountActive(config?: PaymentConfig | null): boolean {
   return !isNaN(end.getTime()) && new Date() <= end;
 }
 
+function getRemainingTimeText(expiresAt?: string | null): { dateFormatted: string; daysLeftText: string; isUrgent: boolean; fullDateWithTime: string } {
+  const exp = expiresAt ? new Date(expiresAt) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const diffMs = exp.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  };
+  const dateFormatted = exp.toLocaleDateString('id-ID', options);
+  const timeStr = `${String(exp.getHours()).padStart(2, '0')}:${String(exp.getMinutes()).padStart(2, '0')} WIB`;
+  const fullDateWithTime = `${dateFormatted} (${timeStr})`;
+
+  let daysLeftText = '';
+  if (diffDays <= 0) {
+    daysLeftText = 'Hari Terakhir!';
+  } else if (diffDays === 1) {
+    daysLeftText = `Sisa ${diffHours} Jam`;
+  } else {
+    daysLeftText = `Sisa ${diffDays} Hari`;
+  }
+
+  return {
+    dateFormatted,
+    daysLeftText,
+    isUrgent: diffDays <= 3,
+    fullDateWithTime
+  };
+}
+
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
@@ -148,6 +184,7 @@ export default function PublicRegistrationPage() {
   // ── Mode Edit vs View Only (Khusus Resume Token)
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [tokenExpiresAt, setTokenExpiresAt] = useState<string | null>(null);
 
   // ── Field Data Calon Siswa
   const [namaLengkap, setNamaLengkap] = useState('');
@@ -236,6 +273,9 @@ export default function PublicRegistrationPage() {
 
         if (d.paymentConfig) {
           setPaymentConfig(d.paymentConfig);
+        }
+        if (d.expiresAt) {
+          setTokenExpiresAt(d.expiresAt);
         }
         if (Array.isArray(d.programs) && d.programs.length > 0) {
           setAvailablePrograms(d.programs);
@@ -521,6 +561,8 @@ export default function PublicRegistrationPage() {
         window.history.replaceState(null, '', `?token=${token}`);
       }
 
+      setTokenExpiresAt(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString());
+
       const resolvedSekolahNama = isManualSekolah
         ? asalSekolahManual.trim()
         : (schools.find(s => s.id_sekolah === selectedSekolah)?.nama_sekolah || '');
@@ -670,6 +712,44 @@ export default function PublicRegistrationPage() {
     return (
       <PageShell brandName={brandName}>
         <div className="w-full max-w-xl mx-auto space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              BANNER HIGHLIGHT BATAS WAKTU AKTIF 7 HARI (URGENCY & SCARCITY PUSH)
+             ═══════════════════════════════════════════════════════════════════ */}
+          {(() => {
+            const timeInfo = getRemainingTimeText(tokenExpiresAt);
+            return (
+              <div className="relative overflow-hidden rounded-2xl border-2 border-amber-500 bg-linear-to-br from-amber-500/20 via-orange-500/10 to-amber-500/20 p-4 sm:p-5 shadow-lg shadow-amber-500/10 animate-in fade-in zoom-in-95 duration-300">
+                {/* Glow decoratif */}
+                <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/25 rounded-full blur-2xl pointer-events-none" />
+
+                <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/30 animate-pulse">
+                      <Clock size={24} className="stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+                          <Flame size={14} className="text-rose-500 fill-rose-500" />
+                          Batas Waktu Pembayaran & Penguncian Kuota
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500 text-white shadow-xs animate-bounce">
+                          ⏳ {timeInfo.daysLeftText}
+                        </span>
+                      </div>
+                      <p className="text-base sm:text-lg font-black text-foreground">
+                        Aktif s.d. <span className="text-amber-600 underline decoration-amber-500/60 decoration-2 underline-offset-4">{timeInfo.fullDateWithTime}</span>
+                      </p>
+                      <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed font-medium">
+                        Selesaikan pembayaran Biaya Formulir sebelum batas waktu di atas untuk mengamankan nomor antrean jadwal konsultasi keputusan resmi dan penguncian kuota program pelatihan Anda.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Success Banner saat edit berhasil */}
           {saveSuccessMsg && (
@@ -1160,6 +1240,19 @@ export default function PublicRegistrationPage() {
             {/* Body */}
             <div className="p-5 space-y-5">
 
+              {/* Alert Push Urgensi di Invoice */}
+              {(() => {
+                const timeInfo = getRemainingTimeText(tokenExpiresAt);
+                return (
+                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-600 font-semibold">
+                    <AlertTriangle size={16} className="shrink-0 text-amber-500 animate-pulse" />
+                    <span>
+                      Batas waktu verifikasi pendaftaran & invoice ini: <strong className="text-foreground font-bold">{timeInfo.dateFormatted}</strong> ({timeInfo.daysLeftText}). Kuota pendaftaran akan otomatis dilepas ke pendaftar lain jika melewati batas waktu.
+                    </span>
+                  </div>
+                );
+              })()}
+
               {/* Instruksi Transfer */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
@@ -1258,11 +1351,12 @@ export default function PublicRegistrationPage() {
             </div>
           </div>
 
-          {/* Resume Notice */}
-          <div className="flex items-start gap-2 p-3.5 rounded-xl bg-secondary/50 border text-xs text-muted-foreground">
-            <Clock size={14} className="shrink-0 mt-0.5 text-primary" />
-            <div>
-              <span className="font-semibold text-foreground">Link pendaftaran ini berlaku 7 hari.</span> Anda dapat menyimpan link ini atau membukanya kembali sewaktu-waktu untuk memeriksa biodata serta konfirmasi transfer.
+          {/* Resume Notice & Jaminan Penguncian Data */}
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-secondary/50 border text-xs text-muted-foreground">
+            <Clock size={16} className="shrink-0 mt-0.5 text-amber-500" />
+            <div className="space-y-0.5">
+              <span className="font-bold text-foreground">Penguncian Kuota Pendaftaran 7 Hari:</span>
+              <p>Link ini menyimpan biodata Anda secara aman hingga <strong>{getRemainingTimeText(tokenExpiresAt).fullDateWithTime}</strong>. Anda dapat membuka kembali link ini melalui WhatsApp kapan pun sebelum batas waktu berakhir untuk menyelesaikan konfirmasi transfer.</p>
             </div>
           </div>
 
