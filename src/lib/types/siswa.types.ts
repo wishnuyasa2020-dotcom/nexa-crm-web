@@ -94,6 +94,17 @@ export interface SiswaDetail {
   alasan_tidak_lanjut: string | null;
   nama_sekolah:        string;
   logs:                AktivitasSiswa[];
+  // Data Pendaftaran Resmi & Orang Tua
+  nik?:                string | null;
+  gender?:             string | null;
+  tanggal_lahir?:      string | null;
+  alamat_lengkap?:     string | null;
+  nama_program?:       string | null;
+  nama_ortu?:          string | null;
+  wa_ortu?:            string | null;
+  tgl_lahir_ortu?:     string | null;
+  pekerjaan_ortu?:     string | null;
+  tgl_daftar_resmi?:   string | null;
 }
 
 // ── API Payload Types ─────────────────────────────────────────────────────────

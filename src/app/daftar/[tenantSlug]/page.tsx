@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
   Send,
@@ -17,12 +17,19 @@ import {
   Landmark,
   Clock,
   ChevronRight,
-  RotateCcw,
   Info,
   Phone,
   Tag,
   School,
   Pencil,
+  User,
+  Users,
+  Calendar,
+  MapPin,
+  Briefcase,
+  Hash,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
@@ -53,14 +60,38 @@ interface PaymentConfig {
   discountLabel?: string;
   discountEndDate?: string | null;
   qrisImageUrl: string | null;
+  programs?: string[];
+  programNames?: string;
 }
 
 type PageStep = 'loading' | 'step1_form' | 'step2_invoice' | 'success' | 'error' | 'already_paid';
+
+const PEKERJAAN_OPTIONS = [
+  'PNS',
+  'TNI/POLRI',
+  'Guru',
+  'Karyawan Swasta',
+  'Wiraswasta',
+  'Lainnya',
+];
+
+const GENDER_OPTIONS = ['Laki-laki', 'Perempuan'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+}
+
+function formatDateIndo(dateStr?: string | null): string {
+  if (!dateStr || !dateStr.trim()) return '-';
+  try {
+    const d = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T00:00:00');
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
 }
 
 function isDiscountActive(config?: PaymentConfig | null): boolean {
@@ -98,7 +129,6 @@ function CopyButton({ text }: { text: string }) {
 export default function PublicRegistrationPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const tenantSlug = (params?.tenantSlug as string) || '';
 
   // Token dari URL (resume flow): /daftar/[tenantSlug]?token=xxx
@@ -107,23 +137,44 @@ export default function PublicRegistrationPage() {
   // ── Page State
   const [step, setStep] = useState<PageStep>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
 
   // ── Tenant & Config
   const [tenantInfo, setTenantInfo] = useState<TenantInfo | null>(null);
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
   const [schools, setSchools] = useState<SekolahItem[]>([]);
+  const [availablePrograms, setAvailablePrograms] = useState<string[]>([]);
 
-  // ── Step 1 Form State
+  // ── Mode Edit vs View Only (Khusus Resume Token)
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // ── Field Data Calon Siswa
   const [namaLengkap, setNamaLengkap] = useState('');
   const [noWa, setNoWa] = useState('');
   const [selectedSekolah, setSelectedSekolah] = useState('');
+  const [namaSekolahPreview, setNamaSekolahPreview] = useState('');
   const [asalSekolahManual, setAsalSekolahManual] = useState('');
   const [isManualSekolah, setIsManualSekolah] = useState(false);
   const [kelas, setKelas] = useState('');
+  const [nik, setNik] = useState('');
+  const [gender, setGender] = useState('');
+  const [tanggalLahir, setTanggalLahir] = useState('');
+  const [alamatLengkap, setAlamatLengkap] = useState('');
+  const [namaProgram, setNamaProgram] = useState('');
   const [minatAwal, setMinatAwal] = useState('Ya');
   const [rencanaLulus, setRencanaLulus] = useState('Kerja');
   const [consentWa, setConsentWa] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ── Field Data Orang Tua / Wali
+  const [namaOrtu, setNamaOrtu] = useState('');
+  const [waOrtu, setWaOrtu] = useState('');
+  const [tglLahirOrtu, setTglLahirOrtu] = useState('');
+  const [pekerjaanOrtu, setPekerjaanOrtu] = useState('');
+
+  // ── Snapshot Backup for Cancel Edit
+  const backupDataRef = useRef<Record<string, any>>({});
 
   // ── Step 2 Invoice State
   const [invoiceData, setInvoiceData] = useState<{
@@ -135,13 +186,12 @@ export default function PublicRegistrationPage() {
     kelas?: string;
   } | null>(null);
 
-  // ── Load initial data ──────────────────────────────────────────────────────
+  // ── Load Initial Data (Tenant Info + Sekolah + Payment Config) ─────────────
 
   const loadInitialData = useCallback(async () => {
     if (!tenantSlug) return;
 
     try {
-      // Parallel: Tenant info + sekolah list + payment config
       const [infoRes, sekolahRes, paymentRes] = await Promise.allSettled([
         apiClient.get(`/api/public/${tenantSlug}/info`),
         apiClient.get(`/api/public/${tenantSlug}/sekolah`),
@@ -155,7 +205,11 @@ export default function PublicRegistrationPage() {
         setSchools(sekolahRes.value.data.data || []);
       }
       if (paymentRes.status === 'fulfilled' && paymentRes.value.data?.status === 'ok') {
-        setPaymentConfig(paymentRes.value.data.data);
+        const pData = paymentRes.value.data.data;
+        setPaymentConfig(pData);
+        if (Array.isArray(pData?.programs) && pData.programs.length > 0) {
+          setAvailablePrograms(pData.programs);
+        }
       }
     } catch (err) {
       console.warn('Error loading initial data:', err);
@@ -170,6 +224,7 @@ export default function PublicRegistrationPage() {
 
       if (res.data?.status === 'ok') {
         const d = res.data.data;
+
         setInvoiceData({
           token: d.token,
           idSiswa: d.idSiswa,
@@ -178,23 +233,86 @@ export default function PublicRegistrationPage() {
           namaSekolah: d.namaSekolah || '',
           kelas: d.kelas || '',
         });
-        if (d.paymentConfig) setPaymentConfig(d.paymentConfig);
+
+        if (d.paymentConfig) {
+          setPaymentConfig(d.paymentConfig);
+        }
+        if (Array.isArray(d.programs) && d.programs.length > 0) {
+          setAvailablePrograms(d.programs);
+        } else if (Array.isArray(d.paymentConfig?.programs) && d.paymentConfig.programs.length > 0) {
+          setAvailablePrograms(d.paymentConfig.programs);
+        }
+
         if (d.brandName && !tenantInfo) {
           setTenantInfo({ tenantId: tenantSlug, brandName: d.brandName, whatsappNumber: '' });
         }
 
-        // Pre-fill state form Step 1 dari database tenant
-        if (d.namaLengkap) setNamaLengkap(d.namaLengkap);
-        if (d.noWa) setNoWa(d.noWa);
-        if (d.idSekolah) {
-          setSelectedSekolah(d.idSekolah);
-          setIsManualSekolah(false);
-        }
-        if (d.kelas) setKelas(d.kelas);
-        if (d.minatAwal) setMinatAwal(d.minatAwal);
-        if (d.rencanaLulus) setRencanaLulus(d.rencanaLulus);
+        // Pre-fill state form dari database
+        const loadedNama = d.namaLengkap || '';
+        const loadedWa = d.noWa || '';
+        const loadedSekolahId = d.idSekolah || '';
+        const loadedSekolahNama = d.namaSekolah || '';
+        const loadedKelas = d.kelas || '';
+        const loadedNik = d.nik || '';
+        const loadedGender = d.gender || '';
+        const loadedTglLahir = d.tanggalLahir || '';
+        const loadedAlamat = d.alamatLengkap || '';
+        const loadedProgram = d.namaProgram || '';
+        const loadedNamaOrtu = d.namaOrtu || '';
+        const loadedWaOrtu = d.waOrtu || '';
+        const loadedTglLahirOrtu = d.tglLahirOrtu || '';
+        const loadedPekerjaanOrtu = d.pekerjaanOrtu || '';
+        const loadedMinat = d.minatAwal || 'Ya';
+        const loadedRencana = d.rencanaLulus || 'Kerja';
+
+        setNamaLengkap(loadedNama);
+        setNoWa(loadedWa);
+        setSelectedSekolah(loadedSekolahId);
+        setNamaSekolahPreview(loadedSekolahNama);
+        setKelas(loadedKelas);
+        setNik(loadedNik);
+        setGender(loadedGender);
+        setTanggalLahir(loadedTglLahir);
+        setAlamatLengkap(loadedAlamat);
+        setNamaProgram(loadedProgram);
+        setNamaOrtu(loadedNamaOrtu);
+        setWaOrtu(loadedWaOrtu);
+        setTglLahirOrtu(loadedTglLahirOrtu);
+        setPekerjaanOrtu(loadedPekerjaanOrtu);
+        setMinatAwal(loadedMinat);
+        setRencanaLulus(loadedRencana);
         setConsentWa(true);
 
+        // Pastikan sekolah terdaftar di opsi dropdown agar tidak hilang
+        if (loadedSekolahId && loadedSekolahNama) {
+          setSchools(prev => {
+            if (prev.some(s => s.id_sekolah === loadedSekolahId)) return prev;
+            return [{ id_sekolah: loadedSekolahId, nama_sekolah: loadedSekolahNama, jenjang: 'SMA/SMK' }, ...prev];
+          });
+        }
+
+        // Simpan backup untuk fitur 'Batal' edit
+        backupDataRef.current = {
+          namaLengkap: loadedNama,
+          noWa: loadedWa,
+          selectedSekolah: loadedSekolahId,
+          namaSekolahPreview: loadedSekolahNama,
+          kelas: loadedKelas,
+          nik: loadedNik,
+          gender: loadedGender,
+          tanggalLahir: loadedTglLahir,
+          alamatLengkap: loadedAlamat,
+          namaProgram: loadedProgram,
+          namaOrtu: loadedNamaOrtu,
+          waOrtu: loadedWaOrtu,
+          tglLahirOrtu: loadedTglLahirOrtu,
+          pekerjaanOrtu: loadedPekerjaanOrtu,
+          minatAwal: loadedMinat,
+          rencanaLulus: loadedRencana,
+        };
+
+        // Default state: View Only!
+        setIsEditMode(false);
         setStep('step2_invoice');
       }
     } catch (err: any) {
@@ -202,10 +320,9 @@ export default function PublicRegistrationPage() {
       if (status === 'paid') {
         setStep('already_paid');
       } else if (status === 'expired') {
-        setErrorMessage('Link pendaftaran ini sudah kedaluwarsa (7 hari). Silakan mendaftar ulang melalui halaman awal.');
+        setErrorMessage('Link pendaftaran ini sudah kedaluwarsa (7 hari). Silakan mendaftar ulang.');
         setStep('step1_form');
       } else {
-        // Token tidak valid → arahkan ke form biasa
         setStep('step1_form');
       }
     }
@@ -230,7 +347,117 @@ export default function PublicRegistrationPage() {
     return () => { isMounted = false; };
   }, [tenantSlug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Step 1: Submit Biodata ─────────────────────────────────────────────────
+  // ── Handler: Simpan Perubahan Mode Edit (PUT /reg-token/:token) ─────────────
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!urlToken) return;
+
+    if (!namaLengkap.trim()) {
+      setErrorMessage('Nama lengkap wajib diisi.');
+      return;
+    }
+    const cleanWa = noWa.replace(/\D/g, '');
+    if (!cleanWa || cleanWa.length < 10) {
+      setErrorMessage('Nomor WhatsApp tidak valid (minimal 10 digit).');
+      return;
+    }
+
+    try {
+      setIsSavingEdit(true);
+      setErrorMessage(null);
+
+      const resolvedSekolahNama = isManualSekolah
+        ? asalSekolahManual.trim()
+        : (schools.find(s => s.id_sekolah === selectedSekolah)?.nama_sekolah || namaSekolahPreview);
+
+      const payload = {
+        nama_lengkap: namaLengkap.trim(),
+        no_wa: noWa.trim(),
+        id_sekolah: isManualSekolah ? undefined : (selectedSekolah || undefined),
+        asal_sekolah: isManualSekolah ? asalSekolahManual.trim() : undefined,
+        nik: nik.trim() || undefined,
+        gender: gender || undefined,
+        tanggal_lahir: tanggalLahir || undefined,
+        alamat_lengkap: alamatLengkap.trim() || undefined,
+        nama_program: namaProgram || undefined,
+        nama_ortu: namaOrtu.trim() || undefined,
+        wa_ortu: waOrtu.trim() || undefined,
+        tgl_lahir_ortu: tglLahirOrtu || undefined,
+        pekerjaan_ortu: pekerjaanOrtu || undefined,
+      };
+
+      const res = await apiClient.put(`/api/public/${tenantSlug}/reg-token/${urlToken}`, payload);
+
+      if (res.data?.status === 'ok') {
+        setNamaSekolahPreview(resolvedSekolahNama);
+        setInvoiceData(prev => prev ? {
+          ...prev,
+          namaLengkap: namaLengkap.trim(),
+          noWa: noWa.trim(),
+          namaSekolah: resolvedSekolahNama,
+          kelas: kelas.trim(),
+        } : null);
+
+        // Update backup snapshot
+        backupDataRef.current = {
+          namaLengkap,
+          noWa,
+          selectedSekolah,
+          namaSekolahPreview: resolvedSekolahNama,
+          kelas,
+          nik,
+          gender,
+          tanggalLahir,
+          alamatLengkap,
+          namaProgram,
+          namaOrtu,
+          waOrtu,
+          tglLahirOrtu,
+          pekerjaanOrtu,
+          minatAwal,
+          rencanaLulus,
+        };
+
+        setIsEditMode(false);
+        setSaveSuccessMsg('Biodata pendaftaran berhasil diperbarui.');
+        setTimeout(() => setSaveSuccessMsg(null), 4000);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.response?.data?.message || err.message || 'Gagal menyimpan perubahan.');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  // ── Handler: Batal Edit (Kembali ke Snapshot) ──────────────────────────────
+
+  const handleCancelEdit = () => {
+    const b = backupDataRef.current;
+    if (b) {
+      setNamaLengkap(b.namaLengkap || '');
+      setNoWa(b.noWa || '');
+      setSelectedSekolah(b.selectedSekolah || '');
+      setNamaSekolahPreview(b.namaSekolahPreview || '');
+      setKelas(b.kelas || '');
+      setNik(b.nik || '');
+      setGender(b.gender || '');
+      setTanggalLahir(b.tanggalLahir || '');
+      setAlamatLengkap(b.alamatLengkap || '');
+      setNamaProgram(b.namaProgram || '');
+      setNamaOrtu(b.namaOrtu || '');
+      setWaOrtu(b.waOrtu || '');
+      setTglLahirOrtu(b.tglLahirOrtu || '');
+      setPekerjaanOrtu(b.pekerjaanOrtu || '');
+      setMinatAwal(b.minatAwal || 'Ya');
+      setRencanaLulus(b.rencanaLulus || 'Kerja');
+    }
+    setIsManualSekolah(false);
+    setErrorMessage(null);
+    setIsEditMode(false);
+  };
+
+  // ── Step 1: Submit Pendaftaran Baru (Tanpa Token) ─────────────────────────
 
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,18 +480,6 @@ export default function PublicRegistrationPage() {
     setIsSubmitting(true);
 
     try {
-      // Jika siswa sudah terdaftar / resume mode dari token, tidak perlu register ulang
-      if (invoiceData?.idSiswa) {
-        setInvoiceData(prev => prev ? {
-          ...prev,
-          namaLengkap: namaLengkap.trim(),
-          noWa: noWa.trim(),
-        } : null);
-        setStep('step2_invoice');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-
       // 1. Register siswa ke sistem
       const registerRes = await apiClient.post(`/api/public/${tenantSlug}/register`, {
         nama_lengkap: namaLengkap.trim(),
@@ -275,6 +490,15 @@ export default function PublicRegistrationPage() {
         minat_awal: minatAwal,
         rencana_lulus: rencanaLulus,
         consent_wa: true,
+        nik: nik.trim() || undefined,
+        gender: gender || undefined,
+        tanggal_lahir: tanggalLahir || undefined,
+        alamat_lengkap: alamatLengkap.trim() || undefined,
+        nama_program: namaProgram || undefined,
+        nama_ortu: namaOrtu.trim() || undefined,
+        wa_ortu: waOrtu.trim() || undefined,
+        tgl_lahir_ortu: tglLahirOrtu || undefined,
+        pekerjaan_ortu: pekerjaanOrtu || undefined,
       });
 
       if (registerRes.data?.status !== 'ok') {
@@ -293,20 +517,47 @@ export default function PublicRegistrationPage() {
 
       const token = tokenRes.data?.data?.token;
 
-      // 3. Update URL agar bisa di-bookmark/share
       if (token) {
         window.history.replaceState(null, '', `?token=${token}`);
       }
+
+      const resolvedSekolahNama = isManualSekolah
+        ? asalSekolahManual.trim()
+        : (schools.find(s => s.id_sekolah === selectedSekolah)?.nama_sekolah || '');
+
+      setNamaSekolahPreview(resolvedSekolahNama);
 
       setInvoiceData({
         token: token || '',
         idSiswa: siswaData.id,
         namaLengkap: siswaData.nama,
         noWa: siswaData.wa,
+        namaSekolah: resolvedSekolahNama,
+        kelas: kelas.trim(),
       });
 
+      // Simpan backup snapshot
+      backupDataRef.current = {
+        namaLengkap: siswaData.nama,
+        noWa: siswaData.wa,
+        selectedSekolah,
+        namaSekolahPreview: resolvedSekolahNama,
+        kelas,
+        nik,
+        gender,
+        tanggalLahir,
+        alamatLengkap,
+        namaProgram,
+        namaOrtu,
+        waOrtu,
+        tglLahirOrtu,
+        pekerjaanOrtu,
+        minatAwal,
+        rencanaLulus,
+      };
+
+      setIsEditMode(false);
       setStep('step2_invoice');
-      // Scroll ke atas
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || 'Terjadi kesalahan jaringan saat mendaftar.';
@@ -316,12 +567,12 @@ export default function PublicRegistrationPage() {
     }
   };
 
-  // ── Step 2: Konfirmasi Sudah Transfer ─────────────────────────────────────
+  // ── Step 2: Konfirmasi Sudah Transfer via WhatsApp ────────────────────────
 
   const handleConfirmTransfer = () => {
     const waCounselor = tenantInfo?.whatsappNumber || '';
     const waClean = waCounselor.replace(/\D/g, '');
-    const namaText = invoiceData?.namaLengkap || '-';
+    const namaText = invoiceData?.namaLengkap || namaLengkap || '-';
     const nominalText = paymentConfig ? formatRupiah(paymentConfig.registrationFee) : 'Rp500.000';
     const waText = encodeURIComponent(
       `Halo Kak, saya *${namaText}* sudah melakukan transfer *Biaya Formulir ${nominalText}* ke rekening ${paymentConfig?.bankName || ''} a.n ${paymentConfig?.bankAccountHolder || ''}. Mohon konfirmasi pendaftaran saya. Terima kasih 🙏`
@@ -335,7 +586,7 @@ export default function PublicRegistrationPage() {
 
   // ── Render States ──────────────────────────────────────────────────────────
 
-  const brandName = tenantInfo?.brandName || 'Nexa';
+  const brandName = tenantInfo?.brandName || 'NexaMOS';
 
   // Loading
   if (step === 'loading') {
@@ -353,16 +604,18 @@ export default function PublicRegistrationPage() {
   if (step === 'already_paid') {
     return (
       <PageShell brandName={brandName}>
-        <div className="w-full max-w-md mx-auto bg-card border rounded-2xl p-6 sm:p-8 shadow-xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
+        <div className="w-full max-w-lg mx-auto bg-card border rounded-2xl p-6 sm:p-8 shadow-xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
           <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
             <CheckCircle2 size={36} />
           </div>
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-foreground">Sudah Terdaftar!</h2>
-            <p className="text-sm text-muted-foreground">Pendaftaran ini sudah dikonfirmasi sebelumnya. Tim konselor kami akan segera menghubungi Anda.</p>
+            <p className="text-sm text-muted-foreground">
+              Pendaftaran ini sudah dikonfirmasi sebelumnya. Tim konselor kami akan segera menghubungi Anda.
+            </p>
           </div>
           <div className="p-4 bg-primary/5 rounded-xl text-xs text-muted-foreground text-left border border-primary/20">
-            <p>Jika ada pertanyaan, hubungi konselor kami langsung.</p>
+            <p>Jika ada pertanyaan atau butuh bantuan lebih lanjut, hubungi konselor resmi kami langsung.</p>
           </div>
         </div>
       </PageShell>
@@ -373,14 +626,14 @@ export default function PublicRegistrationPage() {
   if (step === 'success') {
     return (
       <PageShell brandName={brandName}>
-        <div className="w-full max-w-md mx-auto bg-card border rounded-2xl p-6 sm:p-8 shadow-xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
+        <div className="w-full max-w-lg mx-auto bg-card border rounded-2xl p-6 sm:p-8 shadow-xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
           <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
             <CheckCircle2 size={36} />
           </div>
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-foreground">Konfirmasi Terkirim! 🎉</h2>
             <p className="text-sm text-muted-foreground">
-              Terima kasih, <strong className="text-foreground">{invoiceData?.namaLengkap}</strong>. Tim admin kami akan memverifikasi pembayaran Biaya Formulir dan menghubungi Anda dalam 1×24 jam.
+              Terima kasih, <strong className="text-foreground">{invoiceData?.namaLengkap || namaLengkap}</strong>. Tim admin kami akan memverifikasi pembayaran Biaya Formulir dan menghubungi Anda dalam 1×24 jam.
             </p>
           </div>
           <div className="p-4 bg-secondary/50 rounded-xl text-xs text-muted-foreground text-left space-y-2 border">
@@ -389,13 +642,13 @@ export default function PublicRegistrationPage() {
               <span>Apa yang Terjadi Selanjutnya?</span>
             </div>
             <ul className="space-y-1 list-disc list-inside">
-              <li>Admin verifikasi pembayaran Biaya Formulir</li>
-              <li>Anda mendapatkan status <strong>Registered</strong> & akses konsultasi lanjutan</li>
-              <li>Konselor menghubungi Anda untuk jadwal konsultasi</li>
+              <li>Admin memverifikasi pembayaran Biaya Formulir Anda</li>
+              <li>Status Anda diperbarui menjadi <strong>Registered Opportunity</strong></li>
+              <li>Konselor menghubungi Anda untuk menjadwalkan konsultasi keputusan</li>
             </ul>
           </div>
           <div className="text-xs text-muted-foreground bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 flex items-start gap-2 text-left">
-            <Info size={14} className="shrink-0 text-amber-500 mt-0.5" />
+            <Info size={14} className="shrink-0 text-amber-600 mt-0.5" />
             <span>Simpan link ini sebagai bukti pendaftaran Anda: <span className="font-mono text-primary break-all">{typeof window !== 'undefined' ? window.location.href : ''}</span></span>
           </div>
         </div>
@@ -403,80 +656,504 @@ export default function PublicRegistrationPage() {
     );
   }
 
-  // ── Step 2: Invoice ────────────────────────────────────────────────────────
+  // ── Step 2: Invoice & Biodata (Resume Flow / View Only Mode) ──────────────
 
-  if (step === 'step2_invoice' && invoiceData) {
+  if (step === 'step2_invoice') {
     const regFee = paymentConfig?.registrationFee ?? 500000;
     const accountNumber = paymentConfig?.bankAccountNumber || '-';
     const accountHolder = paymentConfig?.bankAccountHolder || '-';
     const bankName = paymentConfig?.bankName || 'Bank';
-    const bankNotes = paymentConfig?.bankNotes || 'Sertakan nama lengkap pada berita transfer.';
+    const bankNotes = paymentConfig?.bankNotes || 'Sertakan nama lengkap calon siswa pada berita acara transfer.';
     const waCounselor = tenantInfo?.whatsappNumber?.replace(/\D/g, '') || '';
+    const resolvedSekolah = namaSekolahPreview || (schools.find(s => s.id_sekolah === selectedSekolah)?.nama_sekolah) || '-';
 
     return (
       <PageShell brandName={brandName}>
-        <div className="w-full max-w-lg mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="w-full max-w-xl mx-auto space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
 
-          {/* Step Indicator */}
-          <StepIndicator currentStep={2} />
+          {/* Success Banner saat edit berhasil */}
+          {saveSuccessMsg && (
+            <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-600 animate-in fade-in">
+              <CheckCircle2 size={16} className="shrink-0 text-emerald-500" />
+              <span>{saveSuccessMsg}</span>
+            </div>
+          )}
 
-          {/* Greeting Card */}
-          <div className="bg-card border rounded-2xl p-5 shadow-sm space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <GraduationCap size={20} />
+          {/* Error Banner */}
+          {errorMessage && (
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-medium">
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <div className="flex-1">{errorMessage}</div>
+              <button onClick={() => setErrorMessage(null)} className="text-rose-500/70 hover:text-rose-500">
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              KARTU BIODATA: VIEW ONLY MODE vs EDIT MODE
+             ═══════════════════════════════════════════════════════════════════ */}
+          <div className="bg-card border rounded-2xl shadow-md overflow-hidden">
+            
+            {/* Header Biodata */}
+            <div className="p-4 sm:p-5 border-b bg-secondary/15 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <User size={18} />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Pendaftar Terverifikasi:</p>
-                  <p className="font-bold text-foreground text-base">{invoiceData.namaLengkap}</p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
-                    <span className="flex items-center gap-1">
-                      <Phone size={11} /> {invoiceData.noWa}
+                  <h2 className="font-bold text-sm sm:text-base text-foreground flex items-center gap-2">
+                    {isEditMode ? 'Ubah Data Pendaftaran' : 'Biodata Pendaftaran Resmi'}
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium border border-emerald-500/20">
+                      Terverifikasi
                     </span>
-                    {invoiceData.namaSekolah && (
-                      <span className="flex items-center gap-1 text-foreground font-medium">
-                        <School size={11} className="text-primary" /> {invoiceData.namaSekolah}
-                      </span>
-                    )}
-                    {invoiceData.kelas && (
-                      <span className="px-1.5 py-0.5 rounded bg-secondary text-xs">
-                        {invoiceData.kelas}
-                      </span>
-                    )}
-                  </div>
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {isEditMode
+                      ? 'Perbarui informasi siswa dan data orang tua di bawah'
+                      : 'Data calon siswa & orang tua yang tercatat pada sistem'}
+                  </p>
                 </div>
               </div>
 
-              {/* Tombol Periksa / Edit Data */}
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('step1_form');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="shrink-0 text-xs px-2.5 py-1.5 rounded-lg border bg-secondary/60 hover:bg-secondary text-foreground transition-colors flex items-center gap-1.5"
-                title="Periksa atau perbarui data pendaftaran"
-              >
-                <Pencil size={12} />
-                <span className="hidden sm:inline">Periksa Data</span>
-              </button>
+              {/* Tombol Toggle Edit / Batal */}
+              {urlToken && (
+                <div>
+                  {isEditMode ? (
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      disabled={isSavingEdit}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-secondary hover:bg-secondary/80 text-foreground border rounded-lg transition-colors"
+                    >
+                      <X size={13} />
+                      <span>Batal</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditMode(true);
+                        setErrorMessage(null);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors shadow-xs"
+                      title="Edit Data Pendaftaran"
+                    >
+                      <Pencil size={13} />
+                      <span>Edit Data</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Content: View Only atau Form Edit */}
+            {!isEditMode ? (
+              // ── VIEW ONLY MODE ─────────────────────────────────────────────
+              <div className="p-4 sm:p-6 space-y-6">
+                
+                {/* 1. Data Calon Siswa */}
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider mb-3">
+                    <GraduationCap size={14} />
+                    <span>Data Calon Siswa</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-secondary/20 p-4 rounded-xl border text-xs">
+                    <div>
+                      <p className="text-muted-foreground">Nama Lengkap Siswa</p>
+                      <p className="font-bold text-sm text-foreground mt-0.5">{namaLengkap || '-'}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Nomor WhatsApp Siswa</p>
+                      <p className="font-semibold text-foreground mt-0.5 flex items-center gap-1.5">
+                        <Phone size={12} className="text-emerald-500" />
+                        {noWa || '-'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Asal Sekolah</p>
+                      <p className="font-semibold text-foreground mt-0.5 flex items-center gap-1.5">
+                        <School size={12} className="text-primary" />
+                        {resolvedSekolah}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Kelas / Tingkat</p>
+                      <p className="font-semibold text-foreground mt-0.5">{kelas || '-'}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">NIK Siswa (16 Digit)</p>
+                      <p className="font-mono font-medium text-foreground mt-0.5">
+                        {nik ? (
+                          nik
+                        ) : (
+                          <span className="text-muted-foreground/70 italic">Belum diisi</span>
+                        )}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Jenis Kelamin</p>
+                      <p className="font-semibold text-foreground mt-0.5">
+                        {gender ? (
+                          gender
+                        ) : (
+                          <span className="text-muted-foreground/70 italic">Belum dipilih</span>
+                        )}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Tanggal Lahir Siswa</p>
+                      <p className="font-medium text-foreground mt-0.5 flex items-center gap-1.5">
+                        <Calendar size={12} className="text-muted-foreground" />
+                        {tanggalLahir ? formatDateIndo(tanggalLahir) : <span className="text-muted-foreground/70 italic">Belum diisi</span>}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Pilihan Program Pelatihan</p>
+                      <div className="mt-0.5">
+                        {namaProgram ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                            <Sparkles size={11} /> {namaProgram}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/70 italic">Belum dipilih</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <p className="text-muted-foreground">Alamat Lengkap</p>
+                      <p className="font-medium text-foreground mt-0.5 flex items-start gap-1.5">
+                        <MapPin size={12} className="text-rose-500 shrink-0 mt-0.5" />
+                        <span className="wrap-break-word">
+                          {alamatLengkap || <span className="text-muted-foreground/70 italic">Belum diisi</span>}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Data Orang Tua / Wali */}
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider mb-3">
+                    <Users size={14} />
+                    <span>Data Orang Tua / Wali</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-secondary/20 p-4 rounded-xl border text-xs">
+                    <div>
+                      <p className="text-muted-foreground">Nama Lengkap Orang Tua / Wali</p>
+                      <p className="font-semibold text-foreground mt-0.5">
+                        {namaOrtu || <span className="text-muted-foreground/70 italic">Belum diisi</span>}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Nomor Telepon / WhatsApp Ortu</p>
+                      <p className="font-semibold text-foreground mt-0.5 flex items-center gap-1.5">
+                        <Phone size={12} className="text-emerald-500" />
+                        {waOrtu || <span className="text-muted-foreground/70 italic">Belum diisi</span>}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Tanggal Lahir Orang Tua</p>
+                      <p className="font-medium text-foreground mt-0.5 flex items-center gap-1.5">
+                        <Calendar size={12} className="text-muted-foreground" />
+                        {tglLahirOrtu ? formatDateIndo(tglLahirOrtu) : <span className="text-muted-foreground/70 italic">Belum diisi</span>}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Pekerjaan Orang Tua</p>
+                      <p className="font-semibold text-foreground mt-0.5 flex items-center gap-1.5">
+                        <Briefcase size={12} className="text-amber-600" />
+                        {pekerjaanOrtu || <span className="text-muted-foreground/70 italic">Belum dipilih</span>}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            ) : (
+              // ── EDIT MODE ──────────────────────────────────────────────────
+              <form onSubmit={handleSaveEdit} className="p-4 sm:p-6 space-y-6">
+                
+                {/* 1. Formulir Siswa */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
+                    <GraduationCap size={14} />
+                    <span>Perbarui Data Siswa</span>
+                  </div>
+
+                  {/* Nama Lengkap & WA */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">
+                        Nama Lengkap Siswa <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={namaLengkap}
+                        onChange={e => setNamaLengkap(e.target.value)}
+                        placeholder="Contoh: Muhammad Rizky"
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">
+                        Nomor WhatsApp Siswa <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={noWa}
+                        onChange={e => setNoWa(e.target.value)}
+                        placeholder="0812xxxxxxxx"
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Asal Sekolah */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-foreground">Asal Sekolah</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsManualSekolah(!isManualSekolah);
+                          if (!isManualSekolah) {
+                            setAsalSekolahManual(namaSekolahPreview || '');
+                          }
+                        }}
+                        className="text-xs text-primary hover:underline font-medium"
+                      >
+                        {isManualSekolah ? 'Pilih dari daftar sekolah' : 'Sekolah tidak terdaftar?'}
+                      </button>
+                    </div>
+
+                    {!isManualSekolah ? (
+                      <select
+                        value={selectedSekolah}
+                        onChange={e => {
+                          setSelectedSekolah(e.target.value);
+                          const sObj = schools.find(s => s.id_sekolah === e.target.value);
+                          if (sObj) setNamaSekolahPreview(sObj.nama_sekolah);
+                        }}
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      >
+                        <option value="">-- Pilih Asal Sekolah --</option>
+                        {schools.map(s => (
+                          <option key={s.id_sekolah} value={s.id_sekolah}>
+                            {s.nama_sekolah} {s.jenjang ? `(${s.jenjang})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={asalSekolahManual}
+                        onChange={e => setAsalSekolahManual(e.target.value)}
+                        placeholder="Ketik nama sekolah lengkap Anda..."
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    )}
+                  </div>
+
+                  {/* NIK, Gender, Tgl Lahir */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">NIK Siswa (16 Digit)</label>
+                      <input
+                        type="text"
+                        maxLength={16}
+                        inputMode="numeric"
+                        value={nik}
+                        onChange={e => setNik(e.target.value.replace(/\D/g, ''))}
+                        placeholder="16 digit sesuai KTP/KK"
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">Jenis Kelamin</label>
+                      <select
+                        value={gender}
+                        onChange={e => setGender(e.target.value)}
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      >
+                        <option value="">-- Pilih Gender --</option>
+                        {GENDER_OPTIONS.map(g => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">Tanggal Lahir Siswa</label>
+                      <input
+                        type="date"
+                        value={tanggalLahir}
+                        onChange={e => setTanggalLahir(e.target.value)}
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Pilihan Program Pelatihan */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-foreground">Pilih Program Pelatihan</label>
+                    {availablePrograms.length > 0 ? (
+                      <select
+                        value={namaProgram}
+                        onChange={e => setNamaProgram(e.target.value)}
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      >
+                        <option value="">-- Pilih Program Pelatihan --</option>
+                        {availablePrograms.map((prog, idx) => (
+                          <option key={idx} value={prog}>{prog}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={namaProgram}
+                        onChange={e => setNamaProgram(e.target.value)}
+                        placeholder="Contoh: Kaigo / Caregiver, Pertanian, Magang Jepang..."
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    )}
+                  </div>
+
+                  {/* Alamat Lengkap */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-foreground">Alamat Lengkap</label>
+                    <textarea
+                      rows={2}
+                      value={alamatLengkap}
+                      onChange={e => setAlamatLengkap(e.target.value)}
+                      placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten..."
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none resize-y"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Formulir Orang Tua */}
+                <div className="space-y-4 pt-2 border-t">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
+                    <Users size={14} />
+                    <span>Perbarui Data Orang Tua / Wali</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">Nama Lengkap Orang Tua / Wali</label>
+                      <input
+                        type="text"
+                        value={namaOrtu}
+                        onChange={e => setNamaOrtu(e.target.value)}
+                        placeholder="Contoh: Bapak / Ibu Supriyadi"
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">Nomor WhatsApp / Telepon Ortu</label>
+                      <input
+                        type="tel"
+                        value={waOrtu}
+                        onChange={e => setWaOrtu(e.target.value)}
+                        placeholder="0812xxxxxxxx"
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">Tanggal Lahir Orang Tua</label>
+                      <input
+                        type="date"
+                        value={tglLahirOrtu}
+                        onChange={e => setTglLahirOrtu(e.target.value)}
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-foreground">Pekerjaan Orang Tua</label>
+                      <select
+                        value={pekerjaanOrtu}
+                        onChange={e => setPekerjaanOrtu(e.target.value)}
+                        className="w-full px-3 py-2 bg-background border rounded-lg text-xs sm:text-sm focus:border-primary outline-none"
+                      >
+                        <option value="">-- Pilih Pekerjaan Orang Tua --</option>
+                        {PEKERJAAN_OPTIONS.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tombol Simpan & Batal */}
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t">
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSavingEdit}
+                    className="px-4 py-2 rounded-lg text-xs sm:text-sm font-medium border bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingEdit}
+                    className="px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold gradient-primary text-white shadow-md shadow-primary/20 hover:opacity-95 transition-all flex items-center gap-1.5"
+                  >
+                    {isSavingEdit ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check size={14} />
+                        <span>Simpan Perubahan</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </form>
+            )}
+
           </div>
 
-          {/* Invoice Card */}
+          {/* ═══════════════════════════════════════════════════════════════════
+              KARTU INVOICE PEMBAYARAN BIAYA FORMULIR
+             ═══════════════════════════════════════════════════════════════════ */}
           <div className="bg-card border rounded-2xl shadow-xl overflow-hidden">
             {/* Header Invoice */}
             <div className="gradient-primary p-5 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-white/70 uppercase tracking-wider">Invoice Biaya Formulir</p>
+                  <p className="text-xs font-medium text-white/80 uppercase tracking-wider">Invoice Biaya Formulir Pendaftaran</p>
                   <p className="text-2xl font-extrabold mt-1">{formatRupiah(regFee)}</p>
                 </div>
                 <CreditCard size={32} className="text-white/30" />
               </div>
-              <div className="mt-3 pt-3 border-t border-white/20 text-xs text-white/80">
-                Langkah terakhir untuk mengamankan posisi konsultasi Anda di <strong>{brandName}</strong>.
+              <div className="mt-3 pt-3 border-t border-white/20 text-xs text-white/90">
+                Langkah resmi untuk mengamankan posisi konsultasi dan bimbingan karir Anda di <strong>{brandName}</strong>.
               </div>
             </div>
 
@@ -487,7 +1164,7 @@ export default function PublicRegistrationPage() {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Landmark size={15} className="text-primary shrink-0" />
-                  <p className="text-xs font-bold text-foreground uppercase tracking-wide">Rekening Tujuan Transfer</p>
+                  <p className="text-xs font-bold text-foreground uppercase tracking-wide">Rekening Resmi Tujuan Transfer</p>
                 </div>
 
                 <div className="rounded-xl border bg-secondary/30 divide-y overflow-hidden">
@@ -507,14 +1184,14 @@ export default function PublicRegistrationPage() {
                   </div>
                   <div className="flex items-center justify-between px-4 py-3">
                     <div>
-                      <p className="text-xs text-muted-foreground">Atas Nama</p>
+                      <p className="text-xs text-muted-foreground">Atas Nama (Pemilik)</p>
                       <p className="font-bold text-sm text-foreground">{accountHolder}</p>
                     </div>
                     <CopyButton text={accountHolder} />
                   </div>
                   <div className="flex items-center justify-between px-4 py-3 bg-primary/5">
                     <div>
-                      <p className="text-xs text-muted-foreground">Jumlah Transfer</p>
+                      <p className="text-xs text-muted-foreground">Nominal yang Harus Ditransfer</p>
                       <p className="font-extrabold text-primary text-lg">{formatRupiah(regFee)}</p>
                     </div>
                     <CopyButton text={String(regFee)} />
@@ -527,22 +1204,22 @@ export default function PublicRegistrationPage() {
                 <div className="flex items-start gap-2">
                   <Info size={14} className="text-amber-600 shrink-0 mt-0.5" />
                   <div className="text-xs text-amber-600 space-y-1">
-                    <p className="font-semibold">Berita Transfer Penting:</p>
+                    <p className="font-semibold">Berita Acara Transfer:</p>
                     <p>{bankNotes}</p>
-                    <p>Contoh: <strong>Biaya Formulir – {invoiceData.namaLengkap}</strong></p>
+                    <p>Contoh: <strong>Formulir – {namaLengkap}</strong></p>
                   </div>
                 </div>
               </div>
 
-              {/* Timeline */}
+              {/* Timeline Alur */}
               <div className="space-y-2">
                 <p className="text-xs font-bold text-foreground uppercase tracking-wide">Alur Setelah Pembayaran</p>
                 <div className="space-y-2">
                   {[
-                    { icon: CreditCard, text: 'Transfer Biaya Formulir ke rekening di atas' },
-                    { icon: MessageSquare, text: 'Klik tombol "Konfirmasi Sudah Transfer" di bawah' },
-                    { icon: ShieldCheck, text: 'Admin verifikasi & Anda mendapatkan status Registered' },
-                    { icon: CheckCircle2, text: 'Konselor menghubungi untuk jadwal konsultasi' },
+                    { icon: CreditCard, text: 'Transfer Biaya Formulir ke rekening resmi di atas' },
+                    { icon: MessageSquare, text: 'Klik tombol "Konfirmasi Sudah Transfer via WhatsApp"' },
+                    { icon: ShieldCheck, text: 'Admin memverifikasi pembayaran & mengaktifkan status Registered' },
+                    { icon: CheckCircle2, text: 'Konselor menghubungi Anda untuk jadwal konsultasi resmi' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold">
@@ -574,7 +1251,7 @@ export default function PublicRegistrationPage() {
                     className="w-full py-2.5 px-4 rounded-xl border bg-card text-foreground text-sm font-medium hover:bg-secondary/50 flex items-center justify-center gap-2 transition-colors"
                   >
                     <MessageSquare size={14} className="text-emerald-500" />
-                    Ada pertanyaan? Chat konselor
+                    Ada pertanyaan seputar pendaftaran? Chat konselor
                   </a>
                 )}
               </div>
@@ -585,11 +1262,11 @@ export default function PublicRegistrationPage() {
           <div className="flex items-start gap-2 p-3.5 rounded-xl bg-secondary/50 border text-xs text-muted-foreground">
             <Clock size={14} className="shrink-0 mt-0.5 text-primary" />
             <div>
-              <span className="font-semibold text-foreground">Link ini berlaku 7 hari.</span> Anda bisa menutup halaman ini dan kembali nanti. Buka kembali link yang sama untuk melanjutkan konfirmasi pembayaran.
+              <span className="font-semibold text-foreground">Link pendaftaran ini berlaku 7 hari.</span> Anda dapat menyimpan link ini atau membukanya kembali sewaktu-waktu untuk memeriksa biodata serta konfirmasi transfer.
             </div>
           </div>
 
-          {/* Summary Biaya Program */}
+          {/* Summary Biaya Program Keseluruhan */}
           {paymentConfig && (() => {
             const hasPromo = isDiscountActive(paymentConfig);
             const discount = hasPromo ? (paymentConfig.discountAmount || 0) : 0;
@@ -599,7 +1276,7 @@ export default function PublicRegistrationPage() {
             return (
               <div className="bg-card border rounded-2xl p-5 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ringkasan Biaya Program</p>
+                  <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ringkasan Biaya Program Keseluruhan</p>
                   {hasPromo && (
                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
                       <Tag size={11} /> {promoName}
@@ -608,11 +1285,11 @@ export default function PublicRegistrationPage() {
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Biaya Formulir (sekarang)</span>
+                    <span className="text-muted-foreground">Biaya Formulir (Tahap 1 - Sekarang)</span>
                     <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.registrationFee)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Down Payment Pelatihan</span>
+                    <span className="text-muted-foreground">Down Payment Pelatihan (Tahap 2)</span>
                     <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.coreDepositAmount)}</span>
                   </div>
                   {hasPromo ? (
@@ -626,7 +1303,7 @@ export default function PublicRegistrationPage() {
                         <span>- {formatRupiah(discount)}</span>
                       </div>
                       <div className="border-t pt-2 flex justify-between">
-                        <span className="font-bold text-foreground">Total Setelah Diskon</span>
+                        <span className="font-bold text-foreground">Total Biaya Setelah Diskon</span>
                         <span className="font-bold text-emerald-500">{formatRupiah(finalTotal)}</span>
                       </div>
                       {paymentConfig.discountEndDate && (
@@ -642,7 +1319,7 @@ export default function PublicRegistrationPage() {
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground/70">* Biaya Formulir dihitung sebagai bagian dari total program.</p>
+                <p className="text-xs text-muted-foreground/70">* Biaya Formulir diperhitungkan sebagai pengurang biaya program penuh.</p>
               </div>
             );
           })()}
@@ -652,155 +1329,259 @@ export default function PublicRegistrationPage() {
     );
   }
 
-  // ── Step 1: Biodata Form ───────────────────────────────────────────────────
+  // ── Step 1: Biodata Form (Jalur 1 Tanpa Token) ─────────────────────────────
 
   const isSubmitDisabled = isSubmitting || !consentWa || !namaLengkap.trim() || noWa.replace(/\D/g, '').length < 10;
 
   return (
     <PageShell brandName={brandName}>
-      <div className="w-full max-w-lg mx-auto space-y-4">
+      <div className="w-full max-w-xl mx-auto space-y-4">
 
         {/* Step Indicator */}
         <StepIndicator currentStep={1} />
 
         {/* Card Form */}
         <div className="bg-card border rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <form onSubmit={handleStep1Submit} className="p-6 sm:p-8 space-y-5">
+          <form onSubmit={handleStep1Submit} className="p-6 sm:p-8 space-y-6">
 
             {/* Error Alert */}
             {errorMessage && (
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-medium">
                 <AlertCircle size={16} className="shrink-0 mt-0.5" />
                 <div className="flex-1">{errorMessage}</div>
-              </div>
-            )}
-
-            {/* Banner Data Terverifikasi dari Sistem (Resume Mode) */}
-            {invoiceData?.idSiswa && (
-              <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground">
-                <CheckCircle2 size={16} className="shrink-0 text-primary mt-0.5" />
-                <div>
-                  <span className="font-semibold text-primary">Data Pendaftaran Terverifikasi.</span> Kolom di bawah ini telah terisi otomatis dari sistem resmi. Anda dapat mengubahnya jika ada data yang perlu diperbarui.
-                </div>
-              </div>
-            )}
-
-            {/* Nama Lengkap */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground">
-                Nama Lengkap <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={namaLengkap}
-                onChange={e => setNamaLengkap(e.target.value)}
-                placeholder="Contoh: Muhammad Rizky Pratama"
-                className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
-              />
-            </div>
-
-            {/* Nomor WhatsApp */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground">
-                Nomor WhatsApp Aktif <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                value={noWa}
-                onChange={e => setNoWa(e.target.value)}
-                placeholder="0812xxxxxxxx atau 628xxxxxxxx"
-                className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
-              />
-              <p className="text-xs text-muted-foreground">Format nomor Indonesia (otomatis dinormalisasi).</p>
-            </div>
-
-            {/* Asal Sekolah */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-foreground">Asal Sekolah</label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsManualSekolah(!isManualSekolah);
-                    setSelectedSekolah('');
-                    setAsalSekolahManual('');
-                  }}
-                  className="text-xs text-primary hover:underline font-medium"
-                >
-                  {isManualSekolah ? 'Pilih dari daftar' : 'Sekolah tidak ada di daftar?'}
+                <button onClick={() => setErrorMessage(null)} className="text-rose-500/70 hover:text-rose-500">
+                  <X size={14} />
                 </button>
               </div>
-              {!isManualSekolah ? (
-                <select
-                  value={selectedSekolah}
-                  onChange={e => setSelectedSekolah(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
-                >
-                  <option value="">-- Pilih Asal Sekolah --</option>
-                  {schools.map(s => (
-                    <option key={s.id_sekolah} value={s.id_sekolah}>
-                      {s.nama_sekolah} ({s.jenjang})
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={asalSekolahManual}
-                  onChange={e => setAsalSekolahManual(e.target.value)}
-                  placeholder="Ketik nama sekolah Anda lengkap..."
-                  className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
-                />
-              )}
-            </div>
+            )}
 
-            {/* Kelas & Rencana */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* 1. SEKSI DATA SISWA */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
+                <GraduationCap size={15} />
+                <span>Data Calon Siswa</span>
+              </div>
+
+              {/* Nama Lengkap & WhatsApp */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">
+                    Nama Lengkap <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={namaLengkap}
+                    onChange={e => setNamaLengkap(e.target.value)}
+                    placeholder="Contoh: Muhammad Rizky Pratama"
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">
+                    Nomor WhatsApp Aktif <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={noWa}
+                    onChange={e => setNoWa(e.target.value)}
+                    placeholder="0812xxxxxxxx"
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Asal Sekolah */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">Kelas / Tingkat</label>
-                <input
-                  type="text"
-                  value={kelas}
-                  onChange={e => setKelas(e.target.value)}
-                  placeholder="Contoh: 12 TKJ 1"
-                  className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-foreground">Asal Sekolah</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsManualSekolah(!isManualSekolah);
+                      setSelectedSekolah('');
+                      setAsalSekolahManual('');
+                    }}
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    {isManualSekolah ? 'Pilih dari daftar sekolah' : 'Sekolah tidak ada di daftar?'}
+                  </button>
+                </div>
+                {!isManualSekolah ? (
+                  <select
+                    value={selectedSekolah}
+                    onChange={e => setSelectedSekolah(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  >
+                    <option value="">-- Pilih Asal Sekolah --</option>
+                    {schools.map(s => (
+                      <option key={s.id_sekolah} value={s.id_sekolah}>
+                        {s.nama_sekolah} {s.jenjang ? `(${s.jenjang})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={asalSekolahManual}
+                    onChange={e => setAsalSekolahManual(e.target.value)}
+                    placeholder="Ketik nama sekolah Anda lengkap..."
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                )}
+              </div>
+
+              {/* NIK, Gender, Tgl Lahir */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">NIK Siswa (16 Digit)</label>
+                  <input
+                    type="text"
+                    maxLength={16}
+                    inputMode="numeric"
+                    value={nik}
+                    onChange={e => setNik(e.target.value.replace(/\D/g, ''))}
+                    placeholder="16 digit KTP/KK"
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Jenis Kelamin</label>
+                  <select
+                    value={gender}
+                    onChange={e => setGender(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  >
+                    <option value="">-- Pilih Gender --</option>
+                    {GENDER_OPTIONS.map(g => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Tanggal Lahir Siswa</label>
+                  <input
+                    type="date"
+                    value={tanggalLahir}
+                    onChange={e => setTanggalLahir(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Program Pilihan & Kelas */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Pilih Program Pelatihan</label>
+                  {availablePrograms.length > 0 ? (
+                    <select
+                      value={namaProgram}
+                      onChange={e => setNamaProgram(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                    >
+                      <option value="">-- Pilih Program --</option>
+                      {availablePrograms.map((prog, idx) => (
+                        <option key={idx} value={prog}>{prog}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={namaProgram}
+                      onChange={e => setNamaProgram(e.target.value)}
+                      placeholder="Contoh: Kaigo / Caregiver, Pertanian..."
+                      className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                    />
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Kelas / Tingkat</label>
+                  <input
+                    type="text"
+                    value={kelas}
+                    onChange={e => setKelas(e.target.value)}
+                    placeholder="Contoh: 12 TKJ 1"
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Alamat Lengkap */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground">Alamat Lengkap Tempat Tinggal</label>
+                <textarea
+                  rows={2}
+                  value={alamatLengkap}
+                  onChange={e => setAlamatLengkap(e.target.value)}
+                  placeholder="Alamat lengkap, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten..."
+                  className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors resize-y"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">Rencana Setelah Lulus</label>
-                <select
-                  value={rencanaLulus}
-                  onChange={e => setRencanaLulus(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
-                >
-                  <option value="Kerja">Bekerja</option>
-                  <option value="Kuliah">Melanjutkan Kuliah</option>
-                  <option value="Wirausaha">Wirausaha / Bisnis</option>
-                  <option value="Belum Tahu">Belum Tahu / Konsultasi</option>
-                </select>
+            </div>
+
+            {/* 2. SEKSI DATA ORANG TUA / WALI */}
+            <div className="space-y-4 pt-4 border-t">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
+                <Users size={15} />
+                <span>Data Orang Tua / Wali</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Nama Lengkap Orang Tua / Wali</label>
+                  <input
+                    type="text"
+                    value={namaOrtu}
+                    onChange={e => setNamaOrtu(e.target.value)}
+                    placeholder="Contoh: Bapak / Ibu Slamet Riyadi"
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Nomor Telepon / WhatsApp Ortu</label>
+                  <input
+                    type="tel"
+                    value={waOrtu}
+                    onChange={e => setWaOrtu(e.target.value)}
+                    placeholder="0812xxxxxxxx"
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Tanggal Lahir Orang Tua</label>
+                  <input
+                    type="date"
+                    value={tglLahirOrtu}
+                    onChange={e => setTglLahirOrtu(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Pekerjaan Orang Tua</label>
+                  <select
+                    value={pekerjaanOrtu}
+                    onChange={e => setPekerjaanOrtu(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
+                  >
+                    <option value="">-- Pilih Pekerjaan Orang Tua --</option>
+                    {PEKERJAAN_OPTIONS.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            {/* Minat */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground">
-                Minat Pelatihan / Karir ke Luar Negeri
-              </label>
-              <select
-                value={minatAwal}
-                onChange={e => setMinatAwal(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-background border rounded-xl text-sm focus:border-primary outline-none transition-colors"
-              >
-                <option value="Ya">Ya, sangat berminat</option>
-                <option value="Ragu">Masih ragu-ragu / butuh tanya dulu</option>
-                <option value="Tidak">Belum berminat</option>
-              </select>
-            </div>
-
-            {/* Consent */}
-            <div className="pt-1">
+            {/* Consent WhatsApp */}
+            <div className="pt-2 border-t">
               <label className="flex items-start gap-3 p-3.5 rounded-xl border bg-secondary/30 cursor-pointer select-none transition-all hover:bg-secondary/50">
                 <input
                   type="checkbox"
@@ -810,10 +1591,10 @@ export default function PublicRegistrationPage() {
                 />
                 <div className="space-y-0.5 text-xs">
                   <span className="font-semibold text-foreground">
-                    Persetujuan Kontak WhatsApp (Wajib) <span className="text-rose-500">*</span>
+                    Persetujuan Kontak WhatsApp Resmi (Wajib) <span className="text-rose-500">*</span>
                   </span>
                   <p className="text-muted-foreground leading-relaxed">
-                    Saya bersedia dihubungi via WhatsApp oleh tim konselor resmi untuk konsultasi karir, bimbingan, dan informasi program.
+                    Saya bersedia dihubungi via WhatsApp oleh tim konselor resmi {brandName} untuk konsultasi karir, verifikasi biodata, dan panduan program pelatihan.
                   </p>
                 </div>
               </label>
@@ -834,13 +1615,7 @@ export default function PublicRegistrationPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    <span>Menyimpan Data...</span>
-                  </>
-                ) : invoiceData?.idSiswa ? (
-                  <>
-                    <CheckCircle2 size={16} />
-                    <span>Simpan & Kembali ke Tagihan</span>
-                    <ChevronRight size={15} />
+                    <span>Menyimpan Biodata...</span>
                   </>
                 ) : (
                   <>
@@ -854,12 +1629,12 @@ export default function PublicRegistrationPage() {
 
             <div className="text-center text-xs text-muted-foreground/80 flex items-center justify-center gap-1.5 pt-1">
               <ShieldCheck size={13} className="text-emerald-500 shrink-0" />
-              <span>Data dilindungi secara rahasia oleh Nexa OS & Consent Engine.</span>
+              <span>Data dilindungi secara rahasia oleh NexaMOS & Consent Engine.</span>
             </div>
           </form>
         </div>
 
-        {/* Info Preview Biaya */}
+        {/* Info Preview Biaya Program */}
         {paymentConfig && (() => {
           const hasPromo = isDiscountActive(paymentConfig);
           const discount = hasPromo ? (paymentConfig.discountAmount || 0) : 0;
@@ -877,11 +1652,11 @@ export default function PublicRegistrationPage() {
                 )}
               </div>
               <div className="flex justify-between text-muted-foreground">
-                <span>Biaya Formulir Pendaftaran</span>
+                <span>Biaya Formulir Pendaftaran (Tahap 1)</span>
                 <span className="font-semibold text-foreground">{formatRupiah(paymentConfig.registrationFee)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground text-xs">
-                <span className="text-muted-foreground/70">DP Pelatihan (setelah diterima)</span>
+                <span className="text-muted-foreground/70">DP Pelatihan (Tahap 2)</span>
                 <span className="text-muted-foreground/70">{formatRupiah(paymentConfig.coreDepositAmount)}</span>
               </div>
               {hasPromo && (
@@ -908,22 +1683,22 @@ function PageShell({ brandName, children }: { brandName: string; children: React
   return (
     <div className="min-h-screen bg-secondary/20 flex flex-col justify-start py-8 sm:py-12 px-4 sm:px-6">
       {/* Header */}
-      <div className="max-w-lg mx-auto w-full mb-6 text-center space-y-2">
+      <div className="max-w-xl mx-auto w-full mb-6 text-center space-y-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
           <GraduationCap size={14} />
           <span>Formulir Pendaftaran Resmi</span>
         </div>
         <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{brandName}</h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          Daftarkan diri Anda dan dapatkan panduan jalur karir bersama tim konselor kami.
+          Daftarkan diri Anda dan dapatkan panduan jalur karir bersama tim konselor resmi kami.
         </p>
       </div>
 
       {children}
 
       {/* Footer */}
-      <div className="max-w-lg mx-auto w-full mt-6 text-center text-xs text-muted-foreground/60">
-        Powered by <span className="font-semibold text-muted-foreground">Nexa OS</span> — Platform Manajemen CRO Terdepan
+      <div className="max-w-xl mx-auto w-full mt-6 text-center text-xs text-muted-foreground/60">
+        Powered by <span className="font-semibold text-muted-foreground">NexaMOS</span> — Platform Manajemen CRO Terdepan
       </div>
     </div>
   );
@@ -931,7 +1706,7 @@ function PageShell({ brandName, children }: { brandName: string; children: React
 
 function StepIndicator({ currentStep }: { currentStep: 1 | 2 }) {
   const steps = [
-    { label: 'Data Diri', num: 1 },
+    { label: 'Biodata Siswa & Ortu', num: 1 },
     { label: 'Instruksi Bayar', num: 2 },
   ];
 

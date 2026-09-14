@@ -23,6 +23,7 @@ interface PaymentConfigData {
   discountAmount: number;
   discountLabel: string;
   discountEndDate: string;
+  programNames?: string;
   qrisImageUrl?: string | null;
   updatedBy?: string | null;
   updatedAt?: string | null;
@@ -74,6 +75,7 @@ export default function PaymentConfigTab() {
     discountAmount: 0,
     discountLabel: '',
     discountEndDate: '',
+    programNames: '',
     qrisImageUrl: null
   });
 
@@ -95,6 +97,7 @@ export default function PaymentConfigTab() {
           discountAmount: Number(res.data.data.discountAmount) || 0,
           discountLabel: res.data.data.discountLabel || '',
           discountEndDate: res.data.data.discountEndDate || '',
+          programNames: res.data.data.programNames || '',
         };
         setFormData(loaded);
         setSavedData(loaded);
@@ -130,6 +133,7 @@ export default function PaymentConfigTab() {
         discountAmount: savedData.discountAmount,
         discountLabel: savedData.discountLabel,
         discountEndDate: savedData.discountEndDate,
+        programNames: savedData.programNames || '',
       }));
     }
     setIsEditingPricing(false);
@@ -604,6 +608,43 @@ export default function PaymentConfigTab() {
                 <p className="text-xs text-muted-foreground">
                   Dicantumkan pada ringkasan biaya program agar siswa mengetahui sisa tagihan setelah dipotong DP.
                 </p>
+              </div>
+
+              {/* ── 4. Pilihan Nama Program Pelatihan (Opsional) ── */}
+              <div className="space-y-1.5 p-3.5 rounded-xl border bg-secondary/15">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Building2 size={13} className="hidden sm:inline-block text-primary" />
+                    4. Pilihan Nama Program Pelatihan (Opsional)
+                  </label>
+                  <span className="inline-block text-xs text-muted-foreground">
+                    Dropdown Form Pendaftaran
+                  </span>
+                </div>
+                <textarea
+                  rows={2}
+                  value={formData.programNames || ''}
+                  onChange={(e) => setFormData({ ...formData, programNames: e.target.value })}
+                  disabled={!isEditingPricing}
+                  placeholder="Contoh: Kaigo / Caregiver, Food Processing, Pertanian, Konstruksi (pisahkan dengan koma atau baris baru)"
+                  className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed resize-y"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Pisahkan dengan koma (<code className="text-primary font-semibold">,</code>) atau baris baru. Pilihan ini akan tampil sebagai menu dropdown program pada halaman pendaftaran siswa.
+                </p>
+                {formData.programNames && formData.programNames.trim() && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {formData.programNames
+                      .split(/[\n,]+/)
+                      .map((p) => p.trim())
+                      .filter(Boolean)
+                      .map((prog, idx) => (
+                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                          {prog}
+                        </span>
+                      ))}
+                  </div>
+                )}
               </div>
 
               {/* ── Diskon Program (Single, Label Bebas) ── */}

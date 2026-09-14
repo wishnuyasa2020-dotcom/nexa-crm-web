@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, MessageCircle, Plus, ClipboardList, Trash2, Pencil,
-  Calendar, User, Phone, School, AlertCircle, Clock, Link2, Handshake
+  Calendar, User, Phone, School, AlertCircle, Clock, Link2, Handshake,
+  GraduationCap, Tag
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -238,6 +239,75 @@ export default function SiswaDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Data Pendaftaran Resmi & Orang Tua */}
+        {(siswaDetail.nik || siswaDetail.nama_ortu || siswaDetail.nama_program || siswaDetail.alamat_lengkap || siswaDetail.gender || siswaDetail.tanggal_lahir) && (
+          <div className="col-span-1 md:col-span-2 bg-card border rounded-xl p-4 sm:p-5 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                  <GraduationCap size={16} />
+                </span>
+                <div>
+                  <h2 className="text-sm font-semibold text-foreground">Data Pendaftaran Resmi & Orang Tua</h2>
+                  <p className="text-xs text-muted-foreground">Tercatat via formulir pendaftaran resmi</p>
+                </div>
+              </div>
+              {siswaDetail.nama_program && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                  <Tag size={11} /> {siswaDetail.nama_program}
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+              <div>
+                <p className="text-muted-foreground mb-0.5">NIK Siswa</p>
+                <p className="font-mono font-medium text-foreground text-sm">{siswaDetail.nik || '–'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-0.5">Jenis Kelamin</p>
+                <p className="font-medium text-foreground text-sm">{siswaDetail.gender || '–'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-0.5">Tanggal Lahir Siswa</p>
+                <p className="font-medium text-foreground text-sm">
+                  {siswaDetail.tanggal_lahir ? new Date(siswaDetail.tanggal_lahir + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '–'}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-0.5">Program Pelatihan</p>
+                <p className="font-medium text-foreground text-sm">{siswaDetail.nama_program || '–'}</p>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground mb-0.5">Nama Orang Tua / Wali</p>
+                <p className="font-medium text-foreground text-sm">{siswaDetail.nama_ortu || '–'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-0.5">WhatsApp / No. Telp Ortu</p>
+                <p className="font-medium text-foreground text-sm">{siswaDetail.wa_ortu || '–'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-0.5">Tanggal Lahir Ortu</p>
+                <p className="font-medium text-foreground text-sm">
+                  {siswaDetail.tgl_lahir_ortu ? new Date(siswaDetail.tgl_lahir_ortu + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '–'}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-0.5">Pekerjaan Orang Tua</p>
+                <p className="font-medium text-foreground text-sm">{siswaDetail.pekerjaan_ortu || '–'}</p>
+              </div>
+
+              {siswaDetail.alamat_lengkap && (
+                <div className="col-span-1 sm:col-span-2 md:col-span-4 border-t pt-2.5">
+                  <p className="text-muted-foreground mb-0.5">Alamat Lengkap</p>
+                  <p className="font-medium text-foreground text-xs leading-relaxed">{siswaDetail.alamat_lengkap}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Action Buttons ──────────────────────────────────────────────────── */}
