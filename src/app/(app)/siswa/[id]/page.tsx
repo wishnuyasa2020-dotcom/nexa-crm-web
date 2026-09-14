@@ -106,11 +106,21 @@ export default function SiswaDetailPage() {
     return <div className="p-8 text-center text-muted-foreground">Data tidak ditemukan.</div>;
   }
 
-  const commercialState = (siswaDetail.commercial_state || '').trim().toLowerCase();
-  const statusTerkini = (siswaDetail.status_terkini || '').trim().toLowerCase();
-  const isOpportunity = commercialState === 'opportunity' || statusTerkini === 'opportunity terbuka' || statusTerkini === 'opportunity';
-  const isProspect = commercialState === 'prospect' || statusTerkini === 'prospek aktif' || statusTerkini === 'prospect';
-  const isLead = commercialState === 'lead' || statusTerkini === 'calon prospek' || statusTerkini === 'konsultasi' || statusTerkini === 'lead';
+  // Single Source of Truth: commercial_state (Ontologi Nexa OS)
+  // Fallback ke status_terkini hanya jika commercial_state kosong
+  const canonicalState = (siswaDetail.commercial_state || '').trim().toLowerCase();
+  const legacyStatus = (siswaDetail.status_terkini || '').trim().toLowerCase();
+
+  const resolvedState = canonicalState || (
+    legacyStatus === 'prospek aktif' ? 'prospect' :
+    legacyStatus === 'opportunity terbuka' ? 'opportunity' :
+    (legacyStatus === 'calon prospek' || legacyStatus === 'konsultasi') ? 'lead' :
+    legacyStatus
+  );
+
+  const isOpportunity = resolvedState === 'opportunity';
+  const isProspect = resolvedState === 'prospect';
+  const isLead = resolvedState === 'lead';
 
   return (
     <div className="space-y-4 sm:space-y-5 pb-24 sm:pb-8">
