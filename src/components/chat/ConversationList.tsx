@@ -156,11 +156,16 @@ function ContactItem({
             </span>
           )}
         </div>
-        {c.pipeline_status && (
-          <div className="mt-1 flex items-center">
+        <div className="mt-1 flex flex-wrap items-center gap-1">
+          {c.pipeline_status && (
             <CommercialStateBadge state={c.pipeline_status} size="sm" />
-          </div>
-        )}
+          )}
+          {(c.has_payment_proof || c.pending_registration_token) && (
+            <span className="inline-flex items-center gap-0.5 bg-amber-500/15 text-amber-600 border border-amber-500/30 text-xs px-1.5 py-0.5 rounded-md font-semibold shrink-0">
+              💳 Bukti Transfer
+            </span>
+          )}
+        </div>
       </div>
     </button>
   );

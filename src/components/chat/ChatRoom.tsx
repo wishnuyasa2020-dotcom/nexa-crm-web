@@ -18,9 +18,10 @@ import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
   Image as ImageIcon, Video, MapPin, X, FileText, Smile, MousePointer2,
-  ExternalLink
+  ExternalLink, Receipt, ShieldCheck, CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
+import apiClient from '@/lib/apiClient';
 
 import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
@@ -57,6 +58,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
   const [mapsLink, setMapsLink] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Quick payment verification states
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [verifiedTokenState, setVerifiedTokenState] = useState<string | null>(null);
+  const [showVerifyConfirmModal, setShowVerifyConfirmModal] = useState(false);
+
   const messagesEndRef                   = useRef<HTMLDivElement>(null);
   const scrollContainerRef               = useRef<HTMLDivElement>(null); // ref ke scroll container
   const pollingRef                       = useRef<NodeJS.Timeout | null>(null);
@@ -92,6 +98,34 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       if (!silent) setLoadingMsgs(false);
     }
   }, [convId]);
+
+  // Handler Verifikasi Cepat Pembayaran Formulir
+  const handleQuickVerifyPayment = async () => {
+    if (!conversation?.pending_registration_token) return;
+    setIsVerifyingPayment(true);
+    try {
+      const token = conversation.pending_registration_token;
+      await apiClient.post(`/api/v1/settings/payment-verifications/${token}/verify`, {
+        nominal: 500000,
+        paymentMethod: 'Transfer Bank via WhatsApp',
+        notes: 'Diverifikasi cepat via Live Chat CRO'
+      });
+      setVerifiedTokenState(token);
+      setShowVerifyConfirmModal(false);
+      toast.success('Pembayaran Formulir Berhasil Diverifikasi!', {
+        description: `Status ${conversation.student_name || 'siswa'} kini telah ditingkatkan menjadi Registered Opportunity.`
+      });
+      onMessageSent();
+      loadMessages(true);
+    } catch (err: any) {
+      console.error('[ChatRoom] Quick verify error:', err);
+      toast.error('Gagal memverifikasi pembayaran', {
+        description: err?.response?.data?.message || err.message || 'Terjadi kesalahan sistem.'
+      });
+    } finally {
+      setIsVerifyingPayment(false);
+    }
+  };
 
   // Reset + load saat percakapan berubah — paksa scroll ke bawah
   useEffect(() => {
@@ -482,6 +516,63 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
         </div>
       </div>
 
+      {/* Quick Action Payment Verification Banner */}
+      {conversation?.pending_registration_token && verifiedTokenState !== conversation.pending_registration_token && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30 px-3 py-2.5 md:px-4 md:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shrink-0 z-10 animate-in fade-in duration-200">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
+              <Receipt className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 font-semibold text-foreground">
+                <span>Konfirmasi Bukti Transfer Pendaftaran</span>
+                <span className="bg-amber-500/20 text-amber-600 font-bold px-1.5 py-0.5 rounded text-xs">
+                  Rp 500.000
+                </span>
+              </div>
+              <p className="text-muted-foreground mt-0.5">
+                Siswa mengirim bukti transfer via WhatsApp. Cek foto bukti di bawah, lalu verifikasi untuk upgrade status ke <span className="font-semibold text-foreground">Registered Opportunity</span>.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+            <Link
+              href="/setting?tab=payment-verification"
+              className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4 px-2 py-1"
+              target="_blank"
+            >
+              Detail
+            </Link>
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 px-3 shadow-xs gap-1.5"
+              disabled={isVerifyingPayment}
+              onClick={() => setShowVerifyConfirmModal(true)}
+            >
+              {isVerifyingPayment ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Memverifikasi...
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Verifikasi Rp500.000
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Verified Banner Notification */}
+      {conversation?.pending_registration_token && verifiedTokenState === conversation.pending_registration_token && (
+        <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 flex items-center gap-2 text-xs text-emerald-600 shrink-0">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>Biaya pendaftaran formulir Rp 500.000 telah diverifikasi. Status siswa: <strong className="font-semibold text-foreground">Registered Opportunity</strong>.</span>
+        </div>
+      )}
+
       {/* Messages Area */}
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 px-2 py-3 md:p-4 w-full">
         {loadingMsgs && messages.length === 0 && (
@@ -846,6 +937,71 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
             <div className="flex justify-end pt-4">
               <Button onClick={handleSendLocation} disabled={!locationData.lat || !locationData.lng || isSending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kirim Lokasi'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Konfirmasi Verifikasi Cepat Pembayaran */}
+      <Dialog open={showVerifyConfirmModal} onOpenChange={setShowVerifyConfirmModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+              <ShieldCheck className="h-5 w-5 text-emerald-500" />
+              Verifikasi Pembayaran Pendaftaran
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-sm">
+            <p className="text-muted-foreground">
+              Apakah Anda telah memeriksa bukti transfer dari <strong className="text-foreground">{conversation?.student_name || conversation?.wa_number}</strong> dan dana sebesar <strong className="text-foreground">Rp 500.000</strong> telah masuk ke rekening?
+            </p>
+            <div className="bg-muted/50 p-3 rounded-lg border text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Nominal Verifikasi:</span>
+                <span className="font-semibold text-foreground">Rp 500.000</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Jenis Biaya:</span>
+                <span className="font-semibold text-foreground">Biaya Pendaftaran Formulir</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Status Baru:</span>
+                <span className="font-semibold text-emerald-500">Registered Opportunity</span>
+              </div>
+              {conversation?.pending_registration_token && (
+                <div className="flex justify-between font-mono">
+                  <span className="text-muted-foreground">Token:</span>
+                  <span className="text-foreground">{conversation.pending_registration_token.substring(0, 10)}...</span>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowVerifyConfirmModal(false)}
+                disabled={isVerifyingPayment}
+              >
+                Batal
+              </Button>
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-1.5"
+                onClick={handleQuickVerifyPayment}
+                disabled={isVerifyingPayment}
+              >
+                {isVerifyingPayment ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Memverifikasi...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    Ya, Verifikasi Pembayaran
+                  </>
+                )}
               </Button>
             </div>
           </div>

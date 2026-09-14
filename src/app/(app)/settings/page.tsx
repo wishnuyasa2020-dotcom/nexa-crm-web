@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import KelasMapping from '@/components/settings/KelasMapping';
 import KotaMapping from '@/components/settings/KotaMapping';
@@ -9,13 +9,24 @@ import ProfileTab from '@/components/settings/ProfileTab';
 import BillingTab from '@/components/settings/BillingTab';
 import WhatsAppTab from '@/components/settings/WhatsAppTab';
 import PaymentConfigTab from '@/components/settings/PaymentConfigTab';
-import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft, MessageSquare, Banknote } from 'lucide-react';
+import PaymentVerificationTab from '@/components/settings/PaymentVerificationTab';
+import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft, MessageSquare, Banknote, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'payment' | 'whatsapp' | 'calendar' | 'billing'>('kelas');
+  const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'payment' | 'verification' | 'whatsapp' | 'calendar' | 'billing'>('kelas');
   const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab && ['kelas', 'kota', 'kecamatan', 'payment', 'verification', 'whatsapp', 'calendar', 'billing'].includes(tab)) {
+        setActiveTab(tab as typeof activeTab);
+      }
+    }
+  }, []);
 
   const isAuthorized = !user || user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'manager';
 
@@ -44,6 +55,7 @@ export default function SettingsPage() {
     { id: 'kota', label: 'Master Kota', icon: Building2 },
     { id: 'kecamatan', label: 'Master Kecamatan', icon: MapPin },
     { id: 'payment', label: 'Rekening & Biaya', icon: Banknote },
+    { id: 'verification', label: 'Verifikasi Pembayaran', icon: CheckCircle2 },
     { id: 'whatsapp', label: 'WhatsApp Bisnis', icon: MessageSquare },
     { id: 'calendar', label: 'Integrasi Kalender', icon: Calendar },
     { id: 'billing', label: 'Langganan & Billing', icon: CreditCard },
@@ -99,6 +111,7 @@ export default function SettingsPage() {
             {activeTab === 'kota' && <KotaMapping />}
             {activeTab === 'kecamatan' && <KecamatanMapping />}
             {activeTab === 'payment' && <PaymentConfigTab />}
+            {activeTab === 'verification' && <PaymentVerificationTab />}
             {activeTab === 'whatsapp' && <WhatsAppTab />}
             {activeTab === 'calendar' && <ProfileTab />}
             {activeTab === 'billing' && <BillingTab />}

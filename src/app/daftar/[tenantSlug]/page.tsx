@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
+import { toast } from 'sonner';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -612,16 +613,27 @@ export default function PublicRegistrationPage() {
   // ── Step 2: Konfirmasi Sudah Transfer via WhatsApp ────────────────────────
 
   const handleConfirmTransfer = () => {
-    const waCounselor = tenantInfo?.whatsappNumber || '';
-    const waClean = waCounselor.replace(/\D/g, '');
+    const rawWa = tenantInfo?.whatsappNumber || '6285770400134';
+    const waClean = rawWa.replace(/\D/g, '') || '6285770400134';
     const namaText = invoiceData?.namaLengkap || namaLengkap || '-';
+    const idSiswaText = invoiceData?.idSiswa ? ` (ID: ${invoiceData.idSiswa})` : '';
     const nominalText = paymentConfig ? formatRupiah(paymentConfig.registrationFee) : 'Rp500.000';
-    const waText = encodeURIComponent(
-      `Halo Kak, saya *${namaText}* sudah melakukan transfer *Biaya Formulir ${nominalText}* ke rekening ${paymentConfig?.bankName || ''} a.n ${paymentConfig?.bankAccountHolder || ''}. Mohon konfirmasi pendaftaran saya. Terima kasih 🙏`
-    );
+    const bankName = paymentConfig?.bankName || 'BRI';
+    const bankHolder = paymentConfig?.bankAccountHolder || 'Derma Indonesia Mandiri';
+    const tokenText = invoiceData?.token || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('token') : '') || '';
+
+    const waDraft = [
+      `Halo Admin NexaMOS *${brandName}*,`,
+      `Saya *${namaText}*${idSiswaText} sudah melakukan transfer *Biaya Formulir ${nominalText}* ke rekening ${bankName} a.n ${bankHolder}.`,
+      ``,
+      `Berikut saya lampirkan foto bukti transfernya.`,
+      tokenText ? `Kode Pendaftaran: *${tokenText}*` : ``,
+      ``,
+      `Mohon untuk diverifikasi agar pendaftaran saya diproses. Terima kasih! 🙏`
+    ].filter(Boolean).join('\n');
 
     if (waClean) {
-      window.open(`https://wa.me/${waClean}?text=${waText}`, '_blank');
+      window.open(`https://wa.me/${waClean}?text=${encodeURIComponent(waDraft)}`, '_blank');
     }
     setStep('success');
   };
@@ -664,34 +676,135 @@ export default function PublicRegistrationPage() {
     );
   }
 
-  // Success
+  // Success (State B: Reassurance, Stepper & Evidence Confirmation)
   if (step === 'success') {
+    const rawWa = tenantInfo?.whatsappNumber || '6285770400134';
+    const waClean = rawWa.replace(/\D/g, '') || '6285770400134';
+    const currentToken = invoiceData?.token || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('token') : '') || '';
+
     return (
       <PageShell brandName={brandName}>
-        <div className="w-full max-w-lg mx-auto bg-card border rounded-2xl p-6 sm:p-8 shadow-xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
-          <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-            <CheckCircle2 size={36} />
+        <div className="w-full max-w-lg mx-auto bg-card border rounded-2xl p-6 sm:p-8 shadow-xl text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
+          {/* Header Icon */}
+          <div className="relative w-20 h-20 mx-auto">
+            <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping opacity-50" />
+            <div className="relative w-20 h-20 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center border-2 border-emerald-500/20 shadow-xs">
+              <CheckCircle2 size={40} />
+            </div>
           </div>
-          <div className="space-y-1">
-            <h2 className="text-xl font-bold text-foreground">Konfirmasi Terkirim! 🎉</h2>
-            <p className="text-sm text-muted-foreground">
-              Terima kasih, <strong className="text-foreground">{invoiceData?.namaLengkap || namaLengkap}</strong>. Tim admin kami akan memverifikasi pembayaran Biaya Formulir dan menghubungi Anda dalam 1×24 jam.
+
+          <div className="space-y-1.5">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+              <ShieldCheck size={13} /> Konfirmasi Transfer Terkirim
+            </span>
+            <h2 className="text-2xl font-bold text-foreground">Konfirmasi Sedang Diverifikasi! 🎉</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+              Terima kasih, <strong className="text-foreground">{invoiceData?.namaLengkap || namaLengkap}</strong>. WhatsApp Anda telah dibuka untuk mengirimkan pesan konfirmasi beserta foto bukti transfer ke tim <strong className="text-foreground">{brandName}</strong>.
             </p>
           </div>
-          <div className="p-4 bg-secondary/50 rounded-xl text-xs text-muted-foreground text-left space-y-2 border">
-            <div className="flex items-center gap-2 text-foreground font-semibold">
-              <ShieldCheck size={16} className="text-primary shrink-0" />
-              <span>Apa yang Terjadi Selanjutnya?</span>
+
+          {/* Ringkasan Bukti Transaksi */}
+          <div className="p-4 rounded-xl bg-muted/40 border text-left space-y-2 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <span className="text-muted-foreground">Status Pendaftaran:</span>
+              <span className="font-bold text-amber-500 flex items-center gap-1">
+                <Clock size={12} /> Menunggu Verifikasi Bank
+              </span>
             </div>
-            <ul className="space-y-1 list-disc list-inside">
-              <li>Admin memverifikasi pembayaran Biaya Formulir Anda</li>
-              <li>Status Anda diperbarui menjadi <strong>Registered Opportunity</strong></li>
-              <li>Konselor menghubungi Anda untuk menjadwalkan konsultasi keputusan</li>
-            </ul>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Calon Siswa:</span>
+              <span className="font-semibold text-foreground">{invoiceData?.namaLengkap || namaLengkap}</span>
+            </div>
+            {namaProgram && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Program Pilihan:</span>
+                <span className="font-semibold text-primary">{namaProgram}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Biaya Formulir:</span>
+              <span className="font-bold text-emerald-500">{paymentConfig ? formatRupiah(paymentConfig.registrationFee) : 'Rp500.000'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Rekening Tujuan:</span>
+              <span className="font-medium text-foreground">{paymentConfig?.bankName || 'BRI'} - {paymentConfig?.bankAccountNumber || '009201002316563'}</span>
+            </div>
+            {currentToken && (
+              <div className="flex items-center justify-between pt-1 border-t">
+                <span className="text-muted-foreground">Kode Pendaftaran:</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-xs text-foreground font-semibold">{currentToken.slice(0, 12)}...</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(currentToken);
+                      toast.success('Kode pendaftaran disalin!');
+                    }}
+                    className="text-primary hover:underline ml-1 cursor-pointer"
+                  >
+                    Salin
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="text-xs text-muted-foreground bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 flex items-start gap-2 text-left">
-            <Info size={14} className="shrink-0 text-amber-600 mt-0.5" />
-            <span>Simpan link ini sebagai bukti pendaftaran Anda: <span className="font-mono text-primary break-all">{typeof window !== 'undefined' ? window.location.href : ''}</span></span>
+
+          {/* Stepper / Timeline Progres Verifikasi */}
+          <div className="p-4 rounded-xl bg-secondary/40 border text-left space-y-3 text-xs">
+            <p className="font-bold text-foreground flex items-center gap-1.5">
+              <Sparkles size={14} className="text-primary" />
+              Alur Verifikasi NexaMOS:
+            </p>
+            <div className="space-y-2 text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">✓</div>
+                <div>
+                  <strong className="text-foreground">Formulir Biodata:</strong>
+                  <p>Data lengkap siswa & orang tua telah tersimpan di sistem.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">✓</div>
+                <div>
+                  <strong className="text-foreground">Pengiriman Bukti Transfer via WhatsApp:</strong>
+                  <p>Pesan dan foto bukti transfer dikirim langsung ke konselor.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">3</div>
+                <div>
+                  <strong className="text-foreground">Verifikasi Mutasi oleh Admin Keuangan:</strong>
+                  <p>Admin mencocokkan mutasi bank rekening dalam maks. 1×24 jam.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">4</div>
+                <div>
+                  <strong className="text-foreground">Status Resmi Registered Opportunity:</strong>
+                  <p>Akses layanan konsultasi resmi & persiapan program dimulai.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="space-y-2.5 pt-1">
+            <button
+              type="button"
+              onClick={handleConfirmTransfer}
+              className="w-full py-3 px-4 rounded-xl gradient-primary text-white text-xs sm:text-sm font-bold shadow-md shadow-primary/20 hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            >
+              <MessageSquare size={16} />
+              <span>Buka Ulang WhatsApp & Kirim Bukti</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStep('step2_invoice')}
+              className="w-full py-2.5 px-4 rounded-xl border bg-card text-muted-foreground hover:text-foreground text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>Lihat Kembali Rincian Formulir & Rekening</span>
+            </button>
           </div>
         </div>
       </PageShell>

@@ -29,6 +29,8 @@ export interface Conversation {
   pipeline_status:   string | null;
   status_label?:     string | null;
   unread_count:      number;
+  pending_registration_token?: string | null;
+  has_payment_proof?: boolean;
 }
 
 export interface ChatMessage {
