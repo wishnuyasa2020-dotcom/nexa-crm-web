@@ -106,6 +106,12 @@ export default function SiswaDetailPage() {
     return <div className="p-8 text-center text-muted-foreground">Data tidak ditemukan.</div>;
   }
 
+  const commercialState = (siswaDetail.commercial_state || '').trim().toLowerCase();
+  const statusTerkini = (siswaDetail.status_terkini || '').trim().toLowerCase();
+  const isOpportunity = commercialState === 'opportunity' || statusTerkini === 'opportunity terbuka' || statusTerkini === 'opportunity';
+  const isProspect = commercialState === 'prospect' || statusTerkini === 'prospek aktif' || statusTerkini === 'prospect';
+  const isLead = commercialState === 'lead' || statusTerkini === 'calon prospek' || statusTerkini === 'konsultasi' || statusTerkini === 'lead';
+
   return (
     <div className="space-y-4 sm:space-y-5 pb-24 sm:pb-8">
 
@@ -123,14 +129,16 @@ export default function SiswaDetailPage() {
             <School size={12} /> {siswaDetail.nama_sekolah} · {siswaDetail.id_siswa}
           </p>
         </div>
-        <button
-          onClick={() => setIsShareLinkOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors shadow-xs"
-          title="Bagikan Link Formulir & Invoice Pendaftaran"
-        >
-          <Link2 size={13} />
-          <span className="hidden sm:inline">Link Pendaftaran</span>
-        </button>
+        {isOpportunity && (
+          <button
+            onClick={() => setIsShareLinkOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors shadow-xs"
+            title="Bagikan Link Formulir & Invoice Pendaftaran"
+          >
+            <Link2 size={13} />
+            <span className="hidden sm:inline">Link Pendaftaran</span>
+          </button>
+        )}
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg text-foreground hover:bg-secondary transition-colors shadow-xs"
@@ -223,60 +231,67 @@ export default function SiswaDetailPage() {
       </div>
 
       {/* ── Action Buttons ──────────────────────────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-10 sm:relative sm:p-0 sm:bg-transparent sm:border-t-0 sm:backdrop-blur-none flex gap-2">
+      <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-0 bg-background/90 backdrop-blur-md border-t sm:border-t-0 sm:bg-transparent sm:backdrop-blur-none z-10 sm:relative flex items-center gap-1.5 sm:gap-2">
         <button
           onClick={handleChatSiswa}
           disabled={isChatLoading}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-70"
+          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm disabled:opacity-70"
         >
           {isChatLoading
             ? <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-            : <MessageCircle size={15} />}
+            : <MessageCircle size={15} className="shrink-0" />}
           <span className="hidden sm:inline">{isChatLoading ? 'Memproses...' : 'Buka Chat'}</span>
           <span className="sm:hidden">{isChatLoading ? 'Wait...' : 'Chat'}</span>
         </button>
 
         <button
           onClick={() => setIsInteraksiOpen(true)}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 gradient-primary text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 gradient-primary text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
         >
-          <Plus size={15} />
+          <Plus size={15} className="shrink-0" />
           <span className="hidden sm:inline">Catat Interaksi</span>
           <span className="sm:hidden">Interaksi</span>
         </button>
 
-        <button
-          onClick={() => setIsAssessmentOpen(true)}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          <ClipboardList size={15} />
-          <span className="hidden sm:inline">Isi Assessment</span>
-          <span className="sm:hidden">FNAR</span>
-        </button>
+        {isLead && (
+          <button
+            onClick={() => setIsAssessmentOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
+            title="Isi Penilaian Kualifikasi FNAR (Lead ➔ Prospect)"
+          >
+            <ClipboardList size={15} className="shrink-0" />
+            <span className="hidden sm:inline">Isi Assessment</span>
+            <span className="sm:hidden">FNAR</span>
+          </button>
+        )}
 
-        <button
-          onClick={() => setIsConsultationOpen(true)}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-          title="Catat Konsultasi Keputusan / Home Visit dengan Orang Tua (Prospect ➔ Opportunity)"
-        >
-          <Handshake size={15} />
-          <span className="hidden sm:inline">Konsultasi Ortu</span>
-          <span className="sm:hidden">Konsul</span>
-        </button>
+        {isProspect && (
+          <button
+            onClick={() => setIsConsultationOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
+            title="Catat Konsultasi Keputusan / Home Visit dengan Orang Tua (Prospect ➔ Opportunity)"
+          >
+            <Handshake size={15} className="shrink-0" />
+            <span className="hidden sm:inline">Konsultasi Ortu</span>
+            <span className="sm:hidden">Konsul</span>
+          </button>
+        )}
 
-        <button
-          onClick={() => setIsShareLinkOpen(true)}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-          title="Kirim / Salin Link Formulir & Invoice Siswa"
-        >
-          <Link2 size={15} />
-          <span className="hidden sm:inline">Link Pendaftaran</span>
-          <span className="sm:hidden">Formulir</span>
-        </button>
+        {isOpportunity && (
+          <button
+            onClick={() => setIsShareLinkOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
+            title="Kirim / Salin Link Formulir & Invoice Siswa"
+          >
+            <Link2 size={15} className="shrink-0" />
+            <span className="hidden sm:inline">Link Pendaftaran</span>
+            <span className="sm:hidden">Formulir</span>
+          </button>
+        )}
 
         <button
           onClick={() => setIsEditModalOpen(true)}
-          className="flex items-center justify-center p-2.5 bg-secondary text-foreground hover:bg-secondary/80 border rounded-lg transition-colors"
+          className="hidden sm:flex items-center justify-center p-2.5 bg-secondary text-foreground hover:bg-secondary/80 border rounded-lg transition-colors"
           title="Edit Data Siswa"
         >
           <Pencil size={15} />
@@ -285,6 +300,7 @@ export default function SiswaDetailPage() {
         <button
           onClick={() => setIsDeleteModalOpen(true)}
           className="hidden sm:flex items-center justify-center p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors"
+          title="Hapus Data Siswa"
         >
           <Trash2 size={15} />
         </button>

@@ -17,8 +17,10 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
-  Image as ImageIcon, Video, MapPin, X, FileText, Smile, MousePointer2
+  Image as ImageIcon, Video, MapPin, X, FileText, Smile, MousePointer2,
+  ExternalLink
 } from 'lucide-react';
+import Link from 'next/link';
 
 import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
@@ -354,11 +356,28 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
           </div>
         </div>
 
-        {/* Info Siswa Panel */}
-        <Sheet>
-          <SheetTrigger className={buttonVariants({ variant: 'outline', size: 'sm', className: 'hidden sm:flex bg-transparent text-foreground hover:bg-accent hover:text-white' })}>
-            Info Siswa
-          </SheetTrigger>
+        {/* Info Siswa Panel & Pintasan Detail Siswa */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {conversation.id_siswa && (
+            <Link
+              href={`/siswa/${conversation.id_siswa}`}
+              className={buttonVariants({
+                variant: 'outline',
+                size: 'sm',
+                className: 'inline-flex items-center gap-1.5 bg-transparent border-primary/30 text-primary hover:bg-primary/10 hover:text-primary text-xs font-semibold px-2 sm:px-2.5 h-8'
+              })}
+              title="Buka Halaman Detail Siswa"
+            >
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">Detail Siswa</span>
+            </Link>
+          )}
+
+          <Sheet>
+            <SheetTrigger className={buttonVariants({ variant: 'outline', size: 'sm', className: 'flex items-center gap-1 bg-transparent text-foreground hover:bg-accent hover:text-white text-xs px-2 sm:px-2.5 h-8' })}>
+              <Info className="h-3.5 w-3.5 sm:hidden shrink-0" />
+              <span className="hidden sm:inline">Info Siswa</span>
+            </SheetTrigger>
           <SheetContent className="bg-background border-l text-foreground p-0 overflow-y-auto sm:max-w-md w-full">
             <SheetHeader className="sr-only">
               <SheetTitle>Info Siswa</SheetTitle>
@@ -370,10 +389,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                   {conversation.student_name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="text-center mb-8">
+              <div className="text-center mb-6">
                 <h3 className="font-bold text-2xl text-foreground">{conversation.student_name}</h3>
                 {conversation.wa_number ? (
-                  <p className="text-muted-foreground mt-1 flex items-center justify-center gap-2">
+                  <p className="text-muted-foreground mt-1 flex items-center justify-center gap-2 text-sm">
                     <Phone className="h-4 w-4" /> {conversation.wa_number}
                   </p>
                 ) : (
@@ -389,6 +408,18 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                       <Phone className="h-3.5 w-3.5 mr-2" />
                       Minta Nomor Telepon
                     </Button>
+                  </div>
+                )}
+                {conversation.id_siswa && (
+                  <div className="mt-2.5 flex justify-center">
+                    <Link
+                      href={`/siswa/${conversation.id_siswa}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 px-3 py-1 rounded-full border border-primary/20 transition-colors shadow-xs"
+                      title="Buka Halaman Detail Siswa"
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      <span>{conversation.id_siswa} · Detail Siswa</span>
+                    </Link>
                   </div>
                 )}
               </div>
@@ -424,18 +455,31 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 {/* Aksi Cepat */}
                 <div className="bg-card p-4 rounded-xl border">
                   <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Aksi Cepat</h4>
-                  <Button 
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-                    onClick={() => setShowAktivitasModal(true)}
-                  >
-                    + Catat Interaksi
-                  </Button>
+                  <div className="space-y-2">
+                    {conversation.id_siswa && (
+                      <Link
+                        href={`/siswa/${conversation.id_siswa}`}
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold h-9 px-3 transition-colors shadow-xs"
+                        title="Buka Halaman Detail Siswa"
+                      >
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        Buka Halaman Detail Siswa
+                      </Link>
+                    )}
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                      onClick={() => setShowAktivitasModal(true)}
+                    >
+                      + Catat Interaksi
+                    </Button>
+                  </div>
                 </div>
 
               </div>
             </div>
           </SheetContent>
         </Sheet>
+        </div>
       </div>
 
       {/* Messages Area */}
