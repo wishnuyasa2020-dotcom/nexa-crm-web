@@ -25,6 +25,7 @@ import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SwCountdown } from './SwCountdown';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 
 interface ChatRoomProps {
   conversation:   Conversation | null;
@@ -400,9 +401,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
                         Tahap Saat Ini
                       </span>
-                      <span className="bg-accent text-blue-400 px-2.5 py-1 rounded-md text-xs font-medium">
-                        {conversation.pipeline_status || '–'}
-                      </span>
+                      <CommercialStateBadge state={conversation.pipeline_status || '–'} size="sm" />
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-foreground flex items-center gap-2">

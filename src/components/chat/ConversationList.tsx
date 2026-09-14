@@ -3,6 +3,7 @@
 import React from 'react';
 import { Conversation } from '@/lib/chatApi';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { Input } from '@/components/ui/input';
 import { Search, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -156,7 +157,9 @@ function ContactItem({
           )}
         </div>
         {c.pipeline_status && (
-          <p className="text-xs text-blue-500 mt-0.5 md:mt-1 font-medium tracking-wide uppercase">{c.pipeline_status}</p>
+          <div className="mt-1 flex items-center">
+            <CommercialStateBadge state={c.pipeline_status} size="sm" />
+          </div>
         )}
       </div>
     </button>

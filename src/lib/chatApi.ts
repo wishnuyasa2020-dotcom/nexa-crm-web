@@ -27,6 +27,7 @@ export interface Conversation {
   last_sender:       string;
   last_msg_ts:       string;
   pipeline_status:   string | null;
+  status_label?:     string | null;
   unread_count:      number;
 }
 
