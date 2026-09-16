@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { 
   Users, School, CheckSquare, TrendingUp, Activity, 
   ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle, 
-  ShieldCheck, Calendar, Clock, Check, Loader2, Zap 
+  ShieldCheck, Calendar, Clock, Check, Loader2, Zap, Filter, Share2
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
@@ -89,6 +89,16 @@ const FUNNEL_COLORS = [
   '#10b981', // Customer (Emerald)
 ];
 
+const CHANNEL_CONFIG: Record<string, { label: string; icon: string; color: string; border: string; bg: string }> = {
+  sekolah:   { label: 'Sekolah',   icon: '🏫', color: '#3b82f6', border: 'border-blue-500/30', bg: 'bg-blue-500/10 text-blue-400' },
+  relasi:    { label: 'Relasi',    icon: '🤝', color: '#10b981', border: 'border-emerald-500/30', bg: 'bg-emerald-500/10 text-emerald-400' },
+  instagram: { label: 'Instagram', icon: '📸', color: '#ec4899', border: 'border-pink-500/30', bg: 'bg-pink-500/10 text-pink-400' },
+  facebook:  { label: 'Facebook',  icon: '🌐', color: '#6366f1', border: 'border-indigo-500/30', bg: 'bg-indigo-500/10 text-indigo-400' },
+  tiktok:    { label: 'TikTok',    icon: '🎵', color: '#a855f7', border: 'border-purple-500/30', bg: 'bg-purple-500/10 text-purple-400' },
+  website:   { label: 'Website',   icon: '💻', color: '#06b6d4', border: 'border-cyan-500/30', bg: 'bg-cyan-500/10 text-cyan-400' },
+  whatsapp:  { label: 'WhatsApp',  icon: '💬', color: '#14b8a6', border: 'border-teal-500/30', bg: 'bg-teal-500/10 text-teal-400' },
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -102,6 +112,18 @@ export default function DashboardPage() {
   const [error, setError]             = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // ── Multi-Channel Intake Filter State ──
+  const [selectedChannel, setSelectedChannel] = useState<string>('all');
+  const [channelBreakdown, setChannelBreakdown] = useState<Record<string, number>>({
+    sekolah: 0,
+    relasi: 0,
+    instagram: 0,
+    facebook: 0,
+    tiktok: 0,
+    website: 0,
+    whatsapp: 0,
+  });
 
   // ── Modal & Action States (Event-Sourcing) ──
   const [tundaTarget, setTundaTarget] = useState<TundaTarget | null>(null);
@@ -158,10 +180,11 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
+      const channelQuery = selectedChannel !== 'all' ? `?channel=${selectedChannel}` : '';
       // Fetch semua data parallel
       const [statsRes, chartsRes, leaderboardRes, tasksRes] = await Promise.all([
-        apiClient.get('/dashboard/stats'),
-        apiClient.get('/dashboard/charts'),
+        apiClient.get(`/dashboard/stats${channelQuery}`),
+        apiClient.get(`/dashboard/charts${channelQuery}`),
         apiClient.get('/dashboard/leaderboard'),
         apiClient.get('/tasks?filter=today&limit=5'),
       ]);
@@ -177,6 +200,10 @@ export default function DashboardPage() {
         siapDaftar:     s.stats.siapDaftar      ?? 0,
       });
 
+      if (s.channelBreakdown) {
+        setChannelBreakdown(s.channelBreakdown);
+      }
+
       if (s.quota) {
         setQuota({
           tier: s.quota.tier ?? 'Free',
@@ -191,6 +218,9 @@ export default function DashboardPage() {
 
       // ── Charts (funnel siswa) ──
       const c = chartsRes.data.data;
+      if (c.channelBreakdown && !s.channelBreakdown) {
+        setChannelBreakdown(c.channelBreakdown);
+      }
       const funnelData: FunnelItem[] = (c.funnelSiswa || [])
         .filter((f: { status: string; count: number }) => f.count > 0)
         .map((f: { status: string; count: number }) => ({ name: f.status, value: f.count }));
@@ -212,7 +242,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedChannel]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -251,6 +281,18 @@ export default function DashboardPage() {
       color: 'text-emerald-400',
     },
   ];
+
+  // ── Multi-Channel Intake Derived Metrics ──
+  const totalChannelLeads = Object.values(channelBreakdown).reduce((a, b) => a + Number(b), 0);
+  const channelChartData = Object.entries(channelBreakdown)
+    .map(([key, value]) => ({
+      key,
+      name: CHANNEL_CONFIG[key]?.label || key,
+      value: Number(value) || 0,
+      color: CHANNEL_CONFIG[key]?.color || '#94a3b8',
+      icon: CHANNEL_CONFIG[key]?.icon || '📌',
+    }))
+    .filter(item => item.value > 0);
 
   // ── Loading skeleton ──
   if (loading) {
@@ -336,6 +378,64 @@ export default function DashboardPage() {
         >
           <RefreshCw size={15} />
         </button>
+      </div>
+
+      {/* ── Channel Filter Pills (Multi-Channel Intake) ── */}
+      <div className="bg-card border rounded-xl p-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between shadow-xs">
+        <div className="flex items-center gap-2 text-xs font-semibold text-foreground shrink-0">
+          <Share2 size={14} className="text-primary" />
+          <span>Filter Sumber Intake:</span>
+          {selectedChannel !== 'all' && (
+            <span className="text-xs text-muted-foreground font-normal">
+              (Memfilter funnel & metrik)
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          <button
+            onClick={() => setSelectedChannel('all')}
+            className={cn(
+              "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
+              selectedChannel === 'all'
+                ? "bg-primary text-white border-primary shadow-xs font-semibold"
+                : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
+            )}
+          >
+            <span>Semua</span>
+            <span className={cn(
+              "px-1.5 py-0.2 rounded-full text-xs font-bold",
+              selectedChannel === 'all' ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
+            )}>
+              {totalChannelLeads}
+            </span>
+          </button>
+
+          {Object.entries(CHANNEL_CONFIG).map(([key, cfg]) => {
+            const count = channelBreakdown[key] || 0;
+            const isSelected = selectedChannel === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setSelectedChannel(key)}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
+                  isSelected
+                    ? "bg-primary text-white border-primary shadow-xs font-semibold"
+                    : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
+                )}
+              >
+                <span>{cfg.icon}</span>
+                <span>{cfg.label}</span>
+                <span className={cn(
+                  "px-1.5 py-0.2 rounded-full text-xs font-bold",
+                  isSelected ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
+                )}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Quota Progress ── */}
@@ -547,38 +647,79 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Distribusi Donut */}
+        {/* Distribusi Intake Channel (Donut Chart) */}
         <div className="bg-card border rounded-xl p-5 flex flex-col h-96 min-w-0">
-          <h2 className="text-sm font-semibold text-foreground mb-4 shrink-0">Distribusi Pipeline</h2>
+          <div className="flex items-center justify-between mb-4 shrink-0">
+            <div className="flex items-center gap-2">
+              <Share2 size={16} className="text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">Intake Channel</h2>
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">
+              {totalChannelLeads} total
+            </span>
+          </div>
           <div className="flex-1 min-h-0 min-w-0">
-            {funnels.length > 0 ? (
+            {channelChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={funnels} dataKey="value" innerRadius={50} outerRadius={75} strokeWidth={0}>
-                    {funnels.map((_, i) => (
-                      <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
+                  <Pie
+                    data={channelChartData}
+                    dataKey="value"
+                    innerRadius={46}
+                    outerRadius={70}
+                    paddingAngle={3}
+                    strokeWidth={0}
+                  >
+                    {channelChartData.map((entry) => (
+                      <Cell key={entry.key} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 8, color: '#f8fafc', fontSize: 11 }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        const pct = totalChannelLeads > 0 ? Math.round((data.value / totalChannelLeads) * 100) : 0;
+                        return (
+                          <div className="bg-slate-900 border border-slate-800 rounded-lg p-2.5 shadow-lg text-xs text-white">
+                            <p className="font-semibold flex items-center gap-1.5 mb-1">
+                              <span>{data.icon}</span>
+                              <span>{data.name}</span>
+                            </p>
+                            <p className="text-slate-300">
+                              Jumlah: <span className="font-bold text-white">{data.value}</span> ({pct}%)
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                Belum ada data distribusi
+              <div className="h-full flex flex-col items-center justify-center text-xs text-muted-foreground gap-1.5">
+                <Share2 size={24} className="text-muted-foreground/40" />
+                <span>Belum ada data intake channel</span>
               </div>
             )}
           </div>
-          {funnels.length > 0 && (
-            <div className="space-y-2 mt-4 pt-4 border-t border-border/50 shrink-0">
-              {funnels.slice(0, 5).map((f, i) => (
-                <div key={f.name} className="flex items-center gap-2 text-xs">
-                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: FUNNEL_COLORS[i % FUNNEL_COLORS.length] }} />
-                  <span className="text-muted-foreground truncate flex-1">{f.name}</span>
-                  <span className="text-foreground font-semibold">{f.value}</span>
-                </div>
-              ))}
+          {channelChartData.length > 0 && (
+            <div className="space-y-1.5 mt-3 pt-3 border-t border-border/50 shrink-0 max-h-36 overflow-y-auto">
+              {channelChartData.map((item) => {
+                const pct = totalChannelLeads > 0 ? Math.round((item.value / totalChannelLeads) * 100) : 0;
+                return (
+                  <div key={item.key} className="flex items-center justify-between text-xs py-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-muted-foreground truncate">{item.icon} {item.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 font-medium">
+                      <span className="text-foreground">{item.value}</span>
+                      <span className="text-muted-foreground/70 text-xs">({pct}%)</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
