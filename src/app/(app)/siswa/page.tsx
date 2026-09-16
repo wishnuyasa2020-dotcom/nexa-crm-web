@@ -15,6 +15,27 @@ import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
 import { AssignKelasModal } from '@/components/siswa/AssignKelasModal';
 import type { Siswa, CommercialState, SiswaIntent } from '@/lib/types/siswa.types';
 
+// ── Channel Badge ─────────────────────────────────────────────────────────────
+const CHANNEL_CONFIG: Record<string, { label: string; className: string }> = {
+  'sekolah':   { label: '🏫 Sekolah',   className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  'relasi':    { label: '🤝 Relasi',    className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+  'instagram': { label: '📸 IG',        className: 'bg-pink-500/10 text-pink-500 border-pink-500/20' },
+  'facebook':  { label: '📘 FB',        className: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' },
+  'tiktok':    { label: '🎵 TikTok',    className: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+  'website':   { label: '🌐 Web',       className: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' },
+  'whatsapp':  { label: '💬 WA',        className: 'bg-teal-500/10 text-teal-500 border-teal-500/20' },
+};
+
+function ChannelBadge({ channel }: { channel?: string }) {
+  const ch = (channel || 'sekolah').toLowerCase();
+  const config = CHANNEL_CONFIG[ch] || CHANNEL_CONFIG['sekolah'];
+  return (
+    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-xs border font-medium shrink-0', config.className)}>
+      {config.label}
+    </span>
+  );
+}
+
 // ── Intent Badge ──────────────────────────────────────────────────────────────
 const INTENT_CONFIG: Record<string, { label: string; className: string }> = {
   'High': { label: '🔥 High', className: 'bg-rose-500/15 text-rose-400 border-rose-500/20' },
@@ -71,6 +92,7 @@ export default function SiswaPage() {
   const [total,              setTotal]              = useState(0);
   const [filterCommercial,   setFilterCommercial]   = useState<CommercialState | ''>('');
   const [filterIntent,       setFilterIntent]       = useState<SiswaIntent | ''>('');
+  const [filterChannel,      setFilterChannel]      = useState('');
   const [filterKelas,        setFilterKelas]        = useState('');
   const [isAddModalOpen,     setIsAddModalOpen]     = useState(false);
   const [isImportModalOpen,  setIsImportModalOpen]  = useState(false);
@@ -89,6 +111,7 @@ export default function SiswaPage() {
       if (search)            query.append('search', search);
       if (filterCommercial)  query.append('commercialState', filterCommercial);
       if (filterIntent)      query.append('intent', filterIntent);
+      if (filterChannel)     query.append('channel', filterChannel);
       if (filterKelas)       query.append('kelas', filterKelas);
 
       const res = await apiClient.get(`/api/v1/siswa?${query.toString()}`);
@@ -101,7 +124,7 @@ export default function SiswaPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filterCommercial, filterIntent, filterKelas]);
+  }, [page, search, filterCommercial, filterIntent, filterChannel, filterKelas]);
 
   useEffect(() => {
     const timer = setTimeout(() => loadSiswa(), 300);
@@ -186,6 +209,21 @@ export default function SiswaPage() {
 
       {/* ── Filter Bar ─────────────────────────────────────────────────────── */}
       <div className={cn('flex-col sm:flex-row gap-2', showMobileFilter ? 'flex' : 'hidden sm:flex')}>
+        {/* Filter Channel */}
+        <select
+          value={filterChannel}
+          onChange={e => { setFilterChannel(e.target.value); setPage(1); }}
+          className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+        >
+          <option value="">Semua Channel Intake</option>
+          <option value="sekolah">🏫 Kunjungan Sekolah</option>
+          <option value="relasi">🤝 Relasi / Alumni</option>
+          <option value="instagram">📸 Instagram</option>
+          <option value="facebook">📘 Facebook</option>
+          <option value="tiktok">🎵 TikTok</option>
+          <option value="website">🌐 Website</option>
+          <option value="whatsapp">💬 WhatsApp</option>
+        </select>
         {/* Filter Commercial State */}
         <select
           value={filterCommercial}
@@ -201,7 +239,6 @@ export default function SiswaPage() {
           <option value="Registered Opportunity">🟣 Reg. Opportunity</option>
           <option value="Customer">🟢 Customer</option>
           <option value="Disqualified">🔴 Disqualified</option>
-
         </select>
         {/* Filter Intent */}
         <select
@@ -225,7 +262,7 @@ export default function SiswaPage() {
             <thead>
               <tr className="border-b bg-secondary/30">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Nama Siswa</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Sekolah</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Sekolah / Asal</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Commercial State</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Intent</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Next Action</th>
@@ -250,9 +287,17 @@ export default function SiswaPage() {
                     className="border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer group"
                   >
                     <td className="px-4 py-3 min-w-44">
-                      <span className="font-medium text-foreground group-hover:text-primary transition-colors">
-                        {s.nama}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                          {s.nama}
+                        </span>
+                        <ChannelBadge channel={s.sourceChannel} />
+                      </div>
+                      {s.sourceDetail && (
+                        <p className="text-xs text-muted-foreground truncate mt-0.5" title={s.sourceDetail}>
+                          📌 {s.sourceDetail}
+                        </p>
+                      )}
                       {!s.wa && s.bsuid ? (
                         <div className="mt-1">
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary/50 text-muted-foreground border">
@@ -261,7 +306,9 @@ export default function SiswaPage() {
                         </div>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-36 truncate">{s.namaSekolah}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-36 truncate">
+                      {s.namaSekolah || <span className="text-muted-foreground/50 italic">Non-Sekolah</span>}
+                    </td>
                     <td className="px-4 py-3">
                       <CommercialStateBadge state={s.commercialState || 'Lead'} />
                     </td>
@@ -321,15 +368,21 @@ export default function SiswaPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <p className="font-semibold text-sm text-foreground truncate">{s.nama}</p>
+                    <ChannelBadge channel={s.sourceChannel} />
                     {!s.wa && s.bsuid && (
                       <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary/50 text-muted-foreground border">
                         📱 Hidden
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">{s.namaSekolah}</p>
+                  {s.sourceDetail && (
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">📌 {s.sourceDetail}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    {s.namaSekolah || <span className="italic">Non-Sekolah</span>}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {s.cro && <span className="text-primary/70">{s.cro}</span>}
                   </p>

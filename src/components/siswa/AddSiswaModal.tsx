@@ -18,6 +18,9 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
   
   const [formData, setFormData] = useState({
     nama: '',
+    sourceChannel: 'sekolah',
+    sourceDetail: '',
+    kebutuhanLayanan: '',
     idSekolah: '',
     kelas: '',
     wa: '',
@@ -73,22 +76,30 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
     }
   };
 
+  const isSekolahChannel = formData.sourceChannel === 'sekolah';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nama || !formData.idSekolah) return alert('Nama & Sekolah wajib diisi');
+    if (!formData.nama) return alert('Nama lengkap wajib diisi');
+    if (isSekolahChannel && !formData.idSekolah) {
+      return alert('Pilihan sekolah wajib diisi untuk jalur Kunjungan Sekolah');
+    }
     
     setLoading(true);
     try {
       const payload = {
         nama_lengkap: formData.nama,
-        id_sekolah: formData.idSekolah,
+        source_channel: formData.sourceChannel,
+        source_detail: formData.sourceDetail || null,
+        kebutuhan_layanan: formData.kebutuhanLayanan || null,
+        id_sekolah: formData.idSekolah || null,
         kelas: formData.kelas,
         no_wa: formData.wa,
         bsuid: formData.bsuid,
         email: formData.email,
         alamat: formData.alamat,
-        minat_awal: formData.minatAwal,
-        rencana_lulus: formData.rencanaLulus,
+        minat_awal: formData.minatAwal || 'Ya',
+        rencana_lulus: formData.rencanaLulus || 'Kerja',
         orangtua_tahu: formData.orangtuaTahu,
         due_date: formData.dueDate,
         catatan: formData.catatan,
@@ -97,7 +108,8 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
       };
       await apiClient.post('/api/v1/siswa', payload);
       setFormData({
-        nama: '', idSekolah: '', kelas: '', wa: '', bsuid: '', email: '', alamat: '',
+        nama: '', sourceChannel: 'sekolah', sourceDetail: '', kebutuhanLayanan: '',
+        idSekolah: '', kelas: '', wa: '', bsuid: '', email: '', alamat: '',
         minatAwal: '', rencanaLulus: '', orangtuaTahu: '', dueDate: '', catatan: ''
       });
       setConsentWa(true);
@@ -123,15 +135,70 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
         
         <div className="overflow-y-auto p-5 custom-scrollbar flex-1">
           <form id="addSiswaForm" onSubmit={handleSubmit} className="space-y-4">
+            {/* Sumber Lead / Intake Channel */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Sumber Lead / Intake Channel *</label>
+              <select 
+                name="sourceChannel" 
+                value={formData.sourceChannel} 
+                onChange={handleChange} 
+                className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none"
+              >
+                <option value="sekolah">🏫 Kunjungan Sekolah / Sosialisasi (Default)</option>
+                <option value="relasi">🤝 Relasi / Rekomendasi Alumni (Referral)</option>
+                <option value="instagram">📸 Instagram</option>
+                <option value="facebook">📘 Facebook</option>
+                <option value="tiktok">🎵 TikTok</option>
+                <option value="website">🌐 Website / Landing Page</option>
+                <option value="whatsapp">💬 WhatsApp Langsung</option>
+              </select>
+            </div>
+
+            {/* Input Tambahan Khusus Jalur Digital / Relasi */}
+            {!isSekolahChannel && (
+              <div className="grid grid-cols-2 gap-4 p-3 bg-secondary/30 rounded-xl border border-border/60">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">
+                    {formData.sourceChannel === 'relasi' ? 'Perekomendasi / Nama Relasi' : 'Detail Kampanye / Akun'}
+                  </label>
+                  <input 
+                    name="sourceDetail" 
+                    value={formData.sourceDetail} 
+                    onChange={handleChange} 
+                    className="w-full px-3 py-2 bg-background border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" 
+                    placeholder={formData.sourceChannel === 'relasi' ? 'Misal: Alumni Bayu (Batch 12)' : 'Misal: Promo Reels Maret'} 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">Pilihan Program / Layanan</label>
+                  <input 
+                    name="kebutuhanLayanan" 
+                    value={formData.kebutuhanLayanan} 
+                    onChange={handleChange} 
+                    className="w-full px-3 py-2 bg-background border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" 
+                    placeholder="Misal: Magang Jepang Kaigo" 
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Nama Lengkap *</label>
                 <input required name="nama" value={formData.nama} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none" placeholder="Budi Santoso" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Asal Sekolah *</label>
-                <select required name="idSekolah" value={formData.idSekolah} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none">
-                  <option value="">-- Pilih Sekolah --</option>
+                <label className="text-sm font-medium text-foreground">
+                  {isSekolahChannel ? 'Asal Sekolah *' : 'Asal Sekolah / Almamater (Opsional)'}
+                </label>
+                <select 
+                  required={isSekolahChannel} 
+                  name="idSekolah" 
+                  value={formData.idSekolah} 
+                  onChange={handleChange} 
+                  className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 outline-none"
+                >
+                  <option value="">{isSekolahChannel ? '-- Pilih Sekolah --' : '-- Pilih Sekolah (Jika Diketahui) --'}</option>
                   {sekolahList.map((s, i) => (
                     <option key={s.value || i} value={s.value}>{s.text}</option>
                   ))}

@@ -23,6 +23,9 @@ export function ImportSiswaModal({ isOpen, onClose, onSuccess }: ImportSiswaModa
     const templateData = [
       {
         'Nama Lengkap': 'Ahmad Fauzi',
+        'Channel': 'sekolah',
+        'Detail Sumber': 'Kunjungan Aula SMK',
+        'Kebutuhan Layanan': 'Magang Kaigo',
         'ID Sekolah': 'SMK-01',
         'No WA': '081234567890',
         'Kelas': '12 TKJ 1',
@@ -32,10 +35,26 @@ export function ImportSiswaModal({ isOpen, onClose, onSuccess }: ImportSiswaModa
         'BSUID': ''
       },
       {
+        'Nama Lengkap': 'Rizky Pratama',
+        'Channel': 'relasi',
+        'Detail Sumber': 'Alumni Bayu (Batch 12)',
+        'Kebutuhan Layanan': 'Tokutei Ginou',
+        'ID Sekolah': '',
+        'No WA': '087712345678',
+        'Kelas': '',
+        'Minat Awal': 'Ya',
+        'Rencana Lulus': 'Kerja',
+        'Consent WA': 'Ya',
+        'BSUID': ''
+      },
+      {
         'Nama Lengkap': 'Dewi Lestari',
-        'ID Sekolah': 'SMK-01',
+        'Channel': 'instagram',
+        'Detail Sumber': 'Promo Reels Maret',
+        'Kebutuhan Layanan': 'Magang Manufaktur',
+        'ID Sekolah': '',
         'No WA': '089876543210',
-        'Kelas': '12 RPL 2',
+        'Kelas': '',
         'Minat Awal': 'Ragu',
         'Rencana Lulus': 'Kuliah',
         'Consent WA': 'Ya',
@@ -70,7 +89,10 @@ export function ImportSiswaModal({ isOpen, onClose, onSuccess }: ImportSiswaModa
         // Mapping to match backend expectations
         const mappedData = data.map((row: any) => ({
           nama_lengkap: row['Nama Lengkap'] || row.nama_lengkap || row['Nama'] || row.nama,
-          id_sekolah: row['ID Sekolah'] || row.id_sekolah || row['Sekolah'] || row.sekolah,
+          id_sekolah: row['ID Sekolah'] || row.id_sekolah || row['Sekolah'] || row.sekolah || null,
+          source_channel: row['Channel'] || row['Sumber'] || row.channel || row.source_channel || 'sekolah',
+          source_detail: row['Detail Sumber'] || row['Perekomendasi'] || row.detail || row.source_detail || null,
+          kebutuhan_layanan: row['Kebutuhan Layanan'] || row['Program'] || row.layanan || row.kebutuhan_layanan || null,
           no_wa: row['No WA'] || row.no_wa || row['WhatsApp'] || row['Nomor WA'] || row.phone,
           bsuid: row['BSUID'] || row.bsuid,
           kelas: row['Kelas'] || row.kelas,

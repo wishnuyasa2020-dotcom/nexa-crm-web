@@ -52,6 +52,9 @@ export interface Siswa {
   namaSekolah:    string;
   wa?:            string;
   bsuid?:         string;
+  sourceChannel?: string;
+  sourceDetail?:  string;
+  kebutuhanLayanan?: string;
   // Event-Sourcing Fase 1
   commercialState: CommercialState;
   intent:         SiswaIntent | '';
@@ -80,6 +83,9 @@ export interface SiswaDetail {
   nama_lengkap:        string;
   wa:                  string | null;
   bsuid:               string | null;
+  source_channel?:     string;
+  source_detail?:      string | null;
+  kebutuhan_layanan?:  string | null;
   kelas:               string;
   minat_awal:          string;
   rencana_lulus:       string;
