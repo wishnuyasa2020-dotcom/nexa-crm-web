@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { 
   Users, School, CheckSquare, TrendingUp, Activity, 
   ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle, 
-  ShieldCheck, Calendar, Clock, Check, Loader2, Zap, Filter, Share2
+  ShieldCheck, Calendar, Clock, Check, Loader2, Zap, Filter, Share2,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
@@ -124,6 +125,15 @@ export default function DashboardPage() {
     website: 0,
     whatsapp: 0,
   });
+
+  const channelScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollChannel = (direction: 'left' | 'right') => {
+    if (channelScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -220 : 220;
+      channelScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   // ── Modal & Action States (Event-Sourcing) ──
   const [tundaTarget, setTundaTarget] = useState<TundaTarget | null>(null);
@@ -381,60 +391,89 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Channel Filter Pills (Multi-Channel Intake) ── */}
-      <div className="bg-card border rounded-xl p-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between shadow-xs">
+      <div className="bg-card border rounded-xl p-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between shadow-xs min-w-0">
         <div className="flex items-center gap-2 text-xs font-semibold text-foreground shrink-0">
-          <Share2 size={14} className="text-primary" />
-          <span>Filter Sumber Intake:</span>
+          <Share2 size={14} className="text-primary shrink-0" />
+          <span className="whitespace-nowrap">Filter Sumber Intake:</span>
           {selectedChannel !== 'all' && (
-            <span className="text-xs text-muted-foreground font-normal">
-              (Memfilter funnel & metrik)
+            <span className="text-xs text-muted-foreground font-normal whitespace-nowrap">
+              ({CHANNEL_CONFIG[selectedChannel]?.label || selectedChannel})
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+
+        <div className="relative flex items-center gap-1.5 min-w-0 flex-1 sm:max-w-2xl sm:ml-auto">
           <button
-            onClick={() => setSelectedChannel('all')}
-            className={cn(
-              "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
-              selectedChannel === 'all'
-                ? "bg-primary text-white border-primary shadow-xs font-semibold"
-                : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
-            )}
+            type="button"
+            onClick={() => scrollChannel('left')}
+            className="hidden sm:inline-flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+            title="Scroll ke kiri"
           >
-            <span>Semua</span>
-            <span className={cn(
-              "px-1.5 py-0.2 rounded-full text-xs font-bold",
-              selectedChannel === 'all' ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
-            )}>
-              {totalChannelLeads}
-            </span>
+            <ChevronLeft size={14} />
           </button>
 
-          {Object.entries(CHANNEL_CONFIG).map(([key, cfg]) => {
-            const count = channelBreakdown[key] || 0;
-            const isSelected = selectedChannel === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setSelectedChannel(key)}
-                className={cn(
-                  "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
-                  isSelected
-                    ? "bg-primary text-white border-primary shadow-xs font-semibold"
-                    : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
-                )}
-              >
-                <span>{cfg.icon}</span>
-                <span>{cfg.label}</span>
-                <span className={cn(
-                  "px-1.5 py-0.2 rounded-full text-xs font-bold",
-                  isSelected ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
-                )}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+          <div
+            ref={channelScrollRef}
+            onWheel={(e) => {
+              if (e.deltaY !== 0) {
+                e.currentTarget.scrollLeft += e.deltaY;
+              }
+            }}
+            className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none min-w-0 flex-1 touch-pan-x"
+          >
+            <button
+              onClick={() => setSelectedChannel('all')}
+              className={cn(
+                "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
+                selectedChannel === 'all'
+                  ? "bg-primary text-white border-primary shadow-xs font-semibold"
+                  : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
+              )}
+            >
+              <span>Semua</span>
+              <span className={cn(
+                "px-1.5 py-0.2 rounded-full text-xs font-bold",
+                selectedChannel === 'all' ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
+              )}>
+                {totalChannelLeads}
+              </span>
+            </button>
+
+            {Object.entries(CHANNEL_CONFIG).map(([key, cfg]) => {
+              const count = channelBreakdown[key] || 0;
+              const isSelected = selectedChannel === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSelectedChannel(key)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
+                    isSelected
+                      ? "bg-primary text-white border-primary shadow-xs font-semibold"
+                      : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
+                  )}
+                >
+                  <span>{cfg.icon}</span>
+                  <span>{cfg.label}</span>
+                  <span className={cn(
+                    "px-1.5 py-0.2 rounded-full text-xs font-bold",
+                    isSelected ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
+                  )}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => scrollChannel('right')}
+            className="hidden sm:inline-flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+            title="Scroll ke kanan"
+          >
+            <ChevronRight size={14} />
+          </button>
         </div>
       </div>
 
