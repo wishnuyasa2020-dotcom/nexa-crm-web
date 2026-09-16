@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, MessageCircle, Plus, ClipboardList, Trash2, Pencil,
   Calendar, User, Phone, School, AlertCircle, Clock, Link2, Handshake,
-  GraduationCap, Tag
+  GraduationCap, Tag, Share2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,30 @@ import { DecisionConsultationModal } from '@/components/home-visit/DecisionConsu
 import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 import type { SiswaDetail, AktivitasSiswa } from '@/lib/types/siswa.types';
+
+// ── Multi-Channel Configuration ───────────────────────────────────────────────
+const CHANNEL_MAP: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = {
+  sekolah:   { label: 'Siswa Sekolah',              icon: '🏫', bg: 'bg-blue-500/10',    text: 'text-blue-400',    border: 'border-blue-500/20' },
+  relasi:    { label: 'Calon Kandidat (Relasi)',    icon: '🤝', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  instagram: { label: 'Calon Kandidat (Instagram)', icon: '📸', bg: 'bg-pink-500/10',    text: 'text-pink-400',    border: 'border-pink-500/20' },
+  facebook:  { label: 'Calon Kandidat (Facebook)',  icon: '🌐', bg: 'bg-indigo-500/10',  text: 'text-indigo-400',  border: 'border-indigo-500/20' },
+  tiktok:    { label: 'Calon Kandidat (TikTok)',    icon: '🎵', bg: 'bg-purple-500/10',  text: 'text-purple-400',  border: 'border-purple-500/20' },
+  website:   { label: 'Calon Kandidat (Website)',   icon: '💻', bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    border: 'border-cyan-500/20' },
+  whatsapp:  { label: 'Calon Kandidat (WhatsApp)',  icon: '💬', bg: 'bg-teal-500/10',    text: 'text-teal-400',    border: 'border-teal-500/20' },
+};
+
+function getEntityChannelInfo(channel = 'sekolah', state = '') {
+  const ch = (channel || 'sekolah').toLowerCase();
+  const cfg = CHANNEL_MAP[ch] || CHANNEL_MAP.sekolah;
+  const isCustomer = state.toLowerCase() === 'customer';
+  if (isCustomer) {
+    return {
+      ...cfg,
+      label: `Kandidat (${cfg.icon})`,
+    };
+  }
+  return cfg;
+}
 
 // ── Event Type Configuration ──────────────────────────────────────────────────
 const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
@@ -123,6 +147,8 @@ export default function SiswaDetailPage() {
   const isProspect = resolvedState === 'prospect';
   const isLead = resolvedState === 'lead';
 
+  const channelInfo = getEntityChannelInfo(siswaDetail.source_channel, resolvedState);
+
   return (
     <div className="space-y-4 sm:space-y-5 pb-24 sm:pb-8">
 
@@ -135,9 +161,21 @@ export default function SiswaDetailPage() {
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold text-foreground truncate">{siswaDetail.nama_lengkap}</h1>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <School size={12} /> {siswaDetail.nama_sekolah} · {siswaDetail.id_siswa}
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl font-bold text-foreground truncate">{siswaDetail.nama_lengkap}</h1>
+            <span className={cn(
+              "px-2.5 py-0.5 rounded-full text-xs font-semibold border inline-flex items-center gap-1.5",
+              channelInfo.bg, channelInfo.text, channelInfo.border
+            )}>
+              <span>{channelInfo.icon}</span>
+              <span>{channelInfo.label}</span>
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+            <School size={12} className="shrink-0" />
+            <span>{siswaDetail.nama_sekolah || (siswaDetail.source_channel === 'sekolah' ? 'Asal Sekolah Belum Ditentukan' : 'Jalur Non-Sekolah / Mandiri')}</span>
+            <span>·</span>
+            <span className="font-mono">{siswaDetail.id_siswa}</span>
           </p>
         </div>
         {isOpportunity && (
@@ -177,7 +215,7 @@ export default function SiswaDetailPage() {
       </div>
 
       {/* ── Profile Grid ────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Kontak */}
         <div className="bg-card border rounded-xl p-4 space-y-4">
           <h2 className="text-sm font-semibold text-foreground border-b pb-2">Informasi Kontak</h2>
@@ -221,20 +259,52 @@ export default function SiswaDetailPage() {
           </div>
         </div>
 
-        {/* Info Lanjutan */}
-        <div className="bg-card border rounded-xl p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground border-b pb-2">Informasi Lanjutan</h2>
-          <div className="grid grid-cols-2 gap-y-4 gap-x-3">
+        {/* Sumber Intake & Program */}
+        <div className="bg-card border rounded-xl p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-foreground border-b pb-2 flex items-center gap-2">
+            <Share2 size={15} className="text-primary shrink-0" />
+            <span>Sumber Intake & Program</span>
+          </h2>
+          <div className="space-y-2.5 text-xs">
             <div>
-              <p className="text-xs text-muted-foreground mb-0.5">Rencana Lulus</p>
+              <p className="text-muted-foreground mb-0.5">Saluran Masuk</p>
+              <span className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium border text-xs",
+                channelInfo.bg, channelInfo.text, channelInfo.border
+              )}>
+                <span>{channelInfo.icon}</span>
+                <span>{channelInfo.label}</span>
+              </span>
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-0.5">Detail Sumber / Perekomendasi</p>
+              <p className="text-sm font-medium text-foreground">
+                {siswaDetail.source_detail || '–'}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-0.5">Pilihan Program / Layanan</p>
+              <p className="text-sm font-medium text-foreground">
+                {siswaDetail.kebutuhan_layanan || siswaDetail.nama_program || '–'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Lanjutan */}
+        <div className="bg-card border rounded-xl p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-foreground border-b pb-2">Informasi Lanjutan</h2>
+          <div className="grid grid-cols-2 gap-y-3 gap-x-3 text-xs">
+            <div>
+              <p className="text-muted-foreground mb-0.5">Rencana Lulus</p>
               <p className="text-sm font-medium text-foreground">{siswaDetail.rencana_lulus}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-0.5">Minat Awal</p>
+              <p className="text-muted-foreground mb-0.5">Minat Awal</p>
               <p className="text-sm font-medium text-foreground">{siswaDetail.minat_awal}</p>
             </div>
             <div className="col-span-2">
-              <p className="text-xs text-muted-foreground mb-0.5">Status Lama (Legacy)</p>
+              <p className="text-muted-foreground mb-0.5">Status Lama (Legacy)</p>
               <p className="text-xs text-muted-foreground">{siswaDetail.status_terkini}</p>
             </div>
           </div>
@@ -456,6 +526,9 @@ export default function SiswaDetailPage() {
         }}
         siswaId={id}
         siswaName={siswaDetail.nama_lengkap}
+        sourceChannel={siswaDetail.source_channel}
+        sourceDetail={siswaDetail.source_detail || undefined}
+        kebutuhanLayanan={siswaDetail.kebutuhan_layanan || undefined}
       />
       <AssessmentFNARModal
         isOpen={isAssessmentOpen}

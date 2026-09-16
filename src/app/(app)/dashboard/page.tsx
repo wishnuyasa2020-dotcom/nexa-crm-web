@@ -63,6 +63,9 @@ interface TaskItem {
   dueDate: string;
   dueCategory: string;
   siswaId?: string;
+  sourceChannel?: string;
+  sourceDetail?: string;
+  kebutuhanLayanan?: string;
 }
 
 interface TundaTarget {
@@ -307,16 +310,44 @@ export default function DashboardPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // ── Multi-Channel Intake Derived Metrics ──
+  const totalChannelLeads = Object.values(channelBreakdown).reduce((a, b) => a + Number(b), 0);
+  const channelChartData = Object.entries(channelBreakdown)
+    .map(([key, value]) => ({
+      key,
+      name: CHANNEL_CONFIG[key]?.label || key,
+      value: Number(value) || 0,
+      color: CHANNEL_CONFIG[key]?.color || '#94a3b8',
+      icon: CHANNEL_CONFIG[key]?.icon || '📌',
+    }))
+    .filter(item => item.value > 0);
+
+  const topChannel = channelChartData.length > 0
+    ? [...channelChartData].sort((a, b) => b.value - a.value)[0]
+    : null;
+
   // ── Derived stat cards ──
   const totalOverdue = taskCounts
     ? (taskCounts.overdue_1_7 + taskCounts.overdue_8_14 + taskCounts.overdue_gt14)
     : 0;
 
+  const activeSiswaLabel = selectedChannel === 'all'
+    ? 'Siswa Aktif'
+    : selectedChannel === 'sekolah'
+      ? 'Siswa Sekolah'
+      : 'Calon Kandidat';
+
+  const activeSiswaSub = selectedChannel === 'all'
+    ? (topChannel
+        ? `${stats?.totalSiswa ?? 0} di pipeline · Top: ${topChannel.icon} ${topChannel.name}`
+        : `${stats?.totalSiswa ?? 0} total di pipeline`)
+    : `Filter: ${CHANNEL_CONFIG[selectedChannel]?.icon || '📌'} ${CHANNEL_CONFIG[selectedChannel]?.label || selectedChannel}`;
+
   const statCards = [
     {
-      label: 'Siswa Aktif',
+      label: activeSiswaLabel,
       value: stats?.prospekAktif ?? '-',
-      sub: `${stats?.totalSiswa ?? 0} total di pipeline`,
+      sub: activeSiswaSub,
       icon: Users,
       color: 'text-primary',
     },
@@ -342,18 +373,6 @@ export default function DashboardPage() {
       color: 'text-emerald-400',
     },
   ];
-
-  // ── Multi-Channel Intake Derived Metrics ──
-  const totalChannelLeads = Object.values(channelBreakdown).reduce((a, b) => a + Number(b), 0);
-  const channelChartData = Object.entries(channelBreakdown)
-    .map(([key, value]) => ({
-      key,
-      name: CHANNEL_CONFIG[key]?.label || key,
-      value: Number(value) || 0,
-      color: CHANNEL_CONFIG[key]?.color || '#94a3b8',
-      icon: CHANNEL_CONFIG[key]?.icon || '📌',
-    }))
-    .filter(item => item.value > 0);
 
   // ── Loading skeleton ──
   if (loading) {
@@ -894,27 +913,42 @@ export default function DashboardPage() {
                 {tasks.map((t, i) => (
                   <tr key={`${t.tipe}-${t.id}-${i}`} className="hover:bg-secondary/30 transition-colors">
                     {/* Target & Entity Badge */}
-                    <td className="px-4 py-3 text-foreground font-medium max-w-44 sm:max-w-56">
+                    <td className="px-4 py-3 text-foreground font-medium max-w-56 sm:max-w-72">
                       <div className="flex items-center gap-2 flex-wrap">
                         {t.tipe === 'sekolah' ? (
-                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1 shrink-0">
                             🟣 Sekolah
                           </span>
                         ) : t.tipe === 'siswa' ? (
-                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
-                            🟠 Siswa
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 inline-flex items-center gap-1 shrink-0">
+                            🟠 {t.sourceChannel && t.sourceChannel !== 'sekolah' ? 'Calon Kandidat' : 'Siswa'}
                           </span>
                         ) : t.tipe === 'homevisit' ? (
-                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 inline-flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 inline-flex items-center gap-1 shrink-0">
                             🏠 Home Visit
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 inline-flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 inline-flex items-center gap-1 shrink-0">
                             ⚡ Ekstra
                           </span>
                         )}
-                        <span className="truncate">{t.nama}</span>
+                        <span className="truncate font-semibold">{t.nama}</span>
                       </div>
+                      {(t.tipe === 'siswa' || t.tipe === 'homevisit') && (
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap text-xs">
+                          <span className="inline-flex items-center gap-1 text-muted-foreground">
+                            <span>{CHANNEL_CONFIG[t.sourceChannel || 'sekolah']?.icon || '🏫'}</span>
+                            <span>{CHANNEL_CONFIG[t.sourceChannel || 'sekolah']?.label || 'Sekolah'}</span>
+                            {t.sourceDetail && <span className="text-muted-foreground/70">({t.sourceDetail})</span>}
+                          </span>
+                          {t.kebutuhanLayanan && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-xs bg-primary/10 text-primary border border-primary/20 shrink-0">
+                              <span>🎯</span>
+                              <span className="truncate max-w-44">{t.kebutuhanLayanan}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </td>
 
                     {/* Pipeline State & Intent */}
@@ -1014,6 +1048,9 @@ export default function DashboardPage() {
           onClose={() => setEksekusiTarget(null)}
           siswaId={eksekusiTarget.siswaId || eksekusiTarget.id}
           siswaName={eksekusiTarget.nama}
+          sourceChannel={eksekusiTarget.sourceChannel}
+          sourceDetail={eksekusiTarget.sourceDetail}
+          kebutuhanLayanan={eksekusiTarget.kebutuhanLayanan}
           onSuccess={handleEksekusiSuccess}
         />
       )}

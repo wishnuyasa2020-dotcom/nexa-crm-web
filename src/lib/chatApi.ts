@@ -31,6 +31,9 @@ export interface Conversation {
   unread_count:      number;
   pending_registration_token?: string | null;
   has_payment_proof?: boolean;
+  source_channel?: string | null;
+  source_detail?: string | null;
+  kebutuhan_layanan?: string | null;
 }
 
 export interface ChatMessage {

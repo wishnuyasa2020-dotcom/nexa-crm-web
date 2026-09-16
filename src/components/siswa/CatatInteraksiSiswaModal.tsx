@@ -5,6 +5,7 @@ import { X, MessageCircle, Phone, MapPin, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
 import type { InteractionOutcome, InteractionChannel, LogInteraksiPayload } from '@/lib/types/siswa.types';
+import { getChannelConfig } from '@/lib/constants/channel';
 
 interface CatatInteraksiSiswaModalProps {
   isOpen:    boolean;
@@ -12,6 +13,9 @@ interface CatatInteraksiSiswaModalProps {
   onSuccess: () => void;
   siswaId:   string;
   siswaName: string;
+  sourceChannel?: string;
+  sourceDetail?: string;
+  kebutuhanLayanan?: string;
 }
 
 const CHANNEL_OPTIONS: { value: InteractionChannel; label: string; icon: React.ReactNode }[] = [
@@ -32,7 +36,8 @@ const OUTCOME_OPTIONS: { value: InteractionOutcome; label: string; group: string
 ];
 
 export function CatatInteraksiSiswaModal({
-  isOpen, onClose, onSuccess, siswaId, siswaName
+  isOpen, onClose, onSuccess, siswaId, siswaName,
+  sourceChannel, sourceDetail, kebutuhanLayanan
 }: CatatInteraksiSiswaModalProps) {
   const [channel,    setChannel]    = useState<InteractionChannel>('WhatsApp');
   const [outcome,    setOutcome]    = useState<InteractionOutcome | ''>('');
@@ -41,6 +46,8 @@ export function CatatInteraksiSiswaModal({
   const [dueDate,    setDueDate]    = useState('');
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState('');
+
+  const channelMeta = getChannelConfig(sourceChannel);
 
   if (!isOpen) return null;
 
@@ -81,11 +88,29 @@ export function CatatInteraksiSiswaModal({
       <div className="w-full max-w-md bg-card rounded-2xl border shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
-          <div>
+          <div className="min-w-0 flex-1 pr-2">
             <h2 className="font-semibold text-foreground text-sm">➕ Catat Interaksi</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">{siswaName}</p>
+            <div className="flex items-center gap-1.5 flex-wrap mt-1">
+              <span className="text-xs font-bold text-foreground truncate">{siswaName}</span>
+              {sourceChannel && (
+                <span className={cn(
+                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border shrink-0",
+                  channelMeta.badgeClass
+                )}>
+                  <span>{channelMeta.icon}</span>
+                  <span>{channelMeta.label}</span>
+                  {sourceDetail && <span className="opacity-80">({sourceDetail})</span>}
+                </span>
+              )}
+              {kebutuhanLayanan && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 shrink-0">
+                  <span>🎯</span>
+                  <span className="truncate max-w-44">{kebutuhanLayanan}</span>
+                </span>
+              )}
+            </div>
           </div>
-          <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground transition-colors">
+          <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground transition-colors shrink-0">
             <X size={16} />
           </button>
         </div>

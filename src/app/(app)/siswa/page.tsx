@@ -15,23 +15,15 @@ import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
 import { AssignKelasModal } from '@/components/siswa/AssignKelasModal';
 import type { Siswa, CommercialState, SiswaIntent } from '@/lib/types/siswa.types';
 
-// ── Channel Badge ─────────────────────────────────────────────────────────────
-const CHANNEL_CONFIG: Record<string, { label: string; className: string }> = {
-  'sekolah':   { label: '🏫 Sekolah',   className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-  'relasi':    { label: '🤝 Relasi',    className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  'instagram': { label: '📸 IG',        className: 'bg-pink-500/10 text-pink-500 border-pink-500/20' },
-  'facebook':  { label: '📘 FB',        className: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' },
-  'tiktok':    { label: '🎵 TikTok',    className: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
-  'website':   { label: '🌐 Web',       className: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' },
-  'whatsapp':  { label: '💬 WA',        className: 'bg-teal-500/10 text-teal-500 border-teal-500/20' },
-};
+import { getChannelConfig } from '@/lib/constants/channel';
 
+// ── Channel Badge ─────────────────────────────────────────────────────────────
 function ChannelBadge({ channel }: { channel?: string }) {
-  const ch = (channel || 'sekolah').toLowerCase();
-  const config = CHANNEL_CONFIG[ch] || CHANNEL_CONFIG['sekolah'];
+  const config = getChannelConfig(channel);
   return (
-    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-xs border font-medium shrink-0', config.className)}>
-      {config.label}
+    <span className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border font-medium shrink-0', config.badgeClass)}>
+      <span>{config.icon}</span>
+      <span>{config.label}</span>
     </span>
   );
 }
@@ -293,11 +285,18 @@ export default function SiswaPage() {
                         </span>
                         <ChannelBadge channel={s.sourceChannel} />
                       </div>
-                      {s.sourceDetail && (
-                        <p className="text-xs text-muted-foreground truncate mt-0.5" title={s.sourceDetail}>
-                          📌 {s.sourceDetail}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                        {s.sourceDetail && (
+                          <span className="text-xs text-muted-foreground truncate" title={s.sourceDetail}>
+                            📌 {s.sourceDetail}
+                          </span>
+                        )}
+                        {s.kebutuhanLayanan && (
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-xs bg-primary/10 text-primary border border-primary/20 shrink-0">
+                            🎯 {s.kebutuhanLayanan}
+                          </span>
+                        )}
+                      </div>
                       {!s.wa && s.bsuid ? (
                         <div className="mt-1">
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary/50 text-muted-foreground border">
@@ -377,9 +376,16 @@ export default function SiswaPage() {
                       </span>
                     )}
                   </div>
-                  {s.sourceDetail && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">📌 {s.sourceDetail}</p>
-                  )}
+                  <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                    {s.sourceDetail && (
+                      <span className="text-xs text-muted-foreground truncate">📌 {s.sourceDetail}</span>
+                    )}
+                    {s.kebutuhanLayanan && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-xs bg-primary/10 text-primary border border-primary/20 shrink-0">
+                        🎯 {s.kebutuhanLayanan}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground truncate mt-0.5">
                     {s.namaSekolah || <span className="italic">Non-Sekolah</span>}
                   </p>

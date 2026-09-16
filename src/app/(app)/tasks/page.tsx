@@ -8,6 +8,7 @@ import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
 import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
+import { getChannelConfig } from '@/lib/constants/channel';
 import apiClient from '@/lib/apiClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -31,6 +32,9 @@ interface Task {
   cro?: string;
   pj?: string;
   aging?: number;
+  sourceChannel?: string;
+  sourceDetail?: string;
+  kebutuhanLayanan?: string;
 }
 
 interface TaskCounts {
@@ -272,7 +276,7 @@ export default function TasksPage() {
                     </span>
                   ) : task.tipe === 'siswa' ? (
                     <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center gap-1">
-                      🟠 <span>Siswa (B2C)</span>
+                      🟠 <span>{task.sourceChannel && task.sourceChannel !== 'sekolah' ? 'Calon Kandidat (B2C)' : 'Siswa (B2C)'}</span>
                     </span>
                   ) : task.tipe === 'homevisit' ? (
                     <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center gap-1">
@@ -320,6 +324,26 @@ export default function TasksPage() {
                 <h3 className="text-base sm:text-lg font-bold text-foreground mb-1.5 leading-tight text-wrap">
                   {task.nama}
                 </h3>
+                {(task.tipe === 'siswa' || task.tipe === 'homevisit') && (
+                  <div className="flex items-center gap-1.5 mb-2 flex-wrap text-xs">
+                    {(() => {
+                      const chMeta = getChannelConfig(task.sourceChannel);
+                      return (
+                        <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium', chMeta.badgeClass)}>
+                          <span>{chMeta.icon}</span>
+                          <span>{chMeta.label}</span>
+                          {task.sourceDetail && <span className="opacity-80">({task.sourceDetail})</span>}
+                        </span>
+                      );
+                    })()}
+                    {task.kebutuhanLayanan && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-medium">
+                        <span>🎯</span>
+                        <span>{task.kebutuhanLayanan}</span>
+                      </span>
+                    )}
+                  </div>
+                )}
                 <p className="text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
                     {task.nextAction}
@@ -398,6 +422,9 @@ export default function TasksPage() {
           onClose={() => setEksekusiTarget(null)}
           siswaId={eksekusiTarget.siswaId || eksekusiTarget.id}
           siswaName={eksekusiTarget.nama}
+          sourceChannel={eksekusiTarget.sourceChannel}
+          sourceDetail={eksekusiTarget.sourceDetail}
+          kebutuhanLayanan={eksekusiTarget.kebutuhanLayanan}
           onSuccess={handleEksekusiSuccess}
         />
       )}

@@ -868,6 +868,9 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
         }}
         siswaId={String(conversation?.id_siswa || '')}
         siswaName={conversation?.student_name || conversation?.wa_number || ''}
+        sourceChannel={conversation?.source_channel || undefined}
+        sourceDetail={conversation?.source_detail || undefined}
+        kebutuhanLayanan={conversation?.kebutuhan_layanan || undefined}
       />
 
       {/* Location Modal */}

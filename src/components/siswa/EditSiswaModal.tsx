@@ -18,6 +18,9 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
   const [formData, setFormData] = useState({
     nama: '',
     idSekolah: '',
+    sourceChannel: 'sekolah',
+    sourceDetail: '',
+    kebutuhanLayanan: '',
     kelas: '',
     wa: '',
     email: '',
@@ -53,8 +56,11 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
           setFormData({
             nama: detail.nama_lengkap || '',
             idSekolah: detail.id_sekolah || '',
+            sourceChannel: detail.source_channel || 'sekolah',
+            sourceDetail: detail.source_detail || '',
+            kebutuhanLayanan: detail.kebutuhan_layanan || '',
             kelas: detail.kelas || '',
-            wa: detail.no_wa || '',
+            wa: detail.wa || detail.no_wa || '',
             email: detail.email || '',
             alamat: detail.alamat || '',
             minatAwal: detail.minat_awal || '',
@@ -68,7 +74,7 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
         .finally(() => setFetching(false));
     } else {
       setFormData({
-        nama: '', idSekolah: '', kelas: '', wa: '', email: '', alamat: '',
+        nama: '', idSekolah: '', sourceChannel: 'sekolah', sourceDetail: '', kebutuhanLayanan: '', kelas: '', wa: '', email: '', alamat: '',
         minatAwal: '', rencanaLulus: '', orangtuaTahu: '', dueDate: '', catatan: ''
       });
     }
@@ -82,8 +88,12 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nama || !formData.idSekolah) {
-      toast.error('Nama & Sekolah wajib diisi');
+    if (!formData.nama) {
+      toast.error('Nama lengkap wajib diisi');
+      return;
+    }
+    if (formData.sourceChannel === 'sekolah' && !formData.idSekolah) {
+      toast.error('Asal sekolah wajib dipilih untuk jalur kunjungan sekolah');
       return;
     }
     
@@ -91,7 +101,10 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
     try {
       const payload = {
         nama_lengkap: formData.nama,
-        id_sekolah: formData.idSekolah,
+        id_sekolah: formData.idSekolah || null,
+        source_channel: formData.sourceChannel,
+        source_detail: formData.sourceDetail || null,
+        kebutuhan_layanan: formData.kebutuhanLayanan || null,
         kelas: formData.kelas,
         no_wa: formData.wa,
         email: formData.email,
@@ -137,14 +150,75 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
                 <input required name="nama" value={formData.nama} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" placeholder="Budi Santoso" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Asal Sekolah *</label>
-                <select required name="idSekolah" value={formData.idSekolah} onChange={handleChange} className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none">
-                  <option value="">-- Pilih Sekolah --</option>
+                <label className="text-sm font-medium text-foreground">Sumber Lead / Channel *</label>
+                <select
+                  name="sourceChannel"
+                  value={formData.sourceChannel}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
+                >
+                  <option value="sekolah">🏫 Kunjungan Sekolah / Sosialisasi</option>
+                  <option value="relasi">🤝 Relasi / Rekomendasi Alumni</option>
+                  <option value="instagram">📸 Instagram</option>
+                  <option value="facebook">🌐 Facebook</option>
+                  <option value="tiktok">🎵 TikTok</option>
+                  <option value="website">💻 Website / Landing Page</option>
+                  <option value="whatsapp">💬 WhatsApp Langsung</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">
+                  Asal Sekolah {formData.sourceChannel === 'sekolah' ? '*' : '(Opsional)'}
+                </label>
+                <select
+                  required={formData.sourceChannel === 'sekolah'}
+                  name="idSekolah"
+                  value={formData.idSekolah}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
+                >
+                  <option value="">-- {formData.sourceChannel === 'sekolah' ? 'Pilih Sekolah *' : 'Pilih Sekolah (Opsional)'} --</option>
                   {sekolahList.map((s, i) => (
                     <option key={s.value || i} value={s.value}>{s.text}</option>
                   ))}
                 </select>
               </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">
+                  {formData.sourceChannel === 'relasi'
+                    ? 'Nama Alumni / Perekomendasi'
+                    : formData.sourceChannel === 'sekolah'
+                    ? 'Detail Sesi / Acara'
+                    : 'Akun / Campaign / Link'}
+                </label>
+                <input
+                  name="sourceDetail"
+                  value={formData.sourceDetail}
+                  onChange={handleChange}
+                  placeholder={
+                    formData.sourceChannel === 'relasi'
+                      ? 'Contoh: Alumni Bayu (Batch 12)'
+                      : formData.sourceChannel === 'instagram'
+                      ? 'Contoh: @derma_official / DM Promo'
+                      : 'Detail sumber...'
+                  }
+                  className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Pilihan Program / Kebutuhan Layanan</label>
+              <input
+                name="kebutuhanLayanan"
+                value={formData.kebutuhanLayanan}
+                onChange={handleChange}
+                placeholder="Contoh: Tokutei Ginou Kaigo / Magang Manufaktur"
+                className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
