@@ -127,12 +127,63 @@ export default function DashboardPage() {
   });
 
   const channelScrollRef = useRef<HTMLDivElement>(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const dragStartX = useRef(0);
+  const dragScrollLeft = useRef(0);
+  const hasDraggedRef = useRef(false);
 
   const scrollChannel = (direction: 'left' | 'right') => {
-    if (channelScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -220 : 220;
-      channelScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    const el = channelScrollRef.current;
+    if (!el) return;
+    const scrollAmount = direction === 'left' ? -250 : 250;
+    try {
+      el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    } catch {
+      el.scrollLeft += scrollAmount;
     }
+  };
+
+  useEffect(() => {
+    const el = channelScrollRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY !== 0 && el.scrollWidth > el.clientWidth) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const el = channelScrollRef.current;
+    if (!el) return;
+    setIsMouseDown(true);
+    hasDraggedRef.current = false;
+    dragStartX.current = e.pageX - el.offsetLeft;
+    dragScrollLeft.current = el.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown) return;
+    const el = channelScrollRef.current;
+    if (!el) return;
+    e.preventDefault();
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - dragStartX.current) * 1.5;
+    if (Math.abs(walk) > 5) {
+      hasDraggedRef.current = true;
+    }
+    el.scrollLeft = dragScrollLeft.current - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsMouseDown(false);
   };
 
   // ── Modal & Action States (Event-Sourcing) ──
@@ -402,29 +453,33 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="relative flex items-center gap-1.5 min-w-0 flex-1 sm:max-w-2xl sm:ml-auto">
+        <div className="relative flex items-center gap-2 min-w-0 flex-1">
           <button
             type="button"
             onClick={() => scrollChannel('left')}
-            className="hidden sm:inline-flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-foreground border border-border/80 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
             title="Scroll ke kiri"
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={16} />
           </button>
 
           <div
             ref={channelScrollRef}
-            onWheel={(e) => {
-              if (e.deltaY !== 0) {
-                e.currentTarget.scrollLeft += e.deltaY;
-              }
-            }}
-            className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none min-w-0 flex-1 touch-pan-x"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+            className={cn(
+              "flex items-center gap-2 overflow-x-auto pb-2 sm:pb-1.5 scrollbar-thin min-w-0 flex-1 touch-pan-x select-none",
+              isMouseDown ? "cursor-grabbing" : "cursor-grab"
+            )}
           >
             <button
-              onClick={() => setSelectedChannel('all')}
+              onClick={() => {
+                if (!hasDraggedRef.current) setSelectedChannel('all');
+              }}
               className={cn(
-                "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
+                "px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border shadow-2xs",
                 selectedChannel === 'all'
                   ? "bg-primary text-white border-primary shadow-xs font-semibold"
                   : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
@@ -445,9 +500,11 @@ export default function DashboardPage() {
               return (
                 <button
                   key={key}
-                  onClick={() => setSelectedChannel(key)}
+                  onClick={() => {
+                    if (!hasDraggedRef.current) setSelectedChannel(key);
+                  }}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border",
+                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border shadow-2xs",
                     isSelected
                       ? "bg-primary text-white border-primary shadow-xs font-semibold"
                       : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
@@ -469,10 +526,10 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => scrollChannel('right')}
-            className="hidden sm:inline-flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-foreground border border-border/80 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
             title="Scroll ke kanan"
           >
-            <ChevronRight size={14} />
+            <ChevronRight size={16} />
           </button>
         </div>
       </div>

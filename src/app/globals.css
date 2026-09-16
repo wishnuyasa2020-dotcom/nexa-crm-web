@@ -149,10 +149,13 @@
     scrollbar-width: thin;
     scrollbar-color: oklch(0.22 0.02 265) transparent;
   }
-  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: oklch(0.22 0.02 265);
     border-radius: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.35 0.02 265);
   }
 }
