@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { subscriptionApi, BillingOverviewData } from '@/lib/subscriptionApi';
 import UpgradeTierModal from '@/components/subscription/UpgradeTierModal';
+import WhatsAppCreditCard from './WhatsAppCreditCard';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -187,6 +188,9 @@ export default function BillingTab() {
           </div>
         </div>
       </div>
+
+      {/* ── WhatsApp Credit Messaging (Meta API) ── */}
+      <WhatsAppCreditCard />
 
       {/* ── Invoices History Table ── */}
       <div className="bg-card border rounded-2xl p-6 shadow-sm">
