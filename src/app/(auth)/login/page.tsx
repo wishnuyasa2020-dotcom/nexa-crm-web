@@ -55,13 +55,13 @@ export default function LoginPage() {
             </svg>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Nexa CRM</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">NexaMOS CRM</h1>
             <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/20 tracking-wide uppercase">
               Demo Version
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">Masuk ke dasbor operasional</p>
-          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
+          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs">
             <span>💡</span>
             <span>Data demo direset otomatis tiap <strong>Minggu 21:00 WIB</strong></span>
           </div>
@@ -72,7 +72,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
               <label htmlFor="username" className="text-sm font-medium text-foreground">
-                Username
+                Username atau Email
               </label>
               <input
                 id="username"
@@ -82,7 +82,7 @@ export default function LoginPage() {
                 onChange={e => setUsername(e.target.value)}
                 required
                 className="w-full px-3 py-2.5 rounded-lg bg-input border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
-                placeholder="Masukkan username"
+                placeholder="Masukkan username atau email"
               />
             </div>
 
@@ -144,7 +144,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          © {new Date().getFullYear()} Nexa OS · Sistem CRM Internal
+          © {new Date().getFullYear()} NexaMOS · Sistem CRM Internal
         </p>
       </div>
     </div>
