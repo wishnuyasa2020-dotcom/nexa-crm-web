@@ -5,6 +5,7 @@ import { X, User, Lock, Eye, EyeOff, Check, AlertCircle, Loader2, ShieldCheck, M
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/useAuthStore';
+import { toast } from 'sonner';
 
 interface ProfileUser {
   nama?: string;
@@ -109,13 +110,19 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
       });
       
       setStatus('success');
+      toast.success('Password berhasil diperbarui! Email notifikasi keamanan telah dikirim ke Admin.');
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setTimeout(() => setStatus('idle'), 3500);
+      setTimeout(() => {
+        setStatus('idle');
+        onClose();
+      }, 1200);
     } catch (err: any) {
+      const msg = err.response?.data?.message || 'Gagal mengubah password. Pastikan password lama sesuai.';
       setStatus('error');
-      setErrorMsg(err.response?.data?.message || 'Gagal mengubah password. Pastikan password lama sesuai.');
+      setErrorMsg(msg);
+      toast.error(msg);
     }
   };
 
