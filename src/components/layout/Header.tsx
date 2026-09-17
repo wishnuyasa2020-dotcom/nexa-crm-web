@@ -26,6 +26,7 @@ export default function Header({ title }: { title?: string }) {
     activeCohort,
     selectedCohort,
     isHistoricalReadOnly,
+    loading: cohortLoading,
     fetchCohorts,
     selectCohort,
   } = useCohortStore();
@@ -104,7 +105,9 @@ export default function Header({ title }: { title?: string }) {
               >
                 <Calendar size={13} className={isHistoricalReadOnly ? "text-amber-500" : "text-primary"} />
                 <span className="hidden sm:inline text-muted-foreground font-normal">Cohort:</span>
-                <span>{selectedCohort?.nama_period || 'Memuat...'}</span>
+                <span>
+                  {selectedCohort?.nama_period || (cohortLoading ? 'Memuat...' : (cohorts.length === 0 ? 'Belum Ada Cohort' : 'Pilih Cohort'))}
+                </span>
                 {isHistoricalReadOnly ? (
                   <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 font-bold">Arsip</span>
                 ) : (
