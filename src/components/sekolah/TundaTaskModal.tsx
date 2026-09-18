@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Calendar as CalendarIcon, Loader2, CheckCircle2 } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, taskTipe }: Props) {
+  const { t } = useTranslation();
   const [loading, setLoading]         = useState(false);
   const [tanggalBaru, setTanggalBaru] = useState('');
   const [alasanTunda, setAlasanTunda] = useState('');
@@ -28,7 +30,7 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
     e.preventDefault();
     if (!tanggalBaru) return;
     if (!alasanTunda.trim()) {
-      setError('Alasan penundaan wajib diisi.');
+      setError(t('tasks.rescheduleReasonRequired'));
       return;
     }
 
@@ -74,11 +76,11 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
               <CalendarIcon size={16} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Tunda Agenda</h2>
+              <h2 className="text-sm font-bold text-foreground">{t('tasks.rescheduleModalTitle')}</h2>
               <p className="text-xs text-muted-foreground truncate max-w-52">{taskTitle}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" aria-label={t('tasks.cancel')}>
             <X size={18} />
           </button>
         </div>
@@ -87,7 +89,7 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
-              Tanggal Baru <span className="text-rose-400">*</span>
+              {t('tasks.newDate')} <span className="text-rose-400">*</span>
             </label>
             <input
               type="date"
@@ -101,14 +103,14 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
-              Alasan Tunda <span className="text-rose-400">*</span>
+              {t('tasks.rescheduleReason')} <span className="text-rose-400">*</span>
             </label>
             <textarea
               rows={3}
               required
               value={alasanTunda}
               onChange={(e) => { setAlasanTunda(e.target.value); setError(null); }}
-              placeholder="Kenapa agenda ini ditunda?"
+              placeholder={t('tasks.rescheduleReasonPlaceholder')}
               className="w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none placeholder:text-muted-foreground"
             />
           </div>
@@ -124,7 +126,7 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
               disabled={loading}
               className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors disabled:opacity-50"
             >
-              Batal
+              {t('tasks.cancel')}
             </button>
             <button
               type="submit"
@@ -132,11 +134,11 @@ export function TundaTaskModal({ isOpen, onClose, onSuccess, taskTitle, taskId, 
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:opacity-90 disabled:opacity-50 transition-all shadow-md shadow-primary/20"
             >
               {done ? (
-                <><CheckCircle2 size={14} /> Tersimpan!</>
+                <><CheckCircle2 size={14} /> {t('tasks.saved')}</>
               ) : loading ? (
-                <><Loader2 size={14} className="animate-spin" /> Menyimpan...</>
+                <><Loader2 size={14} className="animate-spin" /> {t('tasks.saving')}</>
               ) : (
-                'Simpan Perubahan'
+                t('tasks.saveChanges')
               )}
             </button>
           </div>

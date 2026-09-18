@@ -37,7 +37,7 @@ export function LanguageToggle({ variant = 'default', className }: LanguageToggl
         'inline-flex items-center rounded-full border transition-colors shrink-0',
         isCompact
           ? 'h-5 p-0.5 border-border/60 bg-muted/40 gap-0'
-          : 'h-7 p-0.5 border-border bg-muted/30 gap-0',
+          : 'h-7 p-0.5 bg-muted/30 gap-0',
         className
       )}
     >

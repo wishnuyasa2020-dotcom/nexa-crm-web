@@ -13,6 +13,7 @@ import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 import { useTranslation } from '@/hooks/useTranslation';
+import { LanguageToggle } from '@/components/layout/LanguageToggle';
 import apiClient from '@/lib/apiClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ const TAB_FILTER_MAP: Record<TabKey, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TasksPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { isGeneral } = useTenantVocabulary();
   const [activeTab, setActiveTab]   = useState<TabKey>('today');
   const [tasks, setTasks]           = useState<Task[]>([]);
@@ -92,12 +93,12 @@ export default function TasksPage() {
       setTasks(d.tasks || []);
       setCounts(d.counts || null);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Gagal memuat task';
+      const msg = e instanceof Error ? e.message : t('tasks.errorLoad');
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchTasks(activeTab);
@@ -111,7 +112,7 @@ export default function TasksPage() {
   const tabs = [
     {
       id: 'today' as TabKey,
-      label: 'Hari Ini',
+      label: t('tasks.tabToday'),
       icon: Calendar,
       count: counts?.hari_ini ?? 0,
       activeCls: 'bg-amber-500/10 text-amber-500 font-bold',
@@ -119,7 +120,7 @@ export default function TasksPage() {
     },
     {
       id: 'tomorrow' as TabKey,
-      label: 'Besok',
+      label: t('tasks.tabTomorrow'),
       icon: Calendar,
       count: counts?.besok ?? 0,
       activeCls: 'bg-blue-500/10 text-blue-500 font-bold',
@@ -127,7 +128,7 @@ export default function TasksPage() {
     },
     {
       id: 'upcoming' as TabKey,
-      label: 'Mendatang',
+      label: t('tasks.tabUpcoming'),
       icon: Calendar,
       count: counts?.akan_datang ?? 0,
       activeCls: 'bg-emerald-500/10 text-emerald-500 font-bold',
@@ -135,7 +136,7 @@ export default function TasksPage() {
     },
     {
       id: 'overdue' as TabKey,
-      label: 'Overdue',
+      label: t('tasks.tabOverdue'),
       icon: Clock,
       count: totalOverdue,
       activeCls: 'bg-rose-500/10 text-rose-500 font-bold',
@@ -143,7 +144,7 @@ export default function TasksPage() {
     },
     {
       id: 'completed' as TabKey,
-      label: 'Selesai',
+      label: t('tasks.tabCompleted'),
       icon: CheckSquare,
       count: activeTab === 'completed' ? tasks.length : null,
       activeCls: 'bg-slate-500/10 text-slate-400 font-bold',
@@ -167,14 +168,14 @@ export default function TasksPage() {
         setEksekusiTarget(task);
       } catch (err) {
         console.error('Gagal mengambil data sekolah', err);
-        alert('Gagal memuat data sekolah.');
+        alert(t('tasks.errorSchoolDetail'));
       } finally {
         setIsFetchingDetail(false);
       }
     } else if (task.tipe === 'siswa' || task.tipe === 'homevisit') {
       setEksekusiTarget(task);
     } else {
-      alert(`Fitur eksekusi untuk tipe ${task.tipe} belum tersedia.`);
+      alert(`${t('tasks.actionNotAvailable')} (${task.tipe})`);
     }
   };
 
@@ -191,23 +192,28 @@ export default function TasksPage() {
     <div className="space-y-5">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 text-white">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 text-white shrink-0">
             <CheckSquare size={20} />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Task List</h1>
-            <p className="text-xs text-muted-foreground">Agenda aktivitas operasional lapangan CRO</p>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-foreground truncate">{t('tasks.title')}</h1>
+            <p className="text-xs text-muted-foreground truncate">{t('tasks.subtitle')}</p>
           </div>
         </div>
-        <button
-          onClick={() => fetchTasks(activeTab)}
-          className="p-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-          title="Refresh"
-        >
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Language Toggle — sinkron dengan toggle induk (useLanguageStore) */}
+          <LanguageToggle variant="default" />
+          <button
+            onClick={() => fetchTasks(activeTab)}
+            className="p-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            title={t('tasks.refresh')}
+            aria-label={t('tasks.refresh')}
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* ── Navigation Tabs (Pills) ── */}
@@ -256,18 +262,18 @@ export default function TasksPage() {
             <p className="text-sm text-muted-foreground">{error}</p>
             <button
               onClick={() => fetchTasks(activeTab)}
-              className="px-4 py-1.5 text-xs bg-primary text-white rounded-lg hover:opacity-90 transition"
+              className="px-4 py-1.5 text-xs bg-primary text-white rounded-lg hover:opacity-90 transition cursor-pointer"
             >
-              Coba Lagi
+              {t('tasks.retry')}
             </button>
           </div>
         ) : tasks.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground text-sm border-2 border-dashed rounded-xl">
-            {activeTab === 'today'     ? '🎉 Tidak ada agenda untuk hari ini.' :
-             activeTab === 'tomorrow'  ? 'Tidak ada agenda untuk besok.' :
-             activeTab === 'upcoming'  ? 'Tidak ada agenda mendatang.' :
-             activeTab === 'overdue'   ? '🎉 Luar biasa! Tidak ada task overdue.' :
-                                         'Riwayat task kosong.'}
+            {activeTab === 'today'     ? t('tasks.emptyToday') :
+             activeTab === 'tomorrow'  ? t('tasks.emptyTomorrow') :
+             activeTab === 'upcoming'  ? t('tasks.emptyUpcoming') :
+             activeTab === 'overdue'   ? t('tasks.emptyOverdue') :
+                                         t('tasks.emptyCompleted')}
           </div>
         ) : (
           tasks.map((task) => (
@@ -290,7 +296,7 @@ export default function TasksPage() {
                     </span>
                   ) : (
                     <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
-                      ⚡ <span>Ekstra</span>
+                      ⚡ <span>{t('tasks.badgeExtra')}</span>
                     </span>
                   )}
 
@@ -331,7 +337,7 @@ export default function TasksPage() {
 
               {/* Card Body */}
               <div className="mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1.5 leading-tight text-wrap">
+                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1.5 leading-tight wrap-break-word">
                   {task.nama}
                 </h3>
                 {(task.tipe === 'siswa' || task.tipe === 'homevisit') && (
@@ -362,7 +368,7 @@ export default function TasksPage() {
                     <>
                       <span className="hidden sm:inline text-muted-foreground/50">•</span>
                       <span className="flex items-center gap-1">
-                        <span className="text-xs uppercase tracking-wider font-semibold text-foreground/70">PJ:</span>
+                        <span className="text-xs uppercase tracking-wider font-semibold text-foreground/70">{t('tasks.pic')}</span>
                         {task.cro || task.pj}
                       </span>
                     </>
@@ -370,7 +376,7 @@ export default function TasksPage() {
                   {task.aging !== undefined && task.aging > 0 && (
                     <>
                       <span className="hidden sm:inline text-muted-foreground/50">•</span>
-                      <span className="text-xs text-amber-400">aging {task.aging}h</span>
+                      <span className="text-xs text-amber-400">{t('tasks.aging')} {task.aging}{t('tasks.daysSuffix')}</span>
                     </>
                   )}
                 </p>
@@ -385,16 +391,16 @@ export default function TasksPage() {
                       tipe: task.tipe,
                       title: `[${task.nextAction}] ${task.nama}`
                     })}
-                    className="flex-1 min-h-11 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 min-h-11 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <Calendar size={15} /> 📅 Tunda
+                    <Calendar size={15} /> {t('tasks.rescheduleLabel')}
                   </button>
                   <button
                     onClick={() => handleEksekusi(task)}
                     disabled={isFetchingDetail && eksekusiTarget?.id === task.id}
-                    className="flex-1 min-h-11 py-2.5 rounded-xl gradient-primary text-xs sm:text-sm font-semibold text-white hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 disabled:opacity-50"
+                    className="flex-1 min-h-11 py-2.5 rounded-xl gradient-primary text-xs sm:text-sm font-semibold text-white hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 disabled:opacity-50 cursor-pointer"
                   >
-                    <CheckSquare size={15} /> ✅ Eksekusi
+                    <CheckSquare size={15} /> {t('tasks.executeLabel')}
                   </button>
                 </div>
               )}
