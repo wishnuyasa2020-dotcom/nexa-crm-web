@@ -193,6 +193,14 @@ const id = {
     topChannel:         'Top:',
     totalPipeline:      'total di pipeline',
     filterLabel:        'Filter:',
+    // Intake Channels
+    channelSekolah:     'Sekolah',
+    channelRelasi:      'Relasi',
+    channelInstagram:   'Instagram',
+    channelFacebook:    'Facebook',
+    channelTiktok:      'TikTok',
+    channelWebsite:     'Website',
+    channelWhatsapp:    'WhatsApp',
     // Charts
     funnelTitle:        'Funnel Siswa (B2C Pipeline)',
     funnelStages:       '5 Tahap Universal',
@@ -301,6 +309,46 @@ const id = {
     desktopInstall:   'Install App',
     desktopInstalling:'Installing...',
     desktopTitle:     'Install NexaMOS CRM sebagai app',
+  },
+
+  // ── Tier Upgrade Modal ────────────────────────────────────
+  tierModal: {
+    badge:            'Nexa CRM Tier Upgrade',
+    title:            'Tingkatkan Kapasitas LPK Anda',
+    subtitle:         'Pilih paket yang sesuai untuk memperluas kuota siswa, sekolah, dan jumlah akun CRO. Transaksi diproses aman & otomatis via Midtrans.',
+    monthly:          'Bulanan (30 Hari)',
+    yearly:           'Tahunan (365 Hari)',
+    saveUpTo:         'Hemat s/d 20%',
+    closeModal:       'Tutup modal',
+    // Success Screen
+    successTitle:     'Selamat! Upgrade Berhasil',
+    successDesc:      'Tenant Anda sekarang resmi berada di',
+    successUpdated:   'Semua kuota dan fitur telah otomatis diperbarui.',
+    backDashboard:    'Kembali ke Dashboard',
+    // Pending Verification
+    pendingTitle:     'Menunggu Konfirmasi Pembayaran',
+    invoiceId:        'Invoice ID:',
+    checkingStatus:   'Memeriksa...',
+    checkStatusNow:   'Cek Status Sekarang',
+    // Plan Cards
+    activeBadge:      'Aktif',
+    perMonth:         '/ bulan',
+    perYear:          '/ tahun',
+    lockedPeriod:     'Masa aktif terkunci:',
+    days:             'hari',
+    limitStudents:    'Batas Siswa:',
+    limitSchools:     'Batas Sekolah:',
+    croTeam:          'Tim CRO:',
+    croAccounts:      'Akun CRO',
+    featuresTitle:    'Fitur Unggulan:',
+    currentPlan:      'Paket Aktif Saat Ini',
+    preparingPayment: 'Menyiapkan Midtrans...',
+    selectPlan:       'Pilih',
+    // Footer
+    securityNotice:   'Pembayaran aman dienkripsi SSL & bersertifikasi Bank Indonesia via',
+    paymentQris:      'QRIS (GoPay/OVO/Dana)',
+    paymentVa:        'Virtual Account BCA/Mandiri/BNI/BRI',
+    paymentCc:        'Kartu Kredit',
   },
 } as const;
 

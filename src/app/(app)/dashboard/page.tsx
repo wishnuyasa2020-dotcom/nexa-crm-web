@@ -313,11 +313,24 @@ export default function DashboardPage() {
   useEffect(() => { load(); }, [load]);
 
   // ── Multi-Channel Intake Derived Metrics ──
+  const getChannelLabel = (key: string): string => {
+    switch (key) {
+      case 'sekolah':   return tr('dashboard.channelSekolah');
+      case 'relasi':    return tr('dashboard.channelRelasi');
+      case 'instagram': return tr('dashboard.channelInstagram');
+      case 'facebook':  return tr('dashboard.channelFacebook');
+      case 'tiktok':    return tr('dashboard.channelTiktok');
+      case 'website':   return tr('dashboard.channelWebsite');
+      case 'whatsapp':  return tr('dashboard.channelWhatsapp');
+      default:          return CHANNEL_CONFIG[key]?.label || key;
+    }
+  };
+
   const totalChannelLeads = Object.values(channelBreakdown).reduce((a, b) => a + Number(b), 0);
   const channelChartData = Object.entries(channelBreakdown)
     .map(([key, value]) => ({
       key,
-      name: CHANNEL_CONFIG[key]?.label || key,
+      name: getChannelLabel(key),
       value: Number(value) || 0,
       color: CHANNEL_CONFIG[key]?.color || '#94a3b8',
       icon: CHANNEL_CONFIG[key]?.icon || '📌',
@@ -343,7 +356,7 @@ export default function DashboardPage() {
     ? (topChannel
         ? `${stats?.totalSiswa ?? 0} ${tr('dashboard.pipelineTotal')} · ${tr('dashboard.topChannel')} ${topChannel.icon} ${topChannel.name}`
         : `${stats?.totalSiswa ?? 0} ${tr('dashboard.totalPipeline')}`)
-    : `${tr('dashboard.filterLabel')} ${CHANNEL_CONFIG[selectedChannel]?.icon || '📌'} ${CHANNEL_CONFIG[selectedChannel]?.label || selectedChannel}`;
+    : `${tr('dashboard.filterLabel')} ${CHANNEL_CONFIG[selectedChannel]?.icon || '📌'} ${getChannelLabel(selectedChannel)}`;
 
   const statCards = [
     {
@@ -469,7 +482,7 @@ export default function DashboardPage() {
           <span className="whitespace-nowrap">{tr('dashboard.filterSource')}</span>
           {selectedChannel !== 'all' && (
             <span className="text-xs text-muted-foreground font-normal whitespace-nowrap">
-              ({CHANNEL_CONFIG[selectedChannel]?.label || selectedChannel})
+              ({getChannelLabel(selectedChannel)})
             </span>
           )}
         </div>
@@ -532,7 +545,7 @@ export default function DashboardPage() {
                   )}
                 >
                   <span>{cfg.icon}</span>
-                  <span>{cfg.label}</span>
+                  <span>{getChannelLabel(key)}</span>
                   <span className={cn(
                     "px-1.5 py-0.2 rounded-full text-xs font-bold",
                     isSelected ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"

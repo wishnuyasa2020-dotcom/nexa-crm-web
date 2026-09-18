@@ -193,6 +193,14 @@ const en = {
     topChannel:         'Top:',
     totalPipeline:      'total in pipeline',
     filterLabel:        'Filter:',
+    // Intake Channels
+    channelSekolah:     'School',
+    channelRelasi:      'Referral',
+    channelInstagram:   'Instagram',
+    channelFacebook:    'Facebook',
+    channelTiktok:      'TikTok',
+    channelWebsite:     'Website',
+    channelWhatsapp:    'WhatsApp',
     // Charts
     funnelTitle:        'Student Funnel (B2C Pipeline)',
     funnelStages:       '5 Universal Stages',
@@ -301,6 +309,46 @@ const en = {
     desktopInstall:   'Install App',
     desktopInstalling:'Installing...',
     desktopTitle:     'Install NexaMOS CRM as an app',
+  },
+
+  // ── Tier Upgrade Modal ────────────────────────────────────
+  tierModal: {
+    badge:            'Nexa CRM Tier Upgrade',
+    title:            'Upgrade Your Organization Capacity',
+    subtitle:         'Choose the right plan to expand student, school, and CRO account quotas. Transactions are processed securely & automatically via Midtrans.',
+    monthly:          'Monthly (30 Days)',
+    yearly:           'Yearly (365 Days)',
+    saveUpTo:         'Save up to 20%',
+    closeModal:       'Close modal',
+    // Success Screen
+    successTitle:     'Congratulations! Upgrade Successful',
+    successDesc:      'Your tenant is now officially on',
+    successUpdated:   'All quotas and features have been automatically updated.',
+    backDashboard:    'Back to Dashboard',
+    // Pending Verification
+    pendingTitle:     'Waiting for Payment Confirmation',
+    invoiceId:        'Invoice ID:',
+    checkingStatus:   'Checking...',
+    checkStatusNow:   'Check Status Now',
+    // Plan Cards
+    activeBadge:      'Active',
+    perMonth:         '/ month',
+    perYear:          '/ year',
+    lockedPeriod:     'Locked active period:',
+    days:             'days',
+    limitStudents:    'Student Limit:',
+    limitSchools:     'School Limit:',
+    croTeam:          'CRO Team:',
+    croAccounts:      'CRO Accounts',
+    featuresTitle:    'Key Features:',
+    currentPlan:      'Current Active Plan',
+    preparingPayment: 'Preparing Midtrans...',
+    selectPlan:       'Select',
+    // Footer
+    securityNotice:   'Secure payment SSL encrypted & Bank Indonesia certified via',
+    paymentQris:      'QRIS (GoPay/OVO/Dana)',
+    paymentVa:        'Virtual Account BCA/Mandiri/BNI/BRI',
+    paymentCc:        'Credit Card',
   },
 } as const;
 

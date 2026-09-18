@@ -131,19 +131,19 @@ export function GlobalFAB() {
         )}
       >
         {isSpeedDialOpen && (
-          <div className="flex flex-col items-end gap-3 mb-2 animate-in slide-in-from-bottom-5 fade-in-20">
+          <div className="flex flex-col items-end gap-2.5 mb-1.5 animate-in slide-in-from-bottom-5 fade-in-20">
             <button
               onClick={() => {
                 setIsSpeedDialOpen(false);
                 setSearchAction('aktivitas');
               }}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2.5 group"
             >
-              <span className="px-3 py-1.5 bg-background border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="px-2.5 py-1 bg-background border shadow-xs rounded-lg text-xs md:text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                 Catat Aktivitas
               </span>
-              <div className="w-12 h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
-                <Zap size={20} className="text-amber-500" />
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
+                <Zap className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
               </div>
             </button>
             <button
@@ -151,13 +151,13 @@ export function GlobalFAB() {
                 setIsSpeedDialOpen(false);
                 setSearchAction('link');
               }}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2.5 group"
             >
-              <span className="px-3 py-1.5 bg-background border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="px-2.5 py-1 bg-background border shadow-xs rounded-lg text-xs md:text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                 Link Sosialisasi
               </span>
-              <div className="w-12 h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
-                <LinkIcon size={20} className="text-primary" />
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
+                <LinkIcon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               </div>
             </button>
             <button
@@ -165,13 +165,13 @@ export function GlobalFAB() {
                 setIsSpeedDialOpen(false);
                 router.push('/broadcast');
               }}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2.5 group"
             >
-              <span className="px-3 py-1.5 bg-background border shadow-sm rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="px-2.5 py-1 bg-background border shadow-xs rounded-lg text-xs md:text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                 Broadcast Pesan
               </span>
-              <div className="w-12 h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
-                <Radio size={20} className="text-violet-500" />
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
+                <Radio className="w-4 h-4 md:w-5 md:h-5 text-violet-500" />
               </div>
             </button>
           </div>
@@ -180,11 +180,15 @@ export function GlobalFAB() {
         <button
           onClick={() => setIsSpeedDialOpen(!isSpeedDialOpen)}
           className={cn(
-            "flex items-center justify-center w-14 h-14 rounded-full text-white shadow-lg transition-all duration-300 md:w-auto md:px-5 md:rounded-2xl",
+            "flex items-center justify-center w-9 h-9 md:w-auto md:h-12 rounded-full text-white shadow-lg transition-all duration-300 md:px-5 md:rounded-2xl",
             isSpeedDialOpen ? "bg-rose-500 shadow-rose-500/30 scale-105" : "gradient-primary shadow-primary/30 hover:scale-105 active:scale-95"
           )}
         >
-          {isSpeedDialOpen ? <X size={24} className="md:mr-2" /> : <Zap size={24} className="md:mr-2" />}
+          {isSpeedDialOpen ? (
+            <X className="w-4 h-4 md:w-5 md:h-5 md:mr-2 shrink-0" />
+          ) : (
+            <Zap className="w-4 h-4 md:w-5 md:h-5 md:mr-2 shrink-0" />
+          )}
           <span className="hidden md:inline font-bold">
             {isSpeedDialOpen ? 'Tutup Menu' : 'Tindakan'}
           </span>
