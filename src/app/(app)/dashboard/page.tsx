@@ -17,6 +17,7 @@ import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswa
 import UpgradeTierModal from '@/components/subscription/UpgradeTierModal';
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ const CHANNEL_CONFIG: Record<string, { label: string; icon: string; color: strin
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const { t: tr } = useTranslation(); // aliased to avoid collision with tasks.map((t, i) => ...)
   const [stats, setStats]             = useState<DashboardStats | null>(null);
   const [quota, setQuota]             = useState<QuotaInfo | null>(null);
   const [funnels, setFunnels]         = useState<FunnelItem[]>([]);
@@ -332,16 +334,16 @@ export default function DashboardPage() {
     : 0;
 
   const activeSiswaLabel = selectedChannel === 'all'
-    ? 'Siswa Aktif'
+    ? tr('dashboard.activeStudent')
     : selectedChannel === 'sekolah'
-      ? 'Siswa Sekolah'
-      : 'Calon Kandidat';
+      ? tr('dashboard.schoolStudent')
+      : tr('dashboard.candidate');
 
   const activeSiswaSub = selectedChannel === 'all'
     ? (topChannel
-        ? `${stats?.totalSiswa ?? 0} di pipeline · Top: ${topChannel.icon} ${topChannel.name}`
-        : `${stats?.totalSiswa ?? 0} total di pipeline`)
-    : `Filter: ${CHANNEL_CONFIG[selectedChannel]?.icon || '📌'} ${CHANNEL_CONFIG[selectedChannel]?.label || selectedChannel}`;
+        ? `${stats?.totalSiswa ?? 0} ${tr('dashboard.pipelineTotal')} · ${tr('dashboard.topChannel')} ${topChannel.icon} ${topChannel.name}`
+        : `${stats?.totalSiswa ?? 0} ${tr('dashboard.totalPipeline')}`)
+    : `${tr('dashboard.filterLabel')} ${CHANNEL_CONFIG[selectedChannel]?.icon || '📌'} ${CHANNEL_CONFIG[selectedChannel]?.label || selectedChannel}`;
 
   const statCards = [
     {
@@ -352,23 +354,23 @@ export default function DashboardPage() {
       color: 'text-primary',
     },
     {
-      label: 'Sekolah Di-handle',
+      label: tr('dashboard.schoolHandled'),
       value: stats?.totalSekolah ?? '-',
-      sub: 'periode ini',
+      sub: tr('dashboard.periodThis'),
       icon: School,
       color: 'text-violet-400',
     },
     {
-      label: 'Tasks Hari Ini',
+      label: tr('dashboard.todayTasks'),
       value: taskCounts?.hari_ini ?? '-',
-      sub: totalOverdue > 0 ? `⚠️ ${totalOverdue} overdue` : 'Semua on-track',
+      sub: totalOverdue > 0 ? `⚠️ ${totalOverdue} ${tr('dashboard.taskOverdue')}` : tr('dashboard.allOnTrack'),
       icon: CheckSquare,
       color: 'text-amber-400',
     },
     {
-      label: 'Konversi Bulan Ini',
+      label: tr('dashboard.conversionMonth'),
       value: stats?.totalTerdaftar ?? '-',
-      sub: 'siswa terdaftar',
+      sub: tr('dashboard.registered'),
       icon: TrendingUp,
       color: 'text-emerald-400',
     },
@@ -409,7 +411,7 @@ export default function DashboardPage() {
           onClick={load}
           className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
         >
-          <RefreshCw size={14} /> Coba Lagi
+          <RefreshCw size={14} /> {tr('dashboard.retryBtn')}
         </button>
       </div>
     );
@@ -448,13 +450,13 @@ export default function DashboardPage() {
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5 truncate">
-            Data real-time dari database · Diperbarui {lastRefresh.toLocaleTimeString('id-ID')}
+            {tr('dashboard.realtimeData')} {lastRefresh.toLocaleTimeString('id-ID')}
           </p>
         </div>
         <button
           onClick={load}
           className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
-          title="Refresh data"
+          title={tr('dashboard.refresh')}
         >
           <RefreshCw size={15} />
         </button>
@@ -464,7 +466,7 @@ export default function DashboardPage() {
       <div className="bg-card border rounded-xl p-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between shadow-xs min-w-0">
         <div className="flex items-center gap-2 text-xs font-semibold text-foreground shrink-0">
           <Share2 size={14} className="text-primary shrink-0" />
-          <span className="whitespace-nowrap">Filter Sumber Intake:</span>
+          <span className="whitespace-nowrap">{tr('dashboard.filterSource')}</span>
           {selectedChannel !== 'all' && (
             <span className="text-xs text-muted-foreground font-normal whitespace-nowrap">
               ({CHANNEL_CONFIG[selectedChannel]?.label || selectedChannel})
@@ -477,7 +479,7 @@ export default function DashboardPage() {
             type="button"
             onClick={() => scrollChannel('left')}
             className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-foreground border border-border/80 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
-            title="Scroll ke kiri"
+            title={tr('dashboard.scrollLeft')}
           >
             <ChevronLeft size={16} />
           </button>
@@ -504,7 +506,7 @@ export default function DashboardPage() {
                   : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
               )}
             >
-              <span>Semua</span>
+              <span>{tr('dashboard.allChannels')}</span>
               <span className={cn(
                 "px-1.5 py-0.2 rounded-full text-xs font-bold",
                 selectedChannel === 'all' ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
@@ -546,7 +548,7 @@ export default function DashboardPage() {
             type="button"
             onClick={() => scrollChannel('right')}
             className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-foreground border border-border/80 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
-            title="Scroll ke kanan"
+            title={tr('dashboard.scrollRight')}
           >
             <ChevronRight size={16} />
           </button>
@@ -563,18 +565,18 @@ export default function DashboardPage() {
                 <Users size={20} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Kuota Siswa Baru</p>
-                <p className="text-xs text-muted-foreground">Periode Tagihan Aktif</p>
+                <p className="text-sm font-semibold text-foreground">{tr('dashboard.quotaStudent')}</p>
+                <p className="text-xs text-muted-foreground">{tr('dashboard.quotaBillingPeriod')}</p>
               </div>
             </div>
             
             <div className="flex-1 w-full relative">
               <div className="flex justify-between text-xs mb-2">
                 <span className="text-foreground font-medium">
-                  {quota.usedSiswa.toLocaleString('id-ID')} terpakai
+                  {quota.usedSiswa.toLocaleString('id-ID')} {tr('dashboard.quotaUsed')}
                 </span>
                 <span className="text-muted-foreground">
-                  {quota.limitSiswa.toLocaleString('id-ID')} limit
+                  {quota.limitSiswa.toLocaleString('id-ID')} {tr('dashboard.quotaLimit')}
                 </span>
               </div>
               
@@ -596,11 +598,11 @@ export default function DashboardPage() {
                     onClick={() => setShowUpgradeModal(true)}
                     className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
                   >
-                    <span>Mendekati limit. Upgrade tier</span>
+                    <span>{tr('dashboard.quotaApproachLimit')}</span>
                     <Zap size={10} />
                   </button>
                 ) : (
-                  <span className="text-muted-foreground/70">Sisa kuota aman.</span>
+                  <span className="text-muted-foreground/70">{tr('dashboard.quotaSafe')}</span>
                 )}
               </div>
             </div>
@@ -613,18 +615,18 @@ export default function DashboardPage() {
                 <School size={20} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Kuota Sekolah Baru</p>
-                <p className="text-xs text-muted-foreground">Periode Tagihan Aktif</p>
+                <p className="text-sm font-semibold text-foreground">{tr('dashboard.quotaSchool')}</p>
+                <p className="text-xs text-muted-foreground">{tr('dashboard.quotaBillingPeriod')}</p>
               </div>
             </div>
             
             <div className="flex-1 w-full relative">
               <div className="flex justify-between text-xs mb-2">
                 <span className="text-foreground font-medium">
-                  {quota.usedSekolah.toLocaleString('id-ID')} terpakai
+                  {quota.usedSekolah.toLocaleString('id-ID')} {tr('dashboard.quotaUsed')}
                 </span>
                 <span className="text-muted-foreground">
-                  {quota.limitSekolah.toLocaleString('id-ID')} limit
+                  {quota.limitSekolah.toLocaleString('id-ID')} {tr('dashboard.quotaLimit')}
                 </span>
               </div>
               
@@ -646,11 +648,11 @@ export default function DashboardPage() {
                     onClick={() => setShowUpgradeModal(true)}
                     className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
                   >
-                    <span>Mendekati limit. Upgrade tier</span>
+                    <span>{tr('dashboard.quotaApproachLimit')}</span>
                     <Zap size={10} />
                   </button>
                 ) : (
-                  <span className="text-muted-foreground/70">Sisa kuota aman.</span>
+                  <span className="text-muted-foreground/70">{tr('dashboard.quotaSafe')}</span>
                 )}
               </div>
             </div>
@@ -663,18 +665,18 @@ export default function DashboardPage() {
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Kuota User Aktif</p>
-                <p className="text-xs text-muted-foreground">Admin, Manager & CRO</p>
+                <p className="text-sm font-semibold text-foreground">{tr('dashboard.quotaUser')}</p>
+                <p className="text-xs text-muted-foreground">{tr('dashboard.quotaUserSubtitle')}</p>
               </div>
             </div>
             
             <div className="flex-1 w-full relative">
               <div className="flex justify-between text-xs mb-2">
                 <span className="text-foreground font-medium">
-                  {quota.usedUser.toLocaleString('id-ID')} terpakai
+                  {quota.usedUser.toLocaleString('id-ID')} {tr('dashboard.quotaUsed')}
                 </span>
                 <span className="text-muted-foreground">
-                  {quota.limitUser.toLocaleString('id-ID')} limit
+                  {quota.limitUser.toLocaleString('id-ID')} {tr('dashboard.quotaLimit')}
                 </span>
               </div>
               
@@ -696,11 +698,11 @@ export default function DashboardPage() {
                     onClick={() => setShowUpgradeModal(true)}
                     className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
                   >
-                    <span>Mendekati limit. Upgrade tier</span>
+                    <span>{tr('dashboard.quotaApproachLimit')}</span>
                     <Zap size={10} />
                   </button>
                 ) : (
-                  <span className="text-muted-foreground/70">Sisa kuota aman.</span>
+                  <span className="text-muted-foreground/70">{tr('dashboard.quotaSafe')}</span>
                 )}
               </div>
             </div>
@@ -734,8 +736,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-card border rounded-xl p-5 flex flex-col h-96 min-w-0">
           <div className="flex items-center gap-2 mb-4 shrink-0">
             <Activity size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Funnel Siswa (B2C Pipeline)</h2>
-            <span className="ml-auto text-xs text-muted-foreground">5 Tahap Universal</span>
+            <h2 className="text-sm font-semibold text-foreground">{tr('dashboard.funnelTitle')}</h2>
+            <span className="ml-auto text-xs text-muted-foreground">{tr('dashboard.funnelStages')}</span>
           </div>
           <div className="flex-1 min-h-0 min-w-0">
             {funnels.length > 0 ? (
@@ -756,7 +758,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                Belum ada data siswa di periode ini
+                {tr('dashboard.funnelEmpty')}
               </div>
             )}
           </div>
@@ -767,7 +769,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4 shrink-0">
             <div className="flex items-center gap-2">
               <Share2 size={16} className="text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">Intake Channel</h2>
+              <h2 className="text-sm font-semibold text-foreground">{tr('dashboard.intakeChannelTitle')}</h2>
             </div>
             <span className="text-xs text-muted-foreground font-medium">
               {totalChannelLeads} total
@@ -801,7 +803,7 @@ export default function DashboardPage() {
                               <span>{data.name}</span>
                             </p>
                             <p className="text-slate-300">
-                              Jumlah: <span className="font-bold text-white">{data.value}</span> ({pct}%)
+                              {tr('dashboard.tooltipCount')} <span className="font-bold text-white">{data.value}</span> ({pct}%)
                             </p>
                           </div>
                         );
@@ -814,7 +816,7 @@ export default function DashboardPage() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-xs text-muted-foreground gap-1.5">
                 <Share2 size={24} className="text-muted-foreground/40" />
-                <span>Belum ada data intake channel</span>
+                <span>{tr('dashboard.intakeEmpty')}</span>
               </div>
             )}
           </div>
@@ -843,7 +845,7 @@ export default function DashboardPage() {
         <div className="bg-card border rounded-xl p-5 flex flex-col h-96 lg:col-span-3 xl:col-span-1 min-w-0">
           <div className="flex items-center gap-2 mb-4 shrink-0">
             <Trophy size={16} className="text-amber-500" />
-            <h2 className="text-sm font-semibold text-foreground">Top CRO (Closing DP)</h2>
+            <h2 className="text-sm font-semibold text-foreground">{tr('dashboard.leaderboardTitle')}</h2>
           </div>
           <div className="flex-1 flex flex-col gap-3 overflow-y-auto">
             {leaderboard.length > 0 ? (
@@ -857,7 +859,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{cro.nama}</p>
-                    <p className="text-xs text-muted-foreground">{cro.totalClosing} closing</p>
+                    <p className="text-xs text-muted-foreground">{cro.totalClosing} {tr('dashboard.closingCount')}</p>
                   </div>
                   <span className="text-xs font-bold text-emerald-400">{cro.medal}</span>
                 </div>
@@ -865,7 +867,7 @@ export default function DashboardPage() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
                 <Trophy size={28} className="text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">Belum ada closing bulan ini</p>
+                <p className="text-sm text-muted-foreground">{tr('dashboard.leaderboardEmpty')}</p>
               </div>
             )}
           </div>
@@ -877,36 +879,36 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-5 py-4 border-b bg-secondary/10">
           <div className="flex items-center gap-2 flex-wrap">
             <CheckSquare size={16} className="text-primary shrink-0" />
-            <h2 className="text-sm font-semibold text-foreground">Tasks Prioritas (Fokus Hari Ini)</h2>
+            <h2 className="text-sm font-semibold text-foreground">{tr('dashboard.taskPriority')}</h2>
             {taskCounts && taskCounts.hari_ini > 0 && (
               <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-400">
-                {taskCounts.hari_ini} hari ini
+                {taskCounts.hari_ini} {tr('dashboard.taskToday')}
               </span>
             )}
             {totalOverdue > 0 && (
               <span className="px-2 py-0.5 rounded text-xs font-bold bg-rose-500/20 text-rose-400">
-                {totalOverdue} overdue
+                {totalOverdue} {tr('dashboard.taskOverdue')}
               </span>
             )}
           </div>
           <Link href="/tasks" className="text-xs text-primary hover:underline flex items-center gap-1 font-medium shrink-0 self-start sm:self-auto">
-            Lihat semua <ArrowUpRight size={13} />
+            {tr('dashboard.viewAll')} <ArrowUpRight size={13} />
           </Link>
         </div>
         <div className="overflow-x-auto">
           {tasks.length === 0 ? (
             <div className="py-12 px-5 text-center text-sm text-muted-foreground">
-              Tidak ada task yang perlu dieksekusi hari ini 🎉
+              {tr('dashboard.noTaskToday')}
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-secondary/20">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Target Entitas</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Pipeline State</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Next Action</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Due Date</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Aksi</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">{tr('dashboard.colEntity')}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">{tr('dashboard.colPipeline')}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">{tr('dashboard.colNextAction')}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">{tr('dashboard.colDueDate')}</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">{tr('dashboard.colActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -917,19 +919,19 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         {t.tipe === 'sekolah' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1 shrink-0">
-                            🟣 Sekolah
+                            {tr('dashboard.badgeSchool')}
                           </span>
                         ) : t.tipe === 'siswa' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 inline-flex items-center gap-1 shrink-0">
-                            🟠 {t.sourceChannel && t.sourceChannel !== 'sekolah' ? 'Calon Kandidat' : 'Siswa'}
+                            {t.sourceChannel && t.sourceChannel !== 'sekolah' ? tr('dashboard.badgeCandidate') : tr('dashboard.badgeStudent')}
                           </span>
                         ) : t.tipe === 'homevisit' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 inline-flex items-center gap-1 shrink-0">
-                            🏠 Home Visit
+                            {tr('dashboard.badgeHomeVisit')}
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 inline-flex items-center gap-1 shrink-0">
-                            ⚡ Ekstra
+                            {tr('dashboard.badgeExtra')}
                           </span>
                         )}
                         <span className="truncate font-semibold">{t.nama}</span>
@@ -991,23 +993,23 @@ export default function DashboardPage() {
                         <button
                           onClick={() => handleTundaClick(t)}
                           className="px-2.5 py-1.5 rounded-lg border bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition-all inline-flex items-center gap-1"
-                          title="Tunda Jadwal Task"
+                          title={tr('dashboard.postponeTitle')}
                         >
                           <Calendar size={13} />
-                          <span className="hidden sm:inline">Tunda</span>
+                          <span className="hidden sm:inline">{tr('dashboard.postpone')}</span>
                         </button>
                         <button
                           onClick={() => handleEksekusiClick(t)}
                           disabled={isFetchingDetail && eksekusiTarget?.id === t.id}
                           className="px-3 py-1.5 rounded-lg gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm shadow-primary/20 inline-flex items-center gap-1 disabled:opacity-50"
-                          title="Eksekusi Kunjungan / Catat Interaksi"
+                          title={tr('dashboard.executeTitle')}
                         >
                           {isFetchingDetail && eksekusiTarget?.id === t.id ? (
                             <Loader2 size={13} className="animate-spin" />
                           ) : (
                             <CheckSquare size={13} />
                           )}
-                          <span className="hidden sm:inline">Eksekusi</span>
+                          <span className="hidden sm:inline">{tr('dashboard.execute')}</span>
                         </button>
                       </div>
                     </td>
@@ -1067,3 +1069,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+

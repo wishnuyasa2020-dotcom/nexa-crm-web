@@ -57,13 +57,14 @@ export function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
+            aria-label={label}
+            title={label}
             className={cn(
-              "flex flex-col items-center justify-center w-full h-full gap-1 transition-colors",
+              "flex items-center justify-center w-full h-full transition-colors",
               isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon size={20} className={cn(isActive && "fill-primary/20")} />
-            <span className="text-xs font-medium">{label}</span>
+            <Icon size={35} className={cn(isActive && "fill-primary/20")} />
           </Link>
         );
       })}
