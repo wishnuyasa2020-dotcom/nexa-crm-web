@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
@@ -51,12 +52,17 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm mx-auto my-auto flex flex-col justify-center">
         {/* Logo / Brand */}
         <div className="text-center mb-3 sm:mb-6">
-          <div className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl gradient-primary mb-1.5 sm:mb-3 shadow-lg glow-primary">
-            <svg className="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28 mb-1 sm:mb-2">
+            <Image
+              src="/logo-nexa-02.png"
+              alt="NexaMOS CRM"
+              width={112}
+              height={112}
+              priority
+              className="w-full h-full object-contain drop-shadow-md"
+            />
           </div>
-          <h1 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight">NexaMOS CRM</h1>
+
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Sign in to your operational dashboard</p>
           <div className="mt-1.5 sm:mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs">
             <span>💡</span>
