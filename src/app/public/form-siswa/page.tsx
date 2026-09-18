@@ -277,7 +277,7 @@ function FormSosialisasiContent() {
                 </p>
               )}
               <p className="text-center text-xs text-muted-foreground mt-4 leading-relaxed px-4">
-                Data yang Anda kirimkan akan direkam ke dalam sistem Nexa OS secara aman.
+                Data yang Anda kirimkan akan direkam ke dalam sistem NexaMOS secara aman.
               </p>
             </div>
 

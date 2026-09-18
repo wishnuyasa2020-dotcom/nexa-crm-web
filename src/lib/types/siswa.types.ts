@@ -1,6 +1,8 @@
-// siswa.types.ts — Type definitions untuk Modul Siswa (Event-Sourcing Fase 1)
+// siswa.types.ts — Type definitions untuk Modul Siswa (Event-Sourcing Fase 1 & Canonical Lifecycle v2)
+import type { CanonicalState } from '@/lib/constants/lifecycle';
 
 export type CommercialState =
+  | CanonicalState
   | 'Audience'
   | 'Known'
   | 'Lead'
@@ -8,6 +10,7 @@ export type CommercialState =
   | 'Opportunity'
   | 'Registered Opportunity'
   | 'Customer'
+  | 'Post-Customer'
   | 'Disqualified';
 
 export type SiswaIntent = 'High' | 'Mid' | 'Low';

@@ -163,7 +163,7 @@ function ResetPasswordContent() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          © {new Date().getFullYear()} Nexa OS · Sistem CRM Internal
+          © {new Date().getFullYear()} NexaMOS · Sistem CRM Internal
         </p>
       </div>
     </div>

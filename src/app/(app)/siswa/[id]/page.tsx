@@ -18,6 +18,7 @@ import { ShareRegistrationLinkModal } from '@/components/siswa/ShareRegistration
 import { DecisionConsultationModal } from '@/components/home-visit/DecisionConsultationModal';
 import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
+import { normalizeLifecycleState, CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import type { SiswaDetail, AktivitasSiswa } from '@/lib/types/siswa.types';
 
 // ── Multi-Channel Configuration ───────────────────────────────────────────────
@@ -34,8 +35,8 @@ const CHANNEL_MAP: Record<string, { label: string; icon: string; bg: string; tex
 function getEntityChannelInfo(channel = 'sekolah', state = '') {
   const ch = (channel || 'sekolah').toLowerCase();
   const cfg = CHANNEL_MAP[ch] || CHANNEL_MAP.sekolah;
-  const isCustomer = state.toLowerCase() === 'customer';
-  if (isCustomer) {
+  const isCustomerOrPost = state === CANONICAL_STATES.CUSTOMER || state === CANONICAL_STATES.POST_CUSTOMER;
+  if (isCustomerOrPost) {
     return {
       ...cfg,
       label: `Kandidat (${cfg.icon})`,
@@ -133,19 +134,22 @@ export default function SiswaDetailPage() {
 
   // Single Source of Truth: commercial_state (Ontologi Nexa OS)
   // Fallback ke status_terkini hanya jika commercial_state kosong
-  const canonicalState = (siswaDetail.commercial_state || '').trim().toLowerCase();
+  const canonicalState = normalizeLifecycleState(siswaDetail.commercial_state || '');
   const legacyStatus = (siswaDetail.status_terkini || '').trim().toLowerCase();
 
   const resolvedState = canonicalState || (
-    legacyStatus === 'prospek aktif' ? 'prospect' :
-    legacyStatus === 'opportunity terbuka' ? 'opportunity' :
-    (legacyStatus === 'calon prospek' || legacyStatus === 'konsultasi') ? 'lead' :
-    legacyStatus
+    legacyStatus === 'prospek aktif' ? CANONICAL_STATES.PROSPECT :
+    legacyStatus === 'opportunity terbuka' ? CANONICAL_STATES.OPPORTUNITY :
+    (legacyStatus === 'calon prospek' || legacyStatus === 'konsultasi') ? CANONICAL_STATES.LEAD :
+    CANONICAL_STATES.LEAD
   );
 
-  const isOpportunity = resolvedState === 'opportunity';
-  const isProspect = resolvedState === 'prospect';
-  const isLead = resolvedState === 'lead';
+  const isOpportunity = resolvedState === CANONICAL_STATES.OPPORTUNITY;
+  const isProspect = resolvedState === CANONICAL_STATES.PROSPECT;
+  const isLead = resolvedState === CANONICAL_STATES.LEAD;
+  const isRegistered = resolvedState === CANONICAL_STATES.REGISTERED;
+  const isCustomer = resolvedState === CANONICAL_STATES.CUSTOMER;
+  const isPostCustomer = resolvedState === CANONICAL_STATES.POST_CUSTOMER;
 
   const channelInfo = getEntityChannelInfo(siswaDetail.source_channel, resolvedState);
 
@@ -178,7 +182,7 @@ export default function SiswaDetailPage() {
             <span className="font-mono">{siswaDetail.id_siswa}</span>
           </p>
         </div>
-        {isOpportunity && (
+        {(isOpportunity || isRegistered) && (
           <button
             onClick={() => setIsShareLinkOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors shadow-xs"
@@ -200,7 +204,7 @@ export default function SiswaDetailPage() {
 
       {/* ── State & Intent Badges ───────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
-        <CommercialStateBadge state={siswaDetail.commercial_state || 'Lead'} size="md" />
+        <CommercialStateBadge state={siswaDetail.commercial_state || CANONICAL_STATES.LEAD} size="md" />
         <IntentBadge intent={siswaDetail.intent} />
         {siswaDetail.due_date && (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border bg-secondary text-xs text-muted-foreground">
@@ -436,6 +440,18 @@ export default function SiswaDetailPage() {
             <Link2 size={15} className="shrink-0" />
             <span className="hidden sm:inline">Link Pendaftaran</span>
             <span className="sm:hidden">Formulir</span>
+          </button>
+        )}
+
+        {isRegistered && (
+          <button
+            onClick={() => router.push('/settings?tab=verifikasi')}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
+            title="Verifikasi Pembayaran DP Pelatihan untuk naik ke status Siswa/Peserta (Customer)"
+          >
+            <GraduationCap size={15} className="shrink-0" />
+            <span className="hidden sm:inline">Verifikasi DP Core</span>
+            <span className="sm:hidden">Verifikasi DP</span>
           </button>
         )}
 

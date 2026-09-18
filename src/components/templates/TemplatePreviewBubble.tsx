@@ -57,7 +57,7 @@ export function TemplatePreviewBubble({
   headerText,
   buttons = [],
   buttonObjects,
-  brandName = 'Nexa CRM',
+  brandName = 'NexaMOS',
   className,
 }: TemplatePreviewBubbleProps) {
 

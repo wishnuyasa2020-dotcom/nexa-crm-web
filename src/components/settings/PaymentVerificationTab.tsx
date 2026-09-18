@@ -114,8 +114,11 @@ export default function PaymentVerificationTab() {
   const [studentSearchResults, setStudentSearchResults] = useState<StudentSearchResult[]>([]);
   const [searchingStudents, setSearchingStudents] = useState(false);
   const [selectedStudentForManual, setSelectedStudentForManual] = useState<StudentSearchResult | null>(null);
+  const [manualPaymentType, setManualPaymentType] = useState<'form_fee' | 'core_deposit'>('form_fee');
   const [manualNominal, setManualNominal] = useState(500000);
   const [manualMethod, setManualMethod] = useState('Transfer Bank');
+  const [manualBank, setManualBank] = useState('BCA');
+  const [manualRef, setManualRef] = useState('');
   const [manualNotes, setManualNotes] = useState('');
   const [isSavingManual, setIsSavingManual] = useState(false);
 
@@ -241,19 +244,40 @@ export default function PaymentVerificationTab() {
     if (!selectedStudentForManual) return;
     try {
       setIsSavingManual(true);
-      const res = await apiClient.post('/api/v1/settings/payment-verifications/manual-verify', {
-        id_siswa: selectedStudentForManual.id_siswa,
-        nominal: manualNominal,
-        paymentMethod: manualMethod,
-        notes: manualNotes
-      });
-      if (res.data?.status === 'ok') {
-        toast.success('Pembayaran formulir siswa berhasil dicatat & diverifikasi!');
-        setIsManualModalOpen(false);
-        setSelectedStudentForManual(null);
-        setSearchStudentInput('');
-        setManualNotes('');
-        fetchVerifications();
+      if (manualPaymentType === 'core_deposit') {
+        const res = await apiClient.post('/api/v1/settings/payment-verifications/verify-core-deposit', {
+          id_siswa: selectedStudentForManual.id_siswa,
+          nominal: manualNominal,
+          payment_method: manualMethod,
+          notes: manualNotes,
+          bank_name: manualBank || manualMethod,
+          transaction_ref: manualRef || undefined
+        });
+        if (res.data?.status === 'ok') {
+          toast.success(res.data.message || 'DP Pelatihan siswa berhasil diverifikasi! Status resmi naik ke Siswa / Peserta (CUSTOMER).');
+          setIsManualModalOpen(false);
+          setSelectedStudentForManual(null);
+          setSearchStudentInput('');
+          setManualNotes('');
+          setManualRef('');
+          fetchVerifications();
+        }
+      } else {
+        const res = await apiClient.post('/api/v1/settings/payment-verifications/manual-verify', {
+          id_siswa: selectedStudentForManual.id_siswa,
+          nominal: manualNominal,
+          paymentMethod: manualMethod,
+          notes: manualNotes
+        });
+        if (res.data?.status === 'ok') {
+          toast.success(res.data.message || 'Pembayaran formulir siswa berhasil dicatat! Status resmi naik ke Siswa Terdaftar (REGISTERED).');
+          setIsManualModalOpen(false);
+          setSelectedStudentForManual(null);
+          setSearchStudentInput('');
+          setManualNotes('');
+          setManualRef('');
+          fetchVerifications();
+        }
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } }; message?: string };
@@ -281,14 +305,13 @@ export default function PaymentVerificationTab() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-foreground">Verifikasi Pembayaran Pendaftaran</h2>
+                <h2 className="text-lg font-bold text-foreground">Verifikasi Pembayaran Pendaftaran & DP Pelatihan</h2>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
                   NexaMOS Evidence Layer
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                Modul otorisasi keuangan bagi Admin & Manager untuk memvalidasi pembayaran formulir pendaftaran (Rp 500.000).
-                Memverifikasi pembayaran akan memicu transisi state siswa ke <strong className="text-foreground">Registered Opportunity</strong> dan mencatat event audit trail immutable.
+                Modul otorisasi keuangan bagi Admin & Manager untuk memvalidasi pembayaran formulir pendaftaran (Rp 500.000) menuju status <strong className="text-foreground">Siswa Terdaftar (REGISTERED)</strong> dan verifikasi DP Pelatihan sah (Rp 1.500.000) menuju status <strong className="text-foreground">Siswa / Peserta (CUSTOMER)</strong> dengan audit trail immutable.
               </p>
             </div>
           </div>
@@ -922,9 +945,50 @@ export default function PaymentVerificationTab() {
                   </button>
                 </div>
 
+                {/* Jenis Konversi & Pembayaran */}
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1.5">
+                    Jenis Konversi & Pembayaran
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 p-1 bg-secondary/30 border rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualPaymentType('form_fee');
+                        setManualNominal(500000);
+                      }}
+                      className={cn(
+                        "p-2.5 rounded-lg text-left transition-all text-xs cursor-pointer border",
+                        manualPaymentType === 'form_fee'
+                          ? "bg-purple-500/15 text-purple-600 border-purple-500/30 shadow-xs font-semibold"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <p className="font-bold">🟣 Biaya Formulir</p>
+                      <p className="text-2xs opacity-80 mt-0.5 font-normal">➔ Siswa Terdaftar (REGISTERED)</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualPaymentType('core_deposit');
+                        setManualNominal(1500000);
+                      }}
+                      className={cn(
+                        "p-2.5 rounded-lg text-left transition-all text-xs cursor-pointer border",
+                        manualPaymentType === 'core_deposit'
+                          ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 shadow-xs font-semibold"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <p className="font-bold">🟢 DP Pelatihan Sah</p>
+                      <p className="text-2xs opacity-80 mt-0.5 font-normal">➔ Siswa / Peserta (CUSTOMER)</p>
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">
-                    Nominal Biaya Pendaftaran (Rp)
+                    Nominal Pembayaran (Rp)
                   </label>
                   <input
                     type="number"
@@ -934,19 +998,34 @@ export default function PaymentVerificationTab() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">
-                    Metode Pembayaran
-                  </label>
-                  <select
-                    value={manualMethod}
-                    onChange={(e) => setManualMethod(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border bg-background text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  >
-                    <option value="Transfer Bank">Transfer Bank (BCA / Mandiri / BRI / BNI / Lainnya)</option>
-                    <option value="QRIS">QRIS Statis / Dinamis</option>
-                    <option value="Tunai / Cash">Tunai / Cash di Kantor</option>
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground mb-1">
+                      Metode Pembayaran
+                    </label>
+                    <select
+                      value={manualMethod}
+                      onChange={(e) => setManualMethod(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border bg-background text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    >
+                      <option value="Transfer Bank">Transfer Bank</option>
+                      <option value="QRIS">QRIS</option>
+                      <option value="Tunai / Cash">Tunai / Cash</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground mb-1">
+                      Nama Bank / Kas Tujuan
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: BCA / Mandiri / Kas Kantor"
+                      value={manualBank}
+                      onChange={(e) => setManualBank(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -955,7 +1034,7 @@ export default function PaymentVerificationTab() {
                   </label>
                   <input
                     type="text"
-                    placeholder="Contoh: Bukti slip transfer BCA dikirim lewat WA ortu"
+                    placeholder="Contoh: Bukti slip transfer BCA dikirim lewat WA ortu / Ref: TRX-9921"
                     value={manualNotes}
                     onChange={(e) => setManualNotes(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -985,7 +1064,7 @@ export default function PaymentVerificationTab() {
                     ) : (
                       <>
                         <CheckCircle2 size={14} />
-                        <span>Catat & Verifikasi Lunas</span>
+                        <span>{manualPaymentType === 'core_deposit' ? 'Verifikasi DP & Jadikan Customer' : 'Verifikasi Pendaftaran (Registered)'}</span>
                       </>
                     )}
                   </button>

@@ -304,7 +304,7 @@ export function ReEntryModal({
           <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 flex items-start gap-2.5 text-xs">
             <ShieldAlert size={16} className="shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <span className="font-semibold">Aturan Ontologi Nexa OS:</span> Siswa yang di-re-entry tidak menduplikasi data induk di master. Mereka akan didaftarkan sebagai <span className="font-semibold">Lead Baru</span> di Cohort <span className="font-semibold">{targetCohort.nama_period}</span> dengan status PJ CRO dikosongkan (Unassigned) untuk didistribusikan ulang.
+              <span className="font-semibold">Aturan Ontologi NexaMOS:</span> Siswa yang di-re-entry tidak menduplikasi data induk di master. Mereka akan didaftarkan sebagai <span className="font-semibold">Lead Baru</span> di Cohort <span className="font-semibold">{targetCohort.nama_period}</span> dengan status PJ CRO dikosongkan (Unassigned) untuk didistribusikan ulang.
             </div>
           </div>
         </div>

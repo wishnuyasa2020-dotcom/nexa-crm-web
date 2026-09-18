@@ -66,8 +66,8 @@ export default function Sidebar() {
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-bold text-foreground truncate">Nexa CRM</p>
-            <p className="text-xs text-muted-foreground truncate">Powered by Nexa OS</p>
+            <p className="text-sm font-bold text-foreground truncate">NexaMOS CRM</p>
+            <p className="text-xs text-muted-foreground truncate">Powered by NexaMOS</p>
           </div>
         )}
       </div>

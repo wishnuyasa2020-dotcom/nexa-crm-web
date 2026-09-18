@@ -48,7 +48,7 @@ export default function PanduanPage() {
           <div className="space-y-2 min-w-0">
             <div className="inline-flex max-w-full items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               <BookOpen size={13} className="shrink-0" />
-              <span className="truncate">SOP & KNOWLEDGE BASE NEXA CRM</span>
+              <span className="truncate">SOP & KNOWLEDGE BASE NEXAMOS CRM</span>
             </div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
               Panduan Penggunaan Tenant
@@ -152,12 +152,12 @@ export default function PanduanPage() {
 
             <div className="mt-4 text-sm text-muted-foreground space-y-3 leading-relaxed">
               <p>
-                Di dalam filosofi Nexa OS, <strong>Sekolah (B2B) dan Siswa (B2C) adalah dua alam yang berbeda</strong>. Sekolah bukanlah pihak yang membeli paket pelatihan atau membayar biaya formulir. Sekolah berfungsi sebagai <em>Decision Environment</em> dan penyedia izin sosialisasi.
+                Di dalam filosofi NexaMOS, <strong>Sekolah (B2B) dan Siswa (B2C) adalah dua alam yang berbeda</strong>. Sekolah bukanlah pihak yang membeli paket pelatihan atau membayar biaya formulir. Sekolah berfungsi sebagai <em>Decision Environment</em> dan penyedia izin sosialisasi.
               </p>
               <div className="p-3.5 rounded-xl bg-secondary/50 border text-xs text-foreground space-y-1.5">
                 <p className="font-semibold text-purple-600 flex items-center gap-1.5">
                   <Info size={14} className="shrink-0" />
-                  <span>Aturan Baku Ontologi Nexa OS:</span>
+                  <span>Aturan Baku Ontologi NexaMOS:</span>
                 </p>
                 <p>
                   Status sekolah yang "Mendukung" atau "Aktif MoU" <strong>TIDAK OTOMATIS</strong> membuat siswanya berstatus Qualified/Prospect. Siswa tetap wajib melewati kualifikasi individu berbasis bukti (FNAR Framework).
@@ -647,7 +647,7 @@ export default function PanduanPage() {
                       <div className="flex items-start gap-2 sm:gap-2.5 p-3 rounded-xl bg-secondary/40 border">
                         <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                         <div>
-                          <strong className="text-foreground">Pencegatan Otomatis (Smart Interception):</strong> Backend Nexa OS secara otomatis mendeteksi status <code>is_sw_open = true</code>. Permintaan pengiriman template dicegat seketika dan diubah menjadi pesan <em>Interactive Quick Reply Button</em> yang gratis, menghemat anggaran operasional hingga <strong>60%–80%</strong>.
+                          <strong className="text-foreground">Pencegatan Otomatis (Smart Interception):</strong> Backend NexaMOS secara otomatis mendeteksi status <code>is_sw_open = true</code>. Permintaan pengiriman template dicegat seketika dan diubah menjadi pesan <em>Interactive Quick Reply Button</em> yang gratis, menghemat anggaran operasional hingga <strong>60%–80%</strong>.
                         </div>
                       </div>
 
@@ -838,10 +838,36 @@ export default function PanduanPage() {
               {expandedSections['cro-funnel'] && (
                 <div className="pt-2 space-y-4 text-xs leading-relaxed">
                   <div className="p-3.5 rounded-xl bg-secondary/40 border text-muted-foreground">
-                    Di Nexa OS, <strong>CRO dilarang memindahkan status prospek hanya karena merasa siswa tersebut "antusias" atau "kelihatannya minat"</strong>. Status hanya bisa berpindah jika didukung oleh bukti objektif (observable event) yang sah.
+                    Di NexaMOS, <strong>CRO dilarang memindahkan status prospek hanya karena merasa siswa tersebut "antusias" atau "kelihatannya minat"</strong>. Status hanya bisa berpindah jika didukung oleh bukti objektif (observable event) yang sah sesuai 8 Canonical Lifecycle States.
                   </div>
 
                   <div className="space-y-3">
+                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-slate-500/10 text-slate-500 font-bold border border-slate-500/20">AUDIENCE</span>
+                          <span className="font-semibold text-foreground text-sm">Target Market / Siswa Dingin</span>
+                        </div>
+                        <p className="text-muted-foreground">
+                          Individu yang masih berada pada audience/target market (data mentah sekolah binaan atau akun digital) dan belum memenuhi definisi Lead.
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-muted/60 sm:bg-transparent">Tahap Awal</span>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-600 font-bold border border-sky-500/20">KNOWN_PROFILE</span>
+                          <span className="font-semibold text-foreground text-sm">Profil Teridentifikasi</span>
+                        </div>
+                        <p className="text-muted-foreground">
+                          Identitas individu sudah diketahui (nama/sekolah), tetapi nomor kontak belum terverifikasi aktif atau belum ada respon dua arah.
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-sky-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-sky-500/10 sm:bg-transparent">Bukti: Data Profil</span>
+                    </div>
+
                     <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
                       <div className="space-y-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
@@ -884,14 +910,14 @@ export default function PanduanPage() {
                     <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
                       <div className="space-y-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">REGISTERED</span>
+                          <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-600 font-bold border border-teal-500/20">REGISTERED</span>
                           <span className="font-semibold text-foreground text-sm">Beli Formulir Pendaftaran (Rp500.000)</span>
                         </div>
                         <p className="text-muted-foreground">
                           Siswa berhak menerima layanan pra-pelatihan (pre-core). <em>PENTING: Siswa di tahap ini BELUM berstatus sebagai Customer!</em>
                         </p>
                       </div>
-                      <span className="text-xs font-semibold text-emerald-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-emerald-500/10 sm:bg-transparent">Bukti: Formulir Lunas</span>
+                      <span className="text-xs font-semibold text-teal-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-teal-500/10 sm:bg-transparent">Bukti: Formulir Lunas</span>
                     </div>
 
                     <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
@@ -905,6 +931,19 @@ export default function PanduanPage() {
                         </p>
                       </div>
                       <span className="text-xs font-bold text-emerald-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-emerald-500/20 sm:bg-transparent">Core Conversion</span>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border bg-background flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 min-w-0">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 font-bold border border-indigo-500/20">POST_CUSTOMER</span>
+                          <span className="font-semibold text-foreground text-sm">Alumni / Mantan Pelanggan</span>
+                        </div>
+                        <p className="text-muted-foreground">
+                          Hubungan komersial/layanan utama telah selesai (lulus/berangkat). Entitas tetap berada di relationship universe brand (bisa menjadi sumber referral atau Advocate).
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-indigo-600 shrink-0 self-start sm:self-auto px-2 py-0.5 rounded bg-indigo-500/10 sm:bg-transparent">Alumni / Referral</span>
                     </div>
                   </div>
 
@@ -946,10 +985,10 @@ export default function PanduanPage() {
                   <div className="p-3.5 rounded-xl bg-secondary/40 border space-y-1.5">
                     <p className="font-bold text-foreground text-sm flex flex-col items-start sm:flex-row sm:items-center gap-1 sm:gap-2">
                       <Sparkles size={16} className="text-primary shrink-0" />
-                      <span>Prinsip Dasar Kepemilikan Teritorial Nexa OS</span>
+                      <span>Prinsip Dasar Kepemilikan Teritorial NexaMOS</span>
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      Di CRM konvensional, prospek sering diperebutkan per individu secara liar antar staf sales. Di Nexa OS, unit penugasan hak asuh prospek siswa (B2C) adalah <strong>KELAS</strong> di sekolah binaan tertentu (contoh: <em>Kelas 12 TKJ 1 di SMKS Hasina</em>). Satu kelas berisi banyak siswa dan <strong>wajib dikelola oleh tepat satu CRO</strong> pada periode pemasaran aktif.
+                      Di CRM konvensional, prospek sering diperebutkan per individu secara liar antar staf sales. Di NexaMOS, unit penugasan hak asuh prospek siswa (B2C) adalah <strong>KELAS</strong> di sekolah binaan tertentu (contoh: <em>Kelas 12 TKJ 1 di SMKS Hasina</em>). Satu kelas berisi banyak siswa dan <strong>wajib dikelola oleh tepat satu CRO</strong> pada periode pemasaran aktif.
                     </p>
                   </div>
 
@@ -1120,7 +1159,7 @@ export default function PanduanPage() {
                   <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/30 text-xs text-foreground space-y-1 min-w-0">
                     <p className="font-bold text-emerald-600 flex items-center gap-1.5">
                       <CheckCircle2 size={15} className="shrink-0" />
-                      <span>Mekanisme Event CQRS Nexa OS:</span>
+                      <span>Mekanisme Event CQRS NexaMOS:</span>
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
                       Sistem tidak mengizinkan CRO mengubah status prospek secara manual. Perpindahan status <code className="break-all">LEAD ➔ PROSPECT</code> dipicu otomatis oleh event sistem <code className="break-all">QualificationPassed</code> hanya ketika CRO telah mengisi dan mengunggah checklist verifikasi 4 dimensi FNAR di atas.

@@ -62,8 +62,8 @@ const id = {
     templateAdmin:    'Template Admin',
     guide:            'Panduan Tenant',
     logout:           'Keluar',
-    poweredBy:        'Powered by Nexa OS',
-    brandName:        'Nexa CRM',
+    poweredBy:        'Powered by NexaMOS',
+    brandName:        'NexaMOS CRM',
   },
 
   // ── Common Actions ──────────────────────────────────────
@@ -203,7 +203,7 @@ const id = {
     channelWhatsapp:    'WhatsApp',
     // Charts
     funnelTitle:        'Funnel Siswa (B2C Pipeline)',
-    funnelStages:       '5 Tahap Universal',
+    funnelStages:       'Corong Pipeline Kanonikal',
     funnelEmpty:        'Belum ada data siswa di periode ini',
     intakeChannelTitle: 'Intake Channel',
     intakeEmpty:        'Belum ada data intake channel',
@@ -313,7 +313,7 @@ const id = {
 
   // ── Tier Upgrade Modal ────────────────────────────────────
   tierModal: {
-    badge:            'Nexa CRM Tier Upgrade',
+    badge:            'NexaMOS Tier Upgrade',
     title:            'Tingkatkan Kapasitas LPK Anda',
     subtitle:         'Pilih paket yang sesuai untuk memperluas kuota siswa, sekolah, dan jumlah akun CRO. Transaksi diproses aman & otomatis via Midtrans.',
     monthly:          'Bulanan (30 Hari)',

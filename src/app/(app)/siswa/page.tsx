@@ -222,15 +222,16 @@ export default function SiswaPage() {
           onChange={e => { setFilterCommercial(e.target.value as CommercialState | ''); setPage(1); }}
           className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
-          <option value="">Semua Commercial State</option>
-          <option value="Audience">⚫ Audience</option>
-          <option value="Known">⚪ Known Profile</option>
-          <option value="Lead">🟡 Lead</option>
-          <option value="Prospect">🔵 Prospect</option>
-          <option value="Opportunity">🟣 Opportunity</option>
-          <option value="Registered Opportunity">🟣 Reg. Opportunity</option>
-          <option value="Customer">🟢 Customer</option>
-          <option value="Disqualified">🔴 Disqualified</option>
+          <option value="">Semua Lifecycle State</option>
+          <option value="AUDIENCE">⚫ Siswa Dingin (Audience)</option>
+          <option value="KNOWN_PROFILE">⚪ Siswa Teridentifikasi (Known Profile)</option>
+          <option value="LEAD">🟡 Siswa Hangat (Lead)</option>
+          <option value="PROSPECT">🔵 Siswa Potensial (Prospect)</option>
+          <option value="OPPORTUNITY">🟣 Siswa Serius (Opportunity)</option>
+          <option value="REGISTERED">🟣 Siswa Terdaftar (Registered)</option>
+          <option value="CUSTOMER">🟢 Siswa / Peserta (Customer)</option>
+          <option value="POST_CUSTOMER">🎓 Alumni (Post-Customer)</option>
+          <option value="Disqualified">🔴 Tidak Lanjut (Disqualified)</option>
         </select>
         {/* Filter Intent */}
         <select

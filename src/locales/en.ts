@@ -62,8 +62,8 @@ const en = {
     templateAdmin:    'Admin Templates',
     guide:            'Tenant Guide',
     logout:           'Sign Out',
-    poweredBy:        'Powered by Nexa OS',
-    brandName:        'Nexa CRM',
+    poweredBy:        'Powered by NexaMOS',
+    brandName:        'NexaMOS CRM',
   },
 
   // ── Common Actions ──────────────────────────────────────
@@ -203,7 +203,7 @@ const en = {
     channelWhatsapp:    'WhatsApp',
     // Charts
     funnelTitle:        'Student Funnel (B2C Pipeline)',
-    funnelStages:       '5 Universal Stages',
+    funnelStages:       'Canonical Pipeline Funnel',
     funnelEmpty:        'No student data in this period yet',
     intakeChannelTitle: 'Intake Channel',
     intakeEmpty:        'No intake channel data yet',
@@ -313,7 +313,7 @@ const en = {
 
   // ── Tier Upgrade Modal ────────────────────────────────────
   tierModal: {
-    badge:            'Nexa CRM Tier Upgrade',
+    badge:            'NexaMOS Tier Upgrade',
     title:            'Upgrade Your Organization Capacity',
     subtitle:         'Choose the right plan to expand student, school, and CRO account quotas. Transactions are processed securely & automatically via Midtrans.',
     monthly:          'Monthly (30 Days)',

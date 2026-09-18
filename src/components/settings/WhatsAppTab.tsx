@@ -267,7 +267,7 @@ export default function WhatsAppTab() {
             <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/30 flex items-start gap-3">
               <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Dukungan Meta BSUID Aktif:</strong> Sesuai kebijakan Meta terbaru, jika siswa baru yang menghubungi bisnis menyembunyikan nomor telepon mereka, sistem Nexa CRM akan otomatis mengidentifikasi siswa tersebut melalui <em>Business-Scoped User ID (BSUID)</em> secara transparan.
+                <strong className="text-foreground">Dukungan Meta BSUID Aktif:</strong> Sesuai kebijakan Meta terbaru, jika siswa baru yang menghubungi bisnis menyembunyikan nomor telepon mereka, sistem NexaMOS akan otomatis mengidentifikasi siswa tersebut melalui <em>Business-Scoped User ID (BSUID)</em> secara transparan.
               </p>
             </div>
 
@@ -423,7 +423,7 @@ export default function WhatsAppTab() {
           <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/30 flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Arsitektur Kesiapan Meta BSUID 2026:</strong> Sistem Nexa OS telah terintegrasi dengan standar privasi <em>Business-Scoped User ID (BSUID)</em>. Pesan masuk dari audiens/siswa yang menyembunyikan nomor ponselnya tetap akan terarsip rapi di ruang Live Chat Anda.
+              <strong className="text-foreground">Arsitektur Kesiapan Meta BSUID 2026:</strong> Sistem NexaMOS telah terintegrasi dengan standar privasi <em>Business-Scoped User ID (BSUID)</em>. Pesan masuk dari audiens/siswa yang menyembunyikan nomor ponselnya tetap akan terarsip rapi di ruang Live Chat Anda.
             </p>
           </div>
 

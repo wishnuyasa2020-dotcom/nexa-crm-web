@@ -84,14 +84,27 @@ interface TaskCounts {
   akan_datang: number;
 }
 
-// ─── Constants (5 Tahap Universal Ontologi B2C) ───────────────────────────────
+// ─── Constants (Corong Pipeline Kanonikal NexaMOS) ──────────────────────────
+
+const STAGE_COLOR_MAP: Record<string, string> = {
+  'Audience':       '#475569', // Slate 600
+  'Known Profile':  '#64748b', // Slate 500
+  'Lead':           '#f59e0b', // Amber 500
+  'Prospect':       '#3b82f6', // Blue 500
+  'Opportunity':    '#8b5cf6', // Violet 500
+  'Registered':     '#a855f7', // Purple 500
+  'Customer':       '#10b981', // Emerald 500
+  'Post-Customer':  '#0d9488', // Teal 600
+};
 
 const FUNNEL_COLORS = [
   '#64748b', // Known Profile (Slate)
-  '#3b82f6', // Lead (Blue)
-  '#8b5cf6', // Prospect (Violet)
-  '#f59e0b', // Opportunity (Amber)
+  '#f59e0b', // Lead (Amber)
+  '#3b82f6', // Prospect (Blue)
+  '#8b5cf6', // Opportunity (Violet)
+  '#a855f7', // Registered (Purple)
   '#10b981', // Customer (Emerald)
+  '#0d9488', // Post-Customer (Teal)
 ];
 
 const CHANNEL_CONFIG: Record<string, { label: string; icon: string; color: string; border: string; bg: string }> = {
@@ -782,8 +795,8 @@ export default function DashboardPage() {
                     cursor={{ fill: 'rgba(99,102,241,0.08)' }}
                   />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                    {funnels.map((_, i) => (
-                      <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
+                    {funnels.map((f, i) => (
+                      <Cell key={i} fill={STAGE_COLOR_MAP[f.name] || FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
                     ))}
                   </Bar>
                 </BarChart>

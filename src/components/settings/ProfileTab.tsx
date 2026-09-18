@@ -55,7 +55,7 @@ export default function ProfileTab() {
     <div className="bg-card border rounded-2xl p-6 shadow-xs">
       <div className="mb-6">
         <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">Integrasi Kalender</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground">Hubungkan akun Nexa CRM dengan Google Calendar untuk otomatisasi penjadwalan.</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">Hubungkan akun NexaMOS dengan Google Calendar untuk otomatisasi penjadwalan.</p>
       </div>
 
       {error && (

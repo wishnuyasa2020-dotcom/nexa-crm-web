@@ -3,7 +3,7 @@ import { ChatLayout } from '@/components/chat/ChatLayout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'WhatsApp Chat - Nexa CRM',
+  title: 'WhatsApp Chat - NexaMOS CRM',
   description: 'Modul pengelola pesan dan percakapan pelanggan',
 };
 

@@ -222,7 +222,7 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
                 />
                 {waDuplicate?.isDuplicate && (
                   <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-500">
-                    ⚠️ Nomor ini sudah tercatat atas nama <strong>{waDuplicate.student?.nama_lengkap}</strong> ({waDuplicate.student?.status_terkini || 'Data Masuk'}). Data baru akan diperbarui.
+                    ⚠️ Nomor ini sudah tercatat atas nama <strong>{waDuplicate.student?.nama_lengkap}</strong> ({waDuplicate.student?.commercial_state || waDuplicate.student?.status_terkini || 'Data Masuk'}). Data baru akan diperbarui.
                   </div>
                 )}
               </div>

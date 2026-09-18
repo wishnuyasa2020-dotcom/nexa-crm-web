@@ -647,12 +647,15 @@ function NewBroadcastWizard({
                 onChange={e => setCommercialStateFilter(e.target.value)}
                 className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:border-primary outline-none text-muted-foreground"
               >
-                <option value="">-- Semua Status Komersial --</option>
-                <option value="Known Profile">Known Profile</option>
-                <option value="Lead">Lead</option>
-                <option value="Prospect">Prospect</option>
-                <option value="Opportunity">Opportunity</option>
-                <option value="Registered Opportunity">Registered Opportunity</option>
+                <option value="">-- Semua Lifecycle State --</option>
+                <option value="AUDIENCE">⚫ Siswa Dingin (Audience)</option>
+                <option value="KNOWN_PROFILE">⚪ Siswa Teridentifikasi (Known Profile)</option>
+                <option value="LEAD">🟡 Siswa Hangat (Lead)</option>
+                <option value="PROSPECT">🔵 Siswa Potensial (Prospect)</option>
+                <option value="OPPORTUNITY">🟣 Siswa Serius (Opportunity)</option>
+                <option value="REGISTERED">🟣 Siswa Terdaftar (Registered)</option>
+                <option value="CUSTOMER">🟢 Siswa / Peserta (Customer)</option>
+                <option value="POST_CUSTOMER">🎓 Alumni (Post-Customer)</option>
               </select>
             </div>
             <div className="flex gap-2">

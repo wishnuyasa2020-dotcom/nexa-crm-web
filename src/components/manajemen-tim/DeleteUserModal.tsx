@@ -52,7 +52,7 @@ export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUser
         <div className="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 mt-2">
           <p className="text-xs text-rose-600 font-medium flex gap-2">
             <AlertTriangle size={16} className="shrink-0" /> 
-            <span>Akun yang dinonaktifkan tidak akan bisa login ke dalam Nexa CRM lagi, namun riwayat datanya akan tetap tersimpan (*soft delete*).</span>
+            <span>Akun yang dinonaktifkan tidak akan bisa login ke dalam NexaMOS lagi, namun riwayat datanya akan tetap tersimpan (*soft delete*).</span>
           </p>
         </div>
 

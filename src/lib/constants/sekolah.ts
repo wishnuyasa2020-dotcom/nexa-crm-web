@@ -1,5 +1,5 @@
 // ============================================================
-// MASTER CONSTANTS — Modul Sekolah (Nexa CRM)
+// MASTER CONSTANTS — Modul Sekolah (NexaMOS)
 // Sumber: diagram_alur_sekolah.md — Section 3.4, 2, 5
 // ============================================================
 

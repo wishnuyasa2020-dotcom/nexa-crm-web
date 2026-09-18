@@ -15,10 +15,10 @@ const robotoMono = Roboto_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Nexa CRM",
-    template: "%s — Nexa CRM",
+    default: "NexaMOS CRM",
+    template: "%s — NexaMOS CRM",
   },
-  description: "Sistem CRM Internal Nexa OS — Dashboard operasional CRO",
+  description: "Sistem CRM Internal NexaMOS — Dashboard operasional CRO",
   manifest: "/manifest.json",
   icons: {
     icon: [
