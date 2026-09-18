@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 import { LanguageToggle } from './LanguageToggle';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useIsDemo } from '@/hooks/useIsDemo';
 import { InstallPromptDesktopButton } from './InstallPrompt';
 
 export default function Header({ title }: { title?: string }) {
@@ -61,22 +62,25 @@ export default function Header({ title }: { title?: string }) {
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const tenantLabel = title || (user?.tenant_id ? (user.tenant_id.charAt(0).toUpperCase() + user.tenant_id.slice(1)) : 'Dashboard');
+  const isDemo = useIsDemo();
+  const isDemoMode = isDemo || user?.tenant_id === 'crm-demo';
 
   return (
     <>
       <header className={cn("flex flex-col border-b bg-background/95 backdrop-blur-sm shrink-0", (showMenu || showCohortMenu) ? "z-50" : "z-40")}>
-        {/* Mobile Top Bar (Row 1): Tenant name left | demo badge + language toggle right */}
+        {/* Mobile Top Bar (Row 1): Demo badge left (on demo mode) or Tenant name left (on normal tenant) | language toggle right */}
         <div className="flex md:hidden items-center justify-between px-4 py-1.5 border-b border-border/40 bg-muted/20">
-          <span className="text-xs font-normal text-muted-foreground tracking-wide truncate max-w-44">
-            {tenantLabel}
-          </span>
+          {isDemoMode ? (
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
+              <span>🔄</span>
+              <span>{t('header.demoSandbox')}</span>
+            </div>
+          ) : (
+            <span className="text-xs font-normal text-muted-foreground tracking-wide truncate max-w-44">
+              {tenantLabel}
+            </span>
+          )}
           <div className="flex items-center gap-2 shrink-0">
-            {user?.tenant_id === 'crm-demo' && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                <span>🔄</span>
-                <span>{t('header.demoSandbox')}</span>
-              </div>
-            )}
             {/* Language Toggle — compact pill, mobile Row 1 kanan atas */}
             <LanguageToggle variant="compact" />
           </div>

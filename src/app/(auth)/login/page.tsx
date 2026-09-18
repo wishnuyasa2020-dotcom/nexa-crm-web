@@ -1,19 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Sparkles, GraduationCap, Building2 } from 'lucide-react';
 import { useIsDemo } from '@/hooks/useIsDemo';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const isDemo = useIsDemo();
+  const searchParams = useSearchParams();
+
+  const paramType = searchParams.get('type') || searchParams.get('sector');
+  const initialSector: 'lpk' | 'general' = paramType === 'general' ? 'general' : 'lpk';
+
+  const [selectedSector, setSelectedSector] = useState<'lpk' | 'general'>(initialSector);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -31,11 +38,23 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post(`${API_BASE}/auth/login`, { username, password });
+      const payload: { username: string; password: string; tenant_type?: string } = {
+        username,
+        password,
+      };
+      if (isDemo) {
+        payload.tenant_type = selectedSector;
+      }
+
+      const res = await axios.post(`${API_BASE}/auth/login`, payload);
       if (res.data.status === 'ok') {
         const { token, user } = res.data.data;
+        if (isDemo) {
+          user.tenant_type = selectedSector;
+        }
         Cookies.set('nexa_token', token, { expires: 1 });
         Cookies.set('nexa_user', JSON.stringify(user), { expires: 1 });
+        useAuthStore.getState().setAuth(token, user);
         router.push('/dashboard');
       } else {
         setError(res.data.message || 'Login failed.');
@@ -49,29 +68,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full flex flex-col items-center justify-center overflow-hidden bg-background px-4 py-2">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background px-4 py-6 relative overflow-x-hidden">
       {/* Background decorative orbs safely contained */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 sm:w-150 h-96 sm:h-150 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-sm mx-auto my-auto flex flex-col justify-center">
+      <div className="relative w-full max-w-sm sm:max-w-md mx-auto my-auto flex flex-col justify-center">
         {/* Logo / Brand */}
-        <div className="text-center mb-3 sm:mb-6">
-          <div className="inline-flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 mb-1 sm:mb-2">
+        <div className="text-center mb-3 sm:mb-5">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-1">
             <Image
               src="/logo-nexa-02.png"
               alt="NexaMOS CRM"
-              width={112}
-              height={112}
+              width={96}
+              height={96}
               priority
               className="w-full h-full object-contain drop-shadow-md"
             />
           </div>
 
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Sign in to your operational dashboard</p>
+
           {isDemo && (
             <div className="mt-2 flex flex-col items-center gap-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-xs">
@@ -79,7 +99,7 @@ export default function LoginPage() {
                 <span>NexaMOS Demo Mode</span>
               </div>
               <span className="text-xs text-muted-foreground">
-                Data reset otomatis setiap <strong>Minggu 21:00 WIB</strong>
+                Simulasi CRM interaktif · Reset setiap <strong>Minggu 21:00 WIB</strong>
               </span>
             </div>
           )}
@@ -87,15 +107,81 @@ export default function LoginPage() {
 
         {/* Login Card */}
         <div className="bg-card border rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-2xl shadow-black/40">
+          {/* Demo Sector Selection */}
           {isDemo && (
-            <button
-              type="button"
-              onClick={handleQuickFillDemo}
-              className="w-full mb-3 py-1.5 px-3 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>⚡ Gunakan Akun Demo (Auto-fill)</span>
-            </button>
+            <div className="mb-3 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground">
+                  Pilih Simulasi Industri:
+                </span>
+                <span className="text-xs font-medium text-amber-500">
+                  {selectedSector === 'lpk' ? 'Ontologi LPK' : 'Ontologi Bisnis'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {/* Option 1: LPK */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedSector('lpk')}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                    selectedSector === 'lpk'
+                      ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
+                      : 'border-border bg-card/60 hover:bg-muted/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-4 h-4 shrink-0" />
+                    </div>
+                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
+                      selectedSector === 'lpk' ? 'border-amber-500 bg-amber-500' : 'border-muted-foreground/40'
+                    }`}>
+                      {selectedSector === 'lpk' && <div className="w-1.5 h-1.5 rounded-full bg-background shrink-0" />}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground">LPK & Vokasi</p>
+                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">Siswa · Sekolah · Alumni</p>
+                  </div>
+                </button>
+
+                {/* Option 2: General Business */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedSector('general')}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                    selectedSector === 'general'
+                      ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
+                      : 'border-border bg-card/60 hover:bg-muted/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 shrink-0" />
+                    </div>
+                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
+                      selectedSector === 'general' ? 'border-amber-500 bg-amber-500' : 'border-muted-foreground/40'
+                    }`}>
+                      {selectedSector === 'general' && <div className="w-1.5 h-1.5 rounded-full bg-background shrink-0" />}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground">Bisnis & Jasa</p>
+                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">Kontak · Klien · Pelanggan</p>
+                  </div>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleQuickFillDemo}
+                className="w-full mt-2 py-1.5 px-3 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>⚡ Gunakan Akun Demo (Auto-fill)</span>
+              </button>
+            </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-2.5 sm:space-y-4">
@@ -135,7 +221,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 z-10 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
                 </button>
               </div>
               <div className="flex justify-end pt-0.5">
@@ -183,5 +269,17 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    }>
+      <LoginContent />
+    </React.Suspense>
   );
 }

@@ -126,8 +126,8 @@
 
   html {
     @apply font-sans;
-    font-size: 140%;
-    /* Mobile first: Perbesar font 40% (berlaku untuk semua teks di Tailwind) */
+    font-size: 110%;
+    /* Mobile first: Penyesuaian skala font mobile 110% agar proporsional dan tidak kebesaran */
   }
 
   /* Kembalikan ke ukuran normal 100% saat di layar tablet/desktop (md: 768px ke atas) */
