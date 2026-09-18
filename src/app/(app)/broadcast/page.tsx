@@ -7,6 +7,8 @@ import { broadcastApi, type AudienceItem, type BroadcastCampaign, type MetaTempl
 import { TemplatePreviewBubble, buildPreviewText, type ButtonType } from '@/components/templates/TemplatePreviewBubble';
 import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
+import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 
 // Status dari GAS Worker: antri, proses, selesai, gagal
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -760,9 +762,7 @@ function NewBroadcastWizard({
                           </td>
                           <td className="px-4 py-3 text-xs text-muted-foreground">{a.sekolah}</td>
                           <td className="px-4 py-3 text-xs">
-                            <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-xs font-medium">
-                              {a.commercialState || a.statusPipeline}
-                            </span>
+                            <CommercialStateBadge state={a.commercialState || a.statusPipeline || CANONICAL_STATES.LEAD} size="sm" />
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">
@@ -814,9 +814,7 @@ function NewBroadcastWizard({
                           </div>
                           <p className="text-xs text-muted-foreground truncate mt-0.5">{a.sekolah} · {a.phone}</p>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="text-xs bg-secondary text-foreground px-2 py-0.5 rounded">
-                              {a.commercialState || a.statusPipeline}
-                            </span>
+                            <CommercialStateBadge state={a.commercialState || a.statusPipeline || CANONICAL_STATES.LEAD} size="sm" />
                             <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
                               <ShieldCheck size={11} />
                               Consent Aktif

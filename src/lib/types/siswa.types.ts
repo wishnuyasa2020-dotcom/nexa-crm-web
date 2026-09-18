@@ -13,6 +13,8 @@ export type CommercialState =
   | 'Post-Customer'
   | 'Disqualified';
 
+export type RelationshipLevel = 'STANDARD' | 'LOYAL' | 'ADVOCATE';
+
 export type SiswaIntent = 'High' | 'Mid' | 'Low';
 
 export type InteractionOutcome =
@@ -60,6 +62,8 @@ export interface Siswa {
   kebutuhanLayanan?: string;
   // Event-Sourcing Fase 1
   commercialState: CommercialState;
+  lifecycle_state?: CanonicalState;
+  relationship_level?: RelationshipLevel;
   intent:         SiswaIntent | '';
   priorityScore:  number;
 }
@@ -95,6 +99,8 @@ export interface SiswaDetail {
   prioritas:           string;
   status_terkini:      string;
   commercial_state:    CommercialState;
+  lifecycle_state?:    CanonicalState;
+  relationship_level?: RelationshipLevel;
   intent:              SiswaIntent | null;
   next_action:         string;
   due_date:            string | null;

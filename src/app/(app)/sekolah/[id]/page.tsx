@@ -21,6 +21,7 @@ import {
 import { CatatInteraksiModal } from '@/components/sekolah/CatatInteraksiModal';
 import { IntentBadge } from '@/components/sekolah/IntentBadge';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
+import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail, Aktivitas, AktivitasEkstra } from '@/lib/types/sekolah.types';
 import { isManagerOrAdmin, EVENT_TYPE_CONFIG } from '@/lib/constants/sekolah';
@@ -784,7 +785,7 @@ function TabSiswa({ sekolahId, namaSekolah }: { sekolahId: string; namaSekolah: 
                     )}
                   </td>
                   <td className="py-3 px-3 whitespace-nowrap">
-                    <CommercialStateBadge state={siswa.commercialState || 'Lead'} size="sm" />
+                    <CommercialStateBadge state={siswa.commercialState || CANONICAL_STATES.LEAD} size="sm" />
                   </td>
                   <td className="py-3 px-3 text-muted-foreground whitespace-nowrap">
                     {siswa.cro || '—'}

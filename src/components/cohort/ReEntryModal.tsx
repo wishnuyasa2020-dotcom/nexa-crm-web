@@ -202,7 +202,7 @@ export function ReEntryModal({
                   className="rounded border text-primary focus:ring-primary/40 w-4 h-4"
                 />
                 <span>
-                  Keluarkan siswa berstatus <span className="font-semibold text-primary">Customer (Lunas DP)</span>
+                  Keluarkan siswa berstatus <span className="font-semibold text-primary">Customer & Alumni (Lunas DP / Selesai Pelatihan)</span>
                 </span>
               </label>
 
@@ -217,7 +217,7 @@ export function ReEntryModal({
                   className="rounded border text-primary focus:ring-primary/40 w-4 h-4"
                 />
                 <span>
-                  Keluarkan siswa yang berstatus <span className="font-semibold text-primary">Registered Opportunity</span>
+                  Keluarkan siswa yang berstatus <span className="font-semibold text-primary">Siswa Terdaftar (REGISTERED)</span>
                 </span>
               </label>
 

@@ -16,8 +16,10 @@ interface ConversationListProps {
   isLoading:            boolean;
   tab:                  'all' | 'unread' | 'waiting';
   search:               string;
+  selectedLifecycle?:   string;
   onTabChange:          (tab: 'all' | 'unread' | 'waiting') => void;
   onSearchChange:       (search: string) => void;
+  onLifecycleChange?:   (lifecycle: string) => void;
   onSelectConversation: (convId: number | string) => void;
 }
 
@@ -27,14 +29,26 @@ const TABS: { value: 'all' | 'unread' | 'waiting'; label: string }[] = [
   { value: 'waiting', label: 'Waiting' },
 ];
 
+const LIFECYCLE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all',           label: 'Semua Tahap' },
+  { value: 'LEAD',          label: 'Lead' },
+  { value: 'PROSPECT',      label: 'Prospect' },
+  { value: 'OPPORTUNITY',   label: 'Opportunity' },
+  { value: 'REGISTERED',    label: 'Registered' },
+  { value: 'CUSTOMER',      label: 'Customer' },
+  { value: 'POST_CUSTOMER', label: 'Alumni' },
+];
+
 export function ConversationList({
   conversations,
   activeConvId,
   isLoading,
   tab,
   search,
+  selectedLifecycle = 'all',
   onTabChange,
   onSearchChange,
+  onLifecycleChange,
   onSelectConversation,
 }: ConversationListProps) {
 
@@ -48,12 +62,12 @@ export function ConversationList({
 
   return (
     // outer: full height flex column — MUST be flex-col with defined height
-    <div className="flex flex-col w-full bg-background" style={{ height: '100%' }}>
+    <div className="flex flex-col w-full bg-background h-full">
 
       {/* ── Header + Search ── shrink-0 agar tidak ikut flex-grow */}
       <div className="shrink-0 px-3 py-2 md:p-4 border-b">
         <div className="flex items-center justify-between mb-2 md:mb-4">
-          <h2 className="text-base md:text-xl font-bold text-foreground">CRM Inbox</h2>
+          <h2 className="text-base md:text-xl font-bold text-foreground">NexaMOS Inbox</h2>
           {isLoading && <Loader2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground animate-spin" />}
         </div>
         <div className="relative">
@@ -83,6 +97,21 @@ export function ConversationList({
             {t.label}
           </button>
         ))}
+      </div>
+
+      {/* ── Lifecycle State Filter Bar ── shrink-0 */}
+      <div className="shrink-0 px-3 py-1.5 border-b bg-muted/20 flex items-center justify-between gap-2 text-xs">
+        <span className="text-muted-foreground shrink-0 font-medium">Tahap:</span>
+        <select
+          value={selectedLifecycle || 'all'}
+          onChange={(e) => onLifecycleChange?.(e.target.value)}
+          aria-label="Filter berdasarkan tahap lifecycle"
+          className="bg-background text-foreground border rounded-md px-2 py-1 text-xs focus:outline-hidden focus:ring-1 focus:ring-primary w-full max-w-44"
+        >
+          {LIFECYCLE_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </div>
 
       {/* ── Scrollable Conversation List ── flex-1 + overflow-y-auto */}
@@ -157,12 +186,16 @@ function ContactItem({
           )}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-1">
-          {c.pipeline_status && (
-            <CommercialStateBadge state={c.pipeline_status} size="sm" />
+          {(c.lifecycle_state || c.pipeline_status) && (
+            <CommercialStateBadge
+              state={c.lifecycle_state || c.pipeline_status || 'AUDIENCE'}
+              relationshipLevel={(c.relationship_level as any) || undefined}
+              size="sm"
+            />
           )}
           {(c.has_payment_proof || c.pending_registration_token) && (
             <span className="inline-flex items-center gap-0.5 bg-amber-500/15 text-amber-600 border border-amber-500/30 text-xs px-1.5 py-0.5 rounded-md font-semibold shrink-0">
-              💳 Bukti Transfer
+              💳 {c.pending_registration_token ? 'Bukti Formulir' : 'Bukti Transfer'}
             </span>
           )}
         </div>

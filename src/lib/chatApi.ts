@@ -28,6 +28,8 @@ export interface Conversation {
   last_msg_ts:       string;
   pipeline_status:   string | null;
   status_label?:     string | null;
+  lifecycle_state?:  string | null;
+  relationship_level?: 'STANDARD' | 'LOYAL' | 'ADVOCATE' | string | null;
   unread_count:      number;
   pending_registration_token?: string | null;
   has_payment_proof?: boolean;
@@ -83,10 +85,12 @@ export interface WaTemplate {
 
 /** Daftar percakapan aktif (dipakai untuk polling) */
 export async function fetchConversations(params: {
-  tab?:    'all' | 'unread' | 'waiting';
-  search?: string;
-  page?:   number;
-  limit?:  number;
+  tab?:             'all' | 'unread' | 'waiting';
+  search?:          string;
+  lifecycle_state?: string;
+  pipeline?:        string;
+  page?:            number;
+  limit?:           number;
 } = {}): Promise<{ data: Conversation[]; total: number }> {
   const res = await apiClient.get('/api/v1/chats', { 
     params: { ...params, _t: Date.now() } 

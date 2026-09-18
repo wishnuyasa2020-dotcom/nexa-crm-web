@@ -1,6 +1,8 @@
 // channel.ts — Metadata & konvensi 7 Channel Source Gate NexaMOS
 // Sesuai pedoman-nexa/ip-wt/ip-channel other.md dan AGENTS.md
 
+import { normalizeLifecycleState, CANONICAL_STATES } from './lifecycle';
+
 export type ChannelSource =
   | 'sekolah'
   | 'relasi'
@@ -117,7 +119,8 @@ export function getAdaptiveSiswaLabel(
   commercialState?: string | null,
   tenantType: 'lpk' | 'general' = 'lpk'
 ): string {
-  const isCustomer = commercialState === 'Customer';
+  const norm = normalizeLifecycleState(commercialState);
+  const isCustomer = norm === CANONICAL_STATES.CUSTOMER || norm === CANONICAL_STATES.POST_CUSTOMER;
   if (tenantType === 'lpk') {
     if (isCustomer) return 'Kandidat';
     if (channel && channel.toLowerCase() !== 'sekolah') return 'Calon Kandidat';

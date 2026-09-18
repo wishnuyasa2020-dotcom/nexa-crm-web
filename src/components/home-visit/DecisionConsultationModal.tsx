@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Home, Building2, School, Loader2, CheckCircle, AlertCircle, Calendar, User, Phone, Handshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
+import { getDisplayLabel } from '@/lib/constants/lifecycle';
 
 interface ProspectItem {
   id: string;
@@ -28,7 +29,7 @@ type OutcomeType = 'Komitmen Disetujui' | 'Perlu Diskusi Lanjutan' | 'Ditolak / 
 
 const CHANNELS: { value: ChannelType; label: string; icon: typeof Home; desc: string }[] = [
   { value: 'Home Visit', label: 'Home Visit', icon: Home, desc: 'Kunjungan langsung ke rumah siswa' },
-  { value: 'Kantor Derma', label: 'Kantor Derma', icon: Building2, desc: 'Siswa & ortu datang ke kantor LPK' },
+  { value: 'Kantor Derma', label: 'Kantor / Head Office', icon: Building2, desc: 'Siswa & ortu datang ke kantor konsultasi' },
   { value: 'Sekolah Siswa', label: 'Sekolah Siswa', icon: School, desc: 'Pertemuan tatap muka di sekolah' },
 ];
 
@@ -207,7 +208,7 @@ export function DecisionConsultationModal({
                 <option value="">-- Pilih Siswa (Prospek / Lead) --</option>
                 {prospects.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.nama} ({p.namaSekolah || 'Tanpa Sekolah'}) — State: {p.commercialState}
+                    {p.nama} ({p.namaSekolah || 'Tanpa Sekolah'}) — State: {getDisplayLabel(p.commercialState)}
                   </option>
                 ))}
               </select>

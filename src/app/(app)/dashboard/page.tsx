@@ -17,6 +17,8 @@ import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswa
 import UpgradeTierModal from '@/components/subscription/UpgradeTierModal';
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
+import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { useTranslation } from '@/hooks/useTranslation';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -98,7 +100,8 @@ const STAGE_COLOR_MAP: Record<string, string> = {
 };
 
 const FUNNEL_COLORS = [
-  '#64748b', // Known Profile (Slate)
+  '#475569', // Audience (Slate 600)
+  '#64748b', // Known Profile (Slate 500)
   '#f59e0b', // Lead (Amber)
   '#3b82f6', // Prospect (Blue)
   '#8b5cf6', // Opportunity (Violet)
@@ -1001,9 +1004,13 @@ export default function DashboardPage() {
                     {/* Pipeline State & Intent */}
                     <td className="px-4 py-3 hidden sm:table-cell">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border">
-                          {t.commercialState || t.status}
-                        </span>
+                        {t.tipe === 'sekolah' ? (
+                          <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border">
+                            {t.status}
+                          </span>
+                        ) : (
+                          <CommercialStateBadge state={t.commercialState || t.status || CANONICAL_STATES.LEAD} size="sm" />
+                        )}
                         {t.intent && (
                           <span className={cn(
                             'px-1.5 py-0.5 rounded-md text-xs font-semibold border',

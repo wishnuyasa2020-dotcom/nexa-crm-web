@@ -17,11 +17,13 @@ export function ChatLayout() {
   const searchParams = useSearchParams();
   const initConvId = searchParams.get('conv_id');
   const initialId = initConvId && !isNaN(Number(initConvId)) ? Number(initConvId) : initConvId;
+  const initStage = searchParams.get('stage') || searchParams.get('lifecycle_state') || 'all';
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvId, setActiveConvId]   = useState<number | string | null>(initialId);
   const [tab, setTab]                     = useState<'all' | 'unread' | 'waiting'>('all');
   const [search, setSearch]               = useState('');
+  const [selectedLifecycle, setSelectedLifecycle] = useState<string>(initStage);
   const [isLoading, setIsLoading]         = useState(true);
 
   // Ref agar polling tidak ter-trigger ulang saat state berubah
@@ -92,14 +94,18 @@ export function ChatLayout() {
   const loadConversations = useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true);
     try {
-      const result = await fetchConversations({ tab, search });
+      const result = await fetchConversations({
+        tab,
+        search,
+        lifecycle_state: selectedLifecycle === 'all' ? undefined : selectedLifecycle,
+      });
       setConversations(result.data || []);
     } catch (err) {
       console.error('[ChatLayout] Gagal memuat percakapan:', err);
     } finally {
       if (!silent) setIsLoading(false);
     }
-  }, [tab, search]);
+  }, [tab, search, selectedLifecycle]);
 
   // ── Initial load ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -171,8 +177,10 @@ export function ChatLayout() {
             isLoading={isLoading}
             tab={tab}
             search={search}
+            selectedLifecycle={selectedLifecycle}
             onTabChange={setTab}
             onSearchChange={setSearch}
+            onLifecycleChange={setSelectedLifecycle}
             onSelectConversation={handleSelectConversation}
           />
         </div>

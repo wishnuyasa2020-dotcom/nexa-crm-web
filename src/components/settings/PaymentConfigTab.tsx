@@ -764,9 +764,13 @@ export default function PaymentConfigTab() {
                   <span>➔</span>
                   <span className="text-purple-400">{formatRupiah(formData.registrationFee)} (Form)</span>
                   <span>➔</span>
+                  <span className="text-purple-500 font-semibold">Registered</span>
+                  <span>➔</span>
                   <span className="text-emerald-400">{formatRupiah(formData.coreDepositAmount)} (DP)</span>
                   <span>➔</span>
-                  <span className="text-foreground font-semibold">🎯 Customer</span>
+                  <span className="text-emerald-500 font-bold">🎯 Customer</span>
+                  <span>➔</span>
+                  <span className="text-teal-500 font-semibold">🎓 Post-Customer (Alumni)</span>
                 </div>
               </div>
 

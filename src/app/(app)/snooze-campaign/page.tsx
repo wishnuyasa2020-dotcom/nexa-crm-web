@@ -18,6 +18,8 @@ import {
 import { nurturingApi, SnoozeStats, SnoozeLead } from '@/lib/nurturingApi';
 import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
+import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -313,9 +315,7 @@ export default function SnoozeCampaignPage() {
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{lead.noWa}</p>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{lead.sekolah}</p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="px-2 py-0.5 rounded bg-secondary text-foreground text-xs font-medium">
-                        {lead.commercialState || 'Lead'}
-                      </span>
+                      <CommercialStateBadge state={lead.commercialState || CANONICAL_STATES.LEAD} size="sm" />
                       <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
                         <ShieldCheck size={11} /> Consent Aktif
                       </span>
@@ -400,9 +400,7 @@ export default function SnoozeCampaignPage() {
                       <p className="truncate max-w-36 lg:max-w-64">{lead.sekolah}</p>
                     </td>
                     <td className="px-4 py-3 text-xs">
-                      <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-xs font-medium">
-                        {lead.commercialState || 'Lead'}
-                      </span>
+                      <CommercialStateBadge state={lead.commercialState || CANONICAL_STATES.LEAD} size="sm" />
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">

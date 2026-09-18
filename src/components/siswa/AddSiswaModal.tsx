@@ -76,16 +76,20 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
     }
   };
 
-  const isSekolahChannel = formData.sourceChannel === 'sekolah';
+    const isSekolahChannel = formData.sourceChannel === 'sekolah';
+    const isRelasiChannel = formData.sourceChannel === 'relasi';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.nama) return alert('Nama lengkap wajib diisi');
-    if (isSekolahChannel && !formData.idSekolah) {
-      return alert('Pilihan sekolah wajib diisi untuk jalur Kunjungan Sekolah');
-    }
-    
-    setLoading(true);
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.nama) return alert('Nama lengkap wajib diisi');
+      if (isSekolahChannel && !formData.idSekolah) {
+        return alert('Pilihan sekolah wajib diisi untuk jalur Kunjungan Sekolah');
+      }
+      if (isRelasiChannel && !formData.sourceDetail?.trim()) {
+        return alert('Nama alumni perekomendasi wajib diisi untuk jalur Relasi');
+      }
+      
+      setLoading(true);
     try {
       const payload = {
         nama_lengkap: formData.nama,
@@ -159,7 +163,11 @@ export function AddSiswaModal({ isOpen, onClose, onSuccess }: { isOpen: boolean,
               <div className="grid grid-cols-2 gap-4 p-3 bg-secondary/30 rounded-xl border border-border/60">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">
-                    {formData.sourceChannel === 'relasi' ? 'Perekomendasi / Nama Relasi' : 'Detail Kampanye / Akun'}
+                    {formData.sourceChannel === 'relasi' ? (
+                      <>Perekomendasi / Nama Relasi <span className="text-rose-500">*</span></>
+                    ) : (
+                      'Detail Kampanye / Akun'
+                    )}
                   </label>
                   <input 
                     name="sourceDetail" 

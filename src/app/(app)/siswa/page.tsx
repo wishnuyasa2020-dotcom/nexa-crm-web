@@ -10,6 +10,7 @@ import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
+import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { AddSiswaModal }    from '@/components/siswa/AddSiswaModal';
 import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
 import { AssignKelasModal } from '@/components/siswa/AssignKelasModal';
@@ -310,7 +311,10 @@ export default function SiswaPage() {
                       {s.namaSekolah || <span className="text-muted-foreground/50 italic">Non-Sekolah</span>}
                     </td>
                     <td className="px-4 py-3">
-                      <CommercialStateBadge state={s.commercialState || 'Lead'} />
+                      <CommercialStateBadge 
+                        state={s.commercialState || CANONICAL_STATES.LEAD} 
+                        relationshipLevel={s.relationship_level} 
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <IntentBadge intent={s.intent} />
@@ -395,7 +399,11 @@ export default function SiswaPage() {
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  <CommercialStateBadge state={s.commercialState || 'Lead'} size="sm" />
+                  <CommercialStateBadge 
+                    state={s.commercialState || CANONICAL_STATES.LEAD} 
+                    relationshipLevel={s.relationship_level}
+                    size="sm" 
+                  />
                   <ArrowRight size={14} className="text-muted-foreground" />
                 </div>
               </div>

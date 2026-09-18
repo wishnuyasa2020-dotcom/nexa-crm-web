@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 
 interface PaymentVerificationItem {
   id: number;
@@ -512,9 +513,10 @@ export default function PaymentVerificationTab() {
                       )}
 
                       {/* Commercial State */}
-                      <span className="text-xs text-muted-foreground px-2 py-0.5 rounded-md bg-muted">
-                        State: <strong className="text-foreground">{item.commercial_state || 'Opportunity'}</strong>
-                      </span>
+                      <CommercialStateBadge 
+                        state={item.commercial_state || 'OPPORTUNITY'} 
+                        size="sm" 
+                      />
                     </div>
 
                     {/* Metadata Grid */}
@@ -912,9 +914,10 @@ export default function PaymentVerificationTab() {
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
-                          <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium">
-                            {s.commercial_state || 'Lead'}
-                          </span>
+                          <CommercialStateBadge 
+                            state={s.commercial_state || 'LEAD'} 
+                            size="sm" 
+                          />
                           <p className="text-xs text-primary font-semibold mt-1 flex items-center justify-end gap-1">
                             Pilih <ArrowRight size={11} />
                           </p>

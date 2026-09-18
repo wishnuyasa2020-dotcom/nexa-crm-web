@@ -96,6 +96,10 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
       toast.error('Asal sekolah wajib dipilih untuk jalur kunjungan sekolah');
       return;
     }
+    if (formData.sourceChannel === 'relasi' && !formData.sourceDetail?.trim()) {
+      toast.error('Nama alumni perekomendasi wajib diisi untuk jalur Relasi');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -188,11 +192,13 @@ export function EditSiswaModal({ isOpen, onClose, onSuccess, idSiswa }: { isOpen
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">
-                  {formData.sourceChannel === 'relasi'
-                    ? 'Nama Alumni / Perekomendasi'
-                    : formData.sourceChannel === 'sekolah'
-                    ? 'Detail Sesi / Acara'
-                    : 'Akun / Campaign / Link'}
+                  {formData.sourceChannel === 'relasi' ? (
+                    <>Nama Alumni / Perekomendasi <span className="text-rose-500">*</span></>
+                  ) : formData.sourceChannel === 'sekolah' ? (
+                    'Detail Sesi / Acara'
+                  ) : (
+                    'Akun / Campaign / Link'
+                  )}
                 </label>
                 <input
                   name="sourceDetail"

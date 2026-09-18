@@ -9,6 +9,8 @@ import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswa
 import { getSekolahDetail } from '@/lib/api/sekolah.api';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
 import { getChannelConfig } from '@/lib/constants/channel';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
+import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import apiClient from '@/lib/apiClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -289,9 +291,13 @@ export default function TasksPage() {
                   )}
 
                   {/* Commercial State / Status */}
-                  <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border">
-                    {task.commercialState || task.status}
-                  </span>
+                  {task.tipe === 'sekolah' ? (
+                    <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-foreground/80 border">
+                      {task.status}
+                    </span>
+                  ) : (
+                    <CommercialStateBadge state={task.commercialState || task.status || CANONICAL_STATES.LEAD} size="sm" />
+                  )}
 
                   {/* Intent Badge */}
                   {task.intent && (

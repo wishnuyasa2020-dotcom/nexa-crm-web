@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { cn } from '@/lib/utils';
+import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { weeklyApi, type BacklogItem, type BoardItem } from '@/lib/weeklyApi';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -483,9 +484,7 @@ function BacklogCard({ item, index }: { item: BacklogItem; index: number }) {
                 {cfg.icon} {cfg.label}
               </span>
               {item.commercialState && (
-                <span className="text-xs text-foreground/80 bg-secondary px-1.5 py-0.5 rounded-full border truncate max-w-28 font-medium">
-                  {item.commercialState}
-                </span>
+                <CommercialStateBadge state={item.commercialState} size="sm" />
               )}
               {item.intent && (
                 <span className={cn(

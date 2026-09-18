@@ -9,6 +9,7 @@ export interface User {
   email?: string;
   status?: string;
   tenant_id?: string;
+  tenant_type?: 'lpk' | 'general';
   supervisor_id?: number | null;
   supervisor_nama?: string | null;
   selectedPeriod?: string;

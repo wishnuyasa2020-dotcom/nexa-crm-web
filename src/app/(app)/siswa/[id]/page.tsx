@@ -16,6 +16,7 @@ import { DeleteSiswaModal } from '@/components/siswa/DeleteSiswaModal';
 import { EditSiswaModal } from '@/components/siswa/EditSiswaModal';
 import { ShareRegistrationLinkModal } from '@/components/siswa/ShareRegistrationLinkModal';
 import { DecisionConsultationModal } from '@/components/home-visit/DecisionConsultationModal';
+import { GraduationModal } from '@/components/siswa/GraduationModal';
 import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 import { normalizeLifecycleState, CANONICAL_STATES } from '@/lib/constants/lifecycle';
@@ -88,6 +89,7 @@ export default function SiswaDetailPage() {
   const [isDeleteModalOpen,     setIsDeleteModalOpen]     = useState(false);
   const [isEditModalOpen,       setIsEditModalOpen]       = useState(false);
   const [isShareLinkOpen,       setIsShareLinkOpen]       = useState(false);
+  const [isGraduationOpen,      setIsGraduationOpen]      = useState(false);
   const [isChatLoading,         setIsChatLoading]         = useState(false);
 
   const handleChatSiswa = async () => {
@@ -455,6 +457,24 @@ export default function SiswaDetailPage() {
           </button>
         )}
 
+        {isCustomer && (
+          <button
+            onClick={() => setIsGraduationOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
+            title="Tandai Siswa / Peserta Lulus Pelatihan / Terbang ke Negara Tujuan (Customer ➔ Post-Customer / Alumni)"
+          >
+            <GraduationCap size={15} className="shrink-0" />
+            <span className="hidden sm:inline">Tandai Lulus / Alumni</span>
+            <span className="sm:hidden">Alumni</span>
+          </button>
+        )}
+
+        {isPostCustomer && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-lg text-xs font-semibold">
+            🎓 Status: Alumni (Post-Customer)
+          </span>
+        )}
+
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="hidden sm:flex items-center justify-center p-2.5 bg-secondary text-foreground hover:bg-secondary/80 border rounded-lg transition-colors"
@@ -586,6 +606,13 @@ export default function SiswaDetailPage() {
         }}
         preselectedSiswaId={id}
         preselectedSiswaName={siswaDetail.nama_lengkap}
+      />
+      <GraduationModal
+        isOpen={isGraduationOpen}
+        onClose={() => setIsGraduationOpen(false)}
+        onSuccess={() => reloadDetail()}
+        siswaId={id}
+        siswaName={siswaDetail.nama_lengkap}
       />
     </div>
   );

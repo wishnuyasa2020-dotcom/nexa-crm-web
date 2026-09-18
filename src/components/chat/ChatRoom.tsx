@@ -18,7 +18,7 @@ import {
   ArrowLeft, Paperclip, Send, Clock, AlertCircle,
   CheckCheck, Check, Phone, Briefcase, Loader2, RefreshCw, Info,
   Image as ImageIcon, Video, MapPin, X, FileText, Smile, MousePointer2,
-  ExternalLink, Receipt, ShieldCheck, CheckCircle2
+  ExternalLink, Receipt, ShieldCheck, CheckCircle2, Search
 } from 'lucide-react';
 import Link from 'next/link';
 import apiClient from '@/lib/apiClient';
@@ -29,6 +29,7 @@ import { id } from 'date-fns/locale';
 import { SwCountdown } from './SwCountdown';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
+import { normalizeLifecycleState } from '@/lib/constants/lifecycle';
 
 interface ChatRoomProps {
   conversation:   Conversation | null;
@@ -113,7 +114,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       setVerifiedTokenState(token);
       setShowVerifyConfirmModal(false);
       toast.success('Pembayaran Formulir Berhasil Diverifikasi!', {
-        description: `Status ${conversation.student_name || 'siswa'} kini telah ditingkatkan menjadi Registered Opportunity.`
+        description: `Status ${conversation.student_name || 'siswa'} kini telah ditingkatkan menjadi Siswa Terdaftar (REGISTERED).`
       });
       onMessageSent();
       loadMessages(true);
@@ -466,7 +467,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
                         Tahap Saat Ini
                       </span>
-                      <CommercialStateBadge state={conversation.pipeline_status || '–'} size="sm" />
+                      <CommercialStateBadge
+                        state={conversation.lifecycle_state || conversation.pipeline_status || '–'}
+                        relationshipLevel={(conversation.relationship_level as any) || undefined}
+                        size="sm"
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-foreground flex items-center gap-2">
@@ -531,7 +536,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 </span>
               </div>
               <p className="text-muted-foreground mt-0.5">
-                Siswa mengirim bukti transfer via WhatsApp. Cek foto bukti di bawah, lalu verifikasi untuk upgrade status ke <span className="font-semibold text-foreground">Registered Opportunity</span>.
+                Siswa mengirim bukti transfer via WhatsApp. Cek foto bukti di bawah, lalu verifikasi untuk upgrade status ke <span className="font-semibold text-foreground">Siswa Terdaftar (REGISTERED)</span>.
               </p>
             </div>
           </div>
@@ -565,11 +570,44 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
         </div>
       )}
 
+      {/* Deteksi Bukti Transfer DP Pelatihan (Core Conversion) */}
+      {!conversation?.pending_registration_token && conversation?.has_payment_proof && (normalizeLifecycleState(conversation?.lifecycle_state || conversation?.pipeline_status || '') === 'REGISTERED') && (
+        <div className="bg-emerald-500/10 border-b border-emerald-500/30 px-3 py-2.5 md:px-4 md:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shrink-0 z-10 animate-in fade-in duration-200">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
+              <Receipt className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 font-semibold text-foreground">
+                <span>Bukti Transfer DP Pelatihan Terdeteksi</span>
+                <span className="bg-emerald-500/20 text-emerald-600 font-bold px-1.5 py-0.5 rounded text-xs">
+                  DP Inti Rp 1.500.000
+                </span>
+              </div>
+              <p className="text-muted-foreground mt-0.5">
+                Siswa terdaftar mengirim bukti transfer. Verifikasi penerimaan DP Pelatihan di Halaman Detail Siswa untuk konversi ke <span className="font-semibold text-foreground">Siswa / Peserta (CUSTOMER)</span>.
+              </p>
+            </div>
+          </div>
+          {conversation.id_siswa && (
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <Link
+                href={`/siswa/${conversation.id_siswa}`}
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 px-3 rounded-md shadow-xs"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                <span>Verifikasi di Detail Siswa</span>
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Verified Banner Notification */}
       {conversation?.pending_registration_token && verifiedTokenState === conversation.pending_registration_token && (
         <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 flex items-center gap-2 text-xs text-emerald-600 shrink-0">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span>Biaya pendaftaran formulir Rp 500.000 telah diverifikasi. Status siswa: <strong className="font-semibold text-foreground">Registered Opportunity</strong>.</span>
+          <span>Biaya pendaftaran formulir Rp 500.000 telah diverifikasi. Status siswa: <strong className="font-semibold text-foreground">Siswa Terdaftar (REGISTERED)</strong>.</span>
         </div>
       )}
 
@@ -747,6 +785,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 buttonText={isSending ? 'Mengirim...' : 'Pilih & Kirim Template'}
                 buttonClassName="flex-1 h-9 md:h-11 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50 text-xs md:text-sm"
                 studentName={conversation.student_name}
+                studentLifecycleState={conversation.lifecycle_state || conversation.pipeline_status || ''}
                 disabled={isSending}
                 onSendTemplate={handleSendTemplate}
               />
@@ -758,6 +797,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 buttonText=""
                 iconOnly
                 studentName={conversation.student_name}
+                studentLifecycleState={conversation.lifecycle_state || conversation.pipeline_status || ''}
                 disabled={isSending}
                 onSendTemplate={handleSendTemplate}
               />
@@ -922,7 +962,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground">Nama Tempat (Opsional)</label>
               <Input 
-                placeholder="Kantor Nexa" 
+                placeholder="Kantor NexaMOS" 
                 value={locationData.name} 
                 onChange={e => setLocationData({...locationData, name: e.target.value})}
                 className="bg-muted border-none"
@@ -970,7 +1010,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status Baru:</span>
-                <span className="font-semibold text-emerald-500">Registered Opportunity</span>
+                <span className="font-semibold text-emerald-500">Siswa Terdaftar (REGISTERED)</span>
               </div>
               {conversation?.pending_registration_token && (
                 <div className="flex justify-between font-mono">
@@ -1121,17 +1161,37 @@ function TemplateListItem({
   template: t,
   resolvePreview,
   onPickReview,
+  isRecommended = false,
 }: {
   template: WaTemplate;
   resolvePreview: (body: string) => string;
   onPickReview: (t: WaTemplate) => void;
+  isRecommended?: boolean;
 }) {
+  const normPipeline = t.pipeline ? normalizeLifecycleState(t.pipeline) : null;
+
   return (
     <div
-      className="border bg-card rounded-lg p-3 hover:bg-accent cursor-pointer transition-colors group"
+      className={`border bg-card rounded-lg p-3 hover:bg-accent cursor-pointer transition-colors group ${
+        isRecommended ? 'border-primary/50 bg-primary/5' : ''
+      }`}
     >
-      <div className="flex justify-between items-start mb-2">
-        <h4 className="font-semibold text-sm text-foreground">{t.nama_template}</h4>
+      <div className="flex justify-between items-start mb-2 gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h4 className="font-semibold text-sm text-foreground truncate">{t.nama_template}</h4>
+            {isRecommended && (
+              <span className="bg-primary/20 text-primary text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0">
+                ★ Sesuai Tahap
+              </span>
+            )}
+          </div>
+          {normPipeline && (
+            <div className="mt-1">
+              <CommercialStateBadge state={normPipeline} size="sm" />
+            </div>
+          )}
+        </div>
         <StatusBadge status={t.meta_status} />
       </div>
       <p className="text-xs text-muted-foreground mb-3 line-clamp-3">{resolvePreview(t.body_text)}</p>
@@ -1334,6 +1394,7 @@ function TemplatePicker({
   buttonClassName = '',
   iconOnly = false,
   studentName = '',
+  studentLifecycleState = '',
   disabled = false,
   onSendTemplate,
 }: {
@@ -1341,6 +1402,7 @@ function TemplatePicker({
   buttonClassName?: string;
   iconOnly?:       boolean;
   studentName?:    string;
+  studentLifecycleState?: string;
   disabled?:       boolean;
   onSendTemplate:  (templateId: string | number) => void;
 }) {
@@ -1349,6 +1411,10 @@ function TemplatePicker({
   const [open, setOpen]                     = useState(false);
   const [selectedForReview, setSelected]    = useState<WaTemplate | null>(null);
   const [isSendingReview, setIsSendingReview] = useState(false);
+  const [tplSearch, setTplSearch]           = useState('');
+  const [selectedPipeline, setSelectedPipeline] = useState<string>('all');
+
+  const normStudentState = studentLifecycleState ? normalizeLifecycleState(studentLifecycleState) : '';
 
   const loadTemplates = useCallback(async () => {
     if (templates.length > 0) return; // cache sederhana
@@ -1366,12 +1432,16 @@ function TemplatePicker({
   const handleOpenChange = (val: boolean) => {
     setOpen(val);
     if (val) loadTemplates();
-    if (!val) setSelected(null); // reset review saat picker ditutup
+    if (!val) {
+      setSelected(null); // reset review saat picker ditutup
+      setTplSearch('');
+      setSelectedPipeline('all');
+    }
   };
 
   const resolvePreview = (text: string) => {
     if (!text) return '';
-    const vars = [studentName, 'Nexa', ''];
+    const vars = [studentName, 'NexaMOS', ''];
     let resolved = text.replace(/\{\{(\d+)\}\}/g, (_, i) => vars[parseInt(i) - 1] || '');
     return resolved;
   };
@@ -1388,6 +1458,27 @@ function TemplatePicker({
     }
   };
 
+  const filteredTemplates = templates.filter(t => {
+    if (tplSearch.trim()) {
+      const q = tplSearch.toLowerCase();
+      const matchName = t.nama_template?.toLowerCase().includes(q);
+      const matchBody = t.body_text?.toLowerCase().includes(q);
+      if (!matchName && !matchBody) return false;
+    }
+
+    const tplNorm = t.pipeline ? normalizeLifecycleState(t.pipeline) : '';
+
+    if (selectedPipeline === 'recommended') {
+      return Boolean(normStudentState && tplNorm === normStudentState);
+    }
+
+    if (selectedPipeline !== 'all') {
+      return tplNorm === selectedPipeline;
+    }
+
+    return true;
+  });
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -1401,25 +1492,100 @@ function TemplatePicker({
         >
           {iconOnly ? <Clock className="h-5 w-5" /> : buttonText}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md bg-background text-foreground">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-lg bg-background text-foreground max-h-dvh flex flex-col">
+          <DialogHeader className="shrink-0 pb-2">
             <DialogTitle className="text-foreground">Pilih Template Pesan</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="h-80 mt-4 pr-4">
+
+          {/* Search + Filter Tahap */}
+          <div className="space-y-2 shrink-0 pt-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Cari nama template atau isi pesan..."
+                className="pl-9 bg-muted text-foreground border-none h-9 text-xs rounded-lg focus-visible:ring-1 focus-visible:ring-primary"
+                value={tplSearch}
+                onChange={(e) => setTplSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+              <button
+                type="button"
+                onClick={() => setSelectedPipeline('all')}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors shrink-0 ${
+                  selectedPipeline === 'all'
+                    ? 'bg-primary text-primary-foreground font-semibold'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Semua ({templates.length})
+              </button>
+              {normStudentState && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPipeline('recommended')}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors shrink-0 ${
+                    selectedPipeline === 'recommended'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/25'
+                  }`}
+                >
+                  ★ Rekomendasi ({normStudentState})
+                </button>
+              )}
+              {['LEAD', 'PROSPECT', 'OPPORTUNITY', 'REGISTERED', 'CUSTOMER', 'POST_CUSTOMER'].map(stage => {
+                const count = templates.filter(t => (t.pipeline ? normalizeLifecycleState(t.pipeline) : '') === stage).length;
+                if (count === 0) return null;
+                return (
+                  <button
+                    key={stage}
+                    type="button"
+                    onClick={() => setSelectedPipeline(stage)}
+                    className={`px-2 py-1 rounded-full text-xs font-medium transition-colors shrink-0 ${
+                      selectedPipeline === stage
+                        ? 'bg-primary text-primary-foreground font-semibold'
+                        : 'bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {stage} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <ScrollArea className="flex-1 min-h-0 h-80 mt-2 pr-2">
             {loading && (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
-            <div className="space-y-3">
-              {templates.map(t => (
-                <TemplateListItem
-                  key={t.id_template}
-                  template={t}
-                  resolvePreview={resolvePreview}
-                  onPickReview={(tmpl) => setSelected(tmpl)}
-                />
-              ))}
+            {!loading && filteredTemplates.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground text-xs text-center p-4">
+                <p>Tidak ada template yang cocok.</p>
+                {selectedPipeline !== 'all' && (
+                  <button
+                    onClick={() => { setSelectedPipeline('all'); setTplSearch(''); }}
+                    className="mt-2 text-primary hover:underline"
+                  >
+                    Tampilkan semua template
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="space-y-3 pb-2">
+              {filteredTemplates.map(t => {
+                const isRec = Boolean(normStudentState && (t.pipeline ? normalizeLifecycleState(t.pipeline) : '') === normStudentState);
+                return (
+                  <TemplateListItem
+                    key={t.id_template}
+                    template={t}
+                    resolvePreview={resolvePreview}
+                    isRecommended={isRec}
+                    onPickReview={(tmpl) => setSelected(tmpl)}
+                  />
+                );
+              })}
             </div>
           </ScrollArea>
         </DialogContent>
