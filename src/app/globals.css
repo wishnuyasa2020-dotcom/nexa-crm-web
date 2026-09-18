@@ -116,14 +116,20 @@
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
+  * {
+    @apply border-border outline-ring/50;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
   }
+
   html {
     @apply font-sans;
-    font-size: 140%; /* Mobile first: Perbesar font 40% (berlaku untuk semua teks di Tailwind) */
+    font-size: 140%;
+    /* Mobile first: Perbesar font 40% (berlaku untuk semua teks di Tailwind) */
   }
+
   /* Kembalikan ke ukuran normal 100% saat di layar tablet/desktop (md: 768px ke atas) */
   @media (min-width: 768px) {
     html {
@@ -136,36 +142,53 @@
   .gradient-primary {
     background: linear-gradient(135deg, oklch(0.60 0.22 264), oklch(0.54 0.24 293));
   }
-  .glow-primary { box-shadow: 0 0 20px oklch(0.60 0.22 264 / 30%); }
+
+  .glow-primary {
+    box-shadow: 0 0 20px oklch(0.60 0.22 264 / 30%);
+  }
+
   .card-hover {
     @apply transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
   }
+
   .glass {
     backdrop-filter: blur(12px);
     background: oklch(0.12 0.018 265 / 80%);
     border: 1px solid oklch(0.22 0.02 265);
   }
+
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: oklch(0.22 0.02 265) transparent;
   }
-  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
-  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: oklch(0.22 0.02 265);
     border-radius: 4px;
   }
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: oklch(0.35 0.02 265);
   }
+
   .text-switcher-mobile {
     font-size: 0.52rem;
     line-height: 0.75rem;
   }
+
   @media (min-width: 640px) {
     .text-switcher-mobile {
-      font-size: 0.75rem;
-      line-height: 1rem;
+      font-size: 0.42rem;
+      line-height: 0.52rem;
     }
   }
 }
