@@ -11,8 +11,11 @@ import { ProfileModal } from './ProfileModal';
 import { useCohortStore } from '@/store/useCohortStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
+import { LanguageToggle } from './LanguageToggle';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Header({ title }: { title?: string }) {
+  const { t } = useTranslation();
   const { user, loadFromCookie, logout } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
   const [showCohortMenu, setShowCohortMenu] = useState(false);
@@ -61,17 +64,21 @@ export default function Header({ title }: { title?: string }) {
   return (
     <>
       <header className={cn("flex flex-col border-b bg-background/95 backdrop-blur-sm shrink-0", (showMenu || showCohortMenu) ? "z-50" : "z-40")}>
-        {/* Mobile Top Bar (Row 1): Tenant identity (1 baris sendiri, font reguler kecil) & Demo badge */}
+        {/* Mobile Top Bar (Row 1): Tenant name left | demo badge + language toggle right */}
         <div className="flex md:hidden items-center justify-between px-4 py-1.5 border-b border-border/40 bg-muted/20">
-          <span className="text-xs font-normal text-muted-foreground tracking-wide">
+          <span className="text-xs font-normal text-muted-foreground tracking-wide truncate max-w-[55%]">
             {tenantLabel}
           </span>
-          {user?.tenant_id === 'crm-demo' && (
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
-              <span>🔄</span>
-              <span>Demo Sandbox</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {user?.tenant_id === 'crm-demo' && (
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <span>🔄</span>
+                <span>{t('header.demoSandbox')}</span>
+              </div>
+            )}
+            {/* Language Toggle — compact pill, mobile Row 1 kanan atas */}
+            <LanguageToggle variant="compact" />
+          </div>
         </div>
 
         {/* Main Header Bar (Row 2 on Mobile; Standard Row on Desktop) */}
@@ -82,9 +89,9 @@ export default function Header({ title }: { title?: string }) {
               {tenantLabel}
             </h1>
             {user?.tenant_id === 'crm-demo' && (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs" title="Lingkungan Sandbox: Data operasional direset otomatis setiap Minggu pukul 21:00 WIB">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs" title="Sandbox environment: Data resets automatically every Sunday at 21:00 WIB">
                 <span>🔄</span>
-                <span>Demo Sandbox &middot; Reset Minggu 21:00 WIB</span>
+                <span>{t('header.demoReset')}</span>
               </div>
             )}
           </div>
@@ -101,15 +108,15 @@ export default function Header({ title }: { title?: string }) {
                     ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
                     : "bg-secondary/50 hover:bg-secondary text-foreground"
                 )}
-                title="Ganti Sesi Periode / Cohort"
+                title={t('header.cohortTitle')}
               >
                 <Calendar size={13} className={isHistoricalReadOnly ? "text-amber-500" : "text-primary"} />
-                <span className="hidden sm:inline text-muted-foreground font-normal">Cohort:</span>
+                <span className="hidden sm:inline text-muted-foreground font-normal">{t('header.cohortLabel')}</span>
                 <span>
-                  {selectedCohort?.nama_period || (cohortLoading ? 'Memuat...' : (cohorts.length === 0 ? 'Belum Ada Cohort' : 'Pilih Cohort'))}
+                  {selectedCohort?.nama_period || (cohortLoading ? t('header.cohortLoading') : (cohorts.length === 0 ? t('header.cohortNone') : t('header.cohortSelect')))}
                 </span>
                 {isHistoricalReadOnly ? (
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 font-bold">Arsip</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 font-bold">{t('header.cohortArchive')}</span>
                 ) : (
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
                 )}
@@ -119,12 +126,12 @@ export default function Header({ title }: { title?: string }) {
               {showCohortMenu && (
                 <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 w-60 bg-card border rounded-2xl shadow-xl overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3.5 py-2.5 border-b">
-                    <p className="text-xs font-bold text-foreground">Sesi Periode / Cohort</p>
-                    <p className="text-xs text-muted-foreground">Pilih tahun ajaran untuk memfilter data</p>
+                    <p className="text-xs font-bold text-foreground">{t('header.cohortTitle')}</p>
+                    <p className="text-xs text-muted-foreground">{t('header.cohortSubtitle')}</p>
                   </div>
                   <div className="max-h-56 overflow-y-auto py-1 divide-y divide-border/40">
                     {cohorts.length === 0 ? (
-                      <div className="p-3 text-xs text-center text-muted-foreground">Tidak ada cohort</div>
+                      <div className="p-3 text-xs text-center text-muted-foreground">{t('header.cohortEmpty')}</div>
                     ) : (
                       cohorts.map((c) => {
                         const isSelected = selectedCohort?.id_period === c.id_period || selectedCohort?.nama_period === c.nama_period;
@@ -169,7 +176,7 @@ export default function Header({ title }: { title?: string }) {
                         onClick={() => setShowCohortMenu(false)}
                         className="flex items-center gap-1.5 px-3.5 py-2 text-xs text-primary hover:bg-primary/10 transition-colors font-medium"
                       >
-                        <Settings size={13} /> Kelola Periode / Re-entry
+                        <Settings size={13} /> {t('header.managePeriod')}
                       </Link>
                     </div>
                   )}
@@ -179,9 +186,11 @@ export default function Header({ title }: { title?: string }) {
 
             {/* Quick Action Icons & Profile */}
             <div className="flex items-center gap-1.5 sm:gap-3">
+              {/* Language Toggle — desktop (standard pill, kanan header) */}
+              <LanguageToggle variant="default" className="hidden md:inline-flex" />
               {/* TODO: Implement global search (command palette / spotlight) */}
               <button
-                title="Cari (coming soon)"
+                title={t('header.searchSoon')}
                 disabled
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -189,7 +198,7 @@ export default function Header({ title }: { title?: string }) {
               </button>
               {/* TODO: Implement notification center (in-app alerts, unread badge) */}
               <button
-                title="Notifikasi (coming soon)"
+                title={t('header.notifSoon')}
                 disabled
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors relative disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -225,7 +234,7 @@ export default function Header({ title }: { title?: string }) {
                   onClick={() => { setShowMenu(false); setShowProfile(true); }}
                   className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full text-left cursor-pointer"
                 >
-                  <User size={16} /> Profil & Password
+                  <User size={16} /> {t('auth.profile')}
                 </button>
 
                 <div className="h-px bg-border my-1" />
@@ -233,33 +242,33 @@ export default function Header({ title }: { title?: string }) {
                 {(user?.role === 'Admin' || user?.role === 'Manager') && (
                   <>
                     <Link href="/manajemen-tim" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                      <Users size={16} /> Manajemen Tim
+                      <Users size={16} /> {t('auth.manageTeam')}
                     </Link>
                     <Link href="/manajemen-periode" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                      <CalendarDays size={16} /> Manajemen Periode
+                      <CalendarDays size={16} /> {t('auth.managePeriod')}
                     </Link>
                     <Link href="/settings" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                      <Settings size={16} /> Settings
+                      <Settings size={16} /> {t('auth.settings')}
                     </Link>
                   </>
                 )}
                 <Link href="/home-visit" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                  <Home size={16} /> Home Visit
+                  <Home size={16} /> {t('auth.homeVisit')}
                 </Link>
                 <Link href="/broadcast" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                  <Radio size={16} /> Broadcast
+                  <Radio size={16} /> {t('auth.broadcast')}
                 </Link>
                 <Link href="/nurturing" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                  <TrendingUp size={16} /> Nurturing
+                  <TrendingUp size={16} /> {t('auth.nurturing')}
                 </Link>
                 <Link href="/snooze-campaign" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" onClick={() => setShowMenu(false)}>
-                  <Clock size={16} /> Snooze Campaign
+                  <Clock size={16} /> {t('auth.snoozeCampaign')}
                 </Link>
                 <Link href="/templates" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors md:hidden" onClick={() => setShowMenu(false)}>
-                  <FileText size={16} /> Template Admin
+                  <FileText size={16} /> {t('auth.templateAdmin')}
                 </Link>
                 <Link href="/panduan" className="flex items-center gap-2 px-3 py-2 text-sm text-primary font-medium hover:bg-primary/10 transition-colors" onClick={() => setShowMenu(false)}>
-                  <BookOpen size={16} className="text-primary" /> Panduan Tenant
+                  <BookOpen size={16} className="text-primary" /> {t('auth.guide')}
                 </Link>
 
                 <div className="h-px bg-border my-1" />
@@ -271,7 +280,7 @@ export default function Header({ title }: { title?: string }) {
                   }} 
                   className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors w-full text-left cursor-pointer"
                 >
-                  <LogOut size={16} /> Keluar
+                  <LogOut size={16} /> {t('nav.logout')}
                 </button>
               </div>
             )}
@@ -285,8 +294,8 @@ export default function Header({ title }: { title?: string }) {
       {isHistoricalReadOnly && selectedCohort && (
         <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-2 flex items-center justify-between text-xs text-amber-600 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-bold">⚠️ Mode Data Historis (Read-Only):</span>
-            <span>Anda sedang melihat arsip data Cohort {selectedCohort.nama_period}.</span>
+            <span className="font-bold">{t('header.historicalBanner')}</span>
+            <span>{t('header.historicalDesc')} {selectedCohort.nama_period}.</span>
           </div>
           <button
             onClick={() => {
@@ -294,7 +303,7 @@ export default function Header({ title }: { title?: string }) {
             }}
             className="underline font-semibold hover:opacity-80 cursor-pointer"
           >
-            Kembali ke Cohort Aktif ({activeCohort?.nama_period})
+            {t('header.historicalReturn')} ({activeCohort?.nama_period})
           </button>
         </div>
       )}

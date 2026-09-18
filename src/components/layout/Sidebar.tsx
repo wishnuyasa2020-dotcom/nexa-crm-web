@@ -11,30 +11,32 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const navItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Task List', href: '/tasks', icon: CheckSquare },
-  { label: 'Weekly Planning', href: '/weekly', icon: Calendar },
-  { label: 'Data Sekolah', href: '/sekolah', icon: School },
-  { label: 'Data Siswa', href: '/siswa', icon: Users },
-  { label: 'Home Visit', href: '/home-visit', icon: Home },
-  { label: 'Broadcast WA', href: '/broadcast', icon: Radio },
-  { label: 'Nurturing (Aktif)', href: '/nurturing', icon: TrendingUp },
-  { label: 'Snooze Campaign', href: '/snooze-campaign', icon: Clock },
-  { label: 'Live Chat', href: '/live-chat', icon: MessageSquare },
-  { label: 'Template Admin', href: '/templates', icon: FileText },
-  { label: 'Panduan Tenant', href: '/panduan', icon: BookOpen },
-  { label: 'Manajemen Periode', href: '/manajemen-periode', icon: CalendarDays },
-  { label: 'Manajemen Tim', href: '/manajemen-tim', icon: UserCheck },
-  { label: 'Settings', href: '/settings', icon: SettingsIcon },
-];
+const NAV_ITEMS = [
+  { labelKey: 'nav.dashboard',     href: '/dashboard',         icon: LayoutDashboard },
+  { labelKey: 'nav.tasks',         href: '/tasks',             icon: CheckSquare },
+  { labelKey: 'nav.weekly',        href: '/weekly',            icon: Calendar },
+  { labelKey: 'nav.school',        href: '/sekolah',           icon: School },
+  { labelKey: 'nav.student',       href: '/siswa',             icon: Users },
+  { labelKey: 'nav.homeVisit',     href: '/home-visit',        icon: Home },
+  { labelKey: 'nav.broadcast',     href: '/broadcast',         icon: Radio },
+  { labelKey: 'nav.nurturing',     href: '/nurturing',         icon: TrendingUp },
+  { labelKey: 'nav.snoozeCampaign',href: '/snooze-campaign',   icon: Clock },
+  { labelKey: 'nav.liveChat',      href: '/live-chat',         icon: MessageSquare },
+  { labelKey: 'nav.templates',     href: '/templates',         icon: FileText },
+  { labelKey: 'nav.guide',         href: '/panduan',           icon: BookOpen },
+  { labelKey: 'nav.managePeriod',  href: '/manajemen-periode', icon: CalendarDays },
+  { labelKey: 'nav.manageTeam',    href: '/manajemen-tim',     icon: UserCheck },
+  { labelKey: 'nav.settings',      href: '/settings',          icon: SettingsIcon },
+] as const;
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const { user, loadFromCookie } = useAuthStore();
+  const { t } = useTranslation();
   const isFullAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'manager';
 
   useEffect(() => {
@@ -73,14 +75,15 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-3 px-2">
         <div className="space-y-0.5">
-          {navItems.filter(item => !['/settings', '/manajemen-periode', '/manajemen-tim'].includes(item.href) || isFullAdmin).map((item) => {
+          {NAV_ITEMS.filter(item => !['/settings', '/manajemen-periode', '/manajemen-tim'].includes(item.href) || isFullAdmin).map((item) => {
             const Icon = item.icon;
+            const label = t(item.labelKey as Parameters<typeof t>[0]);
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                title={collapsed ? item.label : undefined}
+                title={collapsed ? label : undefined}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group',
                   isActive
@@ -90,7 +93,7 @@ export default function Sidebar() {
                 )}
               >
                 <Icon className={cn('shrink-0 w-4.5 h-4.5', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} size={18} />
-                {!collapsed && <span className="truncate">{item.label}</span>}
+                {!collapsed && <span className="truncate">{label}</span>}
                 {!collapsed && isActive && (
                   <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                 )}
@@ -108,9 +111,9 @@ export default function Sidebar() {
             'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-all duration-150',
             collapsed && 'justify-center px-0 w-10 mx-auto'
           )}
-          title={collapsed ? 'Perluas sidebar' : 'Tutup sidebar'}
+          title={collapsed ? t('nav.expandSidebar') : t('nav.closeSidebar')}
         >
-          {collapsed ? <ChevronRight size={16} /> : <><ChevronLeft size={16} /><span>Tutup sidebar</span></>}
+          {collapsed ? <ChevronRight size={16} /> : <><ChevronLeft size={16} /><span>{t('nav.closeSidebar')}</span></>}
         </button>
         <button
           onClick={handleLogout}
@@ -118,10 +121,10 @@ export default function Sidebar() {
             'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-150',
             collapsed && 'justify-center px-0 w-10 mx-auto'
           )}
-          title="Keluar"
+          title={t('nav.logout')}
         >
           <LogOut size={16} className="shrink-0" />
-          {!collapsed && <span>Keluar</span>}
+          {!collapsed && <span>{t('nav.logout')}</span>}
         </button>
       </div>
     </aside>

@@ -6,19 +6,21 @@ import { useEffect, useState } from 'react';
 import { LayoutDashboard, CheckSquare, School, Users, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const navItems = [
-  { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Tasks', href: '/tasks', icon: CheckSquare },
-  { label: 'Live Chat', href: '/live-chat', icon: MessageSquare },
-  { label: 'Sekolah', href: '/sekolah', icon: School },
-  { label: 'Siswa', href: '/siswa', icon: Users },
-];
+const NAV_ITEMS = [
+  { labelKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { labelKey: 'nav.tasks',     href: '/tasks',     icon: CheckSquare },
+  { labelKey: 'nav.liveChat',  href: '/live-chat', icon: MessageSquare },
+  { labelKey: 'nav.school',    href: '/sekolah',   icon: School },
+  { labelKey: 'nav.student',   href: '/siswa',     icon: Users },
+] as const;
 
 export function BottomNav() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const isFullAdmin = user?.role === 'Admin' || user?.role === 'Manager';
 
   useEffect(() => {
@@ -46,9 +48,10 @@ export function BottomNav() {
       "md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t z-30 flex items-center justify-around px-2 pb-safe transition-transform duration-300",
       !isVisible && "translate-y-full"
     )}>
-      {navItems.map((item) => {
+      {NAV_ITEMS.map((item) => {
         const isActive = pathname.startsWith(item.href);
         const Icon = item.icon;
+        const label = t(item.labelKey as Parameters<typeof t>[0]);
 
         return (
           <Link
@@ -60,7 +63,7 @@ export function BottomNav() {
             )}
           >
             <Icon size={20} className={cn(isActive && "fill-primary/20")} />
-            <span className="text-xs font-medium">{item.label}</span>
+            <span className="text-xs font-medium">{label}</span>
           </Link>
         );
       })}

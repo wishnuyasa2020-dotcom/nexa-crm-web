@@ -52,7 +52,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm mx-auto my-auto flex flex-col justify-center">
         {/* Logo / Brand */}
         <div className="text-center mb-3 sm:mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28 mb-1 sm:mb-2">
+          <div className="inline-flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 mb-1 sm:mb-2">
             <Image
               src="/logo-nexa-02.png"
               alt="NexaMOS CRM"
