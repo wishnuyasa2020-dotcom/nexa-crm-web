@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, Edit2 } from 'lucide-react';
+import { X, Loader2, Edit2, School, Building2 } from 'lucide-react';
 import { TINGKAT_OPTIONS } from '@/lib/constants/sekolah';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 interface Props {
   isOpen: boolean;
@@ -16,6 +18,8 @@ const FIELD_CLASS =
   'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props) {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [loading, setLoading] = useState(false);
   const [kotaList, setKotaList] = useState<{id: number, kota: string}[]>([]);
   const [kecamatanList, setKecamatanList] = useState<{id: number, kecamatan: string, kota_id: number}[]>([]);
@@ -113,7 +117,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
       onClose();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      alert(error?.response?.data?.message || 'Gagal menyimpan perubahan sekolah');
+      alert(error?.response?.data?.message || 'Gagal menyimpan perubahan');
     } finally {
       setLoading(false);
     }
@@ -131,9 +135,11 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shadow-sm shadow-primary/20">
               <Edit2 size={15} className="text-white" />
             </div>
-            <h2 className="text-base font-bold text-foreground">Edit Data Sekolah</h2>
+            <h2 className="text-base font-bold text-foreground">
+              {isGeneral ? t('sekolah.modalEditPartnerTitle') : t('sekolah.modalEditSchoolTitle')}
+            </h2>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -144,7 +150,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
           {/* Nama Sekolah */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
-              Nama Sekolah <span className="text-rose-400">*</span>
+              {isGeneral ? t('sekolah.partnerName') : t('sekolah.schoolName')} <span className="text-rose-400">*</span>
             </label>
             <input
               required
@@ -159,7 +165,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
-                Jenjang <span className="text-rose-400">*</span>
+                {t('sekolah.level')} <span className="text-rose-400">*</span>
               </label>
               <select
                 required
@@ -168,7 +174,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
                 onChange={handleChange}
                 className={FIELD_CLASS}
               >
-                <option value="">— Pilih —</option>
+                <option value="">{t('sekolah.selectDefault')}</option>
                 {TINGKAT_OPTIONS.map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
@@ -177,7 +183,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
-                Kota/Kabupaten <span className="text-rose-400">*</span>
+                {t('sekolah.cityLabel')} <span className="text-rose-400">*</span>
               </label>
               <select
                 required
@@ -186,7 +192,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
                 onChange={handleChange}
                 className={FIELD_CLASS}
               >
-                <option value="">— Pilih Kota —</option>
+                <option value="">{t('sekolah.selectCity')}</option>
                 {kotaList.map(k => (
                   <option key={k.id} value={k.kota}>{k.kota}</option>
                 ))}
@@ -197,7 +203,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
           {/* Kecamatan */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
-              Kecamatan <span className="text-rose-400">*</span>
+              {t('sekolah.district')} <span className="text-rose-400">*</span>
             </label>
             <select
               required
@@ -206,7 +212,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
               onChange={handleChange}
               className={FIELD_CLASS}
             >
-              <option value="">{form.kota ? '— Pilih Kecamatan —' : '— Semua Kecamatan —'}</option>
+              <option value="">{form.kota ? t('sekolah.selectDistrict') : t('sekolah.allDistrictOption')}</option>
               {kecamatanList
                 .filter(kec => !form.kota || kotaList.find(k => k.kota === form.kota)?.id == kec.kota_id)
                 .map(kec => (
@@ -218,7 +224,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
 
           {/* Alamat */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Alamat</label>
+            <label className="text-sm font-medium text-foreground">{t('sekolah.address')}</label>
             <textarea
               name="alamat"
               value={form.alamat}
@@ -231,21 +237,23 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
           {/* Status Aktif + Jumlah Siswa */}
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50 mt-2">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Status Aktif</label>
+              <label className="text-sm font-medium text-foreground">{t('sekolah.activeStatus')}</label>
               <select
                 name="statusAktif"
                 value={form.statusAktif}
                 onChange={handleChange}
                 className={FIELD_CLASS}
               >
-                <option value="">Belum Diketahui</option>
-                <option value="Aktif">Aktif</option>
-                <option value="Nonaktif">Nonaktif</option>
+                <option value="">{t('sekolah.statusUnknown')}</option>
+                <option value="Aktif">{t('sekolah.statusActive')}</option>
+                <option value="Nonaktif">{t('sekolah.statusInactive')}</option>
               </select>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Siswa Kelas 12</label>
+              <label className="text-sm font-medium text-foreground">
+                {isGeneral ? t('sekolah.tabContact') : t('sekolah.grade12Count')}
+              </label>
               <input
                 type="number"
                 name="jumlahSiswaKelas12"
@@ -264,9 +272,9 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer"
           >
-            Batal
+            {t('sekolah.cancelBtn')}
           </button>
           <button
             type="submit"
@@ -275,7 +283,7 @@ export function EditSekolahModal({ isOpen, onClose, onSuccess, sekolah }: Props)
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white gradient-primary rounded-lg shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
-            Simpan Perubahan
+            {isGeneral ? t('sekolah.savePartnerBtn') : t('sekolah.saveSchoolBtn')}
           </button>
         </div>
       </div>

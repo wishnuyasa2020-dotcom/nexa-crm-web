@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, UserCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   isOpen: boolean;
@@ -16,6 +17,7 @@ const INPUT_CLASS =
   'w-full px-3 py-2 bg-secondary/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-colors placeholder:text-muted-foreground';
 
 export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [croBaru, setCroBaru] = useState('');
   const [alasan, setAlasan] = useState('');
@@ -61,11 +63,11 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
               <UserCheck size={15} className="text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Reassign PJ CRO</h2>
+              <h2 className="text-sm font-bold text-foreground">{t('sekolah.modalReassignTitle')}</h2>
               <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -75,7 +77,7 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
 
           {/* PJ Saat Ini */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">PJ Saat Ini</label>
+            <label className="text-xs font-medium text-muted-foreground">{t('sekolah.currentCroLabel')}</label>
             <div className={cn(INPUT_CLASS, 'bg-secondary/20 opacity-70 cursor-not-allowed flex items-center gap-2')}>
               👤 {sekolah.pjCro}
             </div>
@@ -84,7 +86,7 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
           {/* PJ Baru */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
-              PJ Baru <span className="text-rose-400">*</span>
+              {t('sekolah.newCroLabel')}
             </label>
             <select
               required
@@ -92,7 +94,7 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
               onChange={e => setCroBaru(e.target.value)}
               className={INPUT_CLASS}
             >
-              <option value="">— Pilih CRO Aktif —</option>
+              <option value="">{t('sekolah.selectNewCro')}</option>
               {croOptions.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
@@ -100,12 +102,12 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
           {/* Alasan */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
-              Alasan <span className="text-muted-foreground/60">(opsional)</span>
+              {t('sekolah.reassignReasonLabel')}
             </label>
             <input
               value={alasan}
               onChange={e => setAlasan(e.target.value)}
-              placeholder="CRO resign / pindah area / rotasi..."
+              placeholder={t('sekolah.reassignReasonPlaceholder')}
               className={INPUT_CLASS}
             />
           </div>
@@ -125,8 +127,8 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
 
         {/* Footer */}
         <div className="p-5 pt-0 flex justify-end gap-3">
-          <button onClick={onClose} type="button" className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
-            Batal
+          <button onClick={onClose} type="button" className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer">
+            {t('sekolah.cancelBtn')}
           </button>
           <button
             type="submit"
@@ -135,7 +137,7 @@ export function ReassignCROModal({ isOpen, onClose, sekolah, onSuccess }: Props)
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white gradient-primary rounded-lg shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
-            💾 Simpan Reassign
+            {t('sekolah.saveReassignBtn')}
           </button>
         </div>
       </div>

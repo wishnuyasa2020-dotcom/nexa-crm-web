@@ -18,6 +18,8 @@ import {
 } from '@/lib/constants/sekolah';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
 import { logInteraction } from '@/lib/api/sekolah.api';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 interface Props {
   isOpen:    boolean;
@@ -34,6 +36,8 @@ function today(): string {
 }
 
 export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Props) {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState<string | null>(null);
 
@@ -128,11 +132,11 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
           <div>
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
               <MessageSquare size={16} className="text-primary" />
-              Catat Interaksi Visit
+              {isGeneral ? t('sekolah.modalInteractionPartnerTitle') : t('sekolah.modalInteractionTitle')}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">{sekolah.nama}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
             <X size={16} />
           </button>
         </div>
@@ -144,7 +148,7 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
             {/* ── Tanggal & Channel ── */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Tanggal Interaksi *</label>
+                <label className="text-xs font-medium text-muted-foreground">{t('sekolah.interactionDate')}</label>
                 <input
                   type="date"
                   value={tanggalInteraksi}
@@ -154,7 +158,7 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Channel (Jenis Interaksi) *</label>
+                <label className="text-xs font-medium text-muted-foreground">{t('sekolah.interactionChannel')}</label>
                 <select
                   value={channel}
                   onChange={e => setChannel(e.target.value)}
@@ -170,41 +174,41 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
               <div className="border border-amber-500/30 bg-amber-500/5 rounded-xl p-4 space-y-3">
                 <p className="text-xs font-bold text-amber-500 flex items-center gap-1.5">
                   <AlertCircle size={13} />
-                  Data Sekolah — Wajib Diisi (Visit Pertama)
+                  {isGeneral ? t('sekolah.firstVisitAlertPartnerTitle') : t('sekolah.firstVisitAlertSchoolTitle')}
                 </p>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Status Aktif *</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('sekolah.statusAktifLabel')}</label>
                   <div className="flex gap-4">
                     {(['Aktif', 'Nonaktif', 'Belum Diketahui'] as const).map(s => (
                       <label key={s} className="flex items-center gap-1.5 cursor-pointer text-sm">
                         <input type="radio" name="statusAktif" value={s} checked={statusAktif === s} onChange={() => setStatusAktif(s)} className="accent-primary" />
-                        <span>{s}</span>
+                        <span>{s === 'Aktif' ? t('sekolah.statusOptionActive') : s === 'Nonaktif' ? t('sekolah.statusOptionInactive') : t('sekolah.statusOptionUnknown')}</span>
                       </label>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Alamat Lengkap *</label>
-                  <input required={isVisitAwal} value={alamat} onChange={e => setAlamat(e.target.value)} placeholder="Jl. Sudirman No. 5..." className={INPUT_CLASS} />
+                  <label className="text-xs font-medium text-muted-foreground">{t('sekolah.addressLabel')}</label>
+                  <input required={isVisitAwal} value={alamat} onChange={e => setAlamat(e.target.value)} placeholder={t('sekolah.addressPlaceholder')} className={INPUT_CLASS} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Jml Siswa Kls 12 *</label>
-                    <input required={isVisitAwal} type="number" min={0} value={jumlahSiswa} onChange={e => setJumlahSiswa(e.target.value)} placeholder="Misal: 200" className={INPUT_CLASS} />
+                    <label className="text-xs font-medium text-muted-foreground">{isGeneral ? t('sekolah.totalAudienceLabel') : t('sekolah.totalStudents12Label')}</label>
+                    <input required={isVisitAwal} type="number" min={0} value={jumlahSiswa} onChange={e => setJumlahSiswa(e.target.value)} placeholder={t('sekolah.totalStudentsPlaceholder')} className={INPUT_CLASS} />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Nama PIC *</label>
-                    <input required={isVisitAwal} value={namaPic} onChange={e => setNamaPic(e.target.value)} placeholder="Ibu/Pak..." className={INPUT_CLASS} />
+                    <label className="text-xs font-medium text-muted-foreground">{t('sekolah.picNameLabel')}</label>
+                    <input required={isVisitAwal} value={namaPic} onChange={e => setNamaPic(e.target.value)} placeholder={t('sekolah.picNamePlaceholder')} className={INPUT_CLASS} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Jabatan PIC *</label>
-                    <input required={isVisitAwal} value={jabatanPic} onChange={e => setJabatanPic(e.target.value)} placeholder="Guru BK / Wakasek..." className={INPUT_CLASS} />
+                    <label className="text-xs font-medium text-muted-foreground">{t('sekolah.picPositionLabel')}</label>
+                    <input required={isVisitAwal} value={jabatanPic} onChange={e => setJabatanPic(e.target.value)} placeholder={isGeneral ? t('sekolah.picPositionPartnerPlaceholder') : t('sekolah.picPositionSchoolPlaceholder')} className={INPUT_CLASS} />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">No. WA PIC *</label>
-                    <input required={isVisitAwal} value={noWaPic} onChange={e => setNoWaPic(e.target.value)} placeholder="+62 812..." className={INPUT_CLASS} />
+                    <label className="text-xs font-medium text-muted-foreground">{t('sekolah.picWaLabel')}</label>
+                    <input required={isVisitAwal} value={noWaPic} onChange={e => setNoWaPic(e.target.value)} placeholder={t('sekolah.picWaPlaceholder')} className={INPUT_CLASS} />
                   </div>
                 </div>
               </div>
@@ -212,14 +216,14 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
 
             {/* ── Outcome ── */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Outcome (Hasil Interaksi) *</label>
+              <label className="text-xs font-medium text-muted-foreground">{t('sekolah.outcomeFieldLabel')}</label>
               <select
                 required
                 value={outcome}
                 onChange={e => { setOutcome(e.target.value as OutcomeKey | ''); setTanggalSosialisasi(''); setAlasanTidakBisa(''); }}
                 className={INPUT_CLASS}
               >
-                <option value="">— Pilih outcome/fakta... —</option>
+                <option value="">{t('sekolah.selectOutcomePrompt')}</option>
                 {OUTCOME_OPTIONS.map(o => (
                   <option key={o} value={o}>{OUTCOME_META[o].label}</option>
                 ))}
@@ -229,10 +233,10 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
             {/* ── Preview target state ── */}
             {meta && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/40 border border-border/50 text-xs">
-                <span className="text-muted-foreground">Status akan menjadi:</span>
+                <span className="text-muted-foreground">{t('sekolah.targetStatusLabel')}</span>
                 <span className="font-semibold text-foreground">{meta.targetState}</span>
-                {meta.isTerminal && <span className="ml-auto text-rose-400 font-medium">🔒 Terminal</span>}
-                {meta.isDowngrade && <span className="ml-auto text-amber-400 font-medium">↩️ Downgrade</span>}
+                {meta.isTerminal && <span className="ml-auto text-rose-400 font-medium">{t('sekolah.terminalBadge')}</span>}
+                {meta.isDowngrade && <span className="ml-auto text-amber-400 font-medium">{t('sekolah.downgradeBadge')}</span>}
               </div>
             )}
 
@@ -241,7 +245,7 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
               <div className="border border-blue-500/30 bg-blue-500/5 rounded-xl p-4 space-y-2">
                 <p className="text-xs font-bold text-blue-400 flex items-center gap-1.5">
                   <Calendar size={13} />
-                  ⚡ Tanggal Sosialisasi Disepakati — Wajib Diisi
+                  {isGeneral ? t('sekolah.meetingDateTitle') : t('sekolah.socializationDateTitle')}
                 </p>
                 <input
                   required
@@ -259,10 +263,10 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
               <div className="border border-rose-500/30 bg-rose-500/5 rounded-xl p-4 space-y-3">
                 <p className="text-xs font-bold text-rose-500 flex items-center gap-1.5">
                   <AlertCircle size={13} />
-                  Alasan Tidak Bisa Sosialisasi — Wajib
+                  {isGeneral ? t('sekolah.rejectionMeetingTitle') : t('sekolah.rejectionReasonTitle')}
                 </p>
                 <select required value={alasanTidakBisa} onChange={e => setAlasanTidakBisa(e.target.value)} className={INPUT_CLASS}>
-                  <option value="">— Pilih alasan —</option>
+                  <option value="">{t('sekolah.selectReasonPrompt')}</option>
                   {ALASAN_TIDAK_BISA.map(a => <option key={a} value={a}>{a}</option>)}
                 </select>
                 {alasanTidakBisa === 'Alasan lainnya' && (
@@ -271,7 +275,7 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
                     rows={2}
                     value={catatanAlasan}
                     onChange={e => setCatatanAlasan(e.target.value)}
-                    placeholder="Jelaskan alasan..."
+                    placeholder={t('sekolah.rejectionReasonPlaceholder')}
                     className={cn(INPUT_CLASS, 'resize-none')}
                   />
                 )}
@@ -281,8 +285,8 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
             {/* ── Catatan Fakta ── */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                Catatan Fakta *
-                {meta?.isDowngrade && <span className="text-rose-500 text-xs">↩️ Wajib min. 10 karakter</span>}
+                {t('sekolah.factNotesLabel')}
+                {meta?.isDowngrade && <span className="text-rose-500 text-xs">{t('sekolah.factNotesDowngradeHint')}</span>}
                 <span className={cn('ml-auto text-xs', catatanOk ? 'text-emerald-400' : 'text-muted-foreground')}>
                   {catatanFakta.trim().length}/5 min
                 </span>
@@ -292,7 +296,7 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
                 rows={3}
                 value={catatanFakta}
                 onChange={e => setCatatanFakta(e.target.value)}
-                placeholder="Tulis fakta hasil interaksi secara objektif..."
+                placeholder={t('sekolah.factNotesPlaceholder')}
                 className={cn(
                   INPUT_CLASS, 'resize-none',
                   meta?.isDowngrade && !catatanDowngradeOk && catatanFakta.length > 0 && 'border-rose-500 ring-1 ring-rose-500'
@@ -315,9 +319,9 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
           <button
             type="button"
             onClick={onClose}
-            className="hidden sm:block px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors"
+            className="hidden sm:block px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer"
           >
-            Batal
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
@@ -326,7 +330,7 @@ export function CatatInteraksiModal({ isOpen, onClose, sekolah, onSuccess }: Pro
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 sm:py-2 text-sm font-medium text-white gradient-primary rounded-xl sm:rounded-lg shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
-            Simpan Interaksi
+            {t('sekolah.saveInteractionBtn')}
           </button>
         </div>
       </div>

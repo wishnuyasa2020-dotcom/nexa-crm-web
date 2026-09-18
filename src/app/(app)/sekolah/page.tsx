@@ -13,6 +13,8 @@ import {
 } from '@/components/sekolah';
 import { IntentBadge } from '@/components/sekolah/IntentBadge';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 import {
   getSekolahList,
   getSekolahStats,
@@ -78,6 +80,8 @@ function StatCard({ label, value, color, onClick, active, loading }: StatCardPro
 export default function SekolahPage() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const isCRO = user?.role === 'CRO';
 
   // ── Filter state ─────────────────────────────────────────────────────────────
@@ -194,9 +198,11 @@ export default function SekolahPage() {
             <School size={17} className="text-white" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-foreground truncate">Master Sekolah</h1>
+            <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
+              {isGeneral ? t('sekolah.titlePartner') : t('sekolah.titleSchool')}
+            </h1>
             <p className="text-xs text-muted-foreground truncate">
-              {loadingStats ? '…' : `${stats?.total ?? 0} sekolah`}
+              {loadingStats ? '…' : `${stats?.total ?? 0} ${isGeneral ? t('sekolah.unitPartner') : t('sekolah.unitSchool')}`}
               {user?.selectedPeriod ? ` · ${user.selectedPeriod}` : ''}
             </p>
           </div>
@@ -207,27 +213,29 @@ export default function SekolahPage() {
           <div className="flex items-center justify-end gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all cursor-pointer"
             >
               <Upload size={13} />
-              <span>Import</span>
+              <span>{t('sekolah.importBtn')}</span>
             </button>
             {/* TODO: Implement export sekolah ke Excel/CSV (gunakan XLSX.writeFile) */}
             <button
               disabled
-              title="Export (coming soon)"
+              title={`${t('sekolah.exportBtn')} (${t('sekolah.comingSoon')})`}
               className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Download size={13} />
-              <span>Export</span>
+              <span>{t('sekolah.exportBtn')}</span>
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20"
-              title="Tambah Sekolah"
+              className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 cursor-pointer"
+              title={isGeneral ? t('sekolah.addPartner') : t('sekolah.addSchool')}
             >
               <Plus size={16} />
-              <span className="hidden sm:inline">Tambah Sekolah</span>
+              <span className="hidden sm:inline">
+                {isGeneral ? t('sekolah.addPartner') : t('sekolah.addSchool')}
+              </span>
             </button>
           </div>
         )}
@@ -235,27 +243,27 @@ export default function SekolahPage() {
 
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-        <StatCard label="Total" value={stats?.total ?? 0} color="text-foreground"
+        <StatCard label={t('sekolah.statTotal')} value={stats?.total ?? 0} color="text-foreground"
           onClick={() => handleStatClick('')}
           active={filterStatus === '' && !hasFilters}
           loading={loadingStats} />
-        <StatCard label="Belum Visit" value={stats?.belumVisit ?? stats?.cold ?? 0} color="text-slate-400"
+        <StatCard label={t('sekolah.statNotVisited')} value={stats?.belumVisit ?? stats?.cold ?? 0} color="text-slate-400"
           onClick={() => handleStatClick('Identified')}
           active={filterStatus === 'Identified'}
           loading={loadingStats} />
-        <StatCard label="Dalam Proses" value={stats?.proses ?? stats?.engaged ?? 0} color="text-amber-400"
+        <StatCard label={t('sekolah.statInProgress')} value={stats?.proses ?? stats?.engaged ?? 0} color="text-amber-400"
           onClick={() => handleStatClick('Engaged')}
           active={filterStatus === 'Engaged'}
           loading={loadingStats} />
-        <StatCard label="Sos. Terjadwal" value={stats?.sosialisasiTerjadwal ?? 0} color="text-blue-400"
+        <StatCard label={isGeneral ? t('sekolah.statScheduledMeet') : t('sekolah.statScheduledSoc')} value={stats?.sosialisasiTerjadwal ?? 0} color="text-blue-400"
           onClick={() => handleStatClick('Sosialisasi Terjadwal')}
           active={filterStatus === 'Sosialisasi Terjadwal'}
           loading={loadingStats} />
-        <StatCard label="Identity 🎯" value={stats?.identityCaptured ?? stats?.leadCaptured ?? 0} color="text-emerald-300"
+        <StatCard label={t('sekolah.statIdentity')} value={stats?.identityCaptured ?? stats?.leadCaptured ?? 0} color="text-emerald-300"
           onClick={() => handleStatClick('Identity Captured')}
           active={filterStatus === 'Identity Captured'}
           loading={loadingStats} />
-        <StatCard label="Tidak Bisa" value={stats?.tidakBisa ?? 0} color="text-rose-400"
+        <StatCard label={t('sekolah.statDisqualified')} value={stats?.tidakBisa ?? 0} color="text-rose-400"
           onClick={() => handleStatClick('Disqualified')}
           active={filterStatus === 'Disqualified'}
           loading={loadingStats} />
@@ -266,7 +274,7 @@ export default function SekolahPage() {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder="Cari nama sekolah, ID, kecamatan..."
+          placeholder={isGeneral ? t('sekolah.searchPartnerPlaceholder') : t('sekolah.searchSchoolPlaceholder')}
           value={search}
           onChange={e => handleSearchChange(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
@@ -281,31 +289,31 @@ export default function SekolahPage() {
         <select
           value={filterStatus}
           onChange={e => { setFilterStatus(e.target.value); setPage(1); }}
-          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
         >
-          <option value="">Semua State</option>
-          <option value="Identified">Identified (Belum Visit)</option>
-          <option value="Engaged">Engaged (Dalam Proses)</option>
-          <option value="Sosialisasi Terjadwal">Sosialisasi Terjadwal</option>
-          <option value="Sudah Sosialisasi">Sudah Sosialisasi</option>
-          <option value="Identity Captured">🎯 Identity Captured</option>
-          <option value="Disqualified">Disqualified (Tidak Bisa / Nonaktif)</option>
+          <option value="">{t('sekolah.allStates')}</option>
+          <option value="Identified">{t('sekolah.stateIdentified')}</option>
+          <option value="Engaged">{t('sekolah.stateEngaged')}</option>
+          <option value="Sosialisasi Terjadwal">{isGeneral ? t('sekolah.stateScheduledMeet') : t('sekolah.stateScheduledSoc')}</option>
+          <option value="Sudah Sosialisasi">{isGeneral ? t('sekolah.stateDoneMeet') : t('sekolah.stateDoneSoc')}</option>
+          <option value="Identity Captured">{t('sekolah.stateIdentity')}</option>
+          <option value="Disqualified">{t('sekolah.stateDisqualified')}</option>
         </select>
         <select
           value={filterKecamatan}
           onChange={e => { setFilterKecamatan(e.target.value); setPage(1); }}
-          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
         >
-          <option value="">Semua Kecamatan</option>
+          <option value="">{t('sekolah.allDistricts')}</option>
           {kecamatanList.map(k => <option key={k} value={k}>{k}</option>)}
         </select>
         {!isCRO && (
           <select
             value={filterCro}
             onChange={e => { setFilterCro(e.target.value); setPage(1); }}
-            className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+            className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
           >
-            <option value="">Semua CRO</option>
+            <option value="">{t('sekolah.allCro')}</option>
             {croList.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         )}
@@ -313,19 +321,19 @@ export default function SekolahPage() {
         <select
           value={filterIntent}
           onChange={e => { setFilterIntent(e.target.value); setPage(1); }}
-          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+          className="w-full px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
         >
-          <option value="">Semua Intent</option>
-          <option value="High">🔥 High Intent</option>
-          <option value="Mid">🟢 Mid Intent</option>
-          <option value="Low">⚪ Low Intent</option>
+          <option value="">{t('sekolah.allIntents')}</option>
+          <option value="High">{t('sekolah.highIntent')}</option>
+          <option value="Mid">{t('sekolah.midIntent')}</option>
+          <option value="Low">{t('sekolah.lowIntent')}</option>
         </select>
         {hasFilters && (
           <button
             onClick={resetFilters}
-            className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition-colors text-sm flex items-center gap-1.5"
+            className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition-colors text-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <X size={14} /><span>Reset</span>
+            <X size={14} /><span>{t('sekolah.resetFilter')}</span>
           </button>
         )}
       </div>
@@ -334,8 +342,14 @@ export default function SekolahPage() {
       {error && !loadingList && (
         <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
           <AlertCircle size={15} />
-          <span>{error}</span>
-          <button onClick={fetchList} className="ml-auto text-xs underline hover:no-underline">Coba lagi</button>
+          <span>
+            {error === 'Gagal memuat data sekolah.'
+              ? (isGeneral ? t('sekolah.errorLoadPartner') : t('sekolah.errorLoadSchool'))
+              : error}
+          </span>
+          <button onClick={fetchList} className="ml-auto text-xs underline hover:no-underline cursor-pointer">
+            {t('sekolah.retry')}
+          </button>
         </div>
       )}
 
@@ -345,15 +359,17 @@ export default function SekolahPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30">
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">ID</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Nama Sekolah</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Jenjang</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Kecamatan</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">State</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Intent</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Next Action</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">Due Date</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">PJ CRO</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colId')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  {isGeneral ? t('sekolah.colPartnerName') : t('sekolah.colSchoolName')}
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colLevel')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colDistrict')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colState')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colIntent')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colNextAction')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colDueDate')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground whitespace-nowrap">{t('sekolah.colPicCro')}</th>
               </tr>
             </thead>
             <tbody>
@@ -364,10 +380,10 @@ export default function SekolahPage() {
                   <td colSpan={9} className="py-16 text-center text-muted-foreground text-sm">
                     <div className="flex flex-col items-center gap-2">
                       <School size={32} className="opacity-20" />
-                      <p>Tidak ada sekolah ditemukan</p>
+                      <p>{isGeneral ? t('sekolah.emptyPartner') : t('sekolah.emptySchool')}</p>
                       {hasFilters && (
-                        <button onClick={resetFilters} className="text-xs text-primary hover:underline">
-                          Reset filter
+                        <button onClick={resetFilters} className="text-xs text-primary hover:underline cursor-pointer">
+                          {t('sekolah.resetFilterLink')}
                         </button>
                       )}
                     </div>
@@ -411,20 +427,20 @@ export default function SekolahPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-secondary/10">
             <p className="text-xs text-muted-foreground">
-              Halaman {page} dari {totalPages} · {total} sekolah
+              {t('sekolah.pageOf')} {page} {t('sekolah.of')} {totalPages} · {total} {isGeneral ? t('sekolah.unitPartner') : t('sekolah.unitSchool')}
             </p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1 || loadingList}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors cursor-pointer"
               >
                 <ChevronLeft size={15} />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || loadingList}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors cursor-pointer"
               >
                 <ChevronRight size={15} />
               </button>
@@ -441,10 +457,10 @@ export default function SekolahPage() {
           <div className="bg-card border rounded-xl py-16 text-center text-muted-foreground text-sm">
             <div className="flex flex-col items-center gap-2">
               <School size={32} className="opacity-20" />
-              <p>Tidak ada sekolah ditemukan</p>
+              <p>{isGeneral ? t('sekolah.emptyPartner') : t('sekolah.emptySchool')}</p>
               {hasFilters && (
-                <button onClick={resetFilters} className="text-xs text-primary hover:underline">
-                  Reset filter
+                <button onClick={resetFilters} className="text-xs text-primary hover:underline cursor-pointer">
+                  {t('sekolah.resetFilterLink')}
                 </button>
               )}
             </div>
@@ -454,7 +470,7 @@ export default function SekolahPage() {
             <button
               key={s.id}
               onClick={() => router.push(`/sekolah/${s.id}`)}
-              className="w-full text-left bg-card border rounded-xl p-3.5 hover:border-primary/30 hover:bg-card/80 active:scale-95 transition-all"
+              className="w-full text-left bg-card border rounded-xl p-3.5 hover:border-primary/30 hover:bg-card/80 active:scale-95 transition-all cursor-pointer"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span className="font-medium text-sm text-foreground leading-snug flex-1">{s.nama}</span>
@@ -478,19 +494,21 @@ export default function SekolahPage() {
 
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-muted-foreground">{page}/{totalPages} · {total} sekolah</p>
+            <p className="text-xs text-muted-foreground">
+              {page}/{totalPages} · {total} {isGeneral ? t('sekolah.unitPartner') : t('sekolah.unitSchool')}
+            </p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1 || loadingList}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border cursor-pointer"
               >
                 <ChevronLeft size={15} />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || loadingList}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary disabled:opacity-30 transition-colors border cursor-pointer"
               >
                 <ChevronRight size={15} />
               </button>

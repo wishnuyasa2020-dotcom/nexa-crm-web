@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, Trash2, AlertCircle, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 interface Props {
   isOpen: boolean;
@@ -19,6 +21,8 @@ const ALASAN_OPTIONS = [
 ] as const;
 
 export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Props) {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [loading, setLoading] = useState(false);
   const [alasan, setAlasan] = useState<string>('');
   const [catatanAlasan, setCatatanAlasan] = useState('');
@@ -54,7 +58,7 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
       onSuccess(); // should redirect to /sekolah list after success
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
-      alert(e?.response?.data?.message || 'Gagal menghapus sekolah');
+      alert(e?.response?.data?.message || 'Gagal menghapus data');
     } finally {
       setLoading(false);
     }
@@ -79,12 +83,14 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground">
-                {isBlocked ? 'Tidak Bisa Dihapus' : 'Hapus Sekolah'}
+                {isBlocked 
+                  ? t('sekolah.deleteBlockedTitle')
+                  : (isGeneral ? t('sekolah.modalDeletePartnerTitle') : t('sekolah.modalDeleteSchoolTitle'))}
               </h2>
               <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -95,36 +101,21 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
             <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-500 text-sm space-y-2">
               <p className="font-semibold flex items-center gap-1.5">
                 <AlertCircle size={14} />
-                Hard delete tidak diperbolehkan
+                {t('sekolah.deleteBlockedTitle')}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('sekolah.deleteBlockedDesc')}
               </p>
               <ul className="list-disc list-inside text-foreground/90 pl-1 space-y-1 text-xs">
-                {hasAktivitas && <li>Sekolah memiliki {sekolah.aktivitas.length} riwayat aktivitas.</li>}
-                {isIdentityCaptured && <li>Sekolah sudah berstatus Identity Captured.</li>}
-                {hasActiveEkstra && <li>Masih ada aktivitas ekstra yang direncanakan.</li>}
+                {hasAktivitas && <li>{sekolah.aktivitas.length} {t('sekolah.entriesCount')}.</li>}
+                {isIdentityCaptured && <li>Status: {sekolah.status}.</li>}
+                {hasActiveEkstra && <li>{t('sekolah.extraActivityBtn')} {t('sekolah.extraStatusPlanned')}.</li>}
               </ul>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">Gunakan alternatif:</p>
-              <button 
-                onClick={() => alert('Fitur Input Aktivitas: Set status ke Tidak Bisa Sosialisasi')}
-                className="w-full text-left px-4 py-2.5 rounded-lg border hover:border-primary/30 hover:bg-secondary/50 text-sm transition-colors flex items-center justify-between"
-              >
-                Set Status "Tidak Bisa Sosialisasi"
-                <span className="text-muted-foreground text-xs">→</span>
-              </button>
-              <button 
-                onClick={() => alert('Fitur Input Aktivitas: Set status ke Nonaktif / Tutup / Merger')}
-                className="w-full text-left px-4 py-2.5 rounded-lg border hover:border-primary/30 hover:bg-secondary/50 text-sm transition-colors flex items-center justify-between"
-              >
-                Set Status "Nonaktif / Tutup / Merger"
-                <span className="text-muted-foreground text-xs">→</span>
-              </button>
             </div>
 
             <div className="pt-2 flex justify-end">
-              <button onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
-                Tutup
+              <button onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer">
+                {t('sekolah.cancelBtn')}
               </button>
             </div>
           </div>
@@ -132,17 +123,16 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
           <form id="deleteForm" onSubmit={handleDelete} className="p-5 space-y-5">
             <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 text-sm space-y-2 text-rose-500">
               <p className="font-semibold flex items-center gap-1.5">
-                <AlertCircle size={14} /> Hapus Permanen
+                <AlertCircle size={14} /> {t('sekolah.confirmDeleteBtn')}
               </p>
               <p className="text-xs text-foreground/90 leading-relaxed">
-                Anda akan menghapus <strong className="font-semibold">{sekolah.nama}</strong>.<br/>
-                Sekolah ini aman dihapus karena belum memiliki riwayat aktivitas. Data yang dihapus tidak bisa dikembalikan.
+                {isGeneral ? t('sekolah.deletePartnerWarning') : t('sekolah.deleteSchoolWarning')}
               </p>
             </div>
 
             <div className="space-y-3">
               <label className="text-xs font-medium text-muted-foreground">
-                Alasan Penghapusan <span className="text-rose-400">*</span>
+                {t('sekolah.deleteReasonLabel')}
               </label>
               <div className="space-y-2">
                 {ALASAN_OPTIONS.map((opt) => (
@@ -186,9 +176,9 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
               <button 
                 type="button" 
                 onClick={onClose} 
-                className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer"
               >
-                Batal
+                {t('sekolah.cancelBtn')}
               </button>
               <button
                 type="submit"
@@ -196,7 +186,7 @@ export function DeleteSekolahModal({ isOpen, onClose, sekolah, onSuccess }: Prop
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-rose-500 rounded-lg shadow-md shadow-rose-500/20 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {loading ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                Ya, Hapus Permanen
+                {t('sekolah.confirmDeleteBtn')}
               </button>
             </div>
           </form>

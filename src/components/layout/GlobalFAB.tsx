@@ -10,11 +10,15 @@ import { AddSekolahModal } from '@/components/sekolah/AddSekolahModal';
 import { usePathname } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 export function GlobalFAB() {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuthStore();
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [searchAction, setSearchAction] = useState<'aktivitas' | 'link' | 'show-link' | null>(null);
   const [selectedSekolahForLink, setSelectedSekolahForLink] = useState<any | null>(null);
   const [isCopied, setIsCopied] = useState(false);
@@ -137,10 +141,10 @@ export function GlobalFAB() {
                 setIsSpeedDialOpen(false);
                 setSearchAction('aktivitas');
               }}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-2.5 group cursor-pointer"
             >
               <span className="px-2.5 py-1 bg-background border shadow-xs rounded-lg text-xs md:text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Catat Aktivitas
+                {t('fab.logActivity')}
               </span>
               <div className="w-8 h-8 md:w-12 md:h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
                 <Zap className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
@@ -151,10 +155,10 @@ export function GlobalFAB() {
                 setIsSpeedDialOpen(false);
                 setSearchAction('link');
               }}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-2.5 group cursor-pointer"
             >
               <span className="px-2.5 py-1 bg-background border shadow-xs rounded-lg text-xs md:text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Link Sosialisasi
+                {isGeneral ? t('fab.intakeLink') : t('fab.socializationLink')}
               </span>
               <div className="w-8 h-8 md:w-12 md:h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
                 <LinkIcon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
@@ -165,10 +169,10 @@ export function GlobalFAB() {
                 setIsSpeedDialOpen(false);
                 router.push('/broadcast');
               }}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-2.5 group cursor-pointer"
             >
               <span className="px-2.5 py-1 bg-background border shadow-xs rounded-lg text-xs md:text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Broadcast Pesan
+                {t('fab.broadcastMessage')}
               </span>
               <div className="w-8 h-8 md:w-12 md:h-12 bg-card border text-foreground flex items-center justify-center rounded-full shadow-lg hover:bg-secondary transition-colors">
                 <Radio className="w-4 h-4 md:w-5 md:h-5 text-violet-500" />
@@ -180,7 +184,7 @@ export function GlobalFAB() {
         <button
           onClick={() => setIsSpeedDialOpen(!isSpeedDialOpen)}
           className={cn(
-            "flex items-center justify-center w-9 h-9 md:w-auto md:h-12 rounded-full text-white shadow-lg transition-all duration-300 md:px-5 md:rounded-2xl",
+            "flex items-center justify-center w-9 h-9 md:w-auto md:h-12 rounded-full text-white shadow-lg transition-all duration-300 md:px-5 md:rounded-2xl cursor-pointer",
             isSpeedDialOpen ? "bg-rose-500 shadow-rose-500/30 scale-105" : "gradient-primary shadow-primary/30 hover:scale-105 active:scale-95"
           )}
         >
@@ -190,7 +194,7 @@ export function GlobalFAB() {
             <Zap className="w-4 h-4 md:w-5 md:h-5 md:mr-2 shrink-0" />
           )}
           <span className="hidden md:inline font-bold">
-            {isSpeedDialOpen ? 'Tutup Menu' : 'Tindakan'}
+            {isSpeedDialOpen ? t('fab.closeMenu') : t('fab.actions')}
           </span>
         </button>
       </div>
@@ -203,12 +207,12 @@ export function GlobalFAB() {
             <div className="flex items-center justify-between p-4 border-b bg-secondary/30">
               <h2 className="font-bold flex items-center gap-2">
                 {searchAction === 'aktivitas' ? (
-                  <><Zap size={16} className="text-amber-500" /> Quick Log Aktivitas</>
+                  <><Zap size={16} className="text-amber-500" /> {t('fab.quickLogTitle')}</>
                 ) : (
-                  <><LinkIcon size={16} className="text-primary" /> Pilih Sekolah (Link Form)</>
+                  <><LinkIcon size={16} className="text-primary" /> {isGeneral ? t('fab.selectPartnerTitle') : t('fab.selectSchoolTitle')}</>
                 )}
               </h2>
-              <button onClick={() => setSearchAction(null)} className="text-muted-foreground hover:text-foreground">
+              <button onClick={() => setSearchAction(null)} className="text-muted-foreground hover:text-foreground cursor-pointer">
                 <X size={18} />
               </button>
             </div>
@@ -220,7 +224,7 @@ export function GlobalFAB() {
                 <input
                   autoFocus
                   type="text"
-                  placeholder="Cari nama sekolah..."
+                  placeholder={isGeneral ? t('fab.searchPartnerPlaceholder') : t('fab.searchSchoolPlaceholder')}
                   value={searchQuery}
                   onChange={handleSearch}
                   className="w-full pl-9 pr-4 py-3 bg-secondary/50 border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground"
@@ -236,7 +240,7 @@ export function GlobalFAB() {
                     <button
                       key={s.id}
                       onClick={() => openInputAktivitas(s)}
-                      className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-secondary/50 transition-colors text-left"
+                      className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-secondary/50 transition-colors text-left cursor-pointer"
                     >
                       <div>
                         <h3 className="font-bold text-sm text-foreground">{s.nama}</h3>
@@ -254,23 +258,29 @@ export function GlobalFAB() {
                     <School size={24} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Sekolah tidak ditemukan</p>
-                    <p className="text-xs text-muted-foreground">Daftarkan sekolah baru dan langsung catat aktivitas.</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {isGeneral ? t('fab.partnerNotFound') : t('fab.schoolNotFound')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isGeneral ? t('fab.registerPartnerDesc') : t('fab.registerSchoolDesc')}
+                    </p>
                   </div>
                   <button
                     onClick={() => {
                       setSearchAction(null);
                       setShowAddModal(true);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 mt-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 mt-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
                   >
-                    <Plus size={16} /> Daftarkan "{searchQuery}"
+                    <Plus size={16} /> {t('fab.registerAction')} "{searchQuery}"
                   </button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground opacity-50">
                   <Search size={32} className="mb-2" />
-                  <p className="text-sm">Ketik nama sekolah untuk mencari</p>
+                  <p className="text-sm">
+                    {isGeneral ? t('fab.typeToSearchPartner') : t('fab.typeToSearchSchool')}
+                  </p>
                 </div>
               )}
             </div>
@@ -310,20 +320,23 @@ export function GlobalFAB() {
               <X size={18} />
             </button>
 
-            <h3 className="text-xl font-bold mb-1 z-10">Bagikan Form Publik</h3>
+            <h3 className="text-xl font-bold mb-1 z-10">{t('fab.shareFormTitle')}</h3>
             <p className="text-sm text-muted-foreground mb-4 z-10">
-              Siswa di <span className="font-semibold text-foreground">{selectedSekolahForLink.nama}</span>
+              {isGeneral ? t('fab.contactsAt') : t('fab.studentsAt')}{' '}
+              <span className="font-semibold text-foreground">{selectedSekolahForLink.nama}</span>
             </p>
 
             {/* Class Selection Dropdown */}
             <div className="w-full mb-4 z-10 text-left">
-              <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">Pilih Kelas <span className="text-destructive">*</span></label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">
+                {t('fab.selectClass')} <span className="text-destructive">*</span>
+              </label>
               <select 
                 value={selectedKelas}
                 onChange={(e) => setSelectedKelas(e.target.value)}
-                className="w-full px-3 py-2.5 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
+                className="w-full px-3 py-2.5 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer"
               >
-                <option value="" disabled>-- Pilih Kelas --</option>
+                <option value="" disabled>{t('fab.selectClassOption')}</option>
                 {kelasList.map(k => (
                   <option key={k.id} value={k.kelas}>{k.kelas}</option>
                 ))}
@@ -343,8 +356,8 @@ export function GlobalFAB() {
                   </div>
                   <button
                     onClick={copyToClipboard}
-                    className="p-2 bg-background border rounded-lg hover:bg-secondary hover:text-primary transition-colors shrink-0"
-                    title="Copy Link"
+                    className="p-2 bg-background border rounded-lg hover:bg-secondary hover:text-primary transition-colors shrink-0 cursor-pointer"
+                    title={t('fab.copyLinkTooltip')}
                   >
                     {isCopied ? <CheckCircle2 size={16} className="text-green-500" /> : <Copy size={16} />}
                   </button>
@@ -359,7 +372,7 @@ export function GlobalFAB() {
                     )}
                   >
                     {isCopied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                    {isCopied ? 'Tersalin' : 'Copy'}
+                    {isCopied ? t('fab.copied') : t('fab.copy')}
                   </button>
 
                   <button
@@ -374,15 +387,15 @@ export function GlobalFAB() {
                     }}
                     className="py-3 px-4 gradient-primary text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                   >
-                    Buka Form <ExternalLink size={16} />
+                    {t('fab.openForm')} <ExternalLink size={16} />
                   </button>
                 </div>
               </>
             ) : (
               <div className="flex flex-col items-center justify-center w-full py-8 text-muted-foreground bg-secondary/30 border border-dashed rounded-xl z-10 mb-2">
                 <School size={32} className="mb-2 opacity-50" />
-                <p className="text-sm font-medium">Pilih kelas terlebih dahulu</p>
-                <p className="text-xs opacity-70">QR Code akan muncul setelah kelas dipilih</p>
+                <p className="text-sm font-medium">{t('fab.selectClassFirst')}</p>
+                <p className="text-xs opacity-70">{t('fab.qrWillShow')}</p>
               </div>
             )}
           </div>

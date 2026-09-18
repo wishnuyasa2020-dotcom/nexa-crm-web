@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { JENIS_AKTIVITAS_EKSTRA } from '@/lib/constants/sekolah';
 import type { SekolahDetail } from '@/lib/types/sekolah.types';
 import Cookies from 'js-cookie';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   isOpen: boolean;
@@ -23,6 +24,7 @@ function today() {
 
 
 export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const [myName, setMyName] = useState('');
@@ -91,10 +93,10 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b shrink-0">
           <div>
-            <h2 className="text-base font-bold text-foreground">➕ Aktivitas Ekstra</h2>
+            <h2 className="text-base font-bold text-foreground">➕ {t('sekolah.modalExtraTitle')}</h2>
             <p className="text-xs text-muted-foreground">{sekolah.nama}</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -113,8 +115,8 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
               </div>
             </div>
             <div className="flex justify-end">
-              <button onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
-                Tutup
+              <button onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer">
+                {t('sekolah.cancelBtn')}
               </button>
             </div>
           </div>
@@ -124,7 +126,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
 
               {/* Jenis Aktivitas — Radio */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">Jenis Aktivitas *</label>
+                <label className="text-xs font-medium text-muted-foreground">{t('sekolah.extraTypeLabel')}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {JENIS_AKTIVITAS_EKSTRA.map(jenis => (
                     <label
@@ -156,7 +158,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
               {/* Tanggal Rencana + PJ */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Tanggal Rencana *</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('sekolah.extraDatePlan')}</label>
                   <input
                     required
                     type="date"
@@ -167,7 +169,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">PJ Aktivitas *</label>
+                  <label className="text-xs font-medium text-muted-foreground">PJ CRO *</label>
                   {isManager ? (
                     <select
                       required
@@ -175,7 +177,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
                       onChange={e => setPjAktivitas(e.target.value)}
                       className={INPUT_CLASS}
                     >
-                      <option value="">— Pilih CRO —</option>
+                      <option value="">{t('sekolah.selectNewCro')}</option>
                       {croList.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   ) : (
@@ -189,14 +191,14 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
               {/* Tujuan / Catatan */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Tujuan / Catatan * <span className="text-rose-400">— Wajib diisi</span>
+                  {t('sekolah.extraGoalLabel')}
                 </label>
                 <textarea
                   required
                   rows={3}
                   value={tujuan}
                   onChange={e => setTujuan(e.target.value)}
-                  placeholder="Tujuan aktivitas ekstra ini..."
+                  placeholder={t('sekolah.extraGoalPlaceholder')}
                   className={cn(INPUT_CLASS, 'resize-none')}
                 />
               </div>
@@ -204,14 +206,14 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
               {/* Info: tidak mengubah status */}
               <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary/30 text-xs text-muted-foreground">
                 <AlertCircle size={13} className="shrink-0 mt-0.5 text-primary/60" />
-                <span>Aktivitas Ekstra <strong className="text-foreground">tidak mengubah</strong> status CRM sekolah.</span>
+                <span>Aktivitas Ekstra <strong className="text-foreground">tidak mengubah</strong> status CRM.</span>
               </div>
             </form>
 
             {/* Footer */}
             <div className="p-4 sm:p-5 border-t flex justify-end gap-3 shrink-0">
-              <button onClick={onClose} type="button" className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
-                Batal
+              <button onClick={onClose} type="button" className="px-4 py-2 text-sm text-muted-foreground hover:bg-secondary rounded-lg transition-colors cursor-pointer">
+                {t('sekolah.cancelBtn')}
               </button>
               <button
                 type="submit"
@@ -220,7 +222,7 @@ export function AktivitasEkstraModal({ isOpen, onClose, sekolah, onSuccess }: Pr
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white gradient-primary rounded-lg shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {loading && <Loader2 size={14} className="animate-spin" />}
-                Simpan Rencana
+                {t('sekolah.saveExtraBtn')}
               </button>
             </div>
           </>
