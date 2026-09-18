@@ -2,7 +2,8 @@
 
 import {
   Bell, Search, Users, Radio, TrendingUp, LogOut, Clock,
-  FileText, User, Settings, Calendar, ChevronDown, CalendarDays, BookOpen, Home
+  FileText, User, Settings, Calendar, ChevronDown, CalendarDays, BookOpen, Home,
+  ExternalLink
 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
@@ -81,6 +82,18 @@ export default function Header({ title }: { title?: string }) {
             </span>
           )}
           <div className="flex items-center gap-2 shrink-0">
+            {isDemoMode && (
+              <a
+                href="https://nexamos.cloud"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 transition-colors"
+                title="Daftar NexaMOS"
+              >
+                <span>Daftar</span>
+                <ExternalLink className="w-3 h-3 shrink-0" />
+              </a>
+            )}
             {/* Language Toggle — compact pill, mobile Row 1 kanan atas */}
             <LanguageToggle variant="compact" />
           </div>

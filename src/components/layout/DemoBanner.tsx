@@ -69,10 +69,9 @@ export function DemoBanner() {
             href="https://nexamos.cloud"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 transition-colors"
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 transition-colors"
           >
-            <span className="sm:hidden">Daftar</span>
-            <span className="hidden sm:inline">Daftar NexaMOS</span>
+            <span>Daftar NexaMOS</span>
             <ExternalLink className="w-3 h-3 shrink-0" />
           </a>
           <button

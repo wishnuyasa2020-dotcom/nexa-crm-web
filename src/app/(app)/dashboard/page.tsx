@@ -5,7 +5,7 @@ import {
   Users, School, CheckSquare, TrendingUp, Activity, 
   ArrowUpRight, Trophy, Medal, RefreshCw, AlertCircle, 
   ShieldCheck, Calendar, Clock, Check, Loader2, Zap, Filter, Share2,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Building2
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Link from 'next/link';
@@ -20,6 +20,7 @@ import type { SekolahDetail } from '@/lib/types/sekolah.types';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -124,6 +125,7 @@ const CHANNEL_CONFIG: Record<string, { label: string; icon: string; color: strin
 
 export default function DashboardPage() {
   const { t: tr, lang } = useTranslation(); // aliased to avoid collision with tasks.map((t, i) => ...)
+  const { isGeneral, getStateLabel } = useTenantVocabulary();
   const [stats, setStats]             = useState<DashboardStats | null>(null);
   const [quota, setQuota]             = useState<QuotaInfo | null>(null);
   const [funnels, setFunnels]         = useState<FunnelItem[]>([]);
@@ -343,7 +345,7 @@ export default function DashboardPage() {
   // ── Multi-Channel Intake Derived Metrics ──
   const getChannelLabel = (key: string): string => {
     switch (key) {
-      case 'sekolah':   return tr('dashboard.channelSekolah');
+      case 'sekolah':   return isGeneral ? 'Mitra / Institusi' : tr('dashboard.channelSekolah');
       case 'relasi':    return tr('dashboard.channelRelasi');
       case 'instagram': return tr('dashboard.channelInstagram');
       case 'facebook':  return tr('dashboard.channelFacebook');
@@ -354,6 +356,11 @@ export default function DashboardPage() {
     }
   };
 
+  const getChannelIcon = (key: string): string => {
+    if (key === 'sekolah') return isGeneral ? '🏢' : '🏫';
+    return CHANNEL_CONFIG[key]?.icon || '📌';
+  };
+
   const totalChannelLeads = Object.values(channelBreakdown).reduce((a, b) => a + Number(b), 0);
   const channelChartData = Object.entries(channelBreakdown)
     .map(([key, value]) => ({
@@ -361,7 +368,7 @@ export default function DashboardPage() {
       name: getChannelLabel(key),
       value: Number(value) || 0,
       color: CHANNEL_CONFIG[key]?.color || '#94a3b8',
-      icon: CHANNEL_CONFIG[key]?.icon || '📌',
+      icon: getChannelIcon(key),
     }))
     .filter(item => item.value > 0);
 
@@ -375,16 +382,16 @@ export default function DashboardPage() {
     : 0;
 
   const activeSiswaLabel = selectedChannel === 'all'
-    ? tr('dashboard.activeStudent')
+    ? (isGeneral ? 'Kontak Aktif' : tr('dashboard.activeStudent'))
     : selectedChannel === 'sekolah'
-      ? tr('dashboard.schoolStudent')
-      : tr('dashboard.candidate');
+      ? (isGeneral ? 'Kontak Mitra' : tr('dashboard.schoolStudent'))
+      : (isGeneral ? 'Kontak Inbound' : tr('dashboard.candidate'));
 
   const activeSiswaSub = selectedChannel === 'all'
     ? (topChannel
-        ? `${stats?.totalSiswa ?? 0} ${tr('dashboard.pipelineTotal')} · ${tr('dashboard.topChannel')} ${topChannel.icon} ${topChannel.name}`
-        : `${stats?.totalSiswa ?? 0} ${tr('dashboard.totalPipeline')}`)
-    : `${tr('dashboard.filterLabel')} ${CHANNEL_CONFIG[selectedChannel]?.icon || '📌'} ${getChannelLabel(selectedChannel)}`;
+        ? `${stats?.totalSiswa ?? 0} ${isGeneral ? 'kontak di pipeline' : tr('dashboard.pipelineTotal')} · ${tr('dashboard.topChannel')} ${topChannel.icon} ${topChannel.name}`
+        : `${stats?.totalSiswa ?? 0} ${isGeneral ? 'total kontak di pipeline' : tr('dashboard.totalPipeline')}`)
+    : `${tr('dashboard.filterLabel')} ${getChannelIcon(selectedChannel)} ${getChannelLabel(selectedChannel)}`;
 
   const statCards = [
     {
@@ -395,10 +402,10 @@ export default function DashboardPage() {
       color: 'text-primary',
     },
     {
-      label: tr('dashboard.schoolHandled'),
+      label: isGeneral ? 'Mitra / Institusi' : tr('dashboard.schoolHandled'),
       value: stats?.totalSekolah ?? '-',
       sub: tr('dashboard.periodThis'),
-      icon: School,
+      icon: isGeneral ? Building2 : School,
       color: 'text-violet-400',
     },
     {
@@ -411,7 +418,7 @@ export default function DashboardPage() {
     {
       label: tr('dashboard.conversionMonth'),
       value: stats?.totalTerdaftar ?? '-',
-      sub: tr('dashboard.registered'),
+      sub: isGeneral ? 'kontak terdaftar' : tr('dashboard.registered'),
       icon: TrendingUp,
       color: 'text-emerald-400',
     },
@@ -576,7 +583,7 @@ export default function DashboardPage() {
                       : "bg-secondary/40 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
                   )}
                 >
-                  <span>{cfg.icon}</span>
+                  <span>{getChannelIcon(key)}</span>
                   <span>{getChannelLabel(key)}</span>
                   <span className={cn(
                     "px-1.5 py-0.2 rounded-full text-xs font-bold",
@@ -610,7 +617,9 @@ export default function DashboardPage() {
                 <Users size={20} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">{tr('dashboard.quotaStudent')}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {isGeneral ? 'Kuota Kontak Baru' : tr('dashboard.quotaStudent')}
+                </p>
                 <p className="text-xs text-muted-foreground">{tr('dashboard.quotaBillingPeriod')}</p>
               </div>
             </div>
@@ -658,10 +667,12 @@ export default function DashboardPage() {
           <div className="bg-card border rounded-xl p-5 w-full flex flex-col xl:flex-row gap-6 items-center card-hover min-w-0">
             <div className="flex items-center gap-4 min-w-48">
               <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                <School size={20} />
+                {isGeneral ? <Building2 size={20} /> : <School size={20} />}
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">{tr('dashboard.quotaSchool')}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {isGeneral ? 'Kuota Mitra / Institusi' : tr('dashboard.quotaSchool')}
+                </p>
                 <p className="text-xs text-muted-foreground">{tr('dashboard.quotaBillingPeriod')}</p>
               </div>
             </div>
@@ -784,18 +795,30 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-card border rounded-xl p-5 flex flex-col h-96 min-w-0">
           <div className="flex items-center gap-2 mb-4 shrink-0">
             <Activity size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">{tr('dashboard.funnelTitle')}</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              {isGeneral ? 'Funnel Kontak (Sales Pipeline)' : tr('dashboard.funnelTitle')}
+            </h2>
             <span className="ml-auto text-xs text-muted-foreground">{tr('dashboard.funnelStages')}</span>
           </div>
           <div className="flex-1 min-h-0 min-w-0">
             {funnels.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={funnels} barSize={32}>
-                  <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: '#64748b', fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => getStateLabel(val)}
+                  />
                   <YAxis tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
                   <Tooltip
                     contentStyle={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 8, color: '#f8fafc', fontSize: 12 }}
                     cursor={{ fill: 'rgba(99,102,241,0.08)' }}
+                    formatter={(value: any, name: any, item: any) => [
+                      value,
+                      getStateLabel(item?.payload?.name) || name
+                    ]}
                   />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                     {funnels.map((f, i) => (
@@ -806,7 +829,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                {tr('dashboard.funnelEmpty')}
+                {isGeneral ? 'Belum ada data kontak di periode ini' : tr('dashboard.funnelEmpty')}
               </div>
             )}
           </div>
@@ -967,15 +990,17 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         {t.tipe === 'sekolah' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1 shrink-0">
-                            {tr('dashboard.badgeSchool')}
+                            {isGeneral ? '🟣 Mitra / Institusi' : tr('dashboard.badgeSchool')}
                           </span>
                         ) : t.tipe === 'siswa' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 inline-flex items-center gap-1 shrink-0">
-                            {t.sourceChannel && t.sourceChannel !== 'sekolah' ? tr('dashboard.badgeCandidate') : tr('dashboard.badgeStudent')}
+                            {isGeneral
+                              ? '🟠 Kontak'
+                              : (t.sourceChannel && t.sourceChannel !== 'sekolah' ? tr('dashboard.badgeCandidate') : tr('dashboard.badgeStudent'))}
                           </span>
                         ) : t.tipe === 'homevisit' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 inline-flex items-center gap-1 shrink-0">
-                            {tr('dashboard.badgeHomeVisit')}
+                            {isGeneral ? '🏠 Kunjungan Lapangan' : tr('dashboard.badgeHomeVisit')}
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 inline-flex items-center gap-1 shrink-0">
@@ -987,7 +1012,7 @@ export default function DashboardPage() {
                       {(t.tipe === 'siswa' || t.tipe === 'homevisit') && (
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap text-xs">
                           <span className="inline-flex items-center gap-1 text-muted-foreground">
-                            <span>{CHANNEL_CONFIG[t.sourceChannel || 'sekolah']?.icon || '🏫'}</span>
+                            <span>{getChannelIcon(t.sourceChannel || 'sekolah')}</span>
                             <span>{getChannelLabel(t.sourceChannel || 'sekolah')}</span>
                             {t.sourceDetail && <span className="text-muted-foreground/70">({t.sourceDetail})</span>}
                           </span>
@@ -1009,7 +1034,11 @@ export default function DashboardPage() {
                             {t.status}
                           </span>
                         ) : (
-                          <CommercialStateBadge state={t.commercialState || t.status || CANONICAL_STATES.LEAD} size="sm" />
+                          <CommercialStateBadge
+                            state={t.commercialState || t.status || CANONICAL_STATES.LEAD}
+                            channel={t.sourceChannel}
+                            size="sm"
+                          />
                         )}
                         {t.intent && (
                           <span className={cn(

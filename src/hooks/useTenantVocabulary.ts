@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { 
   TenantType, 
   getDisplayLabel, 
@@ -39,6 +40,8 @@ export interface UseTenantVocabularyReturn {
  */
 export function useTenantVocabulary(): UseTenantVocabularyReturn {
   const user = useAuthStore((s) => s.user);
+  const { lang, t } = useTranslation();
+  const isEn = lang === 'en';
   const tenantType: TenantType = user?.tenant_type === 'general' ? 'general' : 'lpk';
   const isLpk = tenantType === 'lpk';
   const isGeneral = tenantType === 'general';
@@ -58,22 +61,30 @@ export function useTenantVocabulary(): UseTenantVocabularyReturn {
   };
 
   const navLabels = {
-    studentMenu: isGeneral ? 'Data Kontak' : 'Data Siswa',
-    schoolMenu: isGeneral ? 'Mitra / Institusi' : 'Data Sekolah',
-    homeVisitMenu: isGeneral ? 'Kunjungan Lapangan' : 'Home Visit',
+    studentMenu: isGeneral ? t('nav.contacts') : t('nav.student'),
+    schoolMenu: isGeneral ? t('nav.partners') : t('nav.school'),
+    homeVisitMenu: isGeneral ? t('nav.fieldVisits') : t('nav.homeVisit'),
   };
 
   const pageLabels = {
-    siswaPageTitle: isGeneral ? 'Database Kontak' : 'Data Siswa & Kontak',
+    siswaPageTitle: isGeneral
+      ? (isEn ? 'Contacts Database' : 'Database Kontak')
+      : (isEn ? 'Students & Contacts Data' : 'Data Siswa & Kontak'),
     siswaPageSubtitle: isGeneral
-      ? 'Daftar seluruh kontak prospek dan pelanggan bisnis.'
-      : 'Daftar siswa jalur sekolah dan kontak inbound digital.',
-    addBtn: isGeneral ? 'Tambah Kontak' : 'Tambah Siswa / Kontak',
+      ? (isEn ? 'List of all prospect contacts and business customers.' : 'Daftar seluruh kontak prospek dan pelanggan bisnis.')
+      : (isEn ? 'List of school-track students and digital inbound contacts.' : 'Daftar siswa jalur sekolah dan kontak inbound digital.'),
+    addBtn: isGeneral
+      ? (isEn ? 'Add Contact' : 'Tambah Kontak')
+      : (isEn ? 'Add Student / Contact' : 'Tambah Siswa / Kontak'),
     searchPlaceholder: isGeneral
-      ? 'Cari nama kontak, nomor WA...'
-      : 'Cari nama siswa/kontak, asal sekolah...',
-    entityColumn: isGeneral ? 'Nama Kontak' : 'Nama Siswa / Kontak',
-    schoolColumn: isGeneral ? 'Institusi / Asal' : 'Asal Sekolah',
+      ? (isEn ? 'Search contact name, WA number...' : 'Cari nama kontak, nomor WA...')
+      : (isEn ? 'Search student/contact name, school origin...' : 'Cari nama siswa/kontak, asal sekolah...'),
+    entityColumn: isGeneral
+      ? (isEn ? 'Contact Name' : 'Nama Kontak')
+      : (isEn ? 'Student / Contact Name' : 'Nama Siswa / Kontak'),
+    schoolColumn: isGeneral
+      ? (isEn ? 'Institution / Origin' : 'Institusi / Asal')
+      : (isEn ? 'School Origin' : 'Asal Sekolah'),
   };
 
   return {

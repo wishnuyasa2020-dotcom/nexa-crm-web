@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, School, CheckSquare, Calendar,
   Home, TrendingUp, Radio, FileText, LogOut, ChevronLeft, ChevronRight, Zap, Clock, MessageSquare,
-  Settings as SettingsIcon, CalendarDays, BookOpen, UserCheck,
+  Settings as SettingsIcon, CalendarDays, BookOpen, UserCheck, Building2,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
@@ -78,12 +78,15 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-3 px-2">
         <div className="space-y-0.5">
           {NAV_ITEMS.filter(item => !['/settings', '/manajemen-periode', '/manajemen-tim'].includes(item.href) || isFullAdmin).map((item) => {
-            const Icon = item.icon;
+            let Icon = item.icon;
             let label = t(item.labelKey as Parameters<typeof t>[0]);
             if (item.href === '/siswa' && isGeneral) {
               label = navLabels.studentMenu;
             } else if (item.href === '/sekolah' && isGeneral) {
               label = navLabels.schoolMenu;
+              Icon = Building2;
+            } else if (item.href === '/home-visit' && isGeneral) {
+              label = navLabels.homeVisitMenu;
             }
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
