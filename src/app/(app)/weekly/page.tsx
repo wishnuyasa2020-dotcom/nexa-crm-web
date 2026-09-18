@@ -9,6 +9,8 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { cn } from '@/lib/utils';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { weeklyApi, type BacklogItem, type BoardItem } from '@/lib/weeklyApi';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Date utilities
@@ -38,37 +40,63 @@ function toYMD(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** Format "YYYY-MM-DD" → "17 Ags" secara lokal */
-function formatDisplayDate(ymd: string): string {
+/** Format "YYYY-MM-DD" → "17 Ags" / "Aug 17" secara lokal */
+function formatDisplayDate(ymd: string, lang: string = 'id'): string {
   const [y, m, d] = ymd.split('-').map(Number);
   const date = new Date(y, m - 1, d); // local date constructor — tidak ada shift UTC
-  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  const locale = lang === 'en' ? 'en-US' : 'id-ID';
+  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }
 
-const DAYS_ID = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const DAYS_KEYS = ['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat'] as const;
 
 /** Hasilkan array 6 hari (Senin–Sabtu) dari date Senin */
 function buildWeekDays(monday: Date) {
-  return DAYS_ID.map((title, i) => {
+  return [0, 1, 2, 3, 4, 5].map((i) => {
     const d = addDays(monday, i);
-    return { id: `day-${i}`, title, date: toYMD(d) };
+    return { id: `day-${i}`, dayKey: DAYS_KEYS[i], date: toYMD(d) };
   });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Jenis badge
+// Jenis badge (Bilingual & Multi-Tenant Adaptive)
 // ─────────────────────────────────────────────────────────────────────────────
-const JENIS_CONFIG: Record<string, { label: string; icon: React.ReactNode; cls: string }> = {
-  sekolah:    { label: 'Sekolah',    icon: <School size={10} />,   cls: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20' },
-  siswa:      { label: 'Siswa',      icon: <User size={10} />,     cls: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' },
-  home_visit: { label: 'Home Visit', icon: <Home size={10} />,     cls: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20' },
-  ekstra:     { label: 'Ekstra',     icon: <Star size={10} />,     cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' },
-};
+function getJenisConfig(jenis: string, t: (k: any) => string, isGeneral: boolean) {
+  switch (jenis) {
+    case 'sekolah':
+      return {
+        label: isGeneral ? t('weekly.typePartner') : t('weekly.typeSchool'),
+        icon: <School size={10} />,
+        cls: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20',
+      };
+    case 'siswa':
+      return {
+        label: isGeneral ? t('weekly.typeContact') : t('weekly.typeStudent'),
+        icon: <User size={10} />,
+        cls: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20',
+      };
+    case 'home_visit':
+      return {
+        label: isGeneral ? t('weekly.typeFieldVisit') : t('weekly.typeHomeVisit'),
+        icon: <Home size={10} />,
+        cls: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20',
+      };
+    case 'ekstra':
+    default:
+      return {
+        label: t('weekly.typeExtra'),
+        icon: <Star size={10} />,
+        cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+      };
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────────────────────────────────────
 export default function WeeklyPage() {
+  const { t, lang } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [mounted, setMounted] = useState(false);
 
   // ── Week navigation ──
@@ -261,13 +289,13 @@ export default function WeeklyPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between shrink-0 flex-wrap gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 text-white">
+          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-sm shadow-primary/20 text-white shrink-0">
             <Calendar size={20} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Weekly Planning</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('weekly.title')}</h1>
             <p className="text-xs text-muted-foreground">
-              {formatDisplayDate(startDate)} – {formatDisplayDate(endDate)}
+              {formatDisplayDate(startDate, lang)} – {formatDisplayDate(endDate, lang)}
             </p>
           </div>
         </div>
@@ -276,8 +304,9 @@ export default function WeeklyPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={goToPrevWeek}
-            className="p-2 rounded-lg border hover:bg-secondary/50 transition-colors"
-            title="Minggu sebelumnya"
+            className="p-2 rounded-lg border hover:bg-secondary/50 transition-colors cursor-pointer"
+            title={t('weekly.prevWeek')}
+            aria-label={t('weekly.prevWeek')}
           >
             <ChevronLeft size={16} />
           </button>
@@ -285,18 +314,19 @@ export default function WeeklyPage() {
             onClick={goToThisWeek}
             disabled={isThisWeek}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+              'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer',
               isThisWeek
                 ? 'border-primary bg-primary/10 text-primary cursor-default'
                 : 'border-border hover:bg-secondary/50'
             )}
           >
-            Minggu Ini
+            {t('weekly.thisWeek')}
           </button>
           <button
             onClick={goToNextWeek}
-            className="p-2 rounded-lg border hover:bg-secondary/50 transition-colors"
-            title="Minggu berikutnya"
+            className="p-2 rounded-lg border hover:bg-secondary/50 transition-colors cursor-pointer"
+            title={t('weekly.nextWeek')}
+            aria-label={t('weekly.nextWeek')}
           >
             <ChevronRight size={16} />
           </button>
@@ -311,7 +341,7 @@ export default function WeeklyPage() {
           <div className="w-full sm:w-64 h-56 sm:h-auto shrink-0 flex flex-col bg-card border rounded-xl overflow-hidden">
             <div className="p-3 border-b bg-secondary/30">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="font-semibold text-foreground text-sm">Belum Terjadwal</h2>
+                <h2 className="font-semibold text-foreground text-sm">{t('weekly.unassigned')}</h2>
                 <span className="text-xs px-2 py-0.5 bg-secondary text-muted-foreground rounded-full">
                   {backlog.length}
                 </span>
@@ -320,7 +350,7 @@ export default function WeeklyPage() {
                 <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Cari target..."
+                  placeholder={t('weekly.searchPlaceholder')}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="w-full pl-8 pr-3 py-1.5 bg-background border rounded-lg text-xs focus:border-primary outline-none"
@@ -331,14 +361,14 @@ export default function WeeklyPage() {
             {isLoadingBacklog ? (
               <div className="flex-1 flex items-center justify-center py-8 text-muted-foreground gap-2">
                 <Loader2 size={16} className="animate-spin" />
-                <span className="text-xs">Memuat...</span>
+                <span className="text-xs">{t('weekly.loading')}</span>
               </div>
             ) : backlogError ? (
               <div className="flex-1 flex flex-col items-center justify-center py-8 gap-2 text-rose-500 px-4 text-center">
                 <AlertCircle size={18} />
-                <p className="text-xs">{backlogError}</p>
-                <button onClick={() => fetchBacklog(search)} className="text-xs underline flex items-center gap-1">
-                  <RotateCcw size={11} /> Coba lagi
+                <p className="text-xs">{backlogError === 'Gagal memuat backlog' ? t('weekly.failedBacklog') : backlogError}</p>
+                <button onClick={() => fetchBacklog(search)} className="text-xs underline flex items-center gap-1 cursor-pointer">
+                  <RotateCcw size={11} /> {t('weekly.retry')}
                 </button>
               </div>
             ) : (
@@ -354,11 +384,11 @@ export default function WeeklyPage() {
                   >
                     {backlog.length === 0 && !snapshot.isDraggingOver && (
                       <p className="text-center text-xs text-muted-foreground py-8">
-                        {search ? 'Tidak ditemukan' : 'Semua sudah terjadwal 🎉'}
+                        {search ? t('weekly.notFound') : t('weekly.allScheduled')}
                       </p>
                     )}
                     {backlog.map((item, index) => (
-                      <BacklogCard key={item.taskId} item={item} index={index} />
+                      <BacklogCard key={item.taskId} item={item} index={index} lang={lang} isGeneral={isGeneral} t={t} />
                     ))}
                     {provided.placeholder}
                   </div>
@@ -372,14 +402,14 @@ export default function WeeklyPage() {
             {isLoadingBoard ? (
               <div className="flex-1 flex items-center justify-center text-muted-foreground gap-2">
                 <Loader2 size={18} className="animate-spin" />
-                <span className="text-sm">Memuat jadwal...</span>
+                <span className="text-sm">{t('weekly.loadingBoard')}</span>
               </div>
             ) : boardError ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-2 text-rose-500">
                 <AlertCircle size={20} />
-                <p className="text-sm">{boardError}</p>
-                <button onClick={() => fetchBoard(startDate, endDate)} className="text-sm underline flex items-center gap-1">
-                  <RotateCcw size={13} /> Coba lagi
+                <p className="text-sm">{boardError === 'Gagal memuat jadwal' ? t('weekly.failedBoard') : boardError}</p>
+                <button onClick={() => fetchBoard(startDate, endDate)} className="text-sm underline flex items-center gap-1 cursor-pointer">
+                  <RotateCcw size={13} /> {t('weekly.retry')}
                 </button>
               </div>
             ) : (
@@ -387,6 +417,7 @@ export default function WeeklyPage() {
                 const colItems = getBoardForDay(col.date);
                 const isOverloaded = colItems.length >= 5;
                 const isToday = col.date === toYMD(new Date());
+                const dayTitle = t(`weekly.${col.dayKey}` as any);
 
                 return (
                   <div
@@ -407,9 +438,9 @@ export default function WeeklyPage() {
                         <h3 className={cn(
                           'font-bold text-sm',
                           isToday && 'text-primary'
-                        )}>{col.title}</h3>
+                        )}>{dayTitle}</h3>
                         <p className="text-xs text-muted-foreground">
-                          {formatDisplayDate(col.date)}
+                          {formatDisplayDate(col.date, lang)}
                         </p>
                       </div>
                       <span className={cn(
@@ -420,7 +451,7 @@ export default function WeeklyPage() {
                           ? 'bg-primary/20 text-primary'
                           : 'bg-secondary text-muted-foreground'
                       )}>
-                        {colItems.length} Task
+                        {colItems.length} {t('weekly.taskUnit')}
                       </span>
                     </div>
 
@@ -435,7 +466,7 @@ export default function WeeklyPage() {
                           )}
                         >
                           {colItems.map((item, index) => (
-                            <BoardCard key={item.id_agenda} item={item} index={index} />
+                            <BoardCard key={item.id_agenda} item={item} index={index} isGeneral={isGeneral} t={t} />
                           ))}
                           {provided.placeholder}
                         </div>
@@ -456,8 +487,20 @@ export default function WeeklyPage() {
 // ─────────────────────────────────────────────────────────────────────────────
 // BacklogCard — item di sidebar kiri
 // ─────────────────────────────────────────────────────────────────────────────
-function BacklogCard({ item, index }: { item: BacklogItem; index: number }) {
-  const cfg = JENIS_CONFIG[item.jenis] ?? JENIS_CONFIG.ekstra;
+function BacklogCard({
+  item,
+  index,
+  lang,
+  isGeneral,
+  t,
+}: {
+  item: BacklogItem;
+  index: number;
+  lang: string;
+  isGeneral: boolean;
+  t: (k: any) => string;
+}) {
+  const cfg = getJenisConfig(item.jenis, t, isGeneral);
   return (
     <Draggable draggableId={item.taskId} index={index}>
       {(provided, snapshot) => (
@@ -498,7 +541,7 @@ function BacklogCard({ item, index }: { item: BacklogItem; index: number }) {
               )}
               {item.date_val && (
                 <span className="inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full bg-secondary/80 text-muted-foreground border border-border/50">
-                  <Calendar size={10} /> {formatDisplayDate(item.date_val)}
+                  <Calendar size={10} /> {formatDisplayDate(item.date_val, lang)}
                 </span>
               )}
               {item.status && !item.commercialState && (
@@ -517,14 +560,23 @@ function BacklogCard({ item, index }: { item: BacklogItem; index: number }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // BoardCard — item di kolom hari
 // ─────────────────────────────────────────────────────────────────────────────
-function BoardCard({ item, index }: { item: BoardItem; index: number }) {
+function BoardCard({
+  item,
+  index,
+  isGeneral,
+  t,
+}: {
+  item: BoardItem;
+  index: number;
+  isGeneral: boolean;
+  t: (k: any) => string;
+}) {
   const prefix = item.jenis_agenda as string;
-  const cfg = JENIS_CONFIG[
-    prefix === 'as' ? 'sekolah'
+  const jenisKey = prefix === 'as' ? 'sekolah'
     : prefix === 'asi' ? 'siswa'
     : prefix === 'hv' ? 'home_visit'
-    : 'ekstra'
-  ] ?? JENIS_CONFIG.ekstra;
+    : 'ekstra';
+  const cfg = getJenisConfig(jenisKey, t, isGeneral);
   const isTemp = item.id_agenda.startsWith('temp-');
 
   return (
