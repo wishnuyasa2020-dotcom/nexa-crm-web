@@ -235,15 +235,15 @@ export default function UpgradeTierModal({
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-1.5 sm:mb-2 pr-8 sm:pr-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 mb-1.5 sm:mb-2 pr-8 sm:pr-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl gradient-primary flex items-center justify-center text-white shadow-md shadow-primary/25 shrink-0">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-primary block leading-tight">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary block leading-tight mb-0.5 sm:mb-0">
                 {t('tierModal.badge')}
               </span>
-              <h2 className="text-lg sm:text-2xl font-bold text-foreground leading-tight truncate">
+              <h2 className="text-lg sm:text-2xl font-bold text-foreground leading-tight wrap-break-word">
                 {t('tierModal.title')}
               </h2>
             </div>
@@ -253,35 +253,61 @@ export default function UpgradeTierModal({
           </p>
 
           {/* Billing Cycle Switcher */}
-          <div className="mt-4 sm:mt-6 flex items-center justify-center sm:justify-start w-full min-w-0">
-            <div className="bg-secondary p-1 rounded-xl flex items-center gap-1 border max-w-full overflow-x-auto scrollbar-none">
-              <button
-                type="button"
-                onClick={() => setBillingCycle('MONTHLY')}
-                className={cn(
-                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile sm:text-xs font-semibold transition-all cursor-pointer shrink-0 text-center',
-                  billingCycle === 'MONTHLY'
-                    ? 'bg-card text-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {t('tierModal.monthly')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setBillingCycle('YEARLY')}
-                className={cn(
-                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile sm:text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 text-center',
-                  billingCycle === 'YEARLY'
-                    ? 'bg-card text-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <span>{t('tierModal.yearly')}</span>
-                <span className="bg-emerald-500/15 text-emerald-600 text-switcher-mobile sm:text-2xs px-1.5 py-0.5 rounded-full font-bold">
-                  {t('tierModal.saveUpTo')}
-                </span>
-              </button>
+          <div className="mt-4 sm:mt-6 flex flex-col items-start sm:items-start w-full min-w-0">
+            {/* Mobile Swipe & Click Hint */}
+            <div className="flex items-center justify-between w-full max-w-sm text-2xs text-muted-foreground sm:hidden mb-1.5 px-0.5">
+              <span className="font-semibold text-foreground/80 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+                <span>{lang === 'id' ? 'Pilih Siklus (Geser & Klik):' : 'Select Cycle (Swipe & Tap):'}</span>
+              </span>
+              <span className="text-primary text-2xs font-bold flex items-center gap-0.5 uppercase tracking-wider bg-primary/10 px-1.5 py-0.5 rounded-md shrink-0">
+                <span>{lang === 'id' ? 'Geser' : 'Swipe'}</span>
+                <ArrowRight className="w-2.5 h-2.5" />
+              </span>
+            </div>
+
+            <div className="relative max-w-full overflow-hidden w-full sm:w-auto">
+              <div className="bg-secondary/80 p-1.5 rounded-xl flex items-center gap-1.5 border max-w-full overflow-x-auto scrollbar-thin touch-pan-x">
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle('MONTHLY')}
+                  className={cn(
+                    'px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile sm:text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1.5 select-none active:scale-95',
+                    billingCycle === 'MONTHLY'
+                      ? 'bg-card text-foreground shadow-sm ring-1 ring-primary/30 font-bold'
+                      : 'bg-card/40 text-muted-foreground hover:text-foreground hover:bg-card/70'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'w-2 h-2 rounded-full shrink-0 transition-colors',
+                      billingCycle === 'MONTHLY' ? 'bg-primary ring-2 ring-primary/20' : 'bg-muted-foreground/40'
+                    )}
+                  />
+                  <span>{t('tierModal.monthly')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle('YEARLY')}
+                  className={cn(
+                    'px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile sm:text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 select-none active:scale-95',
+                    billingCycle === 'YEARLY'
+                      ? 'bg-card text-foreground shadow-sm ring-1 ring-primary/30 font-bold'
+                      : 'bg-card/40 text-muted-foreground hover:text-foreground hover:bg-card/70'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'w-2 h-2 rounded-full shrink-0 transition-colors',
+                      billingCycle === 'YEARLY' ? 'bg-primary ring-2 ring-primary/20' : 'bg-muted-foreground/40'
+                    )}
+                  />
+                  <span>{t('tierModal.yearly')}</span>
+                  <span className="bg-emerald-500/15 text-emerald-600 text-switcher-mobile sm:text-2xs px-1.5 py-0.5 rounded-full font-bold">
+                    {t('tierModal.saveUpTo')}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -329,8 +355,8 @@ export default function UpgradeTierModal({
         )}
 
         {/* Plans Grid */}
-        <div className="p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 min-w-0">
+        <div className="p-4 sm:p-6 md:p-8 pt-6 sm:pt-8 min-w-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 min-w-0">
             {plans.map((p) => {
               const isCurrent = (currentTier || '').toUpperCase() === p.tier;
               const pricing = p.pricing[billingCycle];
@@ -342,7 +368,7 @@ export default function UpgradeTierModal({
                 <div
                   key={p.tier}
                   className={cn(
-                    'rounded-xl sm:rounded-2xl border p-4 sm:p-6 flex flex-col justify-between transition-all duration-200 relative min-w-0 overflow-hidden',
+                    'rounded-xl sm:rounded-2xl border p-4 sm:p-6 flex flex-col justify-between transition-all duration-200 relative min-w-0',
                     isCurrent 
                       ? 'bg-secondary/40 border-muted-foreground/30 ring-1 ring-muted-foreground/20' 
                       : isBusiness
@@ -352,7 +378,7 @@ export default function UpgradeTierModal({
                 >
                   {/* Badge */}
                   {p.badge && (
-                    <div className="absolute -top-3 left-4 sm:left-6">
+                    <div className="absolute -top-3 left-4 sm:left-6 z-10">
                       <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-primary text-white shadow-sm shadow-primary/30">
                         {getBadgeLabel(p.badge)}
                       </span>
