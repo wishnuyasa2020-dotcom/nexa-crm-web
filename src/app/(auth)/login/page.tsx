@@ -56,13 +56,7 @@ export default function LoginPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-            <h1 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight">NexaMOS CRM</h1>
-            <span className="px-1.5 py-0.5 rounded text-xs font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/20 tracking-wider uppercase">
-              <span className="sm:hidden">Demo</span>
-              <span className="hidden sm:inline">Demo Version</span>
-            </span>
-          </div>
+          <h1 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight">NexaMOS CRM</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Sign in to your operational dashboard</p>
           <div className="mt-1.5 sm:mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs">
             <span>💡</span>
