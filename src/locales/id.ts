@@ -157,7 +157,7 @@ const id = {
     performance:        'Performa Tim',
     recentActivity:     'Aktivitas Terbaru',
     realtimeData:       'Data real-time dari database · Diperbarui',
-    refresh:            'Refresh data',
+    refresh:            'Muat ulang data',
     retryBtn:           'Coba Lagi',
     failedLoad:         'Gagal memuat data dashboard',
     upgradeTooltip:     'Tingkatkan Kapasitas / Upgrade Tier Tenant',
