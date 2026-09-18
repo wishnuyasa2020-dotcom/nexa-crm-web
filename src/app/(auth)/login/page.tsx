@@ -9,6 +9,8 @@ import Image from 'next/image';
 import { Eye, EyeOff, Sparkles, GraduationCap, Building2 } from 'lucide-react';
 import { useIsDemo } from '@/hooks/useIsDemo';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import { LanguageToggle } from '@/components/layout/LanguageToggle';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
 
@@ -16,6 +18,7 @@ function LoginContent() {
   const router = useRouter();
   const isDemo = useIsDemo();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
 
   const paramType = searchParams.get('type') || searchParams.get('sector');
   const initialSector: 'lpk' | 'general' = paramType === 'general' ? 'general' : 'lpk';
@@ -57,11 +60,11 @@ function LoginContent() {
         useAuthStore.getState().setAuth(token, user);
         router.push('/dashboard');
       } else {
-        setError(res.data.message || 'Login failed.');
+        setError(res.data.message || t('login.errorFallback'));
       }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      setError(axiosErr?.response?.data?.message || 'Login failed. Please check your username & password.');
+      setError(axiosErr?.response?.data?.message || t('login.errorFallback'));
     } finally {
       setLoading(false);
     }
@@ -69,6 +72,11 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background px-4 py-6 relative overflow-x-hidden">
+      {/* Language Toggle in top-right corner */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageToggle variant="compact" />
+      </div>
+
       {/* Background decorative orbs safely contained */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
@@ -79,7 +87,7 @@ function LoginContent() {
       <div className="relative w-full max-w-sm sm:max-w-md mx-auto my-auto flex flex-col justify-center">
         {/* Logo / Brand */}
         <div className="text-center mb-3 sm:mb-5">
-          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-1">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-26 sm:h-26 mb-1">
             <Image
               src="/logo-nexa-02.png"
               alt="NexaMOS CRM"
@@ -90,16 +98,17 @@ function LoginContent() {
             />
           </div>
 
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Sign in to your operational dashboard</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t('login.subtitle')}</p>
 
           {isDemo && (
             <div className="mt-2 flex flex-col items-center gap-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-xs">
                 <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                <span>NexaMOS Demo Mode</span>
+                <span>{t('login.demoBadge')}</span>
               </div>
-              <span className="text-xs text-muted-foreground">
-                Simulasi CRM interaktif · Reset setiap <strong>Minggu 21:00 WIB</strong>
+              <span className="text-xs text-muted-foreground text-center">
+                {t('login.demoResetDesc')}{' '}
+                <strong>{t('login.demoResetSchedule')}</strong>
               </span>
             </div>
           )}
@@ -112,10 +121,10 @@ function LoginContent() {
             <div className="mb-3 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-foreground">
-                  Pilih Simulasi Industri:
+                  {t('login.selectIndustry')}
                 </span>
                 <span className="text-xs font-medium text-amber-500">
-                  {selectedSector === 'lpk' ? 'Ontologi LPK' : 'Ontologi Bisnis'}
+                  {selectedSector === 'lpk' ? t('login.lpkOntology') : t('login.businessOntology')}
                 </span>
               </div>
 
@@ -124,25 +133,23 @@ function LoginContent() {
                 <button
                   type="button"
                   onClick={() => setSelectedSector('lpk')}
-                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
-                    selectedSector === 'lpk'
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${selectedSector === 'lpk'
                       ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
                       : 'border-border bg-card/60 hover:bg-muted/40'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
                       <GraduationCap className="w-4 h-4 shrink-0" />
                     </div>
-                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
-                      selectedSector === 'lpk' ? 'border-amber-500 bg-amber-500' : 'border-muted-foreground/40'
-                    }`}>
+                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${selectedSector === 'lpk' ? 'border-amber-500 bg-amber-500' : 'border-muted-foreground/40'
+                      }`}>
                       {selectedSector === 'lpk' && <div className="w-1.5 h-1.5 rounded-full bg-background shrink-0" />}
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-foreground">LPK & Vokasi</p>
-                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">Siswa · Sekolah · Alumni</p>
+                    <p className="text-xs font-bold text-foreground">{t('login.lpkSectorTitle')}</p>
+                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">{t('login.lpkSectorDesc')}</p>
                   </div>
                 </button>
 
@@ -150,25 +157,23 @@ function LoginContent() {
                 <button
                   type="button"
                   onClick={() => setSelectedSector('general')}
-                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
-                    selectedSector === 'general'
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${selectedSector === 'general'
                       ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
                       : 'border-border bg-card/60 hover:bg-muted/40'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
                       <Building2 className="w-4 h-4 shrink-0" />
                     </div>
-                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
-                      selectedSector === 'general' ? 'border-amber-500 bg-amber-500' : 'border-muted-foreground/40'
-                    }`}>
+                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${selectedSector === 'general' ? 'border-amber-500 bg-amber-500' : 'border-muted-foreground/40'
+                      }`}>
                       {selectedSector === 'general' && <div className="w-1.5 h-1.5 rounded-full bg-background shrink-0" />}
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-foreground">Bisnis & Jasa</p>
-                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">Kontak · Klien · Pelanggan</p>
+                    <p className="text-xs font-bold text-foreground">{t('login.businessSectorTitle')}</p>
+                    <p className="text-xs text-muted-foreground leading-tight mt-0.5">{t('login.businessSectorDesc')}</p>
                   </div>
                 </button>
               </div>
@@ -179,7 +184,7 @@ function LoginContent() {
                 className="w-full mt-2 py-1.5 px-3 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                <span>⚡ Gunakan Akun Demo (Auto-fill)</span>
+                <span>{t('login.useDemoAccount')}</span>
               </button>
             </div>
           )}
@@ -187,7 +192,7 @@ function LoginContent() {
           <form onSubmit={handleLogin} className="space-y-2.5 sm:space-y-4">
             <div className="space-y-1 sm:space-y-1.5">
               <label htmlFor="username" className="text-xs sm:text-sm font-medium text-foreground">
-                Username or Email
+                {t('login.usernameLabel')}
               </label>
               <input
                 id="username"
@@ -197,13 +202,13 @@ function LoginContent() {
                 onChange={e => setUsername(e.target.value)}
                 required
                 className="w-full px-3 py-1.5 sm:py-2.5 rounded-lg bg-input border text-foreground text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
-                placeholder="Enter your username or email"
+                placeholder={t('login.usernamePlaceholder')}
               />
             </div>
 
             <div className="space-y-1 sm:space-y-1.5">
               <label htmlFor="password" className="text-xs sm:text-sm font-medium text-foreground">
-                Password
+                {t('login.passwordLabel')}
               </label>
               <div className="relative">
                 <input
@@ -214,7 +219,7 @@ function LoginContent() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   className="w-full px-3 pr-9 sm:pr-10 py-1.5 sm:py-2.5 rounded-lg bg-input border text-foreground text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
-                  placeholder="Enter your password"
+                  placeholder={t('login.passwordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -227,11 +232,11 @@ function LoginContent() {
               <div className="flex justify-end pt-0.5">
                 {isDemo ? (
                   <span className="text-xs text-muted-foreground/70 italic select-none">
-                    Reset password dinonaktifkan pada akun demo
+                    {t('login.demoResetDisabled')}
                   </span>
                 ) : (
                   <Link href="/forgot-password" className="text-xs text-primary hover:underline font-medium">
-                    Forgot Password?
+                    {t('login.forgotPassword')}
                   </Link>
                 )}
               </div>
@@ -257,20 +262,21 @@ function LoginContent() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Signing in...
+                  {t('login.signingIn')}
                 </span>
-              ) : 'Sign In'}
+              ) : t('login.signIn')}
             </button>
           </form>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-2.5 sm:mt-5">
-          © {new Date().getFullYear()} NexaMOS · Internal CRM System
+          © {new Date().getFullYear()} NexaMOS · {t('login.footer')}
         </p>
       </div>
     </div>
   );
 }
+
 
 export default function LoginPage() {
   return (

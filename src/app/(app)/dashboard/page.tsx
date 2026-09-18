@@ -345,7 +345,7 @@ export default function DashboardPage() {
   // ── Multi-Channel Intake Derived Metrics ──
   const getChannelLabel = (key: string): string => {
     switch (key) {
-      case 'sekolah':   return isGeneral ? 'Mitra / Institusi' : tr('dashboard.channelSekolah');
+      case 'sekolah':   return isGeneral ? tr('dashboard.channelPartner') : tr('dashboard.channelSekolah');
       case 'relasi':    return tr('dashboard.channelRelasi');
       case 'instagram': return tr('dashboard.channelInstagram');
       case 'facebook':  return tr('dashboard.channelFacebook');
@@ -382,15 +382,15 @@ export default function DashboardPage() {
     : 0;
 
   const activeSiswaLabel = selectedChannel === 'all'
-    ? (isGeneral ? 'Kontak Aktif' : tr('dashboard.activeStudent'))
+    ? (isGeneral ? tr('dashboard.activeContact') : tr('dashboard.activeStudent'))
     : selectedChannel === 'sekolah'
-      ? (isGeneral ? 'Kontak Mitra' : tr('dashboard.schoolStudent'))
-      : (isGeneral ? 'Kontak Inbound' : tr('dashboard.candidate'));
+      ? (isGeneral ? tr('dashboard.partnerContact') : tr('dashboard.schoolStudent'))
+      : (isGeneral ? tr('dashboard.inboundContact') : tr('dashboard.candidate'));
 
   const activeSiswaSub = selectedChannel === 'all'
     ? (topChannel
-        ? `${stats?.totalSiswa ?? 0} ${isGeneral ? 'kontak di pipeline' : tr('dashboard.pipelineTotal')} · ${tr('dashboard.topChannel')} ${topChannel.icon} ${topChannel.name}`
-        : `${stats?.totalSiswa ?? 0} ${isGeneral ? 'total kontak di pipeline' : tr('dashboard.totalPipeline')}`)
+        ? `${stats?.totalSiswa ?? 0} ${isGeneral ? tr('dashboard.contactPipelineTotal') : tr('dashboard.pipelineTotal')} · ${tr('dashboard.topChannel')} ${topChannel.icon} ${topChannel.name}`
+        : `${stats?.totalSiswa ?? 0} ${isGeneral ? tr('dashboard.totalContactPipeline') : tr('dashboard.totalPipeline')}`)
     : `${tr('dashboard.filterLabel')} ${getChannelIcon(selectedChannel)} ${getChannelLabel(selectedChannel)}`;
 
   const statCards = [
@@ -402,7 +402,7 @@ export default function DashboardPage() {
       color: 'text-primary',
     },
     {
-      label: isGeneral ? 'Mitra / Institusi' : tr('dashboard.schoolHandled'),
+      label: isGeneral ? tr('dashboard.partnerHandled') : tr('dashboard.schoolHandled'),
       value: stats?.totalSekolah ?? '-',
       sub: tr('dashboard.periodThis'),
       icon: isGeneral ? Building2 : School,
@@ -418,7 +418,7 @@ export default function DashboardPage() {
     {
       label: tr('dashboard.conversionMonth'),
       value: stats?.totalTerdaftar ?? '-',
-      sub: isGeneral ? 'kontak terdaftar' : tr('dashboard.registered'),
+      sub: isGeneral ? tr('dashboard.registeredContact') : tr('dashboard.registered'),
       icon: TrendingUp,
       color: 'text-emerald-400',
     },
@@ -618,7 +618,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  {isGeneral ? 'Kuota Kontak Baru' : tr('dashboard.quotaStudent')}
+                  {isGeneral ? tr('dashboard.quotaContact') : tr('dashboard.quotaStudent')}
                 </p>
                 <p className="text-xs text-muted-foreground">{tr('dashboard.quotaBillingPeriod')}</p>
               </div>
@@ -671,7 +671,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  {isGeneral ? 'Kuota Mitra / Institusi' : tr('dashboard.quotaSchool')}
+                  {isGeneral ? tr('dashboard.quotaPartner') : tr('dashboard.quotaSchool')}
                 </p>
                 <p className="text-xs text-muted-foreground">{tr('dashboard.quotaBillingPeriod')}</p>
               </div>
@@ -796,7 +796,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 mb-4 shrink-0">
             <Activity size={16} className="text-primary" />
             <h2 className="text-sm font-semibold text-foreground">
-              {isGeneral ? 'Funnel Kontak (Sales Pipeline)' : tr('dashboard.funnelTitle')}
+              {isGeneral ? tr('dashboard.funnelContactTitle') : tr('dashboard.funnelTitle')}
             </h2>
             <span className="ml-auto text-xs text-muted-foreground">{tr('dashboard.funnelStages')}</span>
           </div>
@@ -829,7 +829,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                {isGeneral ? 'Belum ada data kontak di periode ini' : tr('dashboard.funnelEmpty')}
+                {isGeneral ? tr('dashboard.funnelContactEmpty') : tr('dashboard.funnelEmpty')}
               </div>
             )}
           </div>
@@ -990,17 +990,17 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         {t.tipe === 'sekolah' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1 shrink-0">
-                            {isGeneral ? '🟣 Mitra / Institusi' : tr('dashboard.badgeSchool')}
+                            {isGeneral ? tr('dashboard.badgePartner') : tr('dashboard.badgeSchool')}
                           </span>
                         ) : t.tipe === 'siswa' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 inline-flex items-center gap-1 shrink-0">
                             {isGeneral
-                              ? '🟠 Kontak'
+                              ? tr('dashboard.badgeContact')
                               : (t.sourceChannel && t.sourceChannel !== 'sekolah' ? tr('dashboard.badgeCandidate') : tr('dashboard.badgeStudent'))}
                           </span>
                         ) : t.tipe === 'homevisit' ? (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 inline-flex items-center gap-1 shrink-0">
-                            {isGeneral ? '🏠 Kunjungan Lapangan' : tr('dashboard.badgeHomeVisit')}
+                            {isGeneral ? tr('dashboard.badgeFieldVisit') : tr('dashboard.badgeHomeVisit')}
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 inline-flex items-center gap-1 shrink-0">

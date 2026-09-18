@@ -12,6 +12,7 @@ import { getChannelConfig } from '@/lib/constants/channel';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
+import { useTranslation } from '@/hooks/useTranslation';
 import apiClient from '@/lib/apiClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -68,6 +69,7 @@ const TAB_FILTER_MAP: Record<TabKey, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TasksPage() {
+  const { t } = useTranslation();
   const { isGeneral } = useTenantVocabulary();
   const [activeTab, setActiveTab]   = useState<TabKey>('today');
   const [tasks, setTasks]           = useState<Task[]>([]);
@@ -276,15 +278,15 @@ export default function TasksPage() {
                   {/* Pembeda B2B vs B2C sesuai Ontologi & Wireframe */}
                   {task.tipe === 'sekolah' ? (
                     <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1">
-                      🟣 <span>{isGeneral ? 'Mitra / Institusi' : 'Sekolah (B2B)'}</span>
+                      <span>{isGeneral ? t('dashboard.badgePartner') : t('dashboard.badgeSchool')}</span>
                     </span>
                   ) : task.tipe === 'siswa' ? (
                     <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center gap-1">
-                      🟠 <span>{isGeneral ? 'Kontak' : (task.sourceChannel && task.sourceChannel !== 'sekolah' ? 'Calon Kandidat (B2C)' : 'Siswa (B2C)')}</span>
+                      <span>{isGeneral ? t('dashboard.badgeContact') : (task.sourceChannel && task.sourceChannel !== 'sekolah' ? t('dashboard.badgeCandidate') : t('dashboard.badgeStudent'))}</span>
                     </span>
                   ) : task.tipe === 'homevisit' ? (
                     <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center gap-1">
-                      🏠 <span>{isGeneral ? 'Kunjungan Lapangan' : 'Home Visit'}</span>
+                      <span>{isGeneral ? t('dashboard.badgeFieldVisit') : t('dashboard.badgeHomeVisit')}</span>
                     </span>
                   ) : (
                     <span className="px-2 py-0.5 rounded-md text-xs font-bold tracking-wide bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
