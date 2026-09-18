@@ -290,6 +290,18 @@ const en = {
     achievement:      'Achievement',
     progress:         'Progress',
   },
+
+  // ── PWA Install Prompt ────────────────────────────────────
+  pwa: {
+    instruction:      'Install NexaMOS CRM',
+    description:      'Fast and direct access to CRO operations right from your homescreen without opening a browser.',
+    install:          'Install',
+    installing:       'Installing...',
+    close:            'Close',
+    desktopInstall:   'Install App',
+    desktopInstalling:'Installing...',
+    desktopTitle:     'Install NexaMOS CRM as an app',
+  },
 } as const;
 
 export default en;

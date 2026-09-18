@@ -290,6 +290,18 @@ const id = {
     achievement:      'Pencapaian',
     progress:         'Progres',
   },
+
+  // ── PWA Install Prompt ────────────────────────────────────
+  pwa: {
+    instruction:      'Install NexaMOS CRM',
+    description:      'Akses operasional CRO lebih cepat dan langsung dari homescreen tanpa membuka browser.',
+    install:          'Install',
+    installing:       'Menginstall...',
+    close:            'Tutup',
+    desktopInstall:   'Install App',
+    desktopInstalling:'Installing...',
+    desktopTitle:     'Install NexaMOS CRM sebagai app',
+  },
 } as const;
 
 export type TranslationKey = typeof id;

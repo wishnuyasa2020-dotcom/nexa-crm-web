@@ -6,13 +6,14 @@
 // a custom in-app install banner/button.
 //
 // Placement:
-//   - Mobile: floating bottom banner (above BottomNav)
+//   - Mobile: floating bottom banner (above BottomNav, 3-row layout)
 //   - Desktop: compact button in Header actions area
 // ============================================================
 
 import { useEffect, useState } from 'react';
 import { Download, X, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -23,10 +24,12 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISS_KEY = 'nexa_pwa_dismiss_until';
 
 export function InstallPrompt() {
+  const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner]         = useState(false);
   const [installing, setInstalling]         = useState(false);
   const [installed, setInstalled]           = useState(false);
+  const [iconError, setIconError]           = useState(false);
 
   useEffect(() => {
     // Cek apakah sudah berjalan sebagai PWA standalone
@@ -85,50 +88,69 @@ export function InstallPrompt() {
       {/* ── Mobile: Floating Bottom Banner (di atas BottomNav h-16) ── */}
       <div
         className={cn(
-          'md:hidden fixed bottom-16 left-3 right-3 z-40',
+          'md:hidden fixed bottom-20 left-3 right-3 z-40',
           'animate-in slide-in-from-bottom-4 fade-in duration-300'
         )}
       >
-        <div className="bg-card border border-primary/30 rounded-2xl shadow-xl shadow-primary/10 p-3.5 flex items-center gap-3">
-          {/* App icon */}
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30">
-            <Smartphone size={20} className="text-white" />
+        <div className="bg-slate-800/95 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/60 backdrop-blur-md p-4 flex flex-col gap-2.5 ring-1 ring-white/10">
+          {/* ── Row 1: Ikon, Tombol Install & Close Button ── */}
+          <div className="flex items-center justify-between">
+            {/* Ikon Aplikasi */}
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0 shadow-md shadow-primary/30 overflow-hidden">
+              {iconError ? (
+                <Smartphone size={20} className="text-white" />
+              ) : (
+                <img
+                  src="/icon-192.png"
+                  alt="NexaMOS CRM"
+                  className="w-full h-full object-cover"
+                  onError={() => setIconError(true)}
+                />
+              )}
+            </div>
+
+            {/* Aksi: Install & Close */}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleInstall}
+                disabled={installing}
+                className="px-3.5 py-1.5 rounded-lg gradient-primary text-white text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm shadow-primary/25 disabled:opacity-50"
+              >
+                {installing ? t('pwa.installing') : t('pwa.install')}
+              </button>
+              <button
+                onClick={handleDismiss}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 active:scale-95 transition-colors"
+                title={t('pwa.close')}
+                aria-label={t('pwa.close')}
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Text */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground leading-tight">Install NexaMOS CRM</p>
-            <p className="text-xs text-muted-foreground">Akses cepat seperti app native</p>
+          {/* ── Row 2: Instruksi Utama ── */}
+          <div>
+            <h4 className="text-sm font-bold text-white leading-tight">
+              {t('pwa.instruction')}
+            </h4>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleInstall}
-              disabled={installing}
-              className="px-3 py-1.5 rounded-lg gradient-primary text-white text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm shadow-primary/20 disabled:opacity-50 cursor-pointer"
-            >
-              {installing ? 'Install...' : 'Install'}
-            </button>
-            <button
-              onClick={handleDismiss}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
-              title="Tutup"
-            >
-              <X size={14} />
-            </button>
+          {/* ── Row 3: Sub Deskripsi ── */}
+          <div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {t('pwa.description')}
+            </p>
           </div>
         </div>
       </div>
-
-      {/* ── Desktop: Compact Header Button (rendered inside Header via portal-less sibling) ── */}
-      {/* Note: Desktop version rendered as a subtle pill — see Header.tsx for placement */}
     </>
   );
 }
 
 // ── Separate compact button variant for Desktop Header ──────────────────────
 export function InstallPromptDesktopButton() {
+  const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installing, setInstalling]         = useState(false);
   const [installed, setInstalled]           = useState(false);
@@ -164,11 +186,11 @@ export function InstallPromptDesktopButton() {
     <button
       onClick={handleInstall}
       disabled={installing}
-      title="Install NexaMOS CRM sebagai app"
-      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer disabled:opacity-50"
+      title={t('pwa.desktopTitle')}
+      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all disabled:opacity-50"
     >
       <Download size={13} />
-      <span>{installing ? 'Installing...' : 'Install App'}</span>
+      <span>{installing ? t('pwa.desktopInstalling') : t('pwa.desktopInstall')}</span>
     </button>
   );
 }
