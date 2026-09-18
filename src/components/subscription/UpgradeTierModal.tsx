@@ -87,11 +87,68 @@ export default function UpgradeTierModal({
 
   const getDescription = (tier: string, defaultDesc: string) => {
     if (lang === 'en') {
-      if (tier === 'PRO') return 'Perfect for growing LPK with active CRO teams';
-      if (tier === 'BUSINESS') return 'For established LPK with high student volume & large CRO team';
-      if (tier === 'ENTERPRISE') return 'Unlimited solution for national multi-branch LPK networks';
+      if (tier === 'PRO') return 'Perfect for growing organizations with active CRO teams';
+      if (tier === 'BUSINESS') return 'For established organizations with high student volume & large CRO team';
+      if (tier === 'ENTERPRISE') return 'Unlimited solution for national multi-branch organization networks';
     }
     return defaultDesc;
+  };
+
+  const getFeatureLabel = (feature: string): string => {
+    if (lang === 'id') return feature;
+    const map: Record<string, string> = {
+      // PRO
+      'Batas Siswa: 1.000 / bln (12.000 / thn)': 'Student Limit: 1,000 / mo (12,000 / yr)',
+      'Batas Sekolah: 20 / bln (240 / thn)': 'School Limit: 20 / mo (240 / yr)',
+      '1 Admin, 1 Manager, 1 Chief CRO, 2 CRO': '1 Admin, 1 Manager, 1 Chief CRO, 2 CROs',
+      'Integrasi WhatsApp Official Cloud API (BYOW)': 'Official WhatsApp Cloud API Integration (BYOW)',
+      'Smart Routing WhatsApp & Fallback Teks': 'WhatsApp Smart Routing & Text Fallback',
+      'Auto-Nurturing & Snooze Campaign Bot': 'Auto-Nurturing & Snooze Campaign Bot',
+      'Integrasi Google Calendar (Home Visit / Konseling)': 'Google Calendar Integration (Home Visit / Counseling)',
+      'Support Prioritas & Panduan Setup': 'Priority Support & Setup Guide',
+      // BUSINESS
+      'Batas Siswa: 2.500 / bln (30.000 / thn)': 'Student Limit: 2,500 / mo (30,000 / yr)',
+      'Batas Sekolah: 41 / bln (500 / thn)': 'School Limit: 41 / mo (500 / yr)',
+      '1 Admin, 1 Manager, 3 Chief CRO, 10 CRO': '1 Admin, 1 Manager, 3 Chief CRO, 10 CROs',
+      'Semua fitur Tier Pro': 'All Pro Tier features included',
+      'Add-on Seat CRO tersedia': 'CRO Seat Add-on available',
+      'Export & Import Data Excel Massal': 'Bulk Excel Data Export & Import',
+      'Funnel Velocity & Conversion Denominator Analytics': 'Funnel Velocity & Conversion Denominator Analytics',
+      'Prioritas Antrean Broadcast WhatsApp': 'WhatsApp Broadcast Queue Priority',
+      // ENTERPRISE
+      'Batas Siswa: 8.333 / bln (100.000 / thn)': 'Student Limit: 8,333 / mo (100,000 / yr)',
+      'Batas Sekolah: 166 / bln (2.000 / thn)': 'School Limit: 166 / mo (2,000 / yr)',
+      '1 Admin, 3 Manager, 5 Chief CRO, 30 CRO': '1 Admin, 3 Manager, 5 Chief CRO, 30 CROs',
+      'Semua fitur Tier Business': 'All Business Tier features included',
+      'Opsi White-Label (Brand Custom LPK)': 'White-Label Option (Custom Branding)',
+      'Dedicated Account Manager 24/7': 'Dedicated 24/7 Account Manager',
+      'Jaminan Uptime SLA 99.9%': '99.9% Uptime SLA Guarantee',
+      'Kustomisasi integrasi sistem internal': 'Custom internal system integrations',
+    };
+    return map[feature] || feature;
+  };
+
+  const TIER_USD_PRICING: Record<string, { MONTHLY: number; YEARLY: number }> = {
+    PRO: { MONTHLY: 32, YEARLY: 320 },
+    BUSINESS: { MONTHLY: 99, YEARLY: 990 },
+    ENTERPRISE: { MONTHLY: 260, YEARLY: 2600 },
+  };
+
+  const formatPrice = (tier: string, idrPrice: number, cycle: 'MONTHLY' | 'YEARLY'): string => {
+    if (lang === 'en') {
+      const usd = TIER_USD_PRICING[tier]?.[cycle] ?? Math.round(idrPrice / 16000);
+      return `$${usd.toLocaleString('en-US')}`;
+    }
+    return `Rp ${idrPrice.toLocaleString('id-ID')}`;
+  };
+
+  const getDiscountLabel = (discount: string | null | undefined): string | null => {
+    if (!discount) return null;
+    if (lang === 'id') return discount;
+    if (discount.includes('Hemat 2 Bulan')) return 'Save 2 Months ($64)';
+    if (discount.includes('3 Juta') || discount.includes('3 Million')) return 'Save $198';
+    if (discount.includes('8 Juta') || discount.includes('8 Million')) return 'Save $520';
+    return discount;
   };
 
   async function handleSelectPlan(tier: 'PRO' | 'BUSINESS' | 'ENTERPRISE') {
@@ -200,7 +257,7 @@ export default function UpgradeTierModal({
               <button
                 onClick={() => setBillingCycle('MONTHLY')}
                 className={cn(
-                  'px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile font-semibold transition-all cursor-pointer',
                   billingCycle === 'MONTHLY'
                     ? 'bg-card text-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
@@ -211,14 +268,14 @@ export default function UpgradeTierModal({
               <button
                 onClick={() => setBillingCycle('YEARLY')}
                 className={cn(
-                  'px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer',
+                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile font-semibold transition-all flex items-center gap-1 cursor-pointer',
                   billingCycle === 'YEARLY'
                     ? 'bg-card text-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <span>{t('tierModal.yearly')}</span>
-                <span className="bg-emerald-500/15 text-emerald-600 text-xs px-1.5 py-0.5 rounded-full font-bold">
+                <span className="bg-emerald-500/15 text-emerald-600 text-switcher-mobile px-1.5 py-0.5 rounded-full font-bold">
                   {t('tierModal.saveUpTo')}
                 </span>
               </button>
@@ -317,7 +374,7 @@ export default function UpgradeTierModal({
                     <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-secondary/50 border">
                       <div className="flex items-baseline gap-1.5 sm:gap-2">
                         <span className="text-xl sm:text-2xl font-extrabold text-foreground">
-                          Rp {(pricing.price).toLocaleString('id-ID')}
+                          {formatPrice(p.tier, pricing.price, billingCycle)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {billingCycle === 'YEARLY' ? t('tierModal.perYear') : t('tierModal.perMonth')}
@@ -325,7 +382,7 @@ export default function UpgradeTierModal({
                       </div>
                       {pricing.discount && (
                         <p className="text-xs text-emerald-600 font-bold mt-0.5">
-                          {pricing.discount}
+                          {getDiscountLabel(pricing.discount)}
                         </p>
                       )}
                       <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
@@ -356,7 +413,7 @@ export default function UpgradeTierModal({
                       {p.features.map((feat, i) => (
                         <div key={i} className="flex items-start gap-1.5 sm:gap-2 text-xs text-muted-foreground leading-snug">
                           <Check size={13} className="text-emerald-500 shrink-0 mt-0.5" />
-                          <span>{feat}</span>
+                          <span>{getFeatureLabel(feat)}</span>
                         </div>
                       ))}
                     </div>
