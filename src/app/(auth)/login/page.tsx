@@ -6,17 +6,25 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Sparkles } from 'lucide-react';
+import { useIsDemo } from '@/hooks/useIsDemo';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/crm';
 
 export default function LoginPage() {
   const router = useRouter();
+  const isDemo = useIsDemo();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  function handleQuickFillDemo() {
+    setUsername('admin');
+    setPassword('admin123');
+    setError('');
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -64,15 +72,32 @@ export default function LoginPage() {
           </div>
 
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Sign in to your operational dashboard</p>
-          <div className="mt-1.5 sm:mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs">
-            <span>💡</span>
-            <span className="hidden sm:inline">Demo data automatically resets every <strong>Sunday at 21:00 WIB</strong></span>
-            <span className="sm:hidden">Demo resets every <strong>Sun 21:00 WIB</strong></span>
-          </div>
+          {isDemo && (
+            <div className="mt-2 flex flex-col items-center gap-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>NexaMOS Demo Mode</span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                Data reset otomatis setiap <strong>Minggu 21:00 WIB</strong>
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Login Card */}
         <div className="bg-card border rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-2xl shadow-black/40">
+          {isDemo && (
+            <button
+              type="button"
+              onClick={handleQuickFillDemo}
+              className="w-full mb-3 py-1.5 px-3 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <span>⚡ Gunakan Akun Demo (Auto-fill)</span>
+            </button>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-2.5 sm:space-y-4">
             <div className="space-y-1 sm:space-y-1.5">
               <label htmlFor="username" className="text-xs sm:text-sm font-medium text-foreground">
@@ -114,9 +139,15 @@ export default function LoginPage() {
                 </button>
               </div>
               <div className="flex justify-end pt-0.5">
-                <Link href="/forgot-password" className="text-xs text-primary hover:underline font-medium">
-                  Forgot Password?
-                </Link>
+                {isDemo ? (
+                  <span className="text-xs text-muted-foreground/70 italic select-none">
+                    Reset password dinonaktifkan pada akun demo
+                  </span>
+                ) : (
+                  <Link href="/forgot-password" className="text-xs text-primary hover:underline font-medium">
+                    Forgot Password?
+                  </Link>
+                )}
               </div>
             </div>
 

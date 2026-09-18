@@ -1,5 +1,6 @@
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import { DemoBanner } from '@/components/layout/DemoBanner';
 import { GlobalFAB } from '@/components/layout/GlobalFAB';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ScrollContainer } from '@/components/layout/ScrollContainer';
@@ -10,6 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-dvh overflow-hidden bg-background">
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
+        <DemoBanner />
         <Header />
         <ScrollContainer className="p-4 md:p-6 pb-24 md:pb-6">
           {children}
