@@ -25,12 +25,12 @@ export default function WhatsAppGatingBanner({
 
   if (compact) {
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-950 dark:text-amber-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-foreground">
         <div className="flex items-center gap-2.5">
-          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
           <div className="text-sm">
-            <span className="font-semibold">WhatsApp Belum Terhubung: </span>
-            <span className="text-amber-900/80 dark:text-amber-300/80">
+            <span className="font-semibold text-foreground">WhatsApp Belum Terhubung: </span>
+            <span className="text-muted-foreground">
               {isPending ? 'Verifikasi nomor sedang berlangsung.' : `Aktifkan nomor WABA untuk menggunakan ${featureName}.`}
             </span>
           </div>
@@ -47,10 +47,10 @@ export default function WhatsAppGatingBanner({
   }
 
   return (
-    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20 p-5 sm:p-6 shadow-xs">
+    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5 sm:p-6 shadow-xs">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-start gap-4">
-          <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+          <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0 mt-0.5">
             <MessageSquareOff className="w-6 h-6" />
           </div>
           <div>
@@ -58,7 +58,7 @@ export default function WhatsAppGatingBanner({
               <h3 className="text-base font-bold text-foreground">
                 WhatsApp Bisnis Belum Aktif
               </h3>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 border border-amber-500/20">
                 {isPending ? 'Sedang Diverifikasi' : 'Belum Terhubung'}
               </span>
             </div>

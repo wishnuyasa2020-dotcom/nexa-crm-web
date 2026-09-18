@@ -189,6 +189,7 @@ function ContactItem({
           {(c.lifecycle_state || c.pipeline_status) && (
             <CommercialStateBadge
               state={c.lifecycle_state || c.pipeline_status || 'AUDIENCE'}
+              channel={c.source_channel}
               relationshipLevel={(c.relationship_level as any) || undefined}
               size="sm"
             />

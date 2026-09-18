@@ -15,6 +15,7 @@ import { AddSiswaModal }    from '@/components/siswa/AddSiswaModal';
 import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
 import { AssignKelasModal } from '@/components/siswa/AssignKelasModal';
 import type { Siswa, CommercialState, SiswaIntent } from '@/lib/types/siswa.types';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 import { getChannelConfig } from '@/lib/constants/channel';
 
@@ -94,6 +95,7 @@ export default function SiswaPage() {
   const pageSize = 20;
 
   const { user } = useAuthStore();
+  const { isGeneral, pageLabels, getStateLabel } = useTenantVocabulary();
   const canAssignClass = ['admin', 'manager', 'chief cro'].includes(user?.role?.toLowerCase() || '');
 
   const loadSiswa = useCallback(async () => {
@@ -137,8 +139,8 @@ export default function SiswaPage() {
             <Users size={17} className="text-white" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-base font-bold text-foreground leading-tight">Master Siswa</h1>
-            <p className="text-xs text-muted-foreground">{total} siswa ditemukan</p>
+            <h1 className="text-base font-bold text-foreground leading-tight">{pageLabels.siswaPageTitle}</h1>
+            <p className="text-xs text-muted-foreground">{total} {isGeneral ? 'kontak' : 'siswa/kontak'} ditemukan</p>
           </div>
         </div>
 
@@ -179,10 +181,10 @@ export default function SiswaPage() {
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20"
-              title="Tambah Siswa"
+              title={pageLabels.addBtn}
             >
               <Plus size={16} />
-              <span className="hidden sm:inline">Tambah Siswa</span>
+              <span className="hidden sm:inline">{pageLabels.addBtn}</span>
             </button>
           </div>
         </div>
@@ -193,7 +195,7 @@ export default function SiswaPage() {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder="Cari nama siswa, ID, sekolah..."
+          placeholder={pageLabels.searchPlaceholder}
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           className="w-full pl-9 pr-4 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
@@ -224,14 +226,14 @@ export default function SiswaPage() {
           className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
           <option value="">Semua Lifecycle State</option>
-          <option value="AUDIENCE">⚫ Siswa Dingin (Audience)</option>
-          <option value="KNOWN_PROFILE">⚪ Siswa Teridentifikasi (Known Profile)</option>
-          <option value="LEAD">🟡 Siswa Hangat (Lead)</option>
-          <option value="PROSPECT">🔵 Siswa Potensial (Prospect)</option>
-          <option value="OPPORTUNITY">🟣 Siswa Serius (Opportunity)</option>
-          <option value="REGISTERED">🟣 Siswa Terdaftar (Registered)</option>
-          <option value="CUSTOMER">🟢 Siswa / Peserta (Customer)</option>
-          <option value="POST_CUSTOMER">🎓 Alumni (Post-Customer)</option>
+          <option value="AUDIENCE">⚫ {getStateLabel('AUDIENCE')}</option>
+          <option value="KNOWN_PROFILE">⚪ {getStateLabel('KNOWN_PROFILE')}</option>
+          <option value="LEAD">🟡 {getStateLabel('LEAD')}</option>
+          <option value="PROSPECT">🔵 {getStateLabel('PROSPECT')}</option>
+          <option value="OPPORTUNITY">🟣 {getStateLabel('OPPORTUNITY')}</option>
+          <option value="REGISTERED">🟣 {getStateLabel('REGISTERED')}</option>
+          <option value="CUSTOMER">🟢 {getStateLabel('CUSTOMER')}</option>
+          <option value="POST_CUSTOMER">🎓 {getStateLabel('POST_CUSTOMER')}</option>
           <option value="Disqualified">🔴 Tidak Lanjut (Disqualified)</option>
         </select>
         {/* Filter Intent */}
@@ -255,8 +257,8 @@ export default function SiswaPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30">
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Nama Siswa</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Sekolah / Asal</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{pageLabels.entityColumn}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{pageLabels.schoolColumn}</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Commercial State</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Intent</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Next Action</th>
@@ -270,7 +272,7 @@ export default function SiswaPage() {
               ) : siswaList.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-muted-foreground text-sm">
-                    Tidak ada data siswa ditemukan
+                    Tidak ada data {isGeneral ? 'kontak' : 'siswa'} ditemukan
                   </td>
                 </tr>
               ) : (
@@ -313,6 +315,7 @@ export default function SiswaPage() {
                     <td className="px-4 py-3">
                       <CommercialStateBadge 
                         state={s.commercialState || CANONICAL_STATES.LEAD} 
+                        channel={s.sourceChannel}
                         relationshipLevel={s.relationship_level} 
                       />
                     </td>
@@ -361,7 +364,7 @@ export default function SiswaPage() {
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
         ) : siswaList.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            Tidak ada data siswa ditemukan
+            Tidak ada data {isGeneral ? 'kontak' : 'siswa'} ditemukan
           </div>
         ) : (
           siswaList.map((s) => (
@@ -401,6 +404,7 @@ export default function SiswaPage() {
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <CommercialStateBadge 
                     state={s.commercialState || CANONICAL_STATES.LEAD} 
+                    channel={s.sourceChannel}
                     relationshipLevel={s.relationship_level}
                     size="sm" 
                   />

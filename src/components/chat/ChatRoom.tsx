@@ -469,6 +469,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                       </span>
                       <CommercialStateBadge
                         state={conversation.lifecycle_state || conversation.pipeline_status || '–'}
+                        channel={conversation.source_channel}
                         relationshipLevel={(conversation.relationship_level as any) || undefined}
                         size="sm"
                       />

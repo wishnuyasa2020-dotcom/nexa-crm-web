@@ -16,6 +16,7 @@ interface CommercialStateBadgeProps {
   state: CommercialState | string;
   size?: 'sm' | 'md';
   tenantType?: TenantType;
+  channel?: string | null;
   relationshipLevel?: RelationshipLevel;
   useTenantVocabulary?: boolean;
 }
@@ -24,6 +25,7 @@ export function CommercialStateBadge({
   state, 
   size = 'sm',
   tenantType: tenantTypeProp,
+  channel,
   relationshipLevel,
   useTenantVocabulary = true
 }: CommercialStateBadgeProps) {
@@ -39,7 +41,7 @@ export function CommercialStateBadge({
   };
 
   const label = useTenantVocabulary 
-    ? getDisplayLabel(state, effectiveTenantType)
+    ? getDisplayLabel(state, effectiveTenantType, channel)
     : theme.defaultLabel;
 
   return (

@@ -296,7 +296,7 @@ export default function TasksPage() {
                       {task.status}
                     </span>
                   ) : (
-                    <CommercialStateBadge state={task.commercialState || task.status || CANONICAL_STATES.LEAD} size="sm" />
+                    <CommercialStateBadge state={task.commercialState || task.status || CANONICAL_STATES.LEAD} channel={task.sourceChannel} size="sm" />
                   )}
 
                   {/* Intent Badge */}

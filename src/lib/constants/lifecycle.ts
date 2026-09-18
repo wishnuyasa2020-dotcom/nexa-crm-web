@@ -61,6 +61,33 @@ export const TENANT_VOCABULARIES: Record<TenantType, Record<CanonicalState, stri
 };
 
 /**
+ * Pemetaan Domain Vocabulary untuk Tenant LPK Jalur Non-Sekolah (Digital, Relasi, Inbound):
+ * Menghormati aturan ontologi di mana intake non-sekolah dilabeli 'Kontak'
+ */
+export const LPK_NON_SCHOOL_VOCABULARY: Record<CanonicalState, string> = {
+  AUDIENCE:       'Kontak Dingin',
+  KNOWN_PROFILE:  'Kontak Teridentifikasi',
+  LEAD:           'Kontak Hangat',
+  PROSPECT:       'Kontak Potensial',
+  OPPORTUNITY:    'Kontak Serius',
+  REGISTERED:     'Kontak Terdaftar',
+  CUSTOMER:       'Peserta',
+  POST_CUSTOMER:  'Alumni',
+};
+
+/**
+ * Mendapatkan label entitas baku ('Siswa' vs 'Kontak')
+ * - Tenant General: Selalu 'Kontak'
+ * - Tenant LPK: 'Siswa' jika jalur sekolah, 'Kontak' jika non-sekolah (digital, relasi, direct)
+ */
+export function resolveEntityLabel(tenantType: TenantType = 'lpk', channel?: string | null): 'Siswa' | 'Kontak' {
+  if (tenantType === 'general') return 'Kontak';
+  if (!channel) return 'Siswa';
+  const clean = channel.trim().toLowerCase();
+  return clean === 'sekolah' ? 'Siswa' : 'Kontak';
+}
+
+/**
  * Normalisasi string input/database ke nilai Canonical State.
  * Menjamin kompatibilitas dengan varian legacy seperti 'Registered Opportunity', 'Known', dll.
  */
@@ -116,12 +143,31 @@ export function normalizeLifecycleState(input?: string | null): CanonicalState |
 }
 
 /**
- * Mendapatkan display label antarmuka sesuai tipe tenant (default: 'lpk')
+ * Mendapatkan display label antarmuka sesuai tipe tenant & channel intake (default: 'lpk')
+ * - Tenant General: Selalu menggunakan label 'Kontak ...' / 'Pelanggan'
+ * - Tenant LPK Jalur Sekolah: 'Siswa Hangat', 'Siswa Potensial', dst.
+ * - Tenant LPK Jalur Non-Sekolah: 'Kontak Hangat', 'Kontak Potensial', dst.
  */
-export function getDisplayLabel(state?: string | null, tenantType: TenantType = 'lpk'): string {
+export function getDisplayLabel(
+  state?: string | null, 
+  tenantType: TenantType = 'lpk',
+  channel?: string | null
+): string {
   const norm = normalizeLifecycleState(state);
   if (norm === 'Disqualified') return 'Tidak Lanjut / Disqualified';
-  const vocab = TENANT_VOCABULARIES[tenantType] || TENANT_VOCABULARIES.lpk;
+
+  if (tenantType === 'general') {
+    const vocab = TENANT_VOCABULARIES.general;
+    return vocab[norm] || norm;
+  }
+
+  // Tenant LPK: Cek channel intake
+  const entity = resolveEntityLabel('lpk', channel);
+  if (entity === 'Kontak') {
+    return LPK_NON_SCHOOL_VOCABULARY[norm] || norm;
+  }
+
+  const vocab = TENANT_VOCABULARIES.lpk;
   return vocab[norm] || norm;
 }
 

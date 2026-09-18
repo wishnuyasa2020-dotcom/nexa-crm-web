@@ -20,6 +20,7 @@ import { GraduationModal } from '@/components/siswa/GraduationModal';
 import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 import { normalizeLifecycleState, CANONICAL_STATES } from '@/lib/constants/lifecycle';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 import type { SiswaDetail, AktivitasSiswa } from '@/lib/types/siswa.types';
 
 // ── Multi-Channel Configuration ───────────────────────────────────────────────
@@ -153,6 +154,8 @@ export default function SiswaDetailPage() {
   const isCustomer = resolvedState === CANONICAL_STATES.CUSTOMER;
   const isPostCustomer = resolvedState === CANONICAL_STATES.POST_CUSTOMER;
 
+  const { getEntityLabel } = useTenantVocabulary();
+  const entityName = getEntityLabel(siswaDetail.source_channel);
   const channelInfo = getEntityChannelInfo(siswaDetail.source_channel, resolvedState);
 
   return (
@@ -197,16 +200,20 @@ export default function SiswaDetailPage() {
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg text-foreground hover:bg-secondary transition-colors shadow-xs"
-          title="Edit Data Siswa"
+          title={`Edit Data ${entityName}`}
         >
           <Pencil size={13} />
-          <span className="hidden sm:inline">Edit Siswa</span>
+          <span className="hidden sm:inline">Edit {entityName}</span>
         </button>
       </div>
 
       {/* ── State & Intent Badges ───────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
-        <CommercialStateBadge state={siswaDetail.commercial_state || CANONICAL_STATES.LEAD} size="md" />
+        <CommercialStateBadge 
+          state={siswaDetail.commercial_state || CANONICAL_STATES.LEAD} 
+          channel={siswaDetail.source_channel}
+          size="md" 
+        />
         <IntentBadge intent={siswaDetail.intent} />
         {siswaDetail.due_date && (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border bg-secondary text-xs text-muted-foreground">

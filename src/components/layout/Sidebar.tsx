@@ -12,6 +12,7 @@ import Cookies from 'js-cookie';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 const NAV_ITEMS = [
   { labelKey: 'nav.dashboard',     href: '/dashboard',         icon: LayoutDashboard },
@@ -37,6 +38,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { user, loadFromCookie } = useAuthStore();
   const { t } = useTranslation();
+  const { isGeneral, navLabels } = useTenantVocabulary();
   const isFullAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'manager';
 
   useEffect(() => {
@@ -77,7 +79,12 @@ export default function Sidebar() {
         <div className="space-y-0.5">
           {NAV_ITEMS.filter(item => !['/settings', '/manajemen-periode', '/manajemen-tim'].includes(item.href) || isFullAdmin).map((item) => {
             const Icon = item.icon;
-            const label = t(item.labelKey as Parameters<typeof t>[0]);
+            let label = t(item.labelKey as Parameters<typeof t>[0]);
+            if (item.href === '/siswa' && isGeneral) {
+              label = navLabels.studentMenu;
+            } else if (item.href === '/sekolah' && isGeneral) {
+              label = navLabels.schoolMenu;
+            }
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link
