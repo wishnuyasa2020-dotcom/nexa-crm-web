@@ -5,23 +5,18 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LayoutDashboard, CheckSquare, School, Users, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useTranslation } from '@/hooks/useTranslation';
 
 const NAV_ITEMS = [
-  { labelKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { labelKey: 'nav.tasks',     href: '/tasks',     icon: CheckSquare },
-  { labelKey: 'nav.liveChat',  href: '/live-chat', icon: MessageSquare },
-  { labelKey: 'nav.school',    href: '/sekolah',   icon: School },
-  { labelKey: 'nav.student',   href: '/siswa',     icon: Users },
+  { label: 'Main',    href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Task',    href: '/tasks',     icon: CheckSquare },
+  { label: 'Chat',    href: '/live-chat', icon: MessageSquare },
+  { label: 'School',  href: '/sekolah',   icon: School },
+  { label: 'Student', href: '/siswa',     icon: Users },
 ] as const;
 
 export function BottomNav() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
-  const { user } = useAuthStore();
-  const { t } = useTranslation();
-  const isFullAdmin = user?.role === 'Admin' || user?.role === 'Manager';
 
   useEffect(() => {
     const main = document.getElementById('main-scroll-container');
@@ -51,20 +46,20 @@ export function BottomNav() {
       {NAV_ITEMS.map((item) => {
         const isActive = pathname.startsWith(item.href);
         const Icon = item.icon;
-        const label = t(item.labelKey as Parameters<typeof t>[0]);
 
         return (
           <Link
             key={item.href}
             href={item.href}
-            aria-label={label}
-            title={label}
+            aria-label={item.label}
+            title={item.label}
             className={cn(
-              "flex items-center justify-center w-full h-full transition-colors",
+              "flex flex-col items-center justify-center w-full h-full gap-1 transition-colors",
               isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon size={35} className={cn(isActive && "fill-primary/20")} />
+            <Icon size={20} className={cn(isActive && "fill-primary/20")} />
+            <span className="text-xs font-medium leading-none">{item.label}</span>
           </Link>
         );
       })}
