@@ -107,7 +107,7 @@ const CHANNEL_CONFIG: Record<string, { label: string; icon: string; color: strin
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { t: tr } = useTranslation(); // aliased to avoid collision with tasks.map((t, i) => ...)
+  const { t: tr, lang } = useTranslation(); // aliased to avoid collision with tasks.map((t, i) => ...)
   const [stats, setStats]             = useState<DashboardStats | null>(null);
   const [quota, setQuota]             = useState<QuotaInfo | null>(null);
   const [funnels, setFunnels]         = useState<FunnelItem[]>([]);
@@ -115,6 +115,7 @@ export default function DashboardPage() {
   const [tasks, setTasks]             = useState<TaskItem[]>([]);
   const [taskCounts, setTaskCounts]   = useState<TaskCounts | null>(null);
   const [loading, setLoading]         = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -242,8 +243,12 @@ export default function DashboardPage() {
     load();
   };
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     try {
       const channelQuery = selectedChannel !== 'all' ? `?channel=${selectedChannel}` : '';
@@ -306,9 +311,16 @@ export default function DashboardPage() {
       setError(msg);
       console.error('Dashboard load error:', e);
     } finally {
-      setLoading(false);
+      if (isManualRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, [selectedChannel]);
+
+  const load = useCallback(() => loadData(false), [loadData]);
+  const handleManualRefresh = useCallback(() => loadData(true), [loadData]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -452,9 +464,10 @@ export default function DashboardPage() {
                   {quota.tier}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setShowUpgradeModal(true)}
                   className="h-6 px-2 sm:px-2.5 inline-flex items-center justify-center gap-1 rounded-full text-xs font-bold gradient-primary text-white hover:opacity-90 transition-all shadow-sm shadow-primary/20 cursor-pointer leading-none shrink-0"
-                  title="Tingkatkan Kapasitas / Upgrade Tier Tenant"
+                  title={tr('dashboard.upgradeTooltip')}
                 >
                   <Zap size={11} className="shrink-0" />
                   <span>Upgrade<span className="hidden sm:inline"> Tier</span></span>
@@ -463,15 +476,18 @@ export default function DashboardPage() {
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5 truncate">
-            {tr('dashboard.realtimeData')} {lastRefresh.toLocaleTimeString('id-ID')}
+            {tr('dashboard.realtimeData')} {lastRefresh.toLocaleTimeString(lang === 'en' ? 'en-US' : 'id-ID')}
           </p>
         </div>
         <button
-          onClick={load}
-          className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+          type="button"
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+          className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer disabled:opacity-50"
           title={tr('dashboard.refresh')}
+          aria-label={tr('dashboard.refresh')}
         >
-          <RefreshCw size={15} />
+          <RefreshCw size={15} className={cn(isRefreshing && 'animate-spin')} />
         </button>
       </div>
 
@@ -586,10 +602,10 @@ export default function DashboardPage() {
             <div className="flex-1 w-full relative">
               <div className="flex justify-between text-xs mb-2">
                 <span className="text-foreground font-medium">
-                  {quota.usedSiswa.toLocaleString('id-ID')} {tr('dashboard.quotaUsed')}
+                  {quota.usedSiswa.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} {tr('dashboard.quotaUsed')}
                 </span>
                 <span className="text-muted-foreground">
-                  {quota.limitSiswa.toLocaleString('id-ID')} {tr('dashboard.quotaLimit')}
+                  {quota.limitSiswa.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} {tr('dashboard.quotaLimit')}
                 </span>
               </div>
               
@@ -608,6 +624,7 @@ export default function DashboardPage() {
               <div className="text-xs mt-2 text-right absolute right-0 -bottom-5">
                 {(quota.usedSiswa / quota.limitSiswa) > 0.80 ? (
                   <button
+                    type="button"
                     onClick={() => setShowUpgradeModal(true)}
                     className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
                   >
@@ -636,10 +653,10 @@ export default function DashboardPage() {
             <div className="flex-1 w-full relative">
               <div className="flex justify-between text-xs mb-2">
                 <span className="text-foreground font-medium">
-                  {quota.usedSekolah.toLocaleString('id-ID')} {tr('dashboard.quotaUsed')}
+                  {quota.usedSekolah.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} {tr('dashboard.quotaUsed')}
                 </span>
                 <span className="text-muted-foreground">
-                  {quota.limitSekolah.toLocaleString('id-ID')} {tr('dashboard.quotaLimit')}
+                  {quota.limitSekolah.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} {tr('dashboard.quotaLimit')}
                 </span>
               </div>
               
@@ -658,6 +675,7 @@ export default function DashboardPage() {
               <div className="text-xs mt-2 text-right absolute right-0 -bottom-5">
                 {(quota.usedSekolah / quota.limitSekolah) > 0.80 ? (
                   <button
+                    type="button"
                     onClick={() => setShowUpgradeModal(true)}
                     className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
                   >
@@ -686,10 +704,10 @@ export default function DashboardPage() {
             <div className="flex-1 w-full relative">
               <div className="flex justify-between text-xs mb-2">
                 <span className="text-foreground font-medium">
-                  {quota.usedUser.toLocaleString('id-ID')} {tr('dashboard.quotaUsed')}
+                  {quota.usedUser.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} {tr('dashboard.quotaUsed')}
                 </span>
                 <span className="text-muted-foreground">
-                  {quota.limitUser.toLocaleString('id-ID')} {tr('dashboard.quotaLimit')}
+                  {quota.limitUser.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} {tr('dashboard.quotaLimit')}
                 </span>
               </div>
               
@@ -708,6 +726,7 @@ export default function DashboardPage() {
               <div className="text-xs mt-2 text-right absolute right-0 -bottom-5">
                 {(quota.usedUser / quota.limitUser) > 0.80 ? (
                   <button
+                    type="button"
                     onClick={() => setShowUpgradeModal(true)}
                     className="text-amber-500 hover:text-amber-600 font-semibold underline cursor-pointer inline-flex items-center gap-1"
                   >
@@ -953,7 +972,7 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap text-xs">
                           <span className="inline-flex items-center gap-1 text-muted-foreground">
                             <span>{CHANNEL_CONFIG[t.sourceChannel || 'sekolah']?.icon || '🏫'}</span>
-                            <span>{CHANNEL_CONFIG[t.sourceChannel || 'sekolah']?.label || 'Sekolah'}</span>
+                            <span>{getChannelLabel(t.sourceChannel || 'sekolah')}</span>
                             {t.sourceDetail && <span className="text-muted-foreground/70">({t.sourceDetail})</span>}
                           </span>
                           {t.kebutuhanLayanan && (

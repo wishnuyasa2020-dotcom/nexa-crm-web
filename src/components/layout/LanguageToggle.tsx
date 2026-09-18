@@ -8,6 +8,7 @@
 //   "default" → standard size for desktop header
 // ============================================================
 
+import { useState, useEffect } from 'react';
 import { useLanguageStore, type Language } from '@/store/useLanguageStore';
 import { cn } from '@/lib/utils';
 
@@ -18,8 +19,15 @@ interface LanguageToggleProps {
 
 export function LanguageToggle({ variant = 'default', className }: LanguageToggleProps) {
   const { language, setLanguage } = useLanguageStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isCompact = variant === 'compact';
+  // Use 'id' during SSR / pre-hydration to match server markup
+  const activeLang = mounted ? language : 'id';
 
   return (
     <div
@@ -34,20 +42,25 @@ export function LanguageToggle({ variant = 'default', className }: LanguageToggl
       )}
     >
       {(['id', 'en'] as Language[]).map((lang) => {
-        const isActive = language === lang;
+        const isActive = activeLang === lang;
         return (
           <button
             key={lang}
-            onClick={() => setLanguage(lang)}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setLanguage(lang);
+            }}
             aria-pressed={isActive}
             title={lang === 'id' ? 'Bahasa Indonesia' : 'English'}
             className={cn(
               'rounded-full font-semibold uppercase tracking-widest transition-all duration-200 cursor-pointer',
               isCompact
-                ? 'h-4 w-6 text-[9px]'
-                : 'h-6 w-8 text-[10px]',
+                ? 'h-4 px-1.5 text-2xs leading-none'
+                : 'h-6 px-2 text-xs leading-none',
               isActive
-                ? 'bg-primary text-primary-foreground shadow-sm'
+                ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >

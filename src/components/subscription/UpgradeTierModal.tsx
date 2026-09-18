@@ -221,12 +221,13 @@ export default function UpgradeTierModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto p-2 sm:p-4 md:p-8 flex justify-center items-start">
-      <div className="bg-card border rounded-2xl sm:rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-4 sm:my-8 relative">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto overflow-x-hidden p-2 sm:p-4 md:p-8 flex justify-center items-start w-full">
+      <div className="bg-card border rounded-2xl sm:rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-4 sm:my-8 relative min-w-0">
         
         {/* Header Modal */}
-        <div className="p-4 sm:p-6 md:p-8 border-b bg-secondary/30 relative shrink-0">
+        <div className="p-4 sm:p-6 md:p-8 border-b bg-secondary/30 relative shrink-0 min-w-0 overflow-hidden">
           <button
+            type="button"
             onClick={onClose}
             className="absolute top-3.5 right-3.5 sm:top-6 sm:right-6 p-1.5 sm:p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-10"
             aria-label={t('tierModal.closeModal')}
@@ -252,12 +253,13 @@ export default function UpgradeTierModal({
           </p>
 
           {/* Billing Cycle Switcher */}
-          <div className="mt-4 sm:mt-6 flex items-center justify-center sm:justify-start">
-            <div className="bg-secondary p-1 rounded-xl flex items-center gap-1 border">
+          <div className="mt-4 sm:mt-6 flex items-center justify-center sm:justify-start w-full min-w-0">
+            <div className="bg-secondary p-1 rounded-xl flex items-center gap-1 border max-w-full overflow-x-auto scrollbar-none">
               <button
+                type="button"
                 onClick={() => setBillingCycle('MONTHLY')}
                 className={cn(
-                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile font-semibold transition-all cursor-pointer',
+                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile sm:text-xs font-semibold transition-all cursor-pointer shrink-0 text-center',
                   billingCycle === 'MONTHLY'
                     ? 'bg-card text-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
@@ -266,16 +268,17 @@ export default function UpgradeTierModal({
                 {t('tierModal.monthly')}
               </button>
               <button
+                type="button"
                 onClick={() => setBillingCycle('YEARLY')}
                 className={cn(
-                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile font-semibold transition-all flex items-center gap-1 cursor-pointer',
+                  'px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-switcher-mobile sm:text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 text-center',
                   billingCycle === 'YEARLY'
                     ? 'bg-card text-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <span>{t('tierModal.yearly')}</span>
-                <span className="bg-emerald-500/15 text-emerald-600 text-switcher-mobile px-1.5 py-0.5 rounded-full font-bold">
+                <span className="bg-emerald-500/15 text-emerald-600 text-switcher-mobile sm:text-2xs px-1.5 py-0.5 rounded-full font-bold">
                   {t('tierModal.saveUpTo')}
                 </span>
               </button>
@@ -326,8 +329,8 @@ export default function UpgradeTierModal({
         )}
 
         {/* Plans Grid */}
-        <div className="p-4 sm:p-6 md:p-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 min-w-0">
             {plans.map((p) => {
               const isCurrent = (currentTier || '').toUpperCase() === p.tier;
               const pricing = p.pricing[billingCycle];
@@ -339,7 +342,7 @@ export default function UpgradeTierModal({
                 <div
                   key={p.tier}
                   className={cn(
-                    'rounded-xl sm:rounded-2xl border p-4 sm:p-6 flex flex-col justify-between transition-all duration-200 relative',
+                    'rounded-xl sm:rounded-2xl border p-4 sm:p-6 flex flex-col justify-between transition-all duration-200 relative min-w-0 overflow-hidden',
                     isCurrent 
                       ? 'bg-secondary/40 border-muted-foreground/30 ring-1 ring-muted-foreground/20' 
                       : isBusiness
@@ -356,73 +359,74 @@ export default function UpgradeTierModal({
                     </div>
                   )}
 
-                  <div>
+                  <div className="min-w-0">
                     {/* Header Plan */}
-                    <div className="mb-3 sm:mb-4">
+                    <div className="mb-3 sm:mb-4 min-w-0">
                       <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center justify-between">
-                        {p.name}
+                        <span className="truncate">{p.name}</span>
                         {isCurrent && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold border">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold border shrink-0">
                             {t('tierModal.activeBadge')}
                           </span>
                         )}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{getDescription(p.tier, p.description)}</p>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed wrap-break-word">{getDescription(p.tier, p.description)}</p>
                     </div>
 
                     {/* Pricing */}
-                    <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-secondary/50 border">
-                      <div className="flex items-baseline gap-1.5 sm:gap-2">
-                        <span className="text-xl sm:text-2xl font-extrabold text-foreground">
+                    <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-secondary/50 border min-w-0">
+                      <div className="flex items-baseline gap-1.5 sm:gap-2 min-w-0 flex-wrap">
+                        <span className="text-xl sm:text-2xl font-extrabold text-foreground truncate">
                           {formatPrice(p.tier, pricing.price, billingCycle)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground shrink-0">
                           {billingCycle === 'YEARLY' ? t('tierModal.perYear') : t('tierModal.perMonth')}
                         </span>
                       </div>
                       {pricing.discount && (
-                        <p className="text-xs text-emerald-600 font-bold mt-0.5">
+                        <p className="text-xs text-emerald-600 font-bold mt-0.5 truncate">
                           {getDiscountLabel(pricing.discount)}
                         </p>
                       )}
-                      <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground min-w-0">
                         <Clock size={11} className="text-primary shrink-0" />
-                        <span>{t('tierModal.lockedPeriod')} <strong>{pricing.periodDays} {t('tierModal.days')}</strong></span>
+                        <span className="truncate">{t('tierModal.lockedPeriod')} <strong>{pricing.periodDays} {t('tierModal.days')}</strong></span>
                       </div>
                     </div>
 
                     {/* Quota Highlights */}
-                    <div className="space-y-2 mb-4 sm:mb-6 text-xs">
-                      <div className="flex items-center gap-2 text-foreground font-medium">
+                    <div className="space-y-2 mb-4 sm:mb-6 text-xs min-w-0">
+                      <div className="flex items-center gap-2 text-foreground font-medium min-w-0">
                         <Users size={13} className="text-violet-500 shrink-0" />
-                        <span>{t('tierModal.limitStudents')} <strong>{limits.limit_siswa.toLocaleString('id-ID')}</strong></span>
+                        <span className="truncate">{t('tierModal.limitStudents')} <strong>{limits.limit_siswa.toLocaleString('id-ID')}</strong></span>
                       </div>
-                      <div className="flex items-center gap-2 text-foreground font-medium">
+                      <div className="flex items-center gap-2 text-foreground font-medium min-w-0">
                         <School size={13} className="text-blue-500 shrink-0" />
-                        <span>{t('tierModal.limitSchools')} <strong>{limits.limit_sekolah.toLocaleString('id-ID')}</strong></span>
+                        <span className="truncate">{t('tierModal.limitSchools')} <strong>{limits.limit_sekolah.toLocaleString('id-ID')}</strong></span>
                       </div>
-                      <div className="flex items-center gap-2 text-foreground font-medium">
+                      <div className="flex items-center gap-2 text-foreground font-medium min-w-0">
                         <Shield size={13} className="text-pink-500 shrink-0" />
-                        <span>{t('tierModal.croTeam')} <strong>{p.roles.max_cro} {t('tierModal.croAccounts')}</strong></span>
+                        <span className="truncate">{t('tierModal.croTeam')} <strong>{p.roles.max_cro} {t('tierModal.croAccounts')}</strong></span>
                       </div>
                     </div>
 
                     {/* Features List */}
-                    <div className="space-y-1.5 sm:space-y-2 border-t pt-3 sm:pt-4">
+                    <div className="space-y-1.5 sm:space-y-2 border-t pt-3 sm:pt-4 min-w-0">
                       <p className="text-xs font-bold text-foreground">{t('tierModal.featuresTitle')}</p>
                       {p.features.map((feat, i) => (
-                        <div key={i} className="flex items-start gap-1.5 sm:gap-2 text-xs text-muted-foreground leading-snug">
+                        <div key={i} className="flex items-start gap-1.5 sm:gap-2 text-xs text-muted-foreground leading-snug min-w-0">
                           <Check size={13} className="text-emerald-500 shrink-0 mt-0.5" />
-                          <span>{getFeatureLabel(feat)}</span>
+                          <span className="min-w-0 wrap-break-word">{getFeatureLabel(feat)}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* CTA Button */}
-                  <div className="mt-5 sm:mt-8 pt-3 sm:pt-4 border-t">
+                  <div className="mt-5 sm:mt-8 pt-3 sm:pt-4 border-t min-w-0">
                     {isCurrent ? (
                       <button
+                        type="button"
                         disabled
                         className="w-full py-2 sm:py-2.5 rounded-xl border text-xs font-bold text-muted-foreground bg-secondary/50 cursor-not-allowed"
                       >
@@ -430,6 +434,7 @@ export default function UpgradeTierModal({
                       </button>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => handleSelectPlan(p.tier)}
                         disabled={loading}
                         className={cn(
@@ -440,7 +445,7 @@ export default function UpgradeTierModal({
                         )}
                       >
                         <Zap size={13} />
-                        <span>
+                        <span className="truncate">
                           {loading && selectedTier === p.tier
                             ? t('tierModal.preparingPayment')
                             : `${t('tierModal.selectPlan')} ${p.name}`}
@@ -456,15 +461,15 @@ export default function UpgradeTierModal({
         </div>
 
         {/* Security / Trust Footer */}
-        <div className="px-4 sm:px-8 py-3 sm:py-4 bg-secondary/20 border-t flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2.5 sm:gap-2 text-center sm:text-left">
-          <div className="flex items-center gap-1.5 sm:gap-2 justify-center sm:justify-start">
+        <div className="px-4 sm:px-8 py-3 sm:py-4 bg-secondary/20 border-t flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2.5 sm:gap-2 text-center sm:text-left min-w-0 overflow-hidden">
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-center sm:justify-start min-w-0">
             <Shield size={13} className="text-emerald-500 shrink-0" />
             <span className="leading-snug">{t('tierModal.securityNotice')} <strong>Midtrans</strong>.</span>
           </div>
-          <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-4 text-xs font-medium text-foreground/80">
-            <span className="px-1.5 py-0.5 bg-secondary/50 rounded">{t('tierModal.paymentQris')}</span>
-            <span className="px-1.5 py-0.5 bg-secondary/50 rounded">{t('tierModal.paymentVa')}</span>
-            <span className="px-1.5 py-0.5 bg-secondary/50 rounded">{t('tierModal.paymentCc')}</span>
+          <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-4 text-xs font-medium text-foreground/80 min-w-0">
+            <span className="px-1.5 py-0.5 bg-secondary/50 rounded shrink-0">{t('tierModal.paymentQris')}</span>
+            <span className="px-1.5 py-0.5 bg-secondary/50 rounded shrink-0">{t('tierModal.paymentVa')}</span>
+            <span className="px-1.5 py-0.5 bg-secondary/50 rounded shrink-0">{t('tierModal.paymentCc')}</span>
           </div>
         </div>
 

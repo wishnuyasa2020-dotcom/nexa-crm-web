@@ -67,7 +67,7 @@ export default function Header({ title }: { title?: string }) {
       <header className={cn("flex flex-col border-b bg-background/95 backdrop-blur-sm shrink-0", (showMenu || showCohortMenu) ? "z-50" : "z-40")}>
         {/* Mobile Top Bar (Row 1): Tenant name left | demo badge + language toggle right */}
         <div className="flex md:hidden items-center justify-between px-4 py-1.5 border-b border-border/40 bg-muted/20">
-          <span className="text-xs font-normal text-muted-foreground tracking-wide truncate max-w-[55%]">
+          <span className="text-xs font-normal text-muted-foreground tracking-wide truncate max-w-44">
             {tenantLabel}
           </span>
           <div className="flex items-center gap-2 shrink-0">

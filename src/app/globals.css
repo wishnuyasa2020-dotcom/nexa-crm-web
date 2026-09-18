@@ -180,15 +180,20 @@
     background: oklch(0.35 0.02 265);
   }
 
+  .text-2xs {
+    font-size: 0.625rem;
+    line-height: 0.875rem;
+  }
+
   .text-switcher-mobile {
-    font-size: 0.52rem;
-    line-height: 0.75rem;
+    font-size: 0.48rem;
+    line-height: 0.7rem;
   }
 
   @media (min-width: 640px) {
     .text-switcher-mobile {
-      font-size: 0.42rem;
-      line-height: 0.52rem;
+      font-size: 0.75rem;
+      line-height: 1rem;
     }
   }
 }
