@@ -5,6 +5,7 @@
 //        t('nav.student')   → 'Data Siswa' | 'Student Data'
 // ============================================================
 
+import { useCallback } from 'react';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import id from '@/locales/id';
 import en from '@/locales/en';
@@ -31,9 +32,13 @@ export function useTranslation() {
   const language = useLanguageStore((state) => state.language);
   const dict = language === 'id' ? id : en;
 
-  const t = (key: DotPath): string => {
-    return getNestedValue(dict as unknown as Record<string, unknown>, key);
-  };
+  const t = useCallback(
+    (key: DotPath): string => {
+      return getNestedValue(dict as unknown as Record<string, unknown>, key);
+    },
+    [dict]
+  );
 
   return { t, lang: language };
 }
+

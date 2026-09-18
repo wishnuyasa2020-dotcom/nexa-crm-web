@@ -13,7 +13,6 @@ import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 import { useTranslation } from '@/hooks/useTranslation';
-import { LanguageToggle } from '@/components/layout/LanguageToggle';
 import apiClient from '@/lib/apiClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -70,7 +69,7 @@ const TAB_FILTER_MAP: Record<TabKey, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TasksPage() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const { isGeneral } = useTenantVocabulary();
   const [activeTab, setActiveTab]   = useState<TabKey>('today');
   const [tasks, setTasks]           = useState<Task[]>([]);
@@ -93,12 +92,12 @@ export default function TasksPage() {
       setTasks(d.tasks || []);
       setCounts(d.counts || null);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : t('tasks.errorLoad');
+      const msg = e instanceof Error ? e.message : 'Gagal memuat task';
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     fetchTasks(activeTab);
@@ -203,8 +202,6 @@ export default function TasksPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {/* Language Toggle — sinkron dengan toggle induk (useLanguageStore) */}
-          <LanguageToggle variant="default" />
           <button
             onClick={() => fetchTasks(activeTab)}
             className="p-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
@@ -259,7 +256,7 @@ export default function TasksPage() {
         ) : error ? (
           <div className="py-16 flex flex-col items-center gap-3 text-center border-2 border-dashed rounded-xl">
             <AlertCircle size={24} className="text-rose-400" />
-            <p className="text-sm text-muted-foreground">{error}</p>
+            <p className="text-sm text-muted-foreground">{error === 'Gagal memuat task' ? t('tasks.errorLoad') : error}</p>
             <button
               onClick={() => fetchTasks(activeTab)}
               className="px-4 py-1.5 text-xs bg-primary text-white rounded-lg hover:opacity-90 transition cursor-pointer"
