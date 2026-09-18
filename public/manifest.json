@@ -1,12 +1,13 @@
 {
-  "name": "Nexa CRM",
-  "short_name": "Nexa CRM",
-  "description": "Sistem CRM Internal Nexa OS — Dashboard operasional CRO",
-  "start_url": "/",
+  "name": "NexaMOS CRM",
+  "short_name": "NexaMOS",
+  "description": "Sistem CRM Internal NexaMOS — Dashboard operasional CRO",
+  "start_url": "/dashboard",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0B0F19",
   "theme_color": "#0B0F19",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icon-192.png",
@@ -31,12 +32,26 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "src": "/launcherhp.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "name": "Live Chat",
+      "short_name": "Live Chat",
+      "url": "/live-chat",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Task List",
+      "short_name": "Tasks",
+      "url": "/tasks",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

@@ -3,6 +3,7 @@ import Header from '@/components/layout/Header';
 import { GlobalFAB } from '@/components/layout/GlobalFAB';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ScrollContainer } from '@/components/layout/ScrollContainer';
+import { InstallPrompt } from '@/components/layout/InstallPrompt';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,6 +16,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </ScrollContainer>
         <GlobalFAB />
         <BottomNav />
+        <InstallPrompt />
       </div>
     </div>
   );

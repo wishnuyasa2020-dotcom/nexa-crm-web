@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 import { LanguageToggle } from './LanguageToggle';
 import { useTranslation } from '@/hooks/useTranslation';
+import { InstallPromptDesktopButton } from './InstallPrompt';
 
 export default function Header({ title }: { title?: string }) {
   const { t } = useTranslation();
@@ -186,6 +187,8 @@ export default function Header({ title }: { title?: string }) {
 
             {/* Quick Action Icons & Profile */}
             <div className="flex items-center gap-1.5 sm:gap-3">
+              {/* Install App — Desktop only (PWA prompt) */}
+              <InstallPromptDesktopButton />
               {/* Language Toggle — desktop (standard pill, kanan header) */}
               <LanguageToggle variant="default" className="hidden md:inline-flex" />
               {/* TODO: Implement global search (command palette / spotlight) */}
