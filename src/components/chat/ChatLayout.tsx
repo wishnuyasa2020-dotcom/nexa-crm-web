@@ -9,10 +9,12 @@ import { registerServiceWorker, subscribeToPushNotifications } from '@/lib/pushU
 import { Bell } from 'lucide-react';
 import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const POLLING_INTERVAL_MS = 5000; // 5 detik
 
 export function ChatLayout() {
+  const { t } = useTranslation();
   const { data: waData, isConnected: isWaConnected, loading: waLoading } = useWhatsAppStatus();
   const searchParams = useSearchParams();
   const initConvId = searchParams.get('conv_id');
@@ -144,11 +146,11 @@ export function ChatLayout() {
         <div className="w-full z-50 bg-card border-b px-4 py-2 flex items-center justify-between shadow-md shrink-0">
           <div className="flex items-center text-sm">
             <Bell className="w-4 h-4 mr-2 text-primary" />
-            <span>Aktifkan notifikasi desktop untuk menerima pesan masuk</span>
+            <span>{t('chat.pushBannerText')}</span>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowPushBanner(false)} className="text-xs px-3 py-1.5 text-muted-foreground hover:text-foreground">Nanti</button>
-            <button onClick={handleEnablePush} className="text-xs px-3 py-1.5 bg-primary text-primary-foreground font-medium rounded hover:bg-primary/90">Aktifkan</button>
+            <button onClick={() => setShowPushBanner(false)} className="text-xs px-3 py-1.5 text-muted-foreground hover:text-foreground">{t('chat.pushLater')}</button>
+            <button onClick={handleEnablePush} className="text-xs px-3 py-1.5 bg-primary text-primary-foreground font-medium rounded hover:bg-primary/90">{t('chat.pushEnable')}</button>
           </div>
         </div>
       )}
@@ -158,7 +160,7 @@ export function ChatLayout() {
         <div className="w-full p-2.5 bg-card border-b z-40 shrink-0">
           <WhatsAppGatingBanner
             compact
-            featureName="Live Chat WhatsApp"
+            featureName={t('chat.liveChatFeature')}
             status={waData?.whatsappStatus}
           />
         </div>

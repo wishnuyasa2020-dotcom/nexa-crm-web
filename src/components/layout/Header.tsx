@@ -88,9 +88,9 @@ export default function Header({ title }: { title?: string }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 transition-colors"
-                title="Daftar NexaMOS"
+                title={t('header.registerTitle')}
               >
-                <span>Daftar</span>
+                <span>{t('header.register')}</span>
                 <ExternalLink className="w-3 h-3 shrink-0" />
               </a>
             )}
@@ -107,7 +107,7 @@ export default function Header({ title }: { title?: string }) {
               {tenantLabel}
             </h1>
             {user?.tenant_id === 'crm-demo' && (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs" title="Sandbox environment: Data resets automatically every Sunday at 21:00 WIB">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs" title={t('header.demoResetTooltip')}>
                 <span>🔄</span>
                 <span>{t('header.demoReset')}</span>
               </div>

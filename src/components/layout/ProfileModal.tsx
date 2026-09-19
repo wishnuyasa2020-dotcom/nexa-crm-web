@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ProfileUser {
   nama?: string;
@@ -31,6 +32,7 @@ const ROLE_COLOR: Record<string, string> = {
 };
 
 export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<'profil' | 'password'>('profil');
   const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
@@ -87,17 +89,17 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
     setErrorMsg('');
     if (!oldPassword || !newPassword || !confirmPassword) {
       setStatus('error');
-      setErrorMsg('Semua field password wajib diisi.');
+      setErrorMsg(t('profileModal.errRequiredFields'));
       return;
     }
     if (newPassword.length < 6) {
       setStatus('error');
-      setErrorMsg('Password baru minimal 6 karakter.');
+      setErrorMsg(t('profileModal.errMinLength'));
       return;
     }
     if (newPassword !== confirmPassword) {
       setStatus('error');
-      setErrorMsg('Konfirmasi password tidak cocok.');
+      setErrorMsg(t('profileModal.errMismatch'));
       return;
     }
 
@@ -110,7 +112,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
       });
       
       setStatus('success');
-      toast.success('Password berhasil diperbarui! Email notifikasi keamanan telah dikirim ke Admin.');
+      toast.success(t('profileModal.toastSuccess'));
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -119,7 +121,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
         onClose();
       }, 1200);
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Gagal mengubah password. Pastikan password lama sesuai.';
+      const msg = err.response?.data?.message || t('profileModal.errFailed');
       setStatus('error');
       setErrorMsg(msg);
       toast.error(msg);
@@ -128,17 +130,18 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      {/* Dialog Card Container */}
-      <div className="w-full max-w-md bg-card border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-dvh animate-in fade-in zoom-in-95 duration-200">
+      {/* Dialog Card Container — 2x wider on desktop UI */}
+      <div className="w-full max-w-md md:max-w-3xl lg:max-w-4xl bg-card border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-dvh animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header Bar */}
         <div className="flex items-center justify-between px-5 h-14 border-b shrink-0 bg-background/95 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} className="text-primary" />
-            <h2 className="text-base font-semibold text-foreground">Pengaturan Akun</h2>
+            <h2 className="text-base font-semibold text-foreground">{t('profileModal.title')}</h2>
           </div>
           <button
             onClick={onClose}
+            aria-label={t('common.close')}
             className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <X size={18} />
@@ -165,15 +168,17 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
               {activeUser?.status && (
                 <span className={cn(
                   'text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 border',
-                  activeUser.status === 'Aktif' 
+                  activeUser.status.toLowerCase() === 'aktif' || activeUser.status.toLowerCase() === 'active'
                     ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
                     : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                 )}>
                   <span className={cn(
                     'w-1.5 h-1.5 rounded-full',
-                    activeUser.status === 'Aktif' ? 'bg-emerald-500' : 'bg-rose-500'
+                    activeUser.status.toLowerCase() === 'aktif' || activeUser.status.toLowerCase() === 'active' ? 'bg-emerald-500' : 'bg-rose-500'
                   )} />
-                  {activeUser.status}
+                  {activeUser.status.toLowerCase() === 'aktif' || activeUser.status.toLowerCase() === 'active'
+                    ? t('common.active')
+                    : (activeUser.status.toLowerCase() === 'tidak aktif' || activeUser.status.toLowerCase() === 'inactive' ? t('common.inactive') : activeUser.status)}
                 </span>
               )}
             </div>
@@ -181,24 +186,24 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
 
           {/* Tab Controls */}
           <div className="flex mx-5 bg-secondary/40 rounded-xl p-1 mb-5">
-            {(['profil', 'password'] as const).map(t => (
+            {(['profil', 'password'] as const).map(tTab => (
               <button
-                key={t}
-                onClick={() => setTab(t)}
+                key={tTab}
+                onClick={() => setTab(tTab)}
                 className={cn(
                   'flex-1 py-2 text-xs font-medium rounded-lg transition-all',
-                  tab === t
+                  tab === tTab
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                {t === 'profil' ? (
+                {tTab === 'profil' ? (
                   <span className="flex items-center justify-center gap-1.5">
-                    <User size={14} /> Informasi Profil
+                    <User size={14} /> {t('profileModal.tabProfile')}
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-1.5">
-                    <Lock size={14} /> Ganti Password
+                    <Lock size={14} /> {t('profileModal.tabPassword')}
                   </span>
                 )}
               </button>
@@ -209,36 +214,39 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
           {tab === 'profil' && (
             <div className="px-5 pb-6 space-y-4">
               <div className="bg-card border rounded-2xl overflow-hidden divide-y divide-border">
-                <InfoRow label="Nama Lengkap" value={activeUser?.nama || '—'} />
-                <InfoRow label="Username" value={`@${activeUser?.username}`} />
+                <InfoRow label={t('profileModal.fullName')} value={activeUser?.nama || '—'} />
+                <InfoRow label={t('profileModal.username')} value={`@${activeUser?.username}`} />
                 <InfoRow 
-                  label="Email" 
+                  label={t('profileModal.email')} 
                   value={activeUser?.email || '—'} 
                   icon={<Mail size={13} className="text-muted-foreground shrink-0" />} 
                 />
-                <InfoRow label="Role / Hak Akses" value={activeUser?.role ?? '—'} />
+                <InfoRow label={t('profileModal.role')} value={activeUser?.role ?? '—'} />
                 {activeUser?.role === 'CRO' && activeUser.supervisor_nama && (
-                  <InfoRow label="Atasan Langsung" value={`Chief ${activeUser.supervisor_nama}`} />
+                  <InfoRow label={t('profileModal.directSupervisor')} value={`Chief ${activeUser.supervisor_nama}`} />
                 )}
                 {activeUser?.tenant_id && (
                   <InfoRow 
-                    label="Tenant" 
+                    label={t('profileModal.tenant')} 
                     value={activeUser.tenant_id} 
                     icon={<Building size={13} className="text-muted-foreground shrink-0" />} 
                   />
                 )}
               </div>
 
-              <div className="flex items-center gap-2.5 p-3 bg-secondary/40 border rounded-xl text-xs text-muted-foreground">
-                <ShieldCheck size={16} className="text-primary shrink-0" />
-                <span>Sistem proteksi aktif: Mutasi username/password dicatat dalam audit log dan dilaporkan via email ke Admin CRM.</span>
-              </div>
+              {/* 2 Kolom khusus UI PC untuk Notifikasi Proteksi & Info Kontak Admin */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <div className="flex items-center gap-2.5 p-3.5 bg-secondary/40 border rounded-2xl text-xs text-muted-foreground">
+                  <ShieldCheck size={18} className="text-primary shrink-0" />
+                  <span className="leading-relaxed">{t('profileModal.protectionNotice')}</span>
+                </div>
 
-              <div className="bg-secondary/30 border rounded-2xl p-4">
-                <p className="text-xs text-muted-foreground text-center leading-relaxed">
-                  Untuk memperbarui identitas utama atau izin akses akun,<br />
-                  silakan menghubungi <span className="text-primary font-medium">Administrator</span>.
-                </p>
+                <div className="flex items-center justify-center p-3.5 bg-secondary/30 border rounded-2xl">
+                  <p className="text-xs text-muted-foreground text-center md:text-left leading-relaxed">
+                    {t('profileModal.contactAdminNoticePrefix')}<br className="hidden md:inline" />{' '}
+                    {t('profileModal.contactAdminNoticeSuffix')} <span className="text-primary font-medium">{t('profileModal.administrator')}</span>.
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -248,13 +256,13 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
             <form onSubmit={handleChangePassword} className="px-5 pb-6 space-y-4">
               <div className="flex items-center gap-2.5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-500">
                 <ShieldCheck size={16} className="shrink-0" />
-                <span>Pemberitahuan keamanan otomatis akan dikirimkan ke email Admin CRM saat password diperbarui.</span>
+                <span>{t('profileModal.securityNotice')}</span>
               </div>
 
               {status === 'success' && (
                 <div className="flex items-center gap-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs px-3.5 py-3 rounded-xl">
                   <Check size={16} className="shrink-0" />
-                  <span>Password berhasil diperbarui. Email security alert telah dikirim ke Admin CRM.</span>
+                  <span>{t('profileModal.passwordSuccessAlert')}</span>
                 </div>
               )}
               {status === 'error' && (
@@ -266,28 +274,28 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
 
               <div className="bg-card border rounded-2xl overflow-hidden divide-y divide-border">
                 <PasswordField
-                  label="Password Lama"
+                  label={t('profileModal.oldPasswordLabel')}
                   value={oldPassword}
                   show={showOld}
                   onToggle={() => setShowOld(v => !v)}
                   onChange={setOldPassword}
-                  placeholder="Ketik password saat ini..."
+                  placeholder={t('profileModal.oldPasswordPlaceholder')}
                 />
                 <PasswordField
-                  label="Password Baru"
+                  label={t('profileModal.newPasswordLabel')}
                   value={newPassword}
                   show={showNew}
                   onToggle={() => setShowNew(v => !v)}
                   onChange={setNewPassword}
-                  placeholder="Minimal 6 karakter..."
+                  placeholder={t('profileModal.newPasswordPlaceholder')}
                 />
                 <PasswordField
-                  label="Konfirmasi Password Baru"
+                  label={t('profileModal.confirmPasswordLabel')}
                   value={confirmPassword}
                   show={showConfirm}
                   onToggle={() => setShowConfirm(v => !v)}
                   onChange={setConfirmPassword}
-                  placeholder="Ulangi password baru..."
+                  placeholder={t('profileModal.confirmPasswordPlaceholder')}
                 />
               </div>
 
@@ -299,10 +307,10 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
                 {status === 'loading' ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    Menyimpan Sandi...
+                    {t('profileModal.savingPasswordBtn')}
                   </>
                 ) : (
-                  'Simpan Password Baru'
+                  t('profileModal.savePasswordBtn')
                 )}
               </button>
             </form>

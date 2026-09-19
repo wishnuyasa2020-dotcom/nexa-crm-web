@@ -25,11 +25,13 @@ import apiClient from '@/lib/apiClient';
 
 import { CatatInteraksiSiswaModal } from '@/components/siswa/CatatInteraksiSiswaModal';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { id as localeId, enUS } from 'date-fns/locale';
 import { SwCountdown } from './SwCountdown';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { normalizeLifecycleState } from '@/lib/constants/lifecycle';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 interface ChatRoomProps {
   conversation:   Conversation | null;
@@ -42,6 +44,10 @@ interface ChatRoomProps {
 const MESSAGES_POLL_MS = 5000;
 
 export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, waStatus }: ChatRoomProps) {
+  const { t, lang } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
+  const activeLocale = lang === 'en' ? enUS : localeId;
+
   const [messages,     setMessages]     = useState<ChatMessage[]>([]);
   const [inputText,    setInputText]    = useState('');
   const [isSending,    setIsSending]    = useState(false); // anti double-send
@@ -113,14 +119,16 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       });
       setVerifiedTokenState(token);
       setShowVerifyConfirmModal(false);
-      toast.success('Pembayaran Formulir Berhasil Diverifikasi!', {
-        description: `Status ${conversation.student_name || 'siswa'} kini telah ditingkatkan menjadi Siswa Terdaftar (REGISTERED).`
+      toast.success(t('chat.toastPaymentVerifiedSuccess'), {
+        description: isGeneral
+          ? t('chat.toastPaymentVerifiedDescGeneral').replace('{name}', conversation.student_name || 'kontak')
+          : t('chat.toastPaymentVerifiedDescLpk').replace('{name}', conversation.student_name || 'siswa')
       });
       onMessageSent();
       loadMessages(true);
     } catch (err: any) {
       console.error('[ChatRoom] Quick verify error:', err);
-      toast.error('Gagal memverifikasi pembayaran', {
+      toast.error(t('chat.toastPaymentVerifyFailed'), {
         description: err?.response?.data?.message || err.message || 'Terjadi kesalahan sistem.'
       });
     } finally {
@@ -161,7 +169,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
   if (!conversation) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-background h-full text-muted-foreground w-full">
-        <p className="text-lg">Pilih percakapan untuk memulai chat</p>
+        <p className="text-lg">{t('chat.selectPrompt')}</p>
       </div>
     );
   }
@@ -175,7 +183,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
   // ── Kirim Pesan Teks ───────────────────────────────────────────────────
   const handleSendText = async () => {
     if (isWaConnected === false) {
-      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      toast.error(t('chat.toastWaNotActive'));
       return;
     }
     if (selectedFile) {
@@ -194,7 +202,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       forceScrollRef.current = true; // paksa scroll ke bawah setelah kirim
       await loadMessages(true);
     } catch (err: any) {
-      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim pesan.');
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || t('chat.toastSendFailed'));
       toast.error(msg);
       // Kembalikan teks ke input jika gagal
       setInputText(textToSend);
@@ -207,7 +215,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       if (file.size > 16 * 1024 * 1024) {
-        toast.error('Ukuran file maksimal adalah 16MB sesuai batasan WhatsApp.');
+        toast.error(t('chat.toastMaxFileSize'));
         e.target.value = '';
         return;
       }
@@ -218,7 +226,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
 
   const handleSendMedia = async () => {
     if (isWaConnected === false) {
-      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      toast.error(t('chat.toastWaNotActive'));
       return;
     }
     if (!selectedFile || isSending || !convId) return;
@@ -235,7 +243,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       forceScrollRef.current = true;
       await loadMessages(true);
     } catch (err: any) {
-      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim media.');
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || t('chat.toastMediaFailed'));
       toast.error(msg);
     } finally {
       setIsSending(false);
@@ -244,7 +252,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
 
   const handleSendLocation = async () => {
     if (isWaConnected === false) {
-      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      toast.error(t('chat.toastWaNotActive'));
       return;
     }
     if (!locationData.lat || !locationData.lng || isSending || !convId) return;
@@ -263,7 +271,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       forceScrollRef.current = true;
       await loadMessages(true);
     } catch (err: any) {
-      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim lokasi.');
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || t('chat.toastLocationFailed'));
       toast.error(msg);
     } finally {
       setIsSending(false);
@@ -280,18 +288,18 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
   // ── Kirim Template ─────────────────────────────────────────────────────
   const handleSendTemplate = async (templateId: string | number) => {
     if (isWaConnected === false) {
-      toast.error('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      toast.error(t('chat.toastWaNotActive'));
       return;
     }
     if (isSending || !convId) return;
     setIsSending(true);
     try {
       await sendMessage(convId, { templateId });
-      toast.success('Template berhasil dikirim!');
+      toast.success(t('chat.toastTemplateSent'));
       onMessageSent();
       await loadMessages(true);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal mengirim template.';
+      const msg = err instanceof Error ? err.message : t('chat.toastTemplateFailed');
       toast.error(msg);
     } finally {
       setIsSending(false);
@@ -300,19 +308,19 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
 
   const handleGetCurrentLocation = () => {
     if (navigator.geolocation) {
-      toast.info('Sedang mencari lokasi...');
+      toast.info(t('chat.toastFindingLocation'));
       navigator.geolocation.getCurrentPosition((position) => {
         setLocationData(prev => ({
           ...prev,
           lat: position.coords.latitude.toString(),
           lng: position.coords.longitude.toString()
         }));
-        toast.success('Lokasi GPS berhasil didapatkan!');
+        toast.success(t('chat.toastGpsSuccess'));
       }, (error) => {
-        toast.error('Gagal mendapatkan lokasi GPS: ' + error.message);
+        toast.error(`${t('chat.toastGpsFailed')} ${error.message}`);
       }, { timeout: 10000 });
     } else {
-      toast.error('Browser tidak mendukung Geolocation');
+      toast.error(t('chat.toastNoGeolocation'));
     }
   };
 
@@ -324,10 +332,10 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
         lat: match[1],
         lng: match[2]
       }));
-      toast.success('Koordinat berhasil diekstrak!');
+      toast.success(t('chat.toastExtractSuccess'));
       setMapsLink('');
     } else {
-      toast.error('Gagal mengekstrak! Pastikan link dari browser yang mengandung (@latitude,longitude), bukan shortlink.');
+      toast.error(t('chat.toastExtractFailed'));
     }
   };
 
@@ -344,7 +352,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
     try {
       await sendMessage(convId, { type: 'reaction', targetMessageId, emoji: emojiToSend });
     } catch (err: any) {
-      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || 'Gagal mengirim reaksi.');
+      const msg = err instanceof Error ? err.message : (err?.response?.data?.message || t('chat.toastReactionFailed'));
       toast.error(msg);
       // Revert jika gagal
       loadMessages(true);
@@ -375,23 +383,23 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
             {isSwOpen ? (
               <span className="flex items-center text-primary font-medium">
                 <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-primary mr-1 md:mr-1.5 animate-pulse" />
-                <span className="mr-1"><SwCountdown expiresAt={conversation.window_expires_at || ''} /> Active</span>
+                <span className="mr-1"><SwCountdown expiresAt={conversation.window_expires_at || ''} /> {t('chat.swActive')}</span>
                 {conversation.window_expires_at && (
                   <span className="ml-1 md:ml-1.5 text-muted-foreground hidden sm:inline">
-                    (exp: {format(new Date(conversation.window_expires_at), 'dd MMM yyyy HH:mm', { locale: id })})
+                    (exp: {format(new Date(conversation.window_expires_at), 'dd MMM yyyy HH:mm', { locale: activeLocale })})
                   </span>
                 )}
               </span>
             ) : (
               <span className="flex items-center text-rose-500 font-medium">
                 <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-rose-500 mr-1 md:mr-1.5" />
-                <span className="hidden xs:inline">Service Window </span>Closed
+                <span className="hidden xs:inline">{t('chat.serviceWindow')} </span>{t('chat.swClosed')}
               </span>
             )}
           </div>
         </div>
 
-        {/* Info Siswa Panel & Pintasan Detail Siswa */}
+        {/* Info Siswa / Kontak Panel & Pintasan Detail */}
         <div className="flex items-center gap-1.5 shrink-0">
           {conversation.id_siswa && (
             <Link
@@ -401,21 +409,21 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 size: 'sm',
                 className: 'inline-flex items-center gap-1.5 bg-transparent border-primary/30 text-primary hover:bg-primary/10 hover:text-primary text-xs font-semibold px-2 sm:px-2.5 h-8'
               })}
-              title="Buka Halaman Detail Siswa"
+              title={isGeneral ? t('chat.openDetailPageGeneral') : t('chat.openDetailPageLpk')}
             >
               <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-              <span className="hidden sm:inline">Detail Siswa</span>
+              <span className="hidden sm:inline">{isGeneral ? t('chat.detailEntityGeneral') : t('chat.detailEntityLpk')}</span>
             </Link>
           )}
 
           <Sheet>
             <SheetTrigger className={buttonVariants({ variant: 'outline', size: 'sm', className: 'flex items-center gap-1 bg-transparent text-foreground hover:bg-accent hover:text-white text-xs px-2 sm:px-2.5 h-8' })}>
               <Info className="h-3.5 w-3.5 sm:hidden shrink-0" />
-              <span className="hidden sm:inline">Info Siswa</span>
+              <span className="hidden sm:inline">{isGeneral ? t('chat.infoEntityGeneral') : t('chat.infoEntityLpk')}</span>
             </SheetTrigger>
           <SheetContent className="bg-background border-l text-foreground p-0 overflow-y-auto sm:max-w-md w-full">
             <SheetHeader className="sr-only">
-              <SheetTitle>Info Siswa</SheetTitle>
+              <SheetTitle>{isGeneral ? t('chat.infoEntityGeneral') : t('chat.infoEntityLpk')}</SheetTitle>
             </SheetHeader>
             <div className="h-32 bg-linear-to-r from-primary/60 to-card" />
             <div className="px-6 pb-6 relative">
@@ -437,11 +445,11 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                       size="sm" 
                       className="border-primary text-primary hover:bg-primary/10"
                       onClick={() => {
-                        toast.success('Permintaan kontak telah dikirim via Meta Interactive Message.');
+                        toast.success(t('chat.toastContactRequested'));
                       }}
                     >
                       <Phone className="h-3.5 w-3.5 mr-2" />
-                      Minta Nomor Telepon
+                      {t('chat.requestPhone')}
                     </Button>
                   </div>
                 )}
@@ -450,22 +458,22 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                     <Link
                       href={`/siswa/${conversation.id_siswa}`}
                       className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 px-3 py-1 rounded-full border border-primary/20 transition-colors shadow-xs"
-                      title="Buka Halaman Detail Siswa"
+                      title={isGeneral ? t('chat.openDetailPageGeneral') : t('chat.openDetailPageLpk')}
                     >
                       <ExternalLink className="h-3 w-3 shrink-0" />
-                      <span>{conversation.id_siswa} · Detail Siswa</span>
+                      <span>{conversation.id_siswa} · {isGeneral ? t('chat.detailEntityGeneral') : t('chat.detailEntityLpk')}</span>
                     </Link>
                   </div>
                 )}
               </div>
               <div className="space-y-4">
                 <div className="bg-card p-4 rounded-xl border">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Status & Pipeline</h4>
+                  <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">{t('chat.statusAndPipeline')}</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-foreground flex items-center gap-2">
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        Tahap Saat Ini
+                        {t('chat.currentStage')}
                       </span>
                       <CommercialStateBadge
                         state={conversation.lifecycle_state || conversation.pipeline_status || '–'}
@@ -477,16 +485,16 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                     <div className="flex items-center justify-between">
                       <span className="text-foreground flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        Sisa Waktu SW
+                        {t('chat.swRemaining')}
                       </span>
                       {isSwOpen ? (
                         <span className="text-primary text-sm font-medium">
                           {conversation.window_expires_at
                             ? new Date(conversation.window_expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                            : 'Active'}
+                            : t('chat.swActive')}
                         </span>
                       ) : (
-                        <span className="text-rose-500 text-sm font-medium">Tertutup</span>
+                        <span className="text-rose-500 text-sm font-medium">{t('chat.swClosedStatus')}</span>
                       )}
                     </div>
                   </div>
@@ -494,23 +502,23 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 
                 {/* Aksi Cepat */}
                 <div className="bg-card p-4 rounded-xl border">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Aksi Cepat</h4>
+                  <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">{t('chat.quickActions')}</h4>
                   <div className="space-y-2">
                     {conversation.id_siswa && (
                       <Link
                         href={`/siswa/${conversation.id_siswa}`}
                         className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold h-9 px-3 transition-colors shadow-xs"
-                        title="Buka Halaman Detail Siswa"
+                        title={isGeneral ? t('chat.openDetailPageGeneral') : t('chat.openDetailPageLpk')}
                       >
                         <ExternalLink className="h-4 w-4 shrink-0" />
-                        Buka Halaman Detail Siswa
+                        {isGeneral ? t('chat.openDetailPageGeneral') : t('chat.openDetailPageLpk')}
                       </Link>
                     )}
                     <Button 
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                       onClick={() => setShowAktivitasModal(true)}
                     >
-                      + Catat Interaksi
+                      {t('chat.logInteractionBtn')}
                     </Button>
                   </div>
                 </div>
@@ -531,13 +539,16 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
             </div>
             <div>
               <div className="flex items-center gap-2 font-semibold text-foreground">
-                <span>Konfirmasi Bukti Transfer Pendaftaran</span>
+                <span>{t('chat.verifyRegTitle')}</span>
                 <span className="bg-amber-500/20 text-amber-600 font-bold px-1.5 py-0.5 rounded text-xs">
                   Rp 500.000
                 </span>
               </div>
               <p className="text-muted-foreground mt-0.5">
-                Siswa mengirim bukti transfer via WhatsApp. Cek foto bukti di bawah, lalu verifikasi untuk upgrade status ke <span className="font-semibold text-foreground">Siswa Terdaftar (REGISTERED)</span>.
+                {isGeneral ? t('chat.verifyRegDescGeneral') : t('chat.verifyRegDescLpk')}{' '}
+                <span className="font-semibold text-foreground">
+                  {isGeneral ? t('chat.registeredStateGeneral') : t('chat.registeredStateLpk')}
+                </span>.
               </p>
             </div>
           </div>
@@ -547,7 +558,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
               className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4 px-2 py-1"
               target="_blank"
             >
-              Detail
+              {t('chat.detailLink')}
             </Link>
             <Button
               size="sm"
@@ -558,12 +569,12 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
               {isVerifyingPayment ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Memverifikasi...
+                  {t('chat.verifying')}
                 </>
               ) : (
                 <>
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Verifikasi Rp500.000
+                  {t('chat.verifyRegAmountBtn')}
                 </>
               )}
             </Button>
@@ -580,13 +591,16 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
             </div>
             <div>
               <div className="flex items-center gap-2 font-semibold text-foreground">
-                <span>Bukti Transfer DP Pelatihan Terdeteksi</span>
+                <span>{isGeneral ? t('chat.dpDetectedTitleGeneral') : t('chat.dpDetectedTitle')}</span>
                 <span className="bg-emerald-500/20 text-emerald-600 font-bold px-1.5 py-0.5 rounded text-xs">
-                  DP Inti Rp 1.500.000
+                  {isGeneral ? t('chat.dpBadgeGeneral') : t('chat.dpBadge')}
                 </span>
               </div>
               <p className="text-muted-foreground mt-0.5">
-                Siswa terdaftar mengirim bukti transfer. Verifikasi penerimaan DP Pelatihan di Halaman Detail Siswa untuk konversi ke <span className="font-semibold text-foreground">Siswa / Peserta (CUSTOMER)</span>.
+                {isGeneral ? t('chat.dpDetectedDescGeneral') : t('chat.dpDetectedDescLpk')}{' '}
+                <span className="font-semibold text-foreground">
+                  {isGeneral ? t('chat.customerStateGeneral') : t('chat.customerStateLpk')}
+                </span>.
               </p>
             </div>
           </div>
@@ -597,7 +611,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 px-3 rounded-md shadow-xs"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                <span>Verifikasi di Detail Siswa</span>
+                <span>{isGeneral ? t('chat.verifyInDetailBtnGeneral') : t('chat.verifyInDetailBtnLpk')}</span>
               </Link>
             </div>
           )}
@@ -608,7 +622,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       {conversation?.pending_registration_token && verifiedTokenState === conversation.pending_registration_token && (
         <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 flex items-center gap-2 text-xs text-emerald-600 shrink-0">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span>Biaya pendaftaran formulir Rp 500.000 telah diverifikasi. Status siswa: <strong className="font-semibold text-foreground">Siswa Terdaftar (REGISTERED)</strong>.</span>
+          <span>{isGeneral ? t('chat.verifiedNoticeGeneral') : t('chat.verifiedNoticeLpk')} <strong className="font-semibold text-foreground">{isGeneral ? t('chat.registeredStateGeneral') : t('chat.registeredStateLpk')}</strong>.</span>
         </div>
       )}
 
@@ -623,7 +637,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
         <div className="flex flex-col space-y-3 pb-4">
           <div className="text-center my-4">
             <span className="bg-muted text-yellow-400 text-xs px-3 py-1.5 rounded-lg shadow-sm">
-              Sesi percakapan diamankan dengan enkripsi end-to-end Meta.
+              {t('chat.encryptionNotice')}
             </span>
           </div>
 
@@ -649,7 +663,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                     <div className="mb-2">
                       <img 
                         src={`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`} 
-                        alt="Media terlampir" 
+                        alt={t('chat.attachedMedia')} 
                         className="max-w-full max-h-64 object-contain rounded-md"
                         onLoad={() => {
                           if (isNearBottom()) {
@@ -660,7 +674,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                     </div>
                   ) : msg.type === 'image' && (
                     <div className="mb-2 bg-black/20 p-2 rounded flex items-center gap-2">
-                      <ImageIcon className="h-4 w-4" /> <span className="font-medium text-xs">Gambar (Gagal Muat)</span>
+                      <ImageIcon className="h-4 w-4" /> <span className="font-medium text-xs">{t('chat.imageFailed')}</span>
                     </div>
                   )}
                   {msg.type === 'video' && msg.media_id ? (
@@ -678,31 +692,31 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                     </div>
                   ) : msg.type === 'video' && (
                     <div className="mb-2 bg-black/20 p-2 rounded flex items-center gap-2">
-                      <Video className="h-4 w-4" /> <span className="font-medium text-xs">Video (Gagal Muat)</span>
+                      <Video className="h-4 w-4" /> <span className="font-medium text-xs">{t('chat.videoFailed')}</span>
                     </div>
                   )}
                   {msg.type === 'location' && (
                     <div className="mb-2 bg-black/20 p-2 rounded flex flex-col gap-1">
                       <div className="flex items-center gap-2 font-semibold">
-                        <MapPin className="h-4 w-4" /> <span>Lokasi</span>
+                        <MapPin className="h-4 w-4" /> <span>{t('chat.location')}</span>
                       </div>
                       <a href={`https://maps.google.com/?q=${msg.body}`} target="_blank" rel="noreferrer" className="text-blue-400 underline truncate">
-                        Buka di Google Maps
+                        {t('chat.openGoogleMaps')}
                       </a>
                     </div>
                   )}
                   {msg.type === 'document' && (
                     <div className="mb-2 bg-black/20 p-2 rounded flex flex-col gap-1 cursor-pointer hover:bg-black/30 transition-colors" onClick={() => msg.media_id && window.open(`${process.env.NEXT_PUBLIC_API_URL || '/api/crm'}/chats/media/${msg.media_id}?token=${Cookies.get('nexa_token') || ''}`)}>
                       <div className="flex items-center gap-2 font-semibold text-foreground">
-                        <FileText className="h-5 w-5" /> <span>Dokumen Terlampir</span>
+                        <FileText className="h-5 w-5" /> <span>{t('chat.attachedDocument')}</span>
                       </div>
-                      <span className="text-xs text-blue-400 underline">Unduh Dokumen</span>
+                      <span className="text-xs text-blue-400 underline">{t('chat.downloadDocument')}</span>
                     </div>
                   )}
-                  <div dangerouslySetInnerHTML={{ __html: renderMessageBody(msg.body || (msg.type === 'interactive' && msg.direction === 'incoming' ? '[Membalas Tombol Interaktif]' : `[${msg.type}]`)) }} />
+                  <div dangerouslySetInnerHTML={{ __html: renderMessageBody(msg.body || (msg.type === 'interactive' && msg.direction === 'incoming' ? t('chat.replyingInteractive') : `[${msg.type}]`)) }} />
                   {(msg.type === 'interactive' || msg.type === 'template') && msg.direction === 'outgoing' && (
                     <div className="mt-1.5 pt-1.5 border-t border-white/20 flex items-center gap-1.5 text-xs text-blue-400 uppercase tracking-wider font-semibold">
-                      <MousePointer2 className="h-3 w-3" /> Pilihan Interaktif Terlampir
+                      <MousePointer2 className="h-3 w-3" /> {t('chat.interactiveOptionsAttached')}
                     </div>
                   )}
                 </div>
@@ -716,12 +730,12 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                         : (Number(msg.timestamp) > 0 ? new Date(Number(msg.timestamp)) : null);
                       if (!date) return '';
                       if (isToday(date)) {
-                        return format(date, 'HH:mm', { locale: id });
+                        return format(date, 'HH:mm', { locale: activeLocale });
                       }
                       if (isYesterday(date)) {
-                        return `Kemarin, ${format(date, 'HH:mm', { locale: id })}`;
+                        return `${t('chat.yesterday')}, ${format(date, 'HH:mm', { locale: activeLocale })}`;
                       }
-                      return format(date, 'dd/MM/yyyy HH:mm', { locale: id });
+                      return format(date, 'dd/MM/yyyy HH:mm', { locale: activeLocale });
                     })()}
                   </span>
                   {msg.direction === 'outgoing' && (
@@ -756,7 +770,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
         <div className="bg-card p-3 w-full border-t">
           <WhatsAppGatingBanner
             compact
-            featureName="Live Chat WhatsApp"
+            featureName={t('chat.liveChatFeature')}
             status={waStatus}
           />
         </div>
@@ -770,20 +784,20 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 <button
                   onClick={() => setShowSwInfo(v => !v)}
                   className="h-8 w-8 flex items-center justify-center rounded-full text-rose-400 hover:bg-rose-950/40 transition-colors"
-                  title="Info service window"
+                  title={t('chat.swInfoTitle')}
                 >
                   <Info className="h-4 w-4" />
                 </button>
                 {/* Popover info */}
                 {showSwInfo && (
                   <div className="absolute bottom-10 left-0 w-64 bg-accent border border-rose-900/50 text-rose-300 text-xs px-3 py-2.5 rounded-lg shadow-xl z-50">
-                    <p className="leading-relaxed">Jeda waktu respon telah melewati 24 jam. Anda hanya dapat membalas menggunakan <span className="font-semibold text-rose-200">Template Pesan</span> resmi.</p>
+                    <p className="leading-relaxed">{t('chat.swClosedNotice')} <span className="font-semibold text-rose-200">{t('chat.messageTemplateBold')}</span> {t('chat.officialSuffix')}</p>
                     <div className="absolute -bottom-1.5 left-3 w-3 h-3 bg-accent border-b border-r border-rose-900/50 rotate-45" />
                   </div>
                 )}
               </div>
               <TemplatePicker
-                buttonText={isSending ? 'Mengirim...' : 'Pilih & Kirim Template'}
+                buttonText={isSending ? t('chat.sending') : t('chat.pickAndSendTemplate')}
                 buttonClassName="flex-1 h-9 md:h-11 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50 text-xs md:text-sm"
                 studentName={conversation.student_name}
                 studentLifecycleState={conversation.lifecycle_state || conversation.pipeline_status || ''}
@@ -834,19 +848,19 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                       onClick={() => { setAttachAccept('image/*,video/*'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
                     >
-                      <ImageIcon className="h-4 w-4 text-violet-400" /> Gambar/Video
+                      <ImageIcon className="h-4 w-4 text-violet-400" /> {t('chat.attachMedia')}
                     </button>
                     <button
                       onClick={() => { setAttachAccept('.pdf,.doc,.docx,.xls,.xlsx'); setShowAttachMenu(false); setTimeout(() => fileInputRef.current?.click(), 0); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
                     >
-                      <FileText className="h-4 w-4 text-orange-400" /> Dokumen
+                      <FileText className="h-4 w-4 text-orange-400" /> {t('chat.attachDocument')}
                     </button>
                     <button
                       onClick={() => { setShowAttachMenu(false); setShowLocationModal(true); }}
                       className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-card transition-colors text-left"
                     >
-                      <MapPin className="h-4 w-4 text-emerald-400" /> Lokasi
+                      <MapPin className="h-4 w-4 text-emerald-400" /> {t('chat.attachLocation')}
                     </button>
                   </div>
                 )}
@@ -877,7 +891,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                   </div>
                 )}
                 <Input
-                  placeholder={selectedFile ? "Tambah keterangan..." : "Ketik pesan..."}
+                  placeholder={selectedFile ? t('chat.addCaptionPlaceholder') : t('chat.typeMessagePlaceholder')}
                   className={`w-full bg-accent text-foreground border-none focus-visible:ring-1 focus-visible:ring-primary pr-10 py-5 ${selectedFile ? 'rounded-b-xl rounded-tr-xl rounded-tl-none' : 'rounded-full'}`}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
@@ -918,31 +932,31 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
       <Dialog open={showLocationModal} onOpenChange={setShowLocationModal}>
         <DialogContent className="bg-background text-foreground">
           <DialogHeader>
-            <DialogTitle>Kirim Lokasi</DialogTitle>
+            <DialogTitle>{t('chat.sendLocationTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             
             <div className="flex flex-col gap-2 p-3 bg-card rounded-lg border">
               <Button onClick={handleGetCurrentLocation} variant="outline" className="w-full">
-                <MapPin className="h-4 w-4 mr-2 text-emerald-400" /> Dapatkan Lokasi Saat Ini (GPS)
+                <MapPin className="h-4 w-4 mr-2 text-emerald-400" /> {t('chat.getCurrentGps')}
               </Button>
-              <div className="text-center text-xs text-muted-foreground py-1">ATAU</div>
+              <div className="text-center text-xs text-muted-foreground py-1">{t('chat.orText')}</div>
               <div className="flex gap-2">
                 <Input 
-                  placeholder="Tempel Link Google Maps..." 
+                  placeholder={t('chat.pasteMapsPlaceholder')} 
                   value={mapsLink} 
                   onChange={e => setMapsLink(e.target.value)}
                   className="bg-muted flex-1 text-xs"
                 />
                 <Button onClick={handleExtractMapsLink} disabled={!mapsLink} variant="secondary" className="text-xs">
-                  Ekstrak
+                  {t('chat.extractBtn')}
                 </Button>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Latitude</label>
+                <label className="text-xs text-muted-foreground">{t('chat.latitude')}</label>
                 <Input 
                   placeholder="-6.200000" 
                   value={locationData.lat} 
@@ -951,7 +965,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Longitude</label>
+                <label className="text-xs text-muted-foreground">{t('chat.longitude')}</label>
                 <Input 
                   placeholder="106.816666" 
                   value={locationData.lng} 
@@ -961,18 +975,18 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Nama Tempat (Opsional)</label>
+              <label className="text-xs text-muted-foreground">{t('chat.placeNameOptional')}</label>
               <Input 
-                placeholder="Kantor NexaMOS" 
+                placeholder={t('chat.placeNamePlaceholder')} 
                 value={locationData.name} 
                 onChange={e => setLocationData({...locationData, name: e.target.value})}
                 className="bg-muted border-none"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Alamat (Opsional)</label>
+              <label className="text-xs text-muted-foreground">{t('chat.addressOptional')}</label>
               <Input 
-                placeholder="Jl. Jend. Sudirman..." 
+                placeholder={t('chat.addressPlaceholder')} 
                 value={locationData.address} 
                 onChange={e => setLocationData({...locationData, address: e.target.value})}
                 className="bg-muted border-none"
@@ -980,7 +994,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
             </div>
             <div className="flex justify-end pt-4">
               <Button onClick={handleSendLocation} disabled={!locationData.lat || !locationData.lng || isSending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kirim Lokasi'}
+                {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('chat.sendLocationBtn')}
               </Button>
             </div>
           </div>
@@ -993,29 +1007,31 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
               <ShieldCheck className="h-5 w-5 text-emerald-500" />
-              Verifikasi Pembayaran Pendaftaran
+              {t('chat.confirmVerifyTitle')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2 text-sm">
             <p className="text-muted-foreground">
-              Apakah Anda telah memeriksa bukti transfer dari <strong className="text-foreground">{conversation?.student_name || conversation?.wa_number}</strong> dan dana sebesar <strong className="text-foreground">Rp 500.000</strong> telah masuk ke rekening?
+              {t('chat.confirmVerifyQuestion')} <strong className="text-foreground">{conversation?.student_name || conversation?.wa_number}</strong> {t('chat.confirmVerifyQuestionMid')} <strong className="text-foreground">Rp 500.000</strong> {t('chat.confirmVerifyQuestionEnd')}
             </p>
             <div className="bg-muted/50 p-3 rounded-lg border text-xs space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Nominal Verifikasi:</span>
+                <span className="text-muted-foreground">{t('chat.verifyNominalLabel')}</span>
                 <span className="font-semibold text-foreground">Rp 500.000</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Jenis Biaya:</span>
-                <span className="font-semibold text-foreground">Biaya Pendaftaran Formulir</span>
+                <span className="text-muted-foreground">{t('chat.verifyFeeTypeLabel')}</span>
+                <span className="font-semibold text-foreground">{t('chat.feeTypeRegistration')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Status Baru:</span>
-                <span className="font-semibold text-emerald-500">Siswa Terdaftar (REGISTERED)</span>
+                <span className="text-muted-foreground">{t('chat.newStatusLabel')}</span>
+                <span className="font-semibold text-emerald-500">
+                  {isGeneral ? t('chat.registeredStateGeneral') : t('chat.registeredStateLpk')}
+                </span>
               </div>
               {conversation?.pending_registration_token && (
                 <div className="flex justify-between font-mono">
-                  <span className="text-muted-foreground">Token:</span>
+                  <span className="text-muted-foreground">{t('chat.tokenLabel')}</span>
                   <span className="text-foreground">{conversation.pending_registration_token.substring(0, 10)}...</span>
                 </div>
               )}
@@ -1027,7 +1043,7 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 onClick={() => setShowVerifyConfirmModal(false)}
                 disabled={isVerifyingPayment}
               >
-                Batal
+                {t('chat.cancelBtn')}
               </Button>
               <Button
                 size="sm"
@@ -1038,12 +1054,12 @@ export function ChatRoom({ conversation, onBack, onMessageSent, isWaConnected, w
                 {isVerifyingPayment ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Memverifikasi...
+                    {t('chat.verifying')}
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="h-4 w-4" />
-                    Ya, Verifikasi Pembayaran
+                    {t('chat.confirmVerifyAction')}
                   </>
                 )}
               </Button>
@@ -1159,7 +1175,7 @@ function parseButtons(t: WaTemplate): { label: string; type: string }[] {
 
 /** Sub-komponen item template di list picker */
 function TemplateListItem({
-  template: t,
+  template: tmpl,
   resolvePreview,
   onPickReview,
   isRecommended = false,
@@ -1169,7 +1185,8 @@ function TemplateListItem({
   onPickReview: (t: WaTemplate) => void;
   isRecommended?: boolean;
 }) {
-  const normPipeline = t.pipeline ? normalizeLifecycleState(t.pipeline) : null;
+  const { t } = useTranslation();
+  const normPipeline = tmpl.pipeline ? normalizeLifecycleState(tmpl.pipeline) : null;
 
   return (
     <div
@@ -1180,10 +1197,10 @@ function TemplateListItem({
       <div className="flex justify-between items-start mb-2 gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h4 className="font-semibold text-sm text-foreground truncate">{t.nama_template}</h4>
+            <h4 className="font-semibold text-sm text-foreground truncate">{tmpl.nama_template}</h4>
             {isRecommended && (
               <span className="bg-primary/20 text-primary text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0">
-                ★ Sesuai Tahap
+                ★ {t('chat.stageMatched')}
               </span>
             )}
           </div>
@@ -1193,16 +1210,16 @@ function TemplateListItem({
             </div>
           )}
         </div>
-        <StatusBadge status={t.meta_status} />
+        <StatusBadge status={tmpl.meta_status} />
       </div>
-      <p className="text-xs text-muted-foreground mb-3 line-clamp-3">{resolvePreview(t.body_text)}</p>
+      <p className="text-xs text-muted-foreground mb-3 line-clamp-3">{resolvePreview(tmpl.body_text)}</p>
       <Button
         size="sm"
         variant="outline"
         className="w-full opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={() => onPickReview(t)}
+        onClick={() => onPickReview(tmpl)}
       >
-        Preview &amp; Kirim
+        {t('chat.previewAndSend')}
       </Button>
     </div>
   );
@@ -1220,7 +1237,7 @@ function resolveMediaUrl(url: string): string {
 
 /** Review Dialog — tampilan WA-bubble penerima */
 function TemplateReviewDialog({
-  template: t,
+  template: tmpl,
   resolvePreview,
   isSending,
   onConfirm,
@@ -1232,21 +1249,22 @@ function TemplateReviewDialog({
   onConfirm: () => void;
   onBack: () => void;
 }) {
-  const buttons = parseButtons(t);
-  const resolvedBody = resolvePreview(t.body_text);
+  const { t } = useTranslation();
+  const buttons = parseButtons(tmpl);
+  const resolvedBody = resolvePreview(tmpl.body_text);
   const resolvedBodyHtml = renderMessageBody(resolvedBody);
 
   // Resolusi header (mengutamakan parameter dinamis jika ada)
   let pHeader: { type?: string; url?: string; params?: string[] } | null = null;
-  if (t.parameters) {
+  if (tmpl.parameters) {
     try {
-      const params = JSON.parse(t.parameters);
+      const params = JSON.parse(tmpl.parameters);
       pHeader = params.header || null;
     } catch { /* ignore */ }
   }
 
   // Meta Console Source of Truth
-  let finalHeaderType = (t.header_type || '').toLowerCase();
+  let finalHeaderType = (tmpl.header_type || '').toLowerCase();
   if (!finalHeaderType || finalHeaderType === 'none') {
     const parsedType = (pHeader?.type || '').toLowerCase();
     // Only fallback for media to avoid text header hallucinations (e.g., STUDENT_NAME)
@@ -1256,8 +1274,8 @@ function TemplateReviewDialog({
       finalHeaderType = 'none';
     }
   }
-  const finalHeaderUrl  = finalHeaderType !== 'text' && finalHeaderType !== 'none' ? (pHeader?.url || t.header_url || null) : null;
-  const finalHeaderText = finalHeaderType === 'text' ? (pHeader?.params?.[0] || t.header_filename || null) : null;
+  const finalHeaderUrl  = finalHeaderType !== 'text' && finalHeaderType !== 'none' ? (pHeader?.url || tmpl.header_url || null) : null;
+  const finalHeaderText = finalHeaderType === 'text' ? (pHeader?.params?.[0] || tmpl.header_filename || null) : null;
   const resolvedHeaderText = finalHeaderText ? resolvePreview(finalHeaderText) : null;
 
   return (
@@ -1268,8 +1286,8 @@ function TemplateReviewDialog({
         {/* Header — fixed, tidak ikut scroll */}
         <DialogHeader className="px-5 pt-5 pb-3 shrink-0 border-b">
           <DialogTitle className="text-foreground flex items-center gap-2 text-sm">
-            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-semibold">PREVIEW</span>
-            {t.nama_template}
+            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-semibold">{t('chat.previewBadge')}</span>
+            {tmpl.nama_template}
           </DialogTitle>
         </DialogHeader>
 
@@ -1285,7 +1303,7 @@ function TemplateReviewDialog({
                 {finalHeaderType === 'image' && finalHeaderUrl && (
                   <img
                     src={resolveMediaUrl(finalHeaderUrl)}
-                    alt="Header template"
+                    alt={t('chat.headerTemplateAlt')}
                     className="w-full max-h-56 object-cover"
                     onError={(e) => {
                       // Sembunyikan jika gagal load
@@ -1328,7 +1346,7 @@ function TemplateReviewDialog({
                     dangerouslySetInnerHTML={{ __html: resolvedBodyHtml }}
                   />
                   <span className="block text-right text-xs text-muted-foreground mt-1">
-                    Sekarang ✓
+                    {t('chat.nowCheck')}
                   </span>
                 </div>
 
@@ -1373,7 +1391,7 @@ function TemplateReviewDialog({
             onClick={onBack}
             disabled={isSending}
           >
-            Batal
+            {t('chat.cancelBtn')}
           </Button>
           <Button
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold disabled:opacity-50"
@@ -1381,7 +1399,7 @@ function TemplateReviewDialog({
             disabled={isSending}
           >
             {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-              <><Send className="h-4 w-4 mr-1.5" />Kirim Sekarang</>
+              <><Send className="h-4 w-4 mr-1.5" />{t('chat.sendNow')}</>
             )}
           </Button>
         </div>
@@ -1407,6 +1425,7 @@ function TemplatePicker({
   disabled?:       boolean;
   onSendTemplate:  (templateId: string | number) => void;
 }) {
+  const { t } = useTranslation();
   const [templates, setTemplates]           = useState<WaTemplate[]>([]);
   const [loading, setLoading]               = useState(false);
   const [open, setOpen]                     = useState(false);
@@ -1495,7 +1514,7 @@ function TemplatePicker({
         </DialogTrigger>
         <DialogContent className="sm:max-w-lg bg-background text-foreground max-h-dvh flex flex-col">
           <DialogHeader className="shrink-0 pb-2">
-            <DialogTitle className="text-foreground">Pilih Template Pesan</DialogTitle>
+            <DialogTitle className="text-foreground">{t('chat.pickTemplateTitle')}</DialogTitle>
           </DialogHeader>
 
           {/* Search + Filter Tahap */}
@@ -1503,7 +1522,7 @@ function TemplatePicker({
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                placeholder="Cari nama template atau isi pesan..."
+                placeholder={t('chat.searchTemplatePlaceholder')}
                 className="pl-9 bg-muted text-foreground border-none h-9 text-xs rounded-lg focus-visible:ring-1 focus-visible:ring-primary"
                 value={tplSearch}
                 onChange={(e) => setTplSearch(e.target.value)}
@@ -1519,7 +1538,7 @@ function TemplatePicker({
                     : 'bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Semua ({templates.length})
+                {t('chat.allFilter')} ({templates.length})
               </button>
               {normStudentState && (
                 <button
@@ -1531,7 +1550,7 @@ function TemplatePicker({
                       : 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/25'
                   }`}
                 >
-                  ★ Rekomendasi ({normStudentState})
+                  ★ {t('chat.recommended')} ({normStudentState})
                 </button>
               )}
               {['LEAD', 'PROSPECT', 'OPPORTUNITY', 'REGISTERED', 'CUSTOMER', 'POST_CUSTOMER'].map(stage => {
@@ -1563,13 +1582,13 @@ function TemplatePicker({
             )}
             {!loading && filteredTemplates.length === 0 && (
               <div className="flex flex-col items-center justify-center h-48 text-muted-foreground text-xs text-center p-4">
-                <p>Tidak ada template yang cocok.</p>
+                <p>{t('chat.noTemplatesMatched')}</p>
                 {selectedPipeline !== 'all' && (
                   <button
                     onClick={() => { setSelectedPipeline('all'); setTplSearch(''); }}
                     className="mt-2 text-primary hover:underline"
                   >
-                    Tampilkan semua template
+                    {t('chat.showAllTemplates')}
                   </button>
                 )}
               </div>

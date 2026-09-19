@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useIsDemo } from '@/hooks/useIsDemo';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Sparkles, X, ExternalLink, GraduationCap, Building2 } from 'lucide-react';
 
 export function DemoBanner() {
+  const { t } = useTranslation();
   const isDemo = useIsDemo();
   const [dismissed, setDismissed] = useState(false);
   const user = useAuthStore((s) => s.user);
@@ -26,7 +28,7 @@ export function DemoBanner() {
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-500 shrink-0">
             <Sparkles className="w-3 h-3 shrink-0" />
-            <span>NexaMOS Demo</span>
+            <span>{t('demoBanner.badge')}</span>
           </span>
 
           {/* Quick Realtime Sector Switcher */}
@@ -39,10 +41,10 @@ export function DemoBanner() {
                   ? 'bg-amber-500 text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              title="Aktifkan simulasi kosakata LPK & Vokasi (Siswa, Sekolah, Alumni)"
+              title={t('demoBanner.lpkTitle')}
             >
               <GraduationCap className="w-3 h-3 shrink-0" />
-              <span>LPK</span>
+              <span>{t('demoBanner.lpk')}</span>
             </button>
             <button
               type="button"
@@ -52,15 +54,15 @@ export function DemoBanner() {
                   ? 'bg-amber-500 text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              title="Aktifkan simulasi kosakata Bisnis Umum (Kontak, Klien, Pelanggan)"
+              title={t('demoBanner.generalTitle')}
             >
               <Building2 className="w-3 h-3 shrink-0" />
-              <span>Bisnis Umum</span>
+              <span>{t('demoBanner.general')}</span>
             </button>
           </div>
 
           <p className="truncate text-xs text-muted-foreground hidden lg:inline">
-            Simulasi CRM interaktif. Data di-reset otomatis setiap Minggu 21:00 WIB.
+            {t('demoBanner.simulationDesc')}
           </p>
         </div>
 
@@ -71,13 +73,13 @@ export function DemoBanner() {
             rel="noopener noreferrer"
             className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 transition-colors"
           >
-            <span>Daftar NexaMOS</span>
+            <span>{t('demoBanner.registerBtn')}</span>
             <ExternalLink className="w-3 h-3 shrink-0" />
           </a>
           <button
             type="button"
             onClick={() => setDismissed(true)}
-            aria-label="Tutup banner demo"
+            aria-label={t('demoBanner.closeAria')}
             className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
           >
             <X className="w-3.5 h-3.5 shrink-0" />
