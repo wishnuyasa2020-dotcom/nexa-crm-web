@@ -203,7 +203,7 @@ export default function BillingTab() {
       <WhatsAppCreditCard />
 
       {/* ── Invoices History Table ── */}
-      <div className="bg-card border rounded-2xl p-6 shadow-sm">
+      <div className="bg-card border rounded-2xl p-4 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -228,17 +228,17 @@ export default function BillingTab() {
             {t('settings.emptyInvoices')}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
+          <div className="overflow-x-auto scrollbar-thin pb-1">
+            <table className="w-full text-xs text-left whitespace-nowrap">
               <thead>
                 <tr className="border-b text-muted-foreground">
-                  <th className="pb-3 font-semibold">{t('settings.thInvoiceNumber')}</th>
-                  <th className="pb-3 font-semibold">{t('settings.thPlan')}</th>
-                  <th className="pb-3 font-semibold">{t('settings.thDate')}</th>
-                  <th className="pb-3 font-semibold">{t('settings.thAmount')}</th>
-                  <th className="pb-3 font-semibold">{t('settings.thMethod')}</th>
-                  <th className="pb-3 font-semibold">{t('settings.thStatus')}</th>
-                  <th className="pb-3 font-semibold text-right">{t('settings.thActions')}</th>
+                  <th className="pb-3 px-3.5 sm:px-3 font-semibold min-w-44 sm:min-w-36">{t('settings.thInvoiceNumber')}</th>
+                  <th className="pb-3 px-3.5 sm:px-3 font-semibold min-w-40 sm:min-w-32">{t('settings.thPlan')}</th>
+                  <th className="pb-3 px-3.5 sm:px-3 font-semibold min-w-28">{t('settings.thDate')}</th>
+                  <th className="pb-3 px-3.5 sm:px-3 font-semibold min-w-32">{t('settings.thAmount')}</th>
+                  <th className="pb-3 px-3.5 sm:px-3 font-semibold min-w-28">{t('settings.thMethod')}</th>
+                  <th className="pb-3 px-3.5 sm:px-3 font-semibold min-w-24">{t('settings.thStatus')}</th>
+                  <th className="pb-3 px-3.5 sm:px-3 font-semibold text-right min-w-28">{t('settings.thActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -249,22 +249,22 @@ export default function BillingTab() {
 
                   return (
                     <tr key={inv.invoice_id} className="hover:bg-secondary/20 transition-colors">
-                      <td className="py-3 font-mono font-medium text-foreground">
+                      <td className="py-3 px-3.5 sm:px-3 font-mono font-medium text-foreground">
                         {inv.invoice_id}
                       </td>
-                      <td className="py-3 font-semibold text-foreground">
+                      <td className="py-3 px-3.5 sm:px-3 font-semibold text-foreground">
                         {inv.plan_tier || 'FREE'} ({inv.billing_cycle || 'MONTHLY'})
                       </td>
-                      <td className="py-3 text-muted-foreground">
+                      <td className="py-3 px-3.5 sm:px-3 text-muted-foreground">
                         {new Date(inv.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID')}
                       </td>
-                      <td className="py-3 font-semibold text-foreground">
+                      <td className="py-3 px-3.5 sm:px-3 font-semibold text-foreground">
                         Rp {Number(inv.amount).toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')}
                       </td>
-                      <td className="py-3 uppercase text-muted-foreground font-mono">
+                      <td className="py-3 px-3.5 sm:px-3 uppercase text-muted-foreground font-mono">
                         {inv.payment_type || '-'}
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 px-3.5 sm:px-3">
                         <span className={cn(
                           'px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider',
                           isPaid && 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20',
@@ -274,12 +274,12 @@ export default function BillingTab() {
                           {inv.status}
                         </span>
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 px-3.5 sm:px-3 text-right">
                         {isUnpaid ? (
                           <button
                             onClick={() => handleCheckInvoiceStatus(inv.invoice_id)}
                             disabled={checkingInvoiceId === inv.invoice_id}
-                            className="px-2.5 py-1 rounded-lg bg-secondary text-primary font-semibold hover:bg-secondary/80 transition-colors cursor-pointer inline-flex items-center gap-1 disabled:opacity-50"
+                            className="px-2.5 py-1 rounded-lg bg-secondary text-primary font-semibold hover:bg-secondary/80 transition-colors inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <RefreshCw size={12} className={cn(checkingInvoiceId === inv.invoice_id && 'animate-spin')} />
                             <span>{t('settings.checkStatusBtn')}</span>

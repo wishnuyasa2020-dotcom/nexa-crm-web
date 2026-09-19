@@ -1439,6 +1439,8 @@ const en = {
     processing:                 'Processing...',
     resetPasswordSuccess:       'Staff password successfully reset',
     resetPasswordFailed:        'Failed to reset password',
+    resetPasswordDisabledDemo:  'Password reset feature is disabled for demo accounts to maintain shared access integrity.',
+    demoNoticeTitle:            'Demo Mode Active',
 
     // Deactivate Modal
     deactivateStaffTitle:       'Deactivate Staff',
@@ -1724,11 +1726,11 @@ const en = {
     blockedAlertTitle:          'Outbound Messaging Temporarily Disabled',
     blockedAlertDesc:           'Your effective balance has hit the minimum threshold ({threshold}). Please top up at least Rp 200,000 to re-enable template messaging.',
     metaRatesTitle:             'WhatsApp Message Rate Structure (Meta Per-Message):',
-    rateMarketing:              'Marketing (Broadcast):',
+    rateMarketing:              'Marketing (Broadcast)',
     rateMarketingPrice:         'Rp 1,250 / message',
-    rateUtility:                'Utility & Notifications:',
+    rateUtility:                'Utility & Notifications',
     rateUtilityPrice:           'Rp 600 / message',
-    rateServiceWindow:          'Service Window (24h):',
+    rateServiceWindow:          'Service Window (24h)',
     rateServiceWindowPrice:     'FREE (Rp 0)',
     subtabRequests:             'Top-Up Requests Queue ({count})',
     subtabHistory:              'Recent Message Deductions',

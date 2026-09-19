@@ -1439,6 +1439,8 @@ const id = {
     processing:                 'Memproses...',
     resetPasswordSuccess:       'Password staf berhasil direset',
     resetPasswordFailed:        'Gagal mereset password',
+    resetPasswordDisabledDemo:  'Fitur reset password dinonaktifkan pada akun demo demi menjaga integritas akses bersama.',
+    demoNoticeTitle:            'Mode Demo Aktif',
 
     // Deactivate Modal
     deactivateStaffTitle:       'Nonaktifkan Staf',
@@ -1724,11 +1726,11 @@ const id = {
     blockedAlertTitle:          'Pengiriman Pesan Outbound Dinonaktifkan Sementara',
     blockedAlertDesc:           'Saldo efektif Anda telah menyentuh batas minimum threshold ({threshold}). Silakan lakukan top-up kredit minimal Rp 200.000 untuk mengaktifkan kembali pengiriman pesan template.',
     metaRatesTitle:             'Struktur Tarif Pengiriman Pesan WhatsApp (Meta Per-Message):',
-    rateMarketing:              'Marketing (Broadcast):',
+    rateMarketing:              'Marketing (Broadcast)',
     rateMarketingPrice:         'Rp 1.250 / pesan',
-    rateUtility:                'Utility & Notifikasi:',
+    rateUtility:                'Utility & Notifikasi',
     rateUtilityPrice:           'Rp 600 / pesan',
-    rateServiceWindow:          'Service Window (24 Jam):',
+    rateServiceWindow:          'Service Window (24 Jam)',
     rateServiceWindowPrice:     'GRATIS (Rp 0)',
     subtabRequests:             'Antrean Pengajuan Top-Up ({count})',
     subtabHistory:              'Mutasi Pemotongan Pesan Terakhir',

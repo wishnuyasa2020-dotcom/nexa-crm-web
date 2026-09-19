@@ -87,21 +87,23 @@ export default function WhatsAppCreditCard() {
   const threshold = balance?.threshold ?? 350000;
 
   return (
-    <div className="bg-card border rounded-2xl p-6 shadow-xs relative overflow-hidden space-y-6">
+    <div className="bg-card border rounded-2xl p-4 sm:p-6 shadow-xs relative overflow-hidden space-y-5 sm:space-y-6">
       <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       {/* Header Saldo & Tombol Top-Up */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
-            <Wallet className="w-6 h-6" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+        <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20 mt-0.5 sm:mt-0">
+            <Wallet className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-bold text-base text-foreground">{t('settings.creditTitle')}</h3>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
+              <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug">
+                {t('settings.creditTitle')}
+              </h3>
               <span
                 className={cn(
-                  'px-2.5 py-0.5 rounded-full text-xs font-bold border',
+                  'inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0',
                   statusLabel === 'OK'
                     ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                     : statusLabel === 'WARNING'
@@ -112,23 +114,24 @@ export default function WhatsAppCreditCard() {
                 {statusLabel === 'OK' ? t('settings.statusSafe') : statusLabel === 'WARNING' ? t('settings.statusLow') : t('settings.statusBlocked')}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {t('settings.creditSubtitle')}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto pt-1 sm:pt-0">
           <button
             onClick={loadCreditData}
-            className="p-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+            disabled={loading}
+            className="h-9 w-9 sm:h-auto sm:w-auto sm:p-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             title={t('settings.refreshCreditTooltip')}
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
           <button
             onClick={() => setShowTopupModal(true)}
-            className="px-4 py-2.5 rounded-xl gradient-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
+            className="flex-1 sm:flex-initial h-9 sm:h-auto px-4 py-2 sm:py-2.5 rounded-xl gradient-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2"
           >
             <Plus size={14} />
             <span>{t('settings.topupBtn')}</span>
@@ -199,18 +202,18 @@ export default function WhatsAppCreditCard() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-          <div className="p-2.5 rounded-lg bg-card border flex items-center justify-between">
-            <span className="text-muted-foreground">{t('settings.rateMarketing')}</span>
-            <span className="font-bold text-foreground font-mono">{t('settings.rateMarketingPrice')}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="p-3 rounded-xl bg-card border flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground font-medium">{t('settings.rateMarketing')}</span>
+            <span className="text-sm font-bold text-foreground font-mono">{t('settings.rateMarketingPrice')}</span>
           </div>
-          <div className="p-2.5 rounded-lg bg-card border flex items-center justify-between">
-            <span className="text-muted-foreground">{t('settings.rateUtility')}</span>
-            <span className="font-bold text-foreground font-mono">{t('settings.rateUtilityPrice')}</span>
+          <div className="p-3 rounded-xl bg-card border flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground font-medium">{t('settings.rateUtility')}</span>
+            <span className="text-sm font-bold text-foreground font-mono">{t('settings.rateUtilityPrice')}</span>
           </div>
-          <div className="p-2.5 rounded-lg bg-card border flex items-center justify-between">
-            <span className="text-muted-foreground">{t('settings.rateServiceWindow')}</span>
-            <span className="font-bold text-emerald-600 font-mono">{t('settings.rateServiceWindowPrice')}</span>
+          <div className="p-3 rounded-xl bg-card border flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground font-medium">{t('settings.rateServiceWindow')}</span>
+            <span className="text-sm font-bold text-emerald-600 font-mono">{t('settings.rateServiceWindowPrice')}</span>
           </div>
         </div>
       </div>
@@ -244,29 +247,29 @@ export default function WhatsAppCreditCard() {
 
         {/* Tab 1: Antrean Top-up */}
         {activeSubTab === 'requests' && (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-thin pb-1">
             {topups.length === 0 ? (
               <div className="text-center py-6 text-xs text-muted-foreground">
                 {t('settings.emptyTopupRequests')}
               </div>
             ) : (
-              <table className="w-full text-xs text-left">
+              <table className="w-full text-xs text-left whitespace-nowrap">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="pb-2 font-semibold">{t('settings.thRequestTime')}</th>
-                    <th className="pb-2 font-semibold">{t('settings.thAmount')}</th>
-                    <th className="pb-2 font-semibold">{t('settings.thBankRef')}</th>
-                    <th className="pb-2 font-semibold">{t('settings.thStatus')}</th>
-                    <th className="pb-2 font-semibold text-right">{t('settings.thAdminNote')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-36">{t('settings.thRequestTime')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-32">{t('settings.thAmount')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-32">{t('settings.thBankRef')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-28">{t('settings.thStatus')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold text-right min-w-32">{t('settings.thAdminNote')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
                   {topups.map((r) => (
                     <tr key={r.id} className="hover:bg-secondary/20 transition-colors">
-                      <td className="py-2.5 text-muted-foreground">{fmtDate(r.requested_at)}</td>
-                      <td className="py-2.5 font-bold font-mono text-foreground">{fmtRp(r.amount)}</td>
-                      <td className="py-2.5 text-muted-foreground">{r.transfer_ref || '—'}</td>
-                      <td className="py-2.5">
+                      <td className="py-2.5 px-3.5 sm:px-3 text-muted-foreground">{fmtDate(r.requested_at)}</td>
+                      <td className="py-2.5 px-3.5 sm:px-3 font-bold font-mono text-foreground">{fmtRp(r.amount)}</td>
+                      <td className="py-2.5 px-3.5 sm:px-3 text-muted-foreground">{r.transfer_ref || '—'}</td>
+                      <td className="py-2.5 px-3.5 sm:px-3">
                         <span
                           className={cn(
                             'px-2 py-0.5 rounded-full text-xs font-semibold inline-flex items-center gap-1',
@@ -283,7 +286,7 @@ export default function WhatsAppCreditCard() {
                           {r.status === 'approved' ? t('settings.statusApproved') : r.status === 'rejected' ? t('settings.statusRejected') : t('settings.statusPending')}
                         </span>
                       </td>
-                      <td className="py-2.5 text-right text-muted-foreground">
+                      <td className="py-2.5 px-3.5 sm:px-3 text-right text-muted-foreground">
                         {r.admin_note || '—'}
                       </td>
                     </tr>
@@ -296,40 +299,40 @@ export default function WhatsAppCreditCard() {
 
         {/* Tab 2: Mutasi Pesan Terakhir */}
         {activeSubTab === 'history' && (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-thin pb-1">
             {transactions.length === 0 ? (
               <div className="text-center py-6 text-xs text-muted-foreground">
                 {t('settings.emptyTransactions')}
               </div>
             ) : (
-              <table className="w-full text-xs text-left">
+              <table className="w-full text-xs text-left whitespace-nowrap">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="pb-2 font-semibold">{t('settings.thTime')}</th>
-                    <th className="pb-2 font-semibold">{t('settings.thType')}</th>
-                    <th className="pb-2 font-semibold">{t('settings.thAmount')}</th>
-                    <th className="pb-2 font-semibold">{t('settings.thRemainingBalance')}</th>
-                    <th className="pb-2 font-semibold text-right">{t('settings.thDescOrDest')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-36">{t('settings.thTime')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-32">{t('settings.thType')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-32">{t('settings.thAmount')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold min-w-32">{t('settings.thRemainingBalance')}</th>
+                    <th className="pb-2 px-3.5 sm:px-3 font-semibold text-right min-w-36">{t('settings.thDescOrDest')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-secondary/20 transition-colors">
-                      <td className="py-2.5 text-muted-foreground">{fmtDate(tx.created_at)}</td>
-                      <td className="py-2.5 font-medium uppercase text-muted-foreground">
+                      <td className="py-2.5 px-3.5 sm:px-3 text-muted-foreground">{fmtDate(tx.created_at)}</td>
+                      <td className="py-2.5 px-3.5 sm:px-3 font-medium uppercase text-muted-foreground">
                         {tx.type} {tx.message_type ? `(${tx.message_type})` : ''}
                       </td>
                       <td
                         className={cn(
-                          'py-2.5 font-bold font-mono',
+                          'py-2.5 px-3.5 sm:px-3 font-bold font-mono',
                           tx.amount >= 0 ? 'text-emerald-600' : 'text-rose-500'
                         )}
                       >
                         {tx.amount >= 0 ? '+' : ''}
                         {fmtRp(tx.amount)}
                       </td>
-                      <td className="py-2.5 font-mono text-muted-foreground">{fmtRp(tx.balance_after)}</td>
-                      <td className="py-2.5 text-right text-muted-foreground">
+                      <td className="py-2.5 px-3.5 sm:px-3 font-mono text-muted-foreground">{fmtRp(tx.balance_after)}</td>
+                      <td className="py-2.5 px-3.5 sm:px-3 text-right text-muted-foreground">
                         {tx.recipient_phone ? `${t('settings.destPrefix')} ${tx.recipient_phone}` : tx.note || tx.reference || '—'}
                       </td>
                     </tr>

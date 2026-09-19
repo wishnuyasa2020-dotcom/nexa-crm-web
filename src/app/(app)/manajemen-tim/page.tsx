@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Search, Map, Plus, Edit2, KeyRound, UserX, MoreVertical } from 'lucide-react';
+import { Users, Search, Map, Plus, Edit2, KeyRound, UserX, MoreVertical, Lock } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useIsDemo } from '@/hooks/useIsDemo';
 import { AssignKecamatanModal } from '@/components/manajemen-tim/AssignKecamatanModal';
 import { AddUserModal } from '@/components/manajemen-tim/AddUserModal';
 import { EditUserModal } from '@/components/manajemen-tim/EditUserModal';
@@ -38,6 +39,8 @@ export default function ManajemenTimPage() {
   
   const router = useRouter();
   const { user } = useAuthStore();
+  const isDemo = useIsDemo();
+  const isDemoMode = isDemo || user?.tenant_id === 'crm-demo';
   const isFullAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'manager';
 
   const fetchQuota = async () => {
@@ -89,6 +92,10 @@ export default function ManajemenTimPage() {
 
   // Helper to open specific actions
   const openAction = (action: 'edit' | 'reset' | 'delete' | 'area', u: any) => {
+    if (action === 'reset' && isDemoMode) {
+      toast.error(t('team.resetPasswordDisabledDemo'));
+      return;
+    }
     setSelectedUser(u);
     setMobileMenuOpen(null);
     if (action === 'edit') setIsEditOpen(true);
@@ -262,7 +269,21 @@ export default function ManajemenTimPage() {
                     {u.role === 'Chief CRO' && (
                       <button onClick={() => openAction('area', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Map size={14} /> {t('team.assignArea')}</button>
                     )}
-                    <button onClick={() => openAction('reset', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-amber-500 text-left hover:bg-amber-500/10 transition-colors"><KeyRound size={14} /> {t('team.resetPassword')}</button>
+                    <button 
+                      onClick={() => openAction('reset', u)} 
+                      className={cn(
+                        "flex items-center justify-between px-3 py-2 text-xs text-left transition-colors",
+                        isDemoMode 
+                          ? "text-muted-foreground hover:bg-muted/30" 
+                          : "text-amber-500 hover:bg-amber-500/10"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        {isDemoMode ? <Lock size={14} className="text-muted-foreground" /> : <KeyRound size={14} />} 
+                        {t('team.resetPassword')}
+                      </span>
+                      {isDemoMode && <span className="text-xs uppercase font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Demo</span>}
+                    </button>
                     <div className="h-px bg-border my-1" />
                     <button onClick={() => openAction('delete', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-rose-500 text-left hover:bg-rose-500/10 transition-colors"><UserX size={14} /> {u.status === 'Aktif' ? t('team.deactivate') : t('team.deletePermanently')}</button>
                   </div>
@@ -339,7 +360,20 @@ export default function ManajemenTimPage() {
                           <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('area', u)} title={t('team.assignArea')}><Map size={14} /></Button>
                         )}
                         <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('edit', u)} title={t('team.editProfile')}><Edit2 size={14} /></Button>
-                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-amber-500/20 text-amber-500 hover:bg-amber-500/10" onClick={() => openAction('reset', u)} title={t('team.resetPasswordFull')}><KeyRound size={14} /></Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className={cn(
+                            "h-8 px-2 text-xs border-amber-500/20",
+                            isDemoMode 
+                              ? "text-muted-foreground hover:bg-muted/30 opacity-70" 
+                              : "text-amber-500 hover:bg-amber-500/10"
+                          )} 
+                          onClick={() => openAction('reset', u)} 
+                          title={isDemoMode ? t('team.resetPasswordDisabledDemo') : t('team.resetPasswordFull')}
+                        >
+                          {isDemoMode ? <Lock size={14} className="text-muted-foreground" /> : <KeyRound size={14} />}
+                        </Button>
                         <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-rose-500/20 text-rose-500 hover:bg-rose-500/10" onClick={() => openAction('delete', u)} title={u.status === 'Aktif' ? t('team.deactivate') : t('team.deletePermanently')}><UserX size={14} /></Button>
                       </div>
                     </td>
