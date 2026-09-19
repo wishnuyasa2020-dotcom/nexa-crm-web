@@ -21,58 +21,97 @@ import { initiateConversation } from '@/lib/chatApi';
 import apiClient from '@/lib/apiClient';
 import { normalizeLifecycleState, CANONICAL_STATES } from '@/lib/constants/lifecycle';
 import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { SiswaDetail, AktivitasSiswa } from '@/lib/types/siswa.types';
 
 // ── Multi-Channel Configuration ───────────────────────────────────────────────
-const CHANNEL_MAP: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = {
-  sekolah:   { label: 'Siswa Sekolah',              icon: '🏫', bg: 'bg-blue-500/10',    text: 'text-blue-400',    border: 'border-blue-500/20' },
-  relasi:    { label: 'Calon Kandidat (Relasi)',    icon: '🤝', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  instagram: { label: 'Calon Kandidat (Instagram)', icon: '📸', bg: 'bg-pink-500/10',    text: 'text-pink-400',    border: 'border-pink-500/20' },
-  facebook:  { label: 'Calon Kandidat (Facebook)',  icon: '🌐', bg: 'bg-indigo-500/10',  text: 'text-indigo-400',  border: 'border-indigo-500/20' },
-  tiktok:    { label: 'Calon Kandidat (TikTok)',    icon: '🎵', bg: 'bg-purple-500/10',  text: 'text-purple-400',  border: 'border-purple-500/20' },
-  website:   { label: 'Calon Kandidat (Website)',   icon: '💻', bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    border: 'border-cyan-500/20' },
-  whatsapp:  { label: 'Calon Kandidat (WhatsApp)',  icon: '💬', bg: 'bg-teal-500/10',    text: 'text-teal-400',    border: 'border-teal-500/20' },
+const CHANNEL_STYLE_MAP: Record<string, { icon: string; bg: string; text: string; border: string }> = {
+  sekolah:   { icon: '🏫', bg: 'bg-blue-500/10',    text: 'text-blue-400',    border: 'border-blue-500/20' },
+  relasi:    { icon: '🤝', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  instagram: { icon: '📸', bg: 'bg-pink-500/10',    text: 'text-pink-400',    border: 'border-pink-500/20' },
+  facebook:  { icon: '🌐', bg: 'bg-indigo-500/10',  text: 'text-indigo-400',  border: 'border-indigo-500/20' },
+  tiktok:    { icon: '🎵', bg: 'bg-purple-500/10',  text: 'text-purple-400',  border: 'border-purple-500/20' },
+  website:   { icon: '💻', bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    border: 'border-cyan-500/20' },
+  whatsapp:  { icon: '💬', bg: 'bg-teal-500/10',    text: 'text-teal-400',    border: 'border-teal-500/20' },
 };
 
-function getEntityChannelInfo(channel = 'sekolah', state = '') {
+function getEntityChannelInfo(
+  channel = 'sekolah',
+  state = '',
+  isGeneral = false,
+  t: (key: any) => string
+) {
   const ch = (channel || 'sekolah').toLowerCase();
-  const cfg = CHANNEL_MAP[ch] || CHANNEL_MAP.sekolah;
+  const cfg = CHANNEL_STYLE_MAP[ch] || CHANNEL_STYLE_MAP.sekolah;
   const isCustomerOrPost = state === CANONICAL_STATES.CUSTOMER || state === CANONICAL_STATES.POST_CUSTOMER;
   if (isCustomerOrPost) {
+    const custLabel = isGeneral ? t('student.clientCustomer') : t('student.candidateCustomer');
     return {
       ...cfg,
-      label: `Kandidat (${cfg.icon})`,
+      label: `${custLabel} (${cfg.icon})`,
     };
   }
-  return cfg;
+
+  let label = '';
+  switch (ch) {
+    case 'sekolah':
+      label = isGeneral ? t('student.channelSchoolDetailGeneral') : t('student.channelSchoolDetail');
+      break;
+    case 'relasi':
+      label = isGeneral ? t('student.candidateContactRelation') : t('student.candidateRelation');
+      break;
+    case 'instagram':
+      label = isGeneral ? t('student.candidateContactInstagram') : t('student.candidateInstagram');
+      break;
+    case 'facebook':
+      label = isGeneral ? t('student.candidateContactFacebook') : t('student.candidateFacebook');
+      break;
+    case 'tiktok':
+      label = isGeneral ? t('student.candidateContactTiktok') : t('student.candidateTiktok');
+      break;
+    case 'website':
+      label = isGeneral ? t('student.candidateContactWebsite') : t('student.candidateWebsite');
+      break;
+    case 'whatsapp':
+      label = isGeneral ? t('student.candidateContactWhatsapp') : t('student.candidateWhatsapp');
+      break;
+    default:
+      label = isGeneral ? t('student.channelSchoolDetailGeneral') : t('student.channelSchoolDetail');
+  }
+
+  return {
+    ...cfg,
+    label,
+  };
 }
 
 // ── Event Type Configuration ──────────────────────────────────────────────────
-const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
-  'InteractionLogged':                { label: 'Interaksi',                                 color: 'text-yellow-400',  dot: '🟡' },
-  'QualificationAssessmentSubmitted': { label: 'Assessment FNAR',                           color: 'text-blue-400',    dot: '🔵' },
-  'StateTransitionedToProspect':      { label: 'Naik ke Prospect',                          color: 'text-emerald-400', dot: '🟢' },
-  'DecisionConsultationCompleted':    { label: 'Konsultasi Ortu (Komitmen Disetujui)',      color: 'text-emerald-400', dot: '🤝' },
-  'DecisionConsultationFollowUp':     { label: 'Konsultasi Ortu (Pertimbangan)',            color: 'text-amber-400',   dot: '⏳' },
-  'DecisionConsultationRejected':     { label: 'Konsultasi Ortu (Keberatan / Ditolak)',     color: 'text-rose-400',    dot: '❌' },
-  'LeadDisqualified':                 { label: 'Didiskualifikasi',                          color: 'text-rose-400',    dot: '🔴' },
-  'ManualStateOverridden':            { label: 'Override Manual',                           color: 'text-orange-400',  dot: '⚠️' },
+const EVENT_TYPE_CONFIG: Record<string, { labelKey: any; color: string; dot: string }> = {
+  'InteractionLogged':                { labelKey: 'student.eventInteraction',           color: 'text-yellow-400',  dot: '🟡' },
+  'QualificationAssessmentSubmitted': { labelKey: 'student.eventFnar',                  color: 'text-blue-400',    dot: '🔵' },
+  'StateTransitionedToProspect':      { labelKey: 'student.eventPromoteProspect',       color: 'text-emerald-400', dot: '🟢' },
+  'DecisionConsultationCompleted':    { labelKey: 'student.eventConsultationCompleted', color: 'text-emerald-400', dot: '🤝' },
+  'DecisionConsultationFollowUp':     { labelKey: 'student.eventConsultationFollowUp',  color: 'text-amber-400',   dot: '⏳' },
+  'DecisionConsultationRejected':     { labelKey: 'student.eventConsultationRejected',  color: 'text-rose-400',    dot: '❌' },
+  'LeadDisqualified':                 { labelKey: 'student.eventDisqualified',          color: 'text-rose-400',    dot: '🔴' },
+  'ManualStateOverridden':            { labelKey: 'student.eventManualOverride',        color: 'text-orange-400',  dot: '⚠️' },
 };
 
 // ── Intent Badge ──────────────────────────────────────────────────────────────
-const INTENT_CONFIG: Record<string, { label: string; className: string }> = {
-  'High': { label: '🔥 High Intent', className: 'bg-rose-500/15 text-rose-400 border-rose-500/20' },
-  'Mid':  { label: '🟢 Mid Intent',  className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
-  'Low':  { label: '⚪ Low Intent',  className: 'bg-slate-500/15 text-slate-400 border-slate-500/20' },
+const INTENT_CONFIG: Record<string, { labelKey: 'student.intentHigh' | 'student.intentMid' | 'student.intentLow'; className: string }> = {
+  'High': { labelKey: 'student.intentHigh', className: 'bg-rose-500/15 text-rose-400 border-rose-500/20' },
+  'Mid':  { labelKey: 'student.intentMid',  className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
+  'Low':  { labelKey: 'student.intentLow',  className: 'bg-slate-500/15 text-slate-400 border-slate-500/20' },
 };
 
 function IntentBadge({ intent }: { intent: string | null }) {
+  const { t } = useTranslation();
   if (!intent) return null;
   const config = INTENT_CONFIG[intent];
   if (!config) return null;
   return (
     <span className={cn('inline-flex items-center px-2.5 py-1 rounded-lg text-xs border font-medium', config.className)}>
-      {config.label}
+      {t(config.labelKey)}
     </span>
   );
 }
@@ -81,6 +120,7 @@ export default function SiswaDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { t, lang } = useTranslation();
 
   const [siswaDetail,           setSiswaDetail]           = useState<SiswaDetail | null>(null);
   const [loading,               setLoading]               = useState(true);
@@ -101,11 +141,11 @@ export default function SiswaDetailPage() {
       if (res?.conv_id) {
         router.push(`/live-chat?conv_id=${res.conv_id}`);
       } else {
-        throw new Error('Gagal mendapatkan ID percakapan dari server');
+        throw new Error(t('student.errorChatId'));
       }
     } catch (e: unknown) {
       const err = e as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || 'Gagal memulai percakapan');
+      toast.error(err.response?.data?.message || err.message || t('student.errorChatStart'));
     } finally {
       setIsChatLoading(false);
     }
@@ -129,10 +169,10 @@ export default function SiswaDetailPage() {
   }, [reloadDetail]);
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Memuat data...</div>;
+    return <div className="p-8 text-center text-muted-foreground">{t('student.loadingDetail')}</div>;
   }
   if (!siswaDetail) {
-    return <div className="p-8 text-center text-muted-foreground">Data tidak ditemukan.</div>;
+    return <div className="p-8 text-center text-muted-foreground">{t('student.notFoundDetail')}</div>;
   }
 
   // Single Source of Truth: commercial_state (Ontologi Nexa OS)
@@ -154,9 +194,9 @@ export default function SiswaDetailPage() {
   const isCustomer = resolvedState === CANONICAL_STATES.CUSTOMER;
   const isPostCustomer = resolvedState === CANONICAL_STATES.POST_CUSTOMER;
 
-  const { getEntityLabel } = useTenantVocabulary();
+  const { getEntityLabel, isGeneral } = useTenantVocabulary();
   const entityName = getEntityLabel(siswaDetail.source_channel);
-  const channelInfo = getEntityChannelInfo(siswaDetail.source_channel, resolvedState);
+  const channelInfo = getEntityChannelInfo(siswaDetail.source_channel, resolvedState, isGeneral, t);
 
   return (
     <div className="space-y-4 sm:space-y-5 pb-24 sm:pb-8">
@@ -182,7 +222,7 @@ export default function SiswaDetailPage() {
           </div>
           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
             <School size={12} className="shrink-0" />
-            <span>{siswaDetail.nama_sekolah || (siswaDetail.source_channel === 'sekolah' ? 'Asal Sekolah Belum Ditentukan' : 'Jalur Non-Sekolah / Mandiri')}</span>
+            <span>{siswaDetail.nama_sekolah || (siswaDetail.source_channel === 'sekolah' ? t('student.schoolNotSet') : t('student.nonSchoolDirect'))}</span>
             <span>·</span>
             <span className="font-mono">{siswaDetail.id_siswa}</span>
           </p>
@@ -191,19 +231,19 @@ export default function SiswaDetailPage() {
           <button
             onClick={() => setIsShareLinkOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors shadow-xs"
-            title="Bagikan Link Formulir & Invoice Pendaftaran"
+            title={t('student.shareRegLinkTooltip')}
           >
             <Link2 size={13} />
-            <span className="hidden sm:inline">Link Pendaftaran</span>
+            <span className="hidden sm:inline">{t('student.regLink')}</span>
           </button>
         )}
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg text-foreground hover:bg-secondary transition-colors shadow-xs"
-          title={`Edit Data ${entityName}`}
+          title={`${t('student.editEntityTooltip')} ${entityName}`}
         >
           <Pencil size={13} />
-          <span className="hidden sm:inline">Edit {entityName}</span>
+          <span className="hidden sm:inline">{t('common.edit')} {entityName}</span>
         </button>
       </div>
 
@@ -222,7 +262,7 @@ export default function SiswaDetailPage() {
         )}
         {siswaDetail.next_action && (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border bg-secondary text-xs text-muted-foreground">
-            Next: <span className="font-medium text-foreground">{siswaDetail.next_action}</span>
+            {t('student.nextPrefix')} <span className="font-medium text-foreground">{siswaDetail.next_action}</span>
           </span>
         )}
       </div>
@@ -231,23 +271,23 @@ export default function SiswaDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Kontak */}
         <div className="bg-card border rounded-xl p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground border-b pb-2">Informasi Kontak</h2>
+          <h2 className="text-sm font-semibold text-foreground border-b pb-2">{t('student.sectionContact')}</h2>
           <div className="space-y-3">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Nomor WhatsApp</p>
+              <p className="text-xs text-muted-foreground mb-1">{t('student.labelWa')}</p>
               {!siswaDetail.wa ? (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-lg text-sm flex-1">
                     <AlertCircle size={15} />
-                    <span>[📱 Nomor Disembunyikan]</span>
+                    <span>{t('student.numberHidden')}</span>
                   </div>
                   {/* TODO: Implement alur "Minta No. WA" — kirim request ke siswa (via form link / notifikasi) agar mau share nomor WA-nya */}
                   <button
                     disabled
-                    title="Minta No. WA (coming soon)"
+                    title={t('student.requestWaTooltip')}
                     className="flex justify-center items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium shadow-sm hover:opacity-90 transition-opacity w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Minta No. WA
+                    {t('student.requestWaBtn')}
                   </button>
                 </div>
               ) : (
@@ -259,11 +299,11 @@ export default function SiswaDetailPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Kelas</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('student.labelClass')}</p>
                 <p className="text-sm font-medium text-foreground">{siswaDetail.kelas || '–'}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-0.5">PJ CRO</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('student.labelPicCro')}</p>
                 <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                   <User size={13} /> {siswaDetail.pj_cro}
                 </p>
@@ -276,11 +316,11 @@ export default function SiswaDetailPage() {
         <div className="bg-card border rounded-xl p-4 space-y-3">
           <h2 className="text-sm font-semibold text-foreground border-b pb-2 flex items-center gap-2">
             <Share2 size={15} className="text-primary shrink-0" />
-            <span>Sumber Intake & Program</span>
+            <span>{t('student.sectionIntakeProgram')}</span>
           </h2>
           <div className="space-y-2.5 text-xs">
             <div>
-              <p className="text-muted-foreground mb-0.5">Saluran Masuk</p>
+              <p className="text-muted-foreground mb-0.5">{t('student.labelChannel')}</p>
               <span className={cn(
                 "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium border text-xs",
                 channelInfo.bg, channelInfo.text, channelInfo.border
@@ -290,13 +330,13 @@ export default function SiswaDetailPage() {
               </span>
             </div>
             <div>
-              <p className="text-muted-foreground mb-0.5">Detail Sumber / Perekomendasi</p>
+              <p className="text-muted-foreground mb-0.5">{t('student.labelSourceDetail')}</p>
               <p className="text-sm font-medium text-foreground">
                 {siswaDetail.source_detail || '–'}
               </p>
             </div>
             <div>
-              <p className="text-muted-foreground mb-0.5">Pilihan Program / Layanan</p>
+              <p className="text-muted-foreground mb-0.5">{t('student.labelProgramService')}</p>
               <p className="text-sm font-medium text-foreground">
                 {siswaDetail.kebutuhan_layanan || siswaDetail.nama_program || '–'}
               </p>
@@ -306,18 +346,18 @@ export default function SiswaDetailPage() {
 
         {/* Info Lanjutan */}
         <div className="bg-card border rounded-xl p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground border-b pb-2">Informasi Lanjutan</h2>
+          <h2 className="text-sm font-semibold text-foreground border-b pb-2">{t('student.sectionAdvanced')}</h2>
           <div className="grid grid-cols-2 gap-y-3 gap-x-3 text-xs">
             <div>
-              <p className="text-muted-foreground mb-0.5">Rencana Lulus</p>
+              <p className="text-muted-foreground mb-0.5">{t('student.labelGraduationPlan')}</p>
               <p className="text-sm font-medium text-foreground">{siswaDetail.rencana_lulus}</p>
             </div>
             <div>
-              <p className="text-muted-foreground mb-0.5">Minat Awal</p>
+              <p className="text-muted-foreground mb-0.5">{t('student.labelInitialInterest')}</p>
               <p className="text-sm font-medium text-foreground">{siswaDetail.minat_awal}</p>
             </div>
             <div className="col-span-2">
-              <p className="text-muted-foreground mb-0.5">Status Lama (Legacy)</p>
+              <p className="text-muted-foreground mb-0.5">{t('student.labelLegacyStatus')}</p>
               <p className="text-xs text-muted-foreground">{siswaDetail.status_terkini}</p>
             </div>
           </div>
@@ -332,8 +372,8 @@ export default function SiswaDetailPage() {
                   <GraduationCap size={16} />
                 </span>
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground">Data Pendaftaran Resmi & Orang Tua</h2>
-                  <p className="text-xs text-muted-foreground">Tercatat via formulir pendaftaran resmi</p>
+                  <h2 className="text-sm font-semibold text-foreground">{t('student.sectionOfficialReg')}</h2>
+                  <p className="text-xs text-muted-foreground">{t('student.sectionOfficialRegDesc')}</p>
                 </div>
               </div>
               {siswaDetail.nama_program && (
@@ -345,46 +385,46 @@ export default function SiswaDetailPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
               <div>
-                <p className="text-muted-foreground mb-0.5">NIK Siswa</p>
+                <p className="text-muted-foreground mb-0.5">{isGeneral ? t('student.labelNikContact') : t('student.labelNikStudent')}</p>
                 <p className="font-mono font-medium text-foreground text-sm">{siswaDetail.nik || '–'}</p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-0.5">Jenis Kelamin</p>
+                <p className="text-muted-foreground mb-0.5">{t('student.labelGender')}</p>
                 <p className="font-medium text-foreground text-sm">{siswaDetail.gender || '–'}</p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-0.5">Tanggal Lahir Siswa</p>
+                <p className="text-muted-foreground mb-0.5">{isGeneral ? t('student.labelDobContact') : t('student.labelDobStudent')}</p>
                 <p className="font-medium text-foreground text-sm">
-                  {siswaDetail.tanggal_lahir ? new Date(siswaDetail.tanggal_lahir + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '–'}
+                  {siswaDetail.tanggal_lahir ? new Date(siswaDetail.tanggal_lahir + 'T00:00:00').toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '–'}
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-0.5">Program Pelatihan</p>
+                <p className="text-muted-foreground mb-0.5">{t('student.labelTrainingProgram')}</p>
                 <p className="font-medium text-foreground text-sm">{siswaDetail.nama_program || '–'}</p>
               </div>
 
               <div>
-                <p className="text-muted-foreground mb-0.5">Nama Orang Tua / Wali</p>
+                <p className="text-muted-foreground mb-0.5">{t('student.labelParentName')}</p>
                 <p className="font-medium text-foreground text-sm">{siswaDetail.nama_ortu || '–'}</p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-0.5">WhatsApp / No. Telp Ortu</p>
+                <p className="text-muted-foreground mb-0.5">{t('student.labelParentPhone')}</p>
                 <p className="font-medium text-foreground text-sm">{siswaDetail.wa_ortu || '–'}</p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-0.5">Tanggal Lahir Ortu</p>
+                <p className="text-muted-foreground mb-0.5">{t('student.labelParentDob')}</p>
                 <p className="font-medium text-foreground text-sm">
-                  {siswaDetail.tgl_lahir_ortu ? new Date(siswaDetail.tgl_lahir_ortu + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '–'}
+                  {siswaDetail.tgl_lahir_ortu ? new Date(siswaDetail.tgl_lahir_ortu + 'T00:00:00').toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '–'}
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-0.5">Pekerjaan Orang Tua</p>
+                <p className="text-muted-foreground mb-0.5">{t('student.labelParentJob')}</p>
                 <p className="font-medium text-foreground text-sm">{siswaDetail.pekerjaan_ortu || '–'}</p>
               </div>
 
               {siswaDetail.alamat_lengkap && (
                 <div className="col-span-1 sm:col-span-2 md:col-span-4 border-t pt-2.5">
-                  <p className="text-muted-foreground mb-0.5">Alamat Lengkap</p>
+                  <p className="text-muted-foreground mb-0.5">{t('student.labelFullAddress')}</p>
                   <p className="font-medium text-foreground text-xs leading-relaxed">{siswaDetail.alamat_lengkap}</p>
                 </div>
               )}
@@ -403,8 +443,8 @@ export default function SiswaDetailPage() {
           {isChatLoading
             ? <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             : <MessageCircle size={15} className="shrink-0" />}
-          <span className="hidden sm:inline">{isChatLoading ? 'Memproses...' : 'Buka Chat'}</span>
-          <span className="sm:hidden">{isChatLoading ? 'Wait...' : 'Chat'}</span>
+          <span className="hidden sm:inline">{isChatLoading ? t('student.processing') : t('student.openChat')}</span>
+          <span className="sm:hidden">{isChatLoading ? t('student.waitShort') : t('student.chatShort')}</span>
         </button>
 
         <button
@@ -412,19 +452,19 @@ export default function SiswaDetailPage() {
           className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 gradient-primary text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
         >
           <Plus size={15} className="shrink-0" />
-          <span className="hidden sm:inline">Catat Interaksi</span>
-          <span className="sm:hidden">Interaksi</span>
+          <span className="hidden sm:inline">{t('student.logInteraction')}</span>
+          <span className="sm:hidden">{t('student.interactionShort')}</span>
         </button>
 
         {isLead && (
           <button
             onClick={() => setIsAssessmentOpen(true)}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
-            title="Isi Penilaian Kualifikasi FNAR (Lead ➔ Prospect)"
+            title={t('student.fnarTooltip')}
           >
             <ClipboardList size={15} className="shrink-0" />
-            <span className="hidden sm:inline">Isi Assessment</span>
-            <span className="sm:hidden">FNAR</span>
+            <span className="hidden sm:inline">{t('student.fillAssessment')}</span>
+            <span className="sm:hidden">{t('student.fnarShort')}</span>
           </button>
         )}
 
@@ -432,11 +472,11 @@ export default function SiswaDetailPage() {
           <button
             onClick={() => setIsConsultationOpen(true)}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
-            title="Catat Konsultasi Keputusan / Home Visit dengan Orang Tua (Prospect ➔ Opportunity)"
+            title={t('student.consultationTooltip')}
           >
             <Handshake size={15} className="shrink-0" />
-            <span className="hidden sm:inline">Konsultasi Ortu</span>
-            <span className="sm:hidden">Konsul</span>
+            <span className="hidden sm:inline">{t('student.parentConsultation')}</span>
+            <span className="sm:hidden">{t('student.consultationShort')}</span>
           </button>
         )}
 
@@ -444,11 +484,11 @@ export default function SiswaDetailPage() {
           <button
             onClick={() => setIsShareLinkOpen(true)}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
-            title="Kirim / Salin Link Formulir & Invoice Siswa"
+            title={t('student.shareLinkTooltip')}
           >
             <Link2 size={15} className="shrink-0" />
-            <span className="hidden sm:inline">Link Pendaftaran</span>
-            <span className="sm:hidden">Formulir</span>
+            <span className="hidden sm:inline">{t('student.regLink')}</span>
+            <span className="sm:hidden">{t('student.formShort')}</span>
           </button>
         )}
 
@@ -456,11 +496,11 @@ export default function SiswaDetailPage() {
           <button
             onClick={() => router.push('/settings?tab=verifikasi')}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
-            title="Verifikasi Pembayaran DP Pelatihan untuk naik ke status Siswa/Peserta (Customer)"
+            title={t('student.verifyDpTooltip')}
           >
             <GraduationCap size={15} className="shrink-0" />
-            <span className="hidden sm:inline">Verifikasi DP Core</span>
-            <span className="sm:hidden">Verifikasi DP</span>
+            <span className="hidden sm:inline">{t('student.verifyDpCore')}</span>
+            <span className="sm:hidden">{t('student.verifyDpShort')}</span>
           </button>
         )}
 
@@ -468,24 +508,24 @@ export default function SiswaDetailPage() {
           <button
             onClick={() => setIsGraduationOpen(true)}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
-            title="Tandai Siswa / Peserta Lulus Pelatihan / Terbang ke Negara Tujuan (Customer ➔ Post-Customer / Alumni)"
+            title={t('student.markGraduationTooltip')}
           >
             <GraduationCap size={15} className="shrink-0" />
-            <span className="hidden sm:inline">Tandai Lulus / Alumni</span>
-            <span className="sm:hidden">Alumni</span>
+            <span className="hidden sm:inline">{t('student.markGraduated')}</span>
+            <span className="sm:hidden">{t('student.alumniShort')}</span>
           </button>
         )}
 
         {isPostCustomer && (
           <span className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-lg text-xs font-semibold">
-            🎓 Status: Alumni (Post-Customer)
+            {t('student.statusAlumniBadge')}
           </span>
         )}
 
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="hidden sm:flex items-center justify-center p-2.5 bg-secondary text-foreground hover:bg-secondary/80 border rounded-lg transition-colors"
-          title="Edit Data Siswa"
+          title={isGeneral ? t('student.editContactTooltip') : t('student.editStudentTooltip')}
         >
           <Pencil size={15} />
         </button>
@@ -493,7 +533,7 @@ export default function SiswaDetailPage() {
         <button
           onClick={() => setIsDeleteModalOpen(true)}
           className="hidden sm:flex items-center justify-center p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors"
-          title="Hapus Data Siswa"
+          title={isGeneral ? t('student.deleteContactTooltip') : t('student.deleteStudentTooltip')}
         >
           <Trash2 size={15} />
         </button>
@@ -502,22 +542,23 @@ export default function SiswaDetailPage() {
       {/* ── Event / Audit Log ───────────────────────────────────────────────── */}
       <div className="bg-card border rounded-xl p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-foreground border-b pb-3 mb-4 flex items-center gap-2">
-          📋 Event / Audit Log
+          {t('student.eventAuditLogTitle')}
           <span className="text-xs px-1.5 py-0.5 rounded bg-secondary border text-muted-foreground font-normal">
-            Append-Only
+            {t('student.appendOnly')}
           </span>
         </h2>
 
         <div className="space-y-5">
           {!siswaDetail.logs || siswaDetail.logs.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Belum ada aktivitas. Mulai catat interaksi pertama.
+              {t('student.noActivityYet')}
             </p>
           ) : (
             siswaDetail.logs.map((log: AktivitasSiswa, idx: number) => {
-              const evConfig = EVENT_TYPE_CONFIG[log.event_type] ?? {
-                label: log.event_type, color: 'text-muted-foreground', dot: '⚪'
-              };
+              const evConfig = EVENT_TYPE_CONFIG[log.event_type];
+              const evLabel = evConfig ? t(evConfig.labelKey) : log.event_type;
+              const evColor = evConfig?.color || 'text-muted-foreground';
+              const evDot = evConfig?.dot || '⚪';
               return (
                 <div key={log.id} className="relative flex gap-3">
                   {/* Vertical line */}
@@ -526,13 +567,13 @@ export default function SiswaDetailPage() {
                   )}
                   {/* Dot */}
                   <div className="relative z-10 w-6 h-6 shrink-0 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-xs">
-                    {evConfig.dot}
+                    {evDot}
                   </div>
                   {/* Content */}
                   <div className="flex-1 bg-secondary/30 border rounded-lg p-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={cn('text-xs font-semibold', evConfig.color)}>{evConfig.label}</span>
+                        <span className={cn('text-xs font-semibold', evColor)}>{evLabel}</span>
                         <span className="text-xs text-muted-foreground">{log.jenis_aktivitas}</span>
                         {log.channel && log.channel !== 'WhatsApp' && (
                           <span className="px-1.5 py-0.5 rounded text-xs bg-secondary border text-muted-foreground">
@@ -565,7 +606,7 @@ export default function SiswaDetailPage() {
         onClose={() => setIsInteraksiOpen(false)}
         onSuccess={() => {
           reloadDetail();
-          toast.success('Interaksi berhasil dicatat!');
+          toast.success(t('student.toastInteractionSuccess'));
         }}
         siswaId={id}
         siswaName={siswaDetail.nama_lengkap}
@@ -577,7 +618,7 @@ export default function SiswaDetailPage() {
         isOpen={isAssessmentOpen}
         onClose={() => setIsAssessmentOpen(false)}
         onSuccess={async (result) => {
-          toast.success(result?.allPass ? 'Kualifikasi FNAR Lulus! Status siswa naik ke Prospect.' : 'Assessment FNAR berhasil disimpan.');
+          toast.success(result?.allPass ? t('student.toastFnarPassed') : t('student.toastFnarSaved'));
           await reloadDetail();
         }}
         siswaId={id}
@@ -608,7 +649,7 @@ export default function SiswaDetailPage() {
         isOpen={isConsultationOpen}
         onClose={() => setIsConsultationOpen(false)}
         onSuccess={async () => {
-          toast.success('Hasil konsultasi keputusan berhasil dicatat!');
+          toast.success(t('student.toastConsultationSuccess'));
           await reloadDetail();
         }}
         preselectedSiswaId={id}

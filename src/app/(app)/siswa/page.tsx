@@ -16,6 +16,7 @@ import { ImportSiswaModal } from '@/components/siswa/ImportSiswaModal';
 import { AssignKelasModal } from '@/components/siswa/AssignKelasModal';
 import type { Siswa, CommercialState, SiswaIntent } from '@/lib/types/siswa.types';
 import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { getChannelConfig } from '@/lib/constants/channel';
 
@@ -31,19 +32,20 @@ function ChannelBadge({ channel }: { channel?: string }) {
 }
 
 // ── Intent Badge ──────────────────────────────────────────────────────────────
-const INTENT_CONFIG: Record<string, { label: string; className: string }> = {
-  'High': { label: '🔥 High', className: 'bg-rose-500/15 text-rose-400 border-rose-500/20' },
-  'Mid':  { label: '🟢 Mid',  className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
-  'Low':  { label: '⚪ Low',  className: 'bg-slate-500/15 text-slate-400 border-slate-500/20' },
+const INTENT_CONFIG: Record<string, { labelKey: 'student.intentHighShort' | 'student.intentMidShort' | 'student.intentLowShort'; className: string }> = {
+  'High': { labelKey: 'student.intentHighShort', className: 'bg-rose-500/15 text-rose-400 border-rose-500/20' },
+  'Mid':  { labelKey: 'student.intentMidShort',  className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
+  'Low':  { labelKey: 'student.intentLowShort',  className: 'bg-slate-500/15 text-slate-400 border-slate-500/20' },
 };
 
 function IntentBadge({ intent }: { intent: string }) {
+  const { t } = useTranslation();
   if (!intent) return null;
   const config = INTENT_CONFIG[intent];
   if (!config) return null;
   return (
     <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-xs border font-medium', config.className)}>
-      {config.label}
+      {t(config.labelKey)}
     </span>
   );
 }
@@ -95,6 +97,7 @@ export default function SiswaPage() {
   const pageSize = 20;
 
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const { isGeneral, pageLabels, getStateLabel } = useTenantVocabulary();
   const canAssignClass = ['admin', 'manager', 'chief cro'].includes(user?.role?.toLowerCase() || '');
 
@@ -140,7 +143,7 @@ export default function SiswaPage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-base font-bold text-foreground leading-tight">{pageLabels.siswaPageTitle}</h1>
-            <p className="text-xs text-muted-foreground">{total} {isGeneral ? 'kontak' : 'siswa/kontak'} ditemukan</p>
+            <p className="text-xs text-muted-foreground">{total} {isGeneral ? t('student.foundCountContact') : t('student.foundCountStudent')}</p>
           </div>
         </div>
 
@@ -153,7 +156,7 @@ export default function SiswaPage() {
                 'sm:hidden p-2 rounded-lg border text-muted-foreground transition-colors',
                 showMobileFilter && 'bg-primary/10 text-primary border-primary/40'
               )}
-              title="Filter Pencarian"
+              title={t('student.filterSearchTooltip')}
             >
               <SlidersHorizontal size={16} />
             </button>
@@ -161,11 +164,11 @@ export default function SiswaPage() {
               <button
                 onClick={() => setIsAssignModalOpen(true)}
                 className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg border border-primary/30 text-xs font-semibold text-primary hover:bg-primary/10 transition-all cursor-pointer"
-                title="Assign Kelas ke CRO (Chief CRO)"
+                title={t('student.assignClassTooltip')}
               >
                 <Layers size={13} />
-                <span className="hidden sm:inline">Assign Kelas</span>
-                <span className="sm:hidden">Kelas</span>
+                <span className="hidden sm:inline">{t('student.assignClass')}</span>
+                <span className="sm:hidden">{t('student.classShort')}</span>
               </button>
             )}
           </div>
@@ -176,7 +179,7 @@ export default function SiswaPage() {
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-card transition-all"
             >
               <Upload size={13} />
-              Import Excel
+              {t('student.importExcel')}
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
@@ -210,14 +213,14 @@ export default function SiswaPage() {
           onChange={e => { setFilterChannel(e.target.value); setPage(1); }}
           className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
-          <option value="">Semua Channel Intake</option>
-          <option value="sekolah">🏫 Kunjungan Sekolah</option>
-          <option value="relasi">🤝 Relasi / Alumni</option>
-          <option value="instagram">📸 Instagram</option>
-          <option value="facebook">📘 Facebook</option>
-          <option value="tiktok">🎵 TikTok</option>
-          <option value="website">🌐 Website</option>
-          <option value="whatsapp">💬 WhatsApp</option>
+          <option value="">{t('student.allChannels')}</option>
+          <option value="sekolah">{t('student.channelSchool')}</option>
+          <option value="relasi">{t('student.channelRelation')}</option>
+          <option value="instagram">{t('student.channelInstagram')}</option>
+          <option value="facebook">{t('student.channelFacebook')}</option>
+          <option value="tiktok">{t('student.channelTiktok')}</option>
+          <option value="website">{t('student.channelWebsite')}</option>
+          <option value="whatsapp">{t('student.channelWhatsapp')}</option>
         </select>
         {/* Filter Commercial State */}
         <select
@@ -225,7 +228,7 @@ export default function SiswaPage() {
           onChange={e => { setFilterCommercial(e.target.value as CommercialState | ''); setPage(1); }}
           className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
-          <option value="">Semua Lifecycle State</option>
+          <option value="">{t('student.allStates')}</option>
           <option value="AUDIENCE">⚫ {getStateLabel('AUDIENCE')}</option>
           <option value="KNOWN_PROFILE">⚪ {getStateLabel('KNOWN_PROFILE')}</option>
           <option value="LEAD">🟡 {getStateLabel('LEAD')}</option>
@@ -234,7 +237,7 @@ export default function SiswaPage() {
           <option value="REGISTERED">🟣 {getStateLabel('REGISTERED')}</option>
           <option value="CUSTOMER">🟢 {getStateLabel('CUSTOMER')}</option>
           <option value="POST_CUSTOMER">🎓 {getStateLabel('POST_CUSTOMER')}</option>
-          <option value="Disqualified">🔴 Tidak Lanjut (Disqualified)</option>
+          <option value="Disqualified">{t('student.stateDisqualified')}</option>
         </select>
         {/* Filter Intent */}
         <select
@@ -242,10 +245,10 @@ export default function SiswaPage() {
           onChange={e => { setFilterIntent(e.target.value as SiswaIntent | ''); setPage(1); }}
           className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
         >
-          <option value="">Semua Intent</option>
-          <option value="High">🔥 High Intent</option>
-          <option value="Mid">🟢 Mid Intent</option>
-          <option value="Low">⚪ Low Intent</option>
+          <option value="">{t('student.allIntents')}</option>
+          <option value="High">{t('student.intentHigh')}</option>
+          <option value="Mid">{t('student.intentMid')}</option>
+          <option value="Low">{t('student.intentLow')}</option>
         </select>
       </div>
 
@@ -259,11 +262,11 @@ export default function SiswaPage() {
               <tr className="border-b bg-secondary/30">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{pageLabels.entityColumn}</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{pageLabels.schoolColumn}</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Commercial State</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Intent</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Next Action</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">CRO</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Due Date</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{t('student.colCommercialState')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{t('student.colIntent')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{t('student.colNextAction')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{t('student.colCro')}</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{t('student.colDueDate')}</th>
               </tr>
             </thead>
             <tbody>
@@ -272,7 +275,7 @@ export default function SiswaPage() {
               ) : siswaList.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-muted-foreground text-sm">
-                    Tidak ada data {isGeneral ? 'kontak' : 'siswa'} ditemukan
+                    {isGeneral ? t('student.emptyContacts') : t('student.emptyStudents')}
                   </td>
                 </tr>
               ) : (
@@ -304,13 +307,13 @@ export default function SiswaPage() {
                       {!s.wa && s.bsuid ? (
                         <div className="mt-1">
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary/50 text-muted-foreground border">
-                            📱 Hidden by User
+                            📱 {t('student.hiddenByUser')}
                           </span>
                         </div>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs max-w-36 truncate">
-                      {s.namaSekolah || <span className="text-muted-foreground/50 italic">Non-Sekolah</span>}
+                      {s.namaSekolah || <span className="text-muted-foreground/50 italic">{t('student.nonSchool')}</span>}
                     </td>
                     <td className="px-4 py-3">
                       <CommercialStateBadge 
@@ -335,7 +338,7 @@ export default function SiswaPage() {
         {/* Pagination desktop */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t">
-            <p className="text-xs text-muted-foreground">Halaman {page} dari {totalPages} · {total} total</p>
+            <p className="text-xs text-muted-foreground">{t('common.page')} {page} {t('common.of')} {totalPages} · {total} {t('common.total')}</p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -364,7 +367,7 @@ export default function SiswaPage() {
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
         ) : siswaList.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            Tidak ada data {isGeneral ? 'kontak' : 'siswa'} ditemukan
+            {isGeneral ? t('student.emptyContacts') : t('student.emptyStudents')}
           </div>
         ) : (
           siswaList.map((s) => (
@@ -380,7 +383,7 @@ export default function SiswaPage() {
                     <ChannelBadge channel={s.sourceChannel} />
                     {!s.wa && s.bsuid && (
                       <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary/50 text-muted-foreground border">
-                        📱 Hidden
+                        📱 {t('student.hidden')}
                       </span>
                     )}
                   </div>
@@ -395,7 +398,7 @@ export default function SiswaPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {s.namaSekolah || <span className="italic">Non-Sekolah</span>}
+                    {s.namaSekolah || <span className="italic">{t('student.nonSchool')}</span>}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {s.cro && <span className="text-primary/70">{s.cro}</span>}
@@ -425,7 +428,7 @@ export default function SiswaPage() {
         {/* Pagination mobile */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2 pb-1">
-            <p className="text-xs text-muted-foreground">Hal. {page} / {totalPages} · {total} total</p>
+            <p className="text-xs text-muted-foreground">{t('student.pageShort')} {page} / {totalPages} · {total} {t('student.totalShort')}</p>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}

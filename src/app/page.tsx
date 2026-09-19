@@ -15,5 +15,13 @@ export default async function HomePage({
     redirect(`/public/form-siswa?${qs.toString()}`);
   }
 
-  redirect('/login');
+  const qs = new URLSearchParams();
+  if (params) {
+    Object.entries(params).forEach(([key, val]) => {
+      if (typeof val === 'string') qs.set(key, val);
+      else if (Array.isArray(val)) val.forEach(v => qs.append(key, v));
+    });
+  }
+  const queryStr = qs.toString();
+  redirect(queryStr ? `/login?${queryStr}` : '/login');
 }

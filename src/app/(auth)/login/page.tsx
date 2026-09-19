@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { Eye, EyeOff, Sparkles, GraduationCap, Building2 } from 'lucide-react';
 import { useIsDemo } from '@/hooks/useIsDemo';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useLanguageStore, type Language } from '@/store/useLanguageStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LanguageToggle } from '@/components/layout/LanguageToggle';
 
@@ -19,6 +20,13 @@ function LoginContent() {
   const isDemo = useIsDemo();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
+
+  const paramLang = searchParams.get('lang');
+  useEffect(() => {
+    if (paramLang === 'id' || paramLang === 'en') {
+      useLanguageStore.getState().setLanguage(paramLang as Language);
+    }
+  }, [paramLang]);
 
   const paramType = searchParams.get('type') || searchParams.get('sector');
   const initialSector: 'lpk' | 'general' = paramType === 'general' ? 'general' : 'lpk';

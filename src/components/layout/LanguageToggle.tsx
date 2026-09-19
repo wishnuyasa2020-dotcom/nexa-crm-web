@@ -26,8 +26,8 @@ export function LanguageToggle({ variant = 'default', className }: LanguageToggl
   }, []);
 
   const isCompact = variant === 'compact';
-  // Use 'id' during SSR / pre-hydration to match server markup
-  const activeLang = mounted ? language : 'id';
+  // Use 'en' during SSR / pre-hydration to match default platform language
+  const activeLang = mounted ? language : 'en';
 
   return (
     <div
