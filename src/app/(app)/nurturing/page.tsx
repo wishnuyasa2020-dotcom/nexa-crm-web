@@ -20,10 +20,13 @@ import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function ProbeBadge({ level }: { level: number }) {
+  const { t } = useTranslation();
   const colors: Record<number, string> = {
     0: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
     1: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -32,18 +35,21 @@ function ProbeBadge({ level }: { level: number }) {
     4: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     5: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
   };
-  const label = level === 0 ? 'Antrean' : `Probe ${level}`;
+  const label = level === 0 
+    ? t('nurturing.badgeQueue') 
+    : t('nurturing.badgeProbe').replace('{level}', String(level));
   return (
-    <Badge variant="outline" className={`font-medium text-xs whitespace-nowrap ${colors[level] || colors[5]}`}>
+    <Badge variant="outline" className={cn('font-medium text-xs whitespace-nowrap', colors[level] || colors[5])}>
       {label}
     </Badge>
   );
 }
 
 function SisaHariBadge({ hari, needFollowUp }: { hari: number; needFollowUp: boolean }) {
-  if (needFollowUp) return <span className="text-xs font-bold text-rose-500 animate-pulse bg-rose-500/10 px-2 py-0.5 rounded">⚠️ Follow Up!</span>;
-  if (hari === 0)   return <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Hari ini</span>;
-  return <span className="text-xs text-muted-foreground">{hari} hari lagi</span>;
+  const { t } = useTranslation();
+  if (needFollowUp) return <span className="text-xs font-bold text-rose-500 animate-pulse bg-rose-500/10 px-2 py-0.5 rounded">{t('nurturing.followUpAlert')}</span>;
+  if (hari === 0)   return <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">{t('nurturing.today')}</span>;
+  return <span className="text-xs text-muted-foreground">{t('nurturing.daysLeft').replace('{days}', String(hari))}</span>;
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -83,6 +89,8 @@ function SkeletonCardMobile() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function NurturingPage() {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const { data: waData, isConnected: isWaConnected, loading: waLoading } = useWhatsAppStatus();
   const router                          = useRouter();
   const [stats, setStats]               = useState<NurturingStats | null>(null);
@@ -112,9 +120,9 @@ export default function NurturingPage() {
       const res = await nurturingApi.getStats();
       setStats(res.data.data);
     } catch {
-      setError('Gagal memuat statistik nurturing.');
+      setError(t('nurturing.loadingStatsError'));
     }
-  }, []);
+  }, [t]);
 
   // ── Fetch Leads ─────────────────────────────────────────────────────────────
   const fetchLeads = useCallback(async (p = 1) => {
@@ -125,11 +133,11 @@ export default function NurturingPage() {
       setTotal(res.data.total);
       setTotalPages(res.data.totalPages);
     } catch {
-      setError('Gagal memuat daftar leads.');
+      setError(t('nurturing.loadingLeadsError'));
     } finally {
       setLeadsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     setLoading(true);
@@ -156,7 +164,7 @@ export default function NurturingPage() {
       // Refresh data
       await Promise.all([fetchStats(), fetchLeads(page)]);
     } catch {
-      alert('Gagal melakukan takeover. Coba lagi.');
+      alert(t('nurturing.takeoverFailed'));
     } finally {
       setTakeoverLoading(false);
     }
@@ -195,7 +203,7 @@ export default function NurturingPage() {
         <AlertCircle size={32} className="text-rose-400" />
         <p className="text-sm">{error}</p>
         <Button variant="outline" size="sm" onClick={() => { setError(null); fetchStats(); fetchLeads(1); }}>
-          <RefreshCw size={14} className="mr-1" /> Coba Lagi
+          <RefreshCw size={14} className="mr-1" /> {t('nurturing.tryAgain')}
         </Button>
       </div>
     );
@@ -211,8 +219,8 @@ export default function NurturingPage() {
             <TrendingUp size={20} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Nurturing Campaign</h1>
-            <p className="text-xs md:text-sm text-muted-foreground truncate">Otomatisasi probing &amp; edukasi (Smart Routing &amp; Consent Engine)</p>
+            <h1 className="text-lg md:text-xl font-bold text-foreground truncate">{t('nurturing.pageTitle')}</h1>
+            <p className="text-xs md:text-sm text-muted-foreground truncate">{t('nurturing.pageSubtitle')}</p>
           </div>
         </div>
 
@@ -229,14 +237,14 @@ export default function NurturingPage() {
             ? <RefreshCw size={14} className="animate-spin shrink-0" />
             : <Zap size={14} className="shrink-0" />
           }
-          <span className="hidden sm:inline">Force Trigger</span>
+          <span className="hidden sm:inline">{t('nurturing.forceTrigger')}</span>
         </Button>
       </div>
 
       {/* Gating Banner jika WhatsApp belum terhubung */}
       {!isWaConnected && !waLoading && (
         <WhatsAppGatingBanner
-          featureName="Automated Nurturing WhatsApp"
+          featureName={t('nurturing.featureName')}
           status={waData?.whatsappStatus}
         />
       )}
@@ -253,7 +261,7 @@ export default function NurturingPage() {
         {/* Total Calon Prospek */}
         <Card className="border shadow-sm">
           <CardContent className="p-3 md:p-4 flex flex-col justify-center h-full">
-            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">Total Prospek</p>
+            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">{t('nurturing.totalProspects')}</p>
             <p className="text-xl md:text-2xl font-bold text-foreground">
               {loading ? <span className="inline-block w-8 h-6 bg-secondary animate-pulse rounded" /> : (stats?.total_calon_prospek ?? 0)}
             </p>
@@ -263,7 +271,7 @@ export default function NurturingPage() {
         {/* Antrean Baru */}
         <Card className="border shadow-sm">
           <CardContent className="p-3 md:p-4 flex flex-col justify-center h-full">
-            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">Antrean Baru (Probe 1)</p>
+            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">{t('nurturing.newQueueProbe1')}</p>
             <p className="text-xl md:text-2xl font-bold text-blue-500">
               {loading ? <span className="inline-block w-8 h-6 bg-secondary animate-pulse rounded" /> : (stats?.antrean_baru_probe_1 ?? 0)}
             </p>
@@ -273,7 +281,7 @@ export default function NurturingPage() {
         {/* Sedang Nurturing */}
         <Card className="border shadow-sm">
           <CardContent className="p-3 md:p-4 flex flex-col justify-center h-full">
-            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">Sedang Nurturing (Probe 1-4)</p>
+            <p className="text-xs text-muted-foreground font-medium mb-1 truncate">{t('nurturing.inNurturingProbe1_4')}</p>
             <p className="text-xl md:text-2xl font-bold text-emerald-500">
               {loading ? <span className="inline-block w-8 h-6 bg-secondary animate-pulse rounded" /> : (stats?.dalam_putaran_probe_1_4 ?? 0)}
             </p>
@@ -291,7 +299,7 @@ export default function NurturingPage() {
               <AlertCircle size={40} className="text-rose-500" />
             </div>
             <p className="text-xs text-rose-500 font-bold mb-1 flex items-center gap-1 z-10 truncate">
-              <AlertCircle size={12} className="shrink-0" /> Perlu Follow Up
+              <AlertCircle size={12} className="shrink-0" /> {t('nurturing.needsFollowUp')}
             </p>
             <p className="text-xl md:text-2xl font-bold text-rose-500 z-10">
               {loading ? <span className="inline-block w-8 h-6 bg-rose-200 animate-pulse rounded" /> : (stats?.menunggu_followup_manual ?? 0)}
@@ -304,12 +312,12 @@ export default function NurturingPage() {
       <Card className="border shadow-sm overflow-hidden flex flex-col min-w-0">
         <CardHeader className="p-3 md:p-4 border-b bg-secondary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 space-y-0">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
-            📋 Daftar Audiens Nurturing
-            {filterFollowUp && <Badge variant="destructive" className="ml-2 text-xs px-1.5 py-0">Filter: Follow Up</Badge>}
-            {!leadsLoading && <span className="text-xs font-normal text-muted-foreground">({total} total)</span>}
+            {t('nurturing.audienceListTitle')}
+            {filterFollowUp && <Badge variant="destructive" className="ml-2 text-xs px-1.5 py-0">{t('nurturing.filterFollowUpBadge')}</Badge>}
+            {!leadsLoading && <span className="text-xs font-normal text-muted-foreground">({total} {t('nurturing.totalSuffix')})</span>}
           </CardTitle>
           <Button variant="outline" size="sm" className="w-full sm:w-auto h-9 sm:h-8 text-xs shrink-0" onClick={() => setFilterFollowUp(!filterFollowUp)}>
-            <Filter size={14} className="mr-1.5" /> {filterFollowUp ? 'Hapus Filter' : 'Filter Follow Up'}
+            <Filter size={14} className="mr-1.5" /> {filterFollowUp ? t('nurturing.clearFilter') : t('nurturing.filterFollowUpBtn')}
           </Button>
         </CardHeader>
 
@@ -319,7 +327,10 @@ export default function NurturingPage() {
             [...Array(3)].map((_, i) => <SkeletonCardMobile key={i} />)
           ) : displayedLeads.length === 0 ? (
             <div className="p-10 text-center text-muted-foreground text-sm bg-background rounded-lg border border-dashed">
-              {filterFollowUp ? 'Tidak ada leads yang perlu follow up.' : 'Tidak ada leads aktif dalam nurturing campaign.'}
+              {filterFollowUp
+                ? (isGeneral ? t('nurturing.emptyFollowUpGeneral') : t('nurturing.emptyFollowUpLpk'))
+                : (isGeneral ? t('nurturing.emptyListGeneral') : t('nurturing.emptyListLpk'))
+              }
             </div>
           ) : (
             displayedLeads.map((lead) => {
@@ -337,20 +348,20 @@ export default function NurturingPage() {
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         <CommercialStateBadge state={lead.commercialState || lead.status || CANONICAL_STATES.LEAD} size="sm" />
                         <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
-                          <ShieldCheck size={11} /> Consent Aktif
+                          <ShieldCheck size={11} /> {t('nurturing.consentActiveShort')}
                         </span>
                       </div>
                     </div>
                     <div className="shrink-0 flex flex-col items-end gap-1.5">
                       <ProbeBadge level={lead.probeLevel} />
                       <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold', lead.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
-                        {lead.isSwOpen ? 'SW Buka' : 'SW Tutup'}
+                        {lead.isSwOpen ? t('nurturing.swOpenShort') : t('nurturing.swClosedShort')}
                       </span>
                     </div>
                   </div>
                   
                   <div className="flex justify-between items-center text-xs bg-secondary/30 p-2.5 rounded-lg">
-                    <span className="text-muted-foreground font-medium">Sisa Waktu:</span>
+                    <span className="text-muted-foreground font-medium">{t('nurturing.timeRemaining')}</span>
                     <SisaHariBadge hari={lead.sisaHari} needFollowUp={needFollowUp} />
                   </div>
 
@@ -358,17 +369,17 @@ export default function NurturingPage() {
                     <Button
                       variant="secondary"
                       className="flex-1 h-11 text-xs rounded-lg font-medium"
-                      title="Lihat Chat"
+                      title={t('nurturing.viewChatTooltip')}
                       onClick={() => router.push(`/live-chat?leadId=${lead.id}`)}
                     >
-                      <MessageSquare size={14} className="mr-1.5 text-primary" /> Chat
+                      <MessageSquare size={14} className="mr-1.5 text-primary" /> {t('nurturing.chat')}
                     </Button>
                     <Button
                       variant="outline"
                       className="flex-1 h-11 text-xs border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/40 transition-colors rounded-lg font-medium"
                       onClick={() => handleTakeover(lead)}
                     >
-                      <StopCircle size={14} className="mr-1.5" /> Takeover
+                      <StopCircle size={14} className="mr-1.5" /> {t('nurturing.takeover')}
                     </Button>
                   </div>
                 </div>
@@ -382,14 +393,18 @@ export default function NurturingPage() {
           <table className="w-full text-sm border-collapse min-w-180">
             <thead>
               <tr className="border-b bg-secondary/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nama Siswa</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Asal Sekolah</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status Komersial</th>
-                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Consent</th>
-                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Level Probe</th>
-                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Sisa Hari</th>
-                <th className="text-center px-4 py-3 font-medium text-muted-foreground">SW</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Aksi</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                  {isGeneral ? t('nurturing.colContactName') : t('nurturing.colStudentName')}
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                  {isGeneral ? t('nurturing.colPartnerOrigin') : t('nurturing.colSchoolOrigin')}
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('nurturing.colCommercialStatus')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('nurturing.colConsent')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('nurturing.colProbeLevel')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('nurturing.colRemainingDays')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('nurturing.colSw')}</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t('nurturing.colAction')}</th>
               </tr>
             </thead>
             <tbody>
@@ -398,7 +413,10 @@ export default function NurturingPage() {
               ) : displayedLeads.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-10 text-center text-muted-foreground text-sm">
-                    {filterFollowUp ? 'Tidak ada leads yang perlu follow up.' : 'Tidak ada leads aktif dalam nurturing campaign.'}
+                    {filterFollowUp
+                      ? (isGeneral ? t('nurturing.emptyFollowUpGeneral') : t('nurturing.emptyFollowUpLpk'))
+                      : (isGeneral ? t('nurturing.emptyListGeneral') : t('nurturing.emptyListLpk'))
+                    }
                   </td>
                 </tr>
               ) : (
@@ -423,7 +441,7 @@ export default function NurturingPage() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">
-                          <ShieldCheck size={12} /> Aktif
+                          <ShieldCheck size={12} /> {t('nurturing.consentActive')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -434,7 +452,7 @@ export default function NurturingPage() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold', lead.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
-                          {lead.isSwOpen ? 'Terbuka' : 'Tertutup'}
+                          {lead.isSwOpen ? t('nurturing.swOpen') : t('nurturing.swClosed')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -443,7 +461,7 @@ export default function NurturingPage() {
                             variant="secondary"
                             size="icon"
                             className="h-8 w-8 rounded-lg hover:text-primary transition-colors"
-                            title="Lihat Chat"
+                            title={t('nurturing.viewChatTooltip')}
                             onClick={() => router.push('/live-chat?leadId=' + lead.id)}
                             id={`btn-chat-${lead.id}`}
                           >
@@ -453,7 +471,7 @@ export default function NurturingPage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8 rounded-lg border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/40 transition-colors"
-                            title="Takeover / Stop Bot"
+                            title={t('nurturing.takeoverStopBotTooltip')}
                             onClick={() => handleTakeover(lead)}
                             id={`btn-takeover-${lead.id}`}
                           >
@@ -473,7 +491,7 @@ export default function NurturingPage() {
         <div className="px-4 py-2.5 bg-emerald-500/5 border-t flex items-center justify-between text-xs text-emerald-500">
           <span className="flex items-center gap-1.5">
             <ShieldCheck size={14} className="shrink-0 text-emerald-500" />
-            <span><strong>Consent Engine Aktif:</strong> Siswa yang menolak atau mencabut izin WhatsApp otomatis dihentikan dan disaring dari antrean Probing.</span>
+            <span><strong>{t('nurturing.consentEngineLabel')}</strong> {isGeneral ? t('nurturing.consentFooterNoticeGeneral') : t('nurturing.consentFooterNoticeLpk')}</span>
           </span>
         </div>
 
@@ -513,24 +531,24 @@ export default function NurturingPage() {
         <DialogContent className="sm:max-w-md w-full p-4 md:p-6">
           <DialogHeader className="text-left">
             <DialogTitle className="flex items-center gap-2 text-rose-600 text-lg">
-              <StopCircle size={20} /> Konfirmasi Takeover
+              <StopCircle size={20} /> {t('nurturing.takeoverTitle')}
             </DialogTitle>
             <DialogDescription className="pt-2 text-xs md:text-sm">
-              Anda akan menghentikan bot nurturing untuk <strong className="text-foreground">{selectedLead?.nama}</strong>. Apakah Anda yakin ingin mengambil alih percakapan ini secara manual?
+              {t('nurturing.takeoverDescLead')} <strong className="text-foreground">{selectedLead?.nama}</strong>. {t('nurturing.takeoverDescConfirm')}
             </DialogDescription>
           </DialogHeader>
           <div className="bg-rose-500/10 p-3 md:p-4 rounded-xl border border-rose-500/20 mt-2">
             <p className="text-xs md:text-sm text-rose-600 font-medium flex items-start gap-2 leading-relaxed">
               <AlertCircle size={16} className="shrink-0 mt-0.5" /> 
-              <span>Siswa ini tidak akan menerima pesan otomatis lagi dan akan kembali ke daftar Backlog.</span>
+              <span>{isGeneral ? t('nurturing.takeoverNoticeGeneral') : t('nurturing.takeoverNoticeLpk')}</span>
             </p>
           </div>
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-4 sm:mt-0">
             <Button variant="outline" onClick={() => setShowTakeoverModal(false)} className="w-full sm:w-auto h-11 sm:h-10 rounded-xl sm:rounded-lg" disabled={takeoverLoading}>
-              Batal
+              {t('nurturing.btnCancel')}
             </Button>
             <Button variant="destructive" onClick={confirmTakeover} className="w-full sm:w-auto h-11 sm:h-10 rounded-xl sm:rounded-lg shadow-md" disabled={takeoverLoading}>
-              {takeoverLoading ? 'Memproses...' : 'Takeover Chat'}
+              {takeoverLoading ? t('nurturing.btnProcessing') : t('nurturing.btnTakeoverChat')}
             </Button>
           </DialogFooter>
         </DialogContent>

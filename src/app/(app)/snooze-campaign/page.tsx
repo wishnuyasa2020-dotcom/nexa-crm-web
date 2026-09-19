@@ -20,6 +20,8 @@ import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -54,6 +56,7 @@ function SkeletonCardMobile() {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function SnoozeLevelBadge({ level }: { level: number }) {
+  const { t } = useTranslation();
   const colorMap: Record<number, string> = {
     1: 'border-blue-500/20 text-blue-500 bg-blue-500/10',
     2: 'border-orange-500/20 text-orange-500 bg-orange-500/10',
@@ -61,20 +64,23 @@ function SnoozeLevelBadge({ level }: { level: number }) {
   };
   return (
     <Badge variant="outline" className={`font-medium text-xs whitespace-nowrap ${colorMap[level] || 'border-slate-500/20 text-slate-400 bg-slate-500/10'}`}>
-      Snooze {level}
+      {t('snooze.badgeLevel').replace('{level}', String(level))}
     </Badge>
   );
 }
 
 function SisaHariLabel({ hari }: { hari: number }) {
-  if (hari <= 0) return <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Hari ini!</span>;
-  if (hari <= 7) return <span className="text-xs font-semibold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded">{hari} hari lagi</span>;
-  return <span className="text-xs text-muted-foreground">{hari} hari lagi</span>;
+  const { t } = useTranslation();
+  if (hari <= 0) return <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">{t('snooze.today')}</span>;
+  if (hari <= 7) return <span className="text-xs font-semibold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded">{t('snooze.daysLeft').replace('{days}', String(hari))}</span>;
+  return <span className="text-xs text-muted-foreground">{t('snooze.daysLeft').replace('{days}', String(hari))}</span>;
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function SnoozeCampaignPage() {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const { data: waData, isConnected: isWaConnected, loading: waLoading } = useWhatsAppStatus();
   const router                          = useRouter();
   const [stats, setStats]               = useState<SnoozeStats | null>(null);
@@ -109,9 +115,9 @@ export default function SnoozeCampaignPage() {
       const res = await nurturingApi.getSnoozeStats();
       setStats(res.data.data);
     } catch {
-      setError('Gagal memuat statistik snooze.');
+      setError(t('snooze.errLoadStats'));
     }
-  }, []);
+  }, [t]);
 
   const fetchLeads = useCallback(async (p = 1, q = search) => {
     setLeadsLoading(true);
@@ -121,11 +127,11 @@ export default function SnoozeCampaignPage() {
       setTotal(res.data.total);
       setTotalPages(res.data.totalPages);
     } catch {
-      setError('Gagal memuat daftar snooze.');
+      setError(t('snooze.errLoadLeads'));
     } finally {
       setLeadsLoading(false);
     }
-  }, [search]);
+  }, [search, t]);
 
   useEffect(() => {
     setLoading(true);
@@ -159,7 +165,7 @@ export default function SnoozeCampaignPage() {
       setShowStopModal(false);
       await Promise.all([fetchStats(), fetchLeads(page)]);
     } catch {
-      alert('Gagal membangunkan siswa dari snooze. Coba lagi.');
+      alert(isGeneral ? t('snooze.errWakeupGeneral') : t('snooze.errWakeupLpk'));
     } finally {
       setStopLoading(false);
     }
@@ -167,7 +173,7 @@ export default function SnoozeCampaignPage() {
 
   const handleAddSnooze = async () => {
     if (!isWaConnected) {
-      alert('Nomor WhatsApp Bisnis belum aktif. Hubungkan nomor di menu Pengaturan.');
+      alert(t('snooze.errWaNotConnected'));
       return;
     }
     if (!addIdSiswa.trim()) return;
@@ -185,7 +191,7 @@ export default function SnoozeCampaignPage() {
       await Promise.all([fetchStats(), fetchLeads(page)]);
     } catch (err: unknown) {
       const errorMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      alert(errorMsg || 'Gagal menambahkan snooze. Pastikan ID Siswa benar dan izin WhatsApp aktif.');
+      alert(errorMsg || (isGeneral ? t('snooze.errAddFailedGeneral') : t('snooze.errAddFailedLpk')));
     } finally {
       setAddLoading(false);
     }
@@ -199,7 +205,7 @@ export default function SnoozeCampaignPage() {
         <AlertCircle size={32} className="text-rose-500" />
         <p className="text-sm">{error}</p>
         <Button variant="outline" size="sm" onClick={() => { setError(null); fetchStats(); fetchLeads(1); }}>
-          <RefreshCw size={14} className="mr-1" /> Coba Lagi
+          <RefreshCw size={14} className="mr-1" /> {t('snooze.tryAgain')}
         </Button>
       </div>
     );
@@ -216,15 +222,15 @@ export default function SnoozeCampaignPage() {
           <Clock size={20} />
         </div>
         <div className="min-w-0">
-          <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Snooze Campaign</h1>
-          <p className="text-xs md:text-sm text-muted-foreground truncate">Monitoring antrean prospek yang ditunda (30 / 60 / 90 Hari)</p>
+          <h1 className="text-lg md:text-xl font-bold text-foreground truncate">{t('snooze.pageTitle')}</h1>
+          <p className="text-xs md:text-sm text-muted-foreground truncate">{t('snooze.pageSubtitle')}</p>
         </div>
       </div>
 
       {/* Gating Banner jika WhatsApp belum terhubung */}
       {!isWaConnected && !waLoading && (
         <WhatsAppGatingBanner
-          featureName="Snooze Campaign WhatsApp"
+          featureName={t('snooze.featureName')}
           status={waData?.whatsappStatus}
         />
       )}
@@ -235,7 +241,7 @@ export default function SnoozeCampaignPage() {
           {/* Total Sedang Tunda */}
           <Card className="border shadow-sm">
             <CardContent className="p-4 flex flex-col justify-center h-full">
-              <p className="text-xs text-muted-foreground font-medium mb-1">Total Sedang Tunda</p>
+              <p className="text-xs text-muted-foreground font-medium mb-1">{t('snooze.totalSnoozed')}</p>
               <p className="text-2xl font-bold text-foreground">
                 {loading ? <span className="inline-block w-10 h-7 bg-secondary animate-pulse rounded" /> : (stats?.total_sedang_tunda ?? 0)}
               </p>
@@ -245,7 +251,7 @@ export default function SnoozeCampaignPage() {
           {/* Bangun Minggu Ini */}
           <Card className="border shadow-sm bg-orange-500/5">
             <CardContent className="p-4 flex flex-col justify-center h-full">
-              <p className="text-xs text-orange-500 font-medium mb-1">Bangun Minggu Ini</p>
+              <p className="text-xs text-orange-500 font-medium mb-1">{t('snooze.wakingThisWeek')}</p>
               <p className="text-2xl font-bold text-orange-500">
                 {loading ? <span className="inline-block w-10 h-7 bg-orange-200 animate-pulse rounded" /> : (stats?.bangun_minggu_ini ?? 0)}
               </p>
@@ -256,15 +262,10 @@ export default function SnoozeCampaignPage() {
         {/* CTA Tambah Snooze */}
         <div className="col-span-1 flex items-center justify-start lg:justify-end">
           <Button
-            className={cn(
-              "w-full lg:w-auto h-12 md:h-10 rounded-xl text-white shadow-lg text-sm transition-all",
-              !isWaConnected
-                ? "bg-muted text-muted-foreground opacity-70 cursor-not-allowed"
-                : "gradient-primary shadow-primary/20 hover:opacity-90"
-            )}
+            className="w-full lg:w-auto h-12 md:h-10 rounded-xl text-white shadow-lg text-sm transition-all gradient-primary shadow-primary/20 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => {
               if (!isWaConnected) {
-                alert('Nomor WhatsApp Bisnis belum terhubung. Silakan hubungkan nomor terlebih dahulu di Pengaturan.');
+                alert(t('snooze.errWaNotConnected'));
                 return;
               }
               setShowAddModal(true);
@@ -272,7 +273,7 @@ export default function SnoozeCampaignPage() {
             disabled={!isWaConnected}
             id="btn-tambah-snooze"
           >
-            <Plus size={18} className="mr-2 shrink-0" /> Tambah Snooze Manual
+            <Plus size={18} className="mr-2 shrink-0" /> {t('snooze.btnAddSnooze')}
           </Button>
         </div>
       </div>
@@ -281,15 +282,15 @@ export default function SnoozeCampaignPage() {
       <Card className="border shadow-sm overflow-hidden flex flex-col min-w-0">
         <CardHeader className="p-3 md:p-4 border-b bg-secondary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 space-y-0">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
-            📋 Daftar Snooze Aktif
-            {!leadsLoading && <span className="text-xs font-normal text-muted-foreground">({total} total)</span>}
+            {t('snooze.listTitle')}
+            {!leadsLoading && <span className="text-xs font-normal text-muted-foreground">({total} {t('snooze.totalSuffix')})</span>}
           </CardTitle>
           {/* Search form */}
           <form onSubmit={handleSearch} className="relative w-full sm:w-56 shrink-0">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Cari nama siswa..."
+              placeholder={isGeneral ? t('snooze.searchPlaceholderGeneral') : t('snooze.searchPlaceholderLpk')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-xs md:text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary transition-all"
@@ -304,7 +305,9 @@ export default function SnoozeCampaignPage() {
             [...Array(3)].map((_, i) => <SkeletonCardMobile key={i} />)
           ) : leads.length === 0 ? (
             <div className="p-10 text-center text-muted-foreground text-sm bg-background rounded-lg border border-dashed">
-              {search ? `Tidak ada hasil untuk "${search}".` : 'Belum ada antrean snooze aktif.'}
+              {search 
+                ? t('snooze.noSearchResults').replace('{query}', search) 
+                : (isGeneral ? t('snooze.emptyListGeneral') : t('snooze.emptyListLpk'))}
             </div>
           ) : (
             leads.map((lead) => (
@@ -317,25 +320,25 @@ export default function SnoozeCampaignPage() {
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <CommercialStateBadge state={lead.commercialState || CANONICAL_STATES.LEAD} size="sm" />
                       <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
-                        <ShieldCheck size={11} /> Consent Aktif
+                        <ShieldCheck size={11} /> {t('snooze.consentActiveBadge')}
                       </span>
                     </div>
                   </div>
                   <div className="shrink-0 flex flex-col items-end gap-1.5">
                     <SnoozeLevelBadge level={lead.snoozeLevel} />
                     <span className="text-xs font-semibold px-2 py-0.5 rounded bg-secondary text-foreground">
-                      {lead.intervalDays ? `${lead.intervalDays} Hari` : '90 Hari'}
+                      {t('snooze.daysSuffix').replace('{days}', String(lead.intervalDays || 90))}
                     </span>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center text-xs bg-secondary/30 p-2.5 rounded-lg">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-0.5">Tgl Bangun</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">{t('snooze.colWakeupDate')}</p>
                     <p className="font-medium text-foreground">{lead.snoozeUntil}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-muted-foreground mb-0.5">Sisa Waktu</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">{t('snooze.colRemainingTime')}</p>
                     <SisaHariLabel hari={lead.sisaHari} />
                   </div>
                 </div>
@@ -344,10 +347,10 @@ export default function SnoozeCampaignPage() {
                   <Button
                     variant="secondary"
                     className="flex-1 h-11 text-xs rounded-lg font-medium"
-                    title="Lihat Chat"
+                    title={t('snooze.viewChatTooltip')}
                     onClick={() => router.push(`/live-chat?leadId=${lead.id}`)}
                   >
-                    <MessageSquare size={14} className="mr-1.5 text-primary" /> Chat
+                    <MessageSquare size={14} className="mr-1.5 text-primary" /> {t('snooze.chat')}
                   </Button>
                   <Button
                     variant="outline"
@@ -355,7 +358,7 @@ export default function SnoozeCampaignPage() {
                     onClick={() => handleStopSnooze(lead)}
                     id={`btn-stop-snooze-mobile-${lead.id}`}
                   >
-                    <Ban size={14} className="mr-1.5" /> Bangunkan Paksa
+                    <Ban size={14} className="mr-1.5" /> {t('snooze.wakeupBtn')}
                   </Button>
                 </div>
               </div>
@@ -368,14 +371,14 @@ export default function SnoozeCampaignPage() {
           <table className="w-full text-sm border-collapse min-w-160">
             <thead>
               <tr className="border-b bg-secondary/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nama Siswa</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Asal Sekolah</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status Komersial</th>
-                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Consent</th>
-                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Level Snooze</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Tgl Bangun</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Sisa Waktu</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Aksi</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{isGeneral ? t('snooze.colContactName') : t('snooze.colStudentName')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{isGeneral ? t('snooze.colPartnerOrigin') : t('snooze.colSchoolOrigin')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('snooze.colCommercialStatus')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('snooze.colConsent')}</th>
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">{t('snooze.colSnoozeLevel')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('snooze.colWakeupDate')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('snooze.colRemainingTime')}</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t('snooze.colAction')}</th>
               </tr>
             </thead>
             <tbody>
@@ -384,7 +387,9 @@ export default function SnoozeCampaignPage() {
               ) : leads.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-10 text-center text-muted-foreground text-sm">
-                    {search ? `Tidak ada hasil untuk "${search}".` : 'Belum ada antrean snooze aktif.'}
+                    {search 
+                      ? t('snooze.noSearchResults').replace('{query}', search) 
+                      : (isGeneral ? t('snooze.emptyListGeneral') : t('snooze.emptyListLpk'))}
                   </td>
                 </tr>
               ) : (
@@ -404,7 +409,7 @@ export default function SnoozeCampaignPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">
-                        <ShieldCheck size={12} /> Aktif
+                        <ShieldCheck size={12} /> {t('snooze.consentActive')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -420,7 +425,7 @@ export default function SnoozeCampaignPage() {
                           variant="secondary"
                           size="icon"
                           className="h-8 w-8 rounded-lg hover:text-primary transition-colors"
-                          title="Lihat Chat"
+                          title={t('snooze.viewChatTooltip')}
                           onClick={() => router.push(`/live-chat?leadId=${lead.id}`)}
                           id={`btn-chat-${lead.id}`}
                         >
@@ -433,7 +438,7 @@ export default function SnoozeCampaignPage() {
                           onClick={() => handleStopSnooze(lead)}
                           id={`btn-stop-snooze-${lead.id}`}
                         >
-                          <Ban size={14} className="mr-1 opacity-70" /> Bangunkan Paksa
+                          <Ban size={14} className="mr-1 opacity-70" /> {t('snooze.wakeupBtn')}
                         </Button>
                       </div>
                     </td>
@@ -448,7 +453,7 @@ export default function SnoozeCampaignPage() {
         <div className="px-4 py-2.5 bg-emerald-500/5 border-t flex items-center justify-between text-xs text-emerald-500">
           <span className="flex items-center gap-1.5">
             <ShieldCheck size={14} className="shrink-0 text-emerald-500" />
-            <span><strong>Consent Engine Aktif:</strong> Siswa yang mencabut izin komunikasi WhatsApp otomatis didepak dari antrean Snooze.</span>
+            <span><strong>{t('snooze.consentEngineLabel')}</strong> {isGeneral ? t('snooze.consentNoticeGeneral') : t('snooze.consentNoticeLpk')}</span>
           </span>
         </div>
 
@@ -482,18 +487,20 @@ export default function SnoozeCampaignPage() {
         <DialogContent className="sm:max-w-md w-full p-4 md:p-6">
           <DialogHeader className="text-left">
             <DialogTitle className="flex items-center gap-2 text-lg">
-              <Plus size={20} className="text-primary" /> Tambah Snooze Manual
+              <Plus size={20} className="text-primary" /> {t('snooze.modalAddTitle')}
             </DialogTitle>
             <DialogDescription className="pt-2 text-xs md:text-sm">
-              Pilih durasi penundaan follow-up untuk prospek yang belum siap dihubungi saat ini.
+              {t('snooze.modalAddDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">ID Siswa <span className="text-rose-500">*</span></label>
+              <label className="text-xs font-medium text-foreground">
+                {isGeneral ? t('snooze.labelContactId') : t('snooze.labelStudentId')} <span className="text-rose-500">*</span>
+              </label>
               <input
                 type="text"
-                placeholder="Contoh: STD-096303-810"
+                placeholder={t('snooze.studentIdPlaceholder')}
                 value={addIdSiswa}
                 onChange={(e) => setAddIdSiswa(e.target.value)}
                 className="w-full px-3 py-2.5 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary transition-shadow"
@@ -503,7 +510,7 @@ export default function SnoozeCampaignPage() {
 
             {/* Durasi Interval Dropdown / Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Berapa Lama Ditunda? <span className="text-rose-500">*</span></label>
+              <label className="text-xs font-medium text-foreground">{t('snooze.modalAddIntervalLabel')} <span className="text-rose-500">*</span></label>
               <div className="grid grid-cols-3 gap-2">
                 {[30, 60, 90].map((days) => (
                   <button
@@ -517,18 +524,18 @@ export default function SnoozeCampaignPage() {
                         : 'border-border bg-secondary/30 text-muted-foreground hover:bg-secondary/60'
                     )}
                   >
-                    <span>{days} Hari</span>
-                    {days === 90 && <span className="text-xs font-normal opacity-80">(Default)</span>}
+                    <span>{t('snooze.daysCount').replace('{days}', String(days))}</span>
+                    {days === 90 && <span className="text-xs font-normal opacity-80">{t('snooze.defaultLabel')}</span>}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Alasan Snooze (Opsional)</label>
+              <label className="text-xs font-medium text-foreground">{t('snooze.modalAddReasonLabel')}</label>
               <textarea
                 className="w-full px-3 py-2.5 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary resize-none h-20 md:h-24 transition-shadow"
-                placeholder="Belum siap sekarang, minta dihubungi lagi setelah wisuda..."
+                placeholder={t('snooze.modalAddReasonPlaceholder')}
                 value={addAlasan}
                 onChange={(e) => setAddAlasan(e.target.value)}
                 id="textarea-add-alasan"
@@ -537,15 +544,15 @@ export default function SnoozeCampaignPage() {
           </div>
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-2 sm:mt-0">
             <Button variant="outline" onClick={() => setShowAddModal(false)} className="w-full sm:w-auto h-11 sm:h-10 rounded-xl sm:rounded-lg" disabled={addLoading}>
-              Batal
+              {t('snooze.btnCancel')}
             </Button>
             <Button
-              className="w-full sm:w-auto h-11 sm:h-10 gradient-primary text-white rounded-xl sm:rounded-lg shadow-md"
+              className="w-full sm:w-auto h-11 sm:h-10 gradient-primary text-white rounded-xl sm:rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleAddSnooze}
               disabled={addLoading || !addIdSiswa.trim()}
               id="btn-confirm-add-snooze"
             >
-              {addLoading ? 'Menyimpan...' : 'Simpan Snooze'}
+              {addLoading ? t('snooze.btnSaving') : t('snooze.btnSaveSnooze')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -556,29 +563,31 @@ export default function SnoozeCampaignPage() {
         <DialogContent className="sm:max-w-md w-full p-4 md:p-6">
           <DialogHeader className="text-left">
             <DialogTitle className="flex items-center gap-2 text-rose-600 text-lg">
-              <Ban size={20} /> Bangunkan Paksa dari Snooze
+              <Ban size={20} /> {t('snooze.modalWakeupTitle')}
             </DialogTitle>
             <DialogDescription className="pt-2 text-xs md:text-sm">
-              Anda akan menghentikan masa tunda untuk <strong className="text-foreground">{selectedLead?.nama}</strong> lebih awal dari jadwal.
+              {t('snooze.modalWakeupDesc').split('{name}')[0]}
+              <strong className="text-foreground">{selectedLead?.nama}</strong>
+              {t('snooze.modalWakeupDesc').split('{name}')[1] || ''}
             </DialogDescription>
           </DialogHeader>
           <div className="bg-rose-500/10 p-3 md:p-4 rounded-xl border border-rose-500/20 mt-2">
             <p className="text-xs md:text-sm text-rose-600 font-medium leading-relaxed">
-              Tindakan ini akan memicu event <strong>SnoozeAborted (Reason: Woke Up)</strong> dan mengembalikan siswa ke antrean kerja Follow Up CRO hari ini.
+              {isGeneral ? t('snooze.modalWakeupNoticeGeneral') : t('snooze.modalWakeupNoticeLpk')}
             </p>
           </div>
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-4 sm:mt-0">
             <Button variant="outline" onClick={() => setShowStopModal(false)} className="w-full sm:w-auto h-11 sm:h-10 rounded-xl sm:rounded-lg" disabled={stopLoading}>
-              Batal
+              {t('snooze.btnCancel')}
             </Button>
             <Button
               variant="destructive"
               onClick={confirmStopSnooze}
-              className="w-full sm:w-auto h-11 sm:h-10 rounded-xl sm:rounded-lg shadow-md"
+              className="w-full sm:w-auto h-11 sm:h-10 rounded-xl sm:rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={stopLoading}
               id="btn-confirm-stop-snooze"
             >
-              {stopLoading ? 'Memproses...' : 'Ya, Bangunkan Paksa'}
+              {stopLoading ? t('snooze.btnProcessing') : t('snooze.btnConfirmWakeup')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,27 +1,34 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Radio, Send, Search, ArrowLeft, Loader2, Info, RotateCcw, X, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, ChevronUp, School, FileText, ShieldCheck, Eye } from 'lucide-react';
+import {
+  Radio,
+  Send,
+  Search,
+  ArrowLeft,
+  Loader2,
+  Info,
+  RotateCcw,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  School,
+  Building2,
+  FileText,
+  ShieldCheck,
+  Eye,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { broadcastApi, type AudienceItem, type BroadcastCampaign, type MetaTemplate, type CrmTemplate } from '@/lib/broadcastApi';
-import { TemplatePreviewBubble, buildPreviewText, type ButtonType } from '@/components/templates/TemplatePreviewBubble';
+import { broadcastApi, type AudienceItem, type BroadcastCampaign, type MetaTemplate } from '@/lib/broadcastApi';
 import { useWhatsAppStatus } from '@/hooks/useWhatsAppStatus';
 import WhatsAppGatingBanner from '@/components/common/WhatsAppGatingBanner';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
-import { CANONICAL_STATES } from '@/lib/constants/lifecycle';
-
-// Status dari GAS Worker: antri, proses, selesai, gagal
-const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  selesai:     { label: 'Selesai',   cls: 'bg-emerald-500/10 text-emerald-500' },
-  proses:      { label: 'Berjalan',  cls: 'bg-blue-500/10 text-blue-500'      },
-  antri:       { label: 'Antri',     cls: 'bg-amber-500/10 text-amber-500'    },
-  gagal:       { label: 'Gagal',     cls: 'bg-rose-500/10 text-rose-500'      },
-  // Alias backward-compat (dari versi baru Node.js jika ada)
-  completed:   { label: 'Selesai',   cls: 'bg-emerald-500/10 text-emerald-500' },
-  in_progress: { label: 'Berjalan',  cls: 'bg-blue-500/10 text-blue-500'      },
-  pending:     { label: 'Antri',     cls: 'bg-amber-500/10 text-amber-500'    },
-  failed:      { label: 'Gagal',     cls: 'bg-rose-500/10 text-rose-500'      },
-};
+import { CANONICAL_STATES, type CanonicalState } from '@/lib/constants/lifecycle';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ msg, type, onClose }: { msg: string; type: 'success' | 'error'; onClose: () => void }) {
@@ -46,6 +53,8 @@ function Toast({ msg, type, onClose }: { msg: string; type: 'success' | 'error';
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function BroadcastPage() {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const { data: waData, isConnected: isWaConnected, loading: waLoading } = useWhatsAppStatus();
   const [view, setView] = useState<'history' | 'new'>('history');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -56,7 +65,7 @@ export default function BroadcastPage() {
 
   const handleNewBroadcastClick = () => {
     if (!isWaConnected) {
-      showToast('Nomor WhatsApp Bisnis belum terhubung. Hubungkan nomor di Pengaturan.', 'error');
+      showToast(t('broadcast.waNotConnectedToast'), 'error');
       return;
     }
     setView('new');
@@ -71,8 +80,8 @@ export default function BroadcastPage() {
             <Radio size={20} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl font-bold text-foreground">Broadcast Pesan</h1>
-            <p className="text-xs text-muted-foreground">Kirim pesan massal (Smart Routing &amp; Consent Engine)</p>
+            <h1 className="text-xl font-bold text-foreground">{t('broadcast.title')}</h1>
+            <p className="text-xs text-muted-foreground">{t('broadcast.subtitle')}</p>
           </div>
         </div>
         {view === 'history' ? (
@@ -85,14 +94,14 @@ export default function BroadcastPage() {
                 : "gradient-primary shadow-primary/20 hover:opacity-90"
             )}
           >
-            <Send size={16} /> Broadcast Baru
+            <Send size={16} /> {t('broadcast.newBroadcast')}
           </button>
         ) : (
           <button
             onClick={() => setView('history')}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:text-foreground transition-all shrink-0"
           >
-            <ArrowLeft size={16} /> Kembali
+            <ArrowLeft size={16} /> {t('broadcast.back')}
           </button>
         )}
       </div>
@@ -100,7 +109,7 @@ export default function BroadcastPage() {
       {/* Gating Banner jika WhatsApp belum terhubung */}
       {!isWaConnected && !waLoading && (
         <WhatsAppGatingBanner
-          featureName="Broadcast Pesan WhatsApp"
+          featureName={t('broadcast.featureName')}
           status={waData?.whatsappStatus}
         />
       )}
@@ -112,6 +121,7 @@ export default function BroadcastPage() {
             onSuccess={(msg) => { showToast(msg, 'success'); setView('history'); }}
             isWaConnected={isWaConnected}
             waStatus={waData?.whatsappStatus}
+            isGeneral={isGeneral}
           />
       }
 
@@ -124,6 +134,7 @@ export default function BroadcastPage() {
 // HISTORY VIEW
 // ==========================================
 function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
+  const { t, lang } = useTranslation();
   const [campaigns, setCampaigns] = useState<BroadcastCampaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -140,20 +151,37 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
       setTotalPages(payload.meta?.totalPages ?? 1);
       setPage(p);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal memuat riwayat broadcast.';
+      const msg = err instanceof Error ? err.message : t('broadcast.failedLoadHistory');
       setError(msg);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { fetchHistory(1); }, [fetchHistory]);
 
   const statusBadge = (status: string) => {
-    const cfg = STATUS_CONFIG[status] ?? { label: status, cls: 'bg-secondary text-muted-foreground' };
+    const norm = (status || '').toLowerCase();
+    let label = status;
+    let cls = 'bg-secondary text-muted-foreground';
+
+    if (norm === 'selesai' || norm === 'completed') {
+      label = t('broadcast.statusCompleted');
+      cls = 'bg-emerald-500/10 text-emerald-500';
+    } else if (norm === 'proses' || norm === 'in_progress' || norm === 'berjalan') {
+      label = t('broadcast.statusInProgress');
+      cls = 'bg-blue-500/10 text-blue-500';
+    } else if (norm === 'antri' || norm === 'pending') {
+      label = t('broadcast.statusQueued');
+      cls = 'bg-amber-500/10 text-amber-500';
+    } else if (norm === 'gagal' || norm === 'failed') {
+      label = t('broadcast.statusFailed');
+      cls = 'bg-rose-500/10 text-rose-500';
+    }
+
     return (
-      <span className={cn('px-2 py-1 rounded-md text-xs font-bold uppercase', cfg.cls)}>
-        {cfg.label}
+      <span className={cn('px-2 py-1 rounded-md text-xs font-bold uppercase', cls)}>
+        {label}
       </span>
     );
   };
@@ -161,11 +189,11 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
   return (
     <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
       <div className="px-5 py-4 border-b bg-secondary/30 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Riwayat Broadcast</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t('broadcast.historyTitle')}</h2>
         <button
           onClick={() => fetchHistory(page)}
           className="text-muted-foreground hover:text-foreground transition-colors"
-          title="Refresh"
+          title={t('broadcast.refreshTooltip')}
         >
           <RefreshCw size={14} />
         </button>
@@ -174,23 +202,23 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
       {isLoading ? (
         <div className="flex items-center justify-center py-16 gap-3 text-muted-foreground">
           <Loader2 size={18} className="animate-spin" />
-          <span className="text-sm">Memuat riwayat...</span>
+          <span className="text-sm">{t('broadcast.loadingHistory')}</span>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center py-12 gap-3 text-rose-500">
           <AlertCircle size={24} />
           <p className="text-sm">{error}</p>
-          <button onClick={() => fetchHistory(1)} className="text-xs underline">Coba lagi</button>
+          <button onClick={() => fetchHistory(1)} className="text-xs underline">{t('broadcast.tryAgain')}</button>
         </div>
       ) : campaigns.length === 0 ? (
         <div className="flex flex-col items-center py-16 gap-2 text-muted-foreground">
           <Radio size={32} className="opacity-20" />
-          <p className="text-sm">Belum ada riwayat broadcast.</p>
+          <p className="text-sm">{t('broadcast.emptyHistory')}</p>
           <button
             onClick={onNewBroadcast}
             className="mt-2 text-xs text-primary underline"
           >
-            Buat broadcast pertama
+            {t('broadcast.createFirstBroadcast')}
           </button>
         </div>
       ) : (
@@ -200,11 +228,11 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-secondary/10">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Template</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Status</th>
-                  <th className="text-center px-5 py-3 text-xs font-medium text-muted-foreground">Sukses / Target</th>
-                  <th className="text-center px-5 py-3 text-xs font-medium text-muted-foreground">Gagal</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">Tanggal</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">{t('broadcast.colTemplate')}</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">{t('broadcast.colStatus')}</th>
+                  <th className="text-center px-5 py-3 text-xs font-medium text-muted-foreground">{t('broadcast.colSuccessTarget')}</th>
+                  <th className="text-center px-5 py-3 text-xs font-medium text-muted-foreground">{t('broadcast.colFailed')}</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">{t('broadcast.colDate')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,7 +247,7 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
                       <span className={cn('text-xs font-semibold', b.failedCount > 0 ? 'text-rose-500' : 'text-muted-foreground')}>{b.failedCount}</span>
                     </td>
                     <td className="px-5 py-3 text-muted-foreground text-xs">
-                      {new Date(b.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(b.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                   </tr>
                 ))}
@@ -237,11 +265,11 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>
-                    Sukses: <span className="font-semibold text-emerald-500">{b.sentCount}</span>
-                    {b.failedCount > 0 && <> · Gagal: <span className="font-semibold text-rose-500">{b.failedCount}</span></>}
+                    {t('broadcast.successLabel')} <span className="font-semibold text-emerald-500">{b.sentCount}</span>
+                    {b.failedCount > 0 && <> · {t('broadcast.failedLabel')} <span className="font-semibold text-rose-500">{b.failedCount}</span></>}
                     {' '}/ {b.targetCount}
                   </span>
-                  <span>{new Date(b.createdAt).toLocaleDateString('id-ID')}</span>
+                  <span>{new Date(b.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID')}</span>
                 </div>
               </div>
             ))}
@@ -255,15 +283,15 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
                 disabled={page <= 1}
                 className="text-xs px-3 py-1.5 rounded-lg bg-secondary disabled:opacity-40 hover:bg-secondary/70 transition-colors"
               >
-                ← Prev
+                {t('broadcast.prev')}
               </button>
-              <span className="text-xs text-muted-foreground">Hal {page} / {totalPages}</span>
+              <span className="text-xs text-muted-foreground">{t('broadcast.pageOf')} {page} / {totalPages}</span>
               <button
                 onClick={() => fetchHistory(page + 1)}
                 disabled={page >= totalPages}
                 className="text-xs px-3 py-1.5 rounded-lg bg-secondary disabled:opacity-40 hover:bg-secondary/70 transition-colors"
               >
-                Next →
+                {t('broadcast.next')}
               </button>
             </div>
           )}
@@ -274,23 +302,26 @@ function HistoryView({ onNewBroadcast }: { onNewBroadcast: () => void }) {
 }
 
 // ==========================================
-// SCHOOL COMBOBOX
-// Ketik manual + dropdown suggestion dari daftar sekolah
+// SCHOOL / PARTNER COMBOBOX
 // ==========================================
 function SchoolCombobox({
   value,
   onChange,
   schools,
   isLoading,
+  isGeneral,
 }: {
   value: string;
   onChange: (val: string) => void;
   schools: { id: string; name: string }[];
   isLoading: boolean;
+  isGeneral?: boolean;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen]       = useState(false);
   const [query, setQuery]     = useState(value);
   const wrapRef               = useRef<HTMLDivElement>(null);
+  const SchoolIcon = isGeneral ? Building2 : School;
 
   // Sync external value → input (misal saat Reset)
   useEffect(() => { setQuery(value); }, [value]);
@@ -337,7 +368,7 @@ function SchoolCombobox({
         value={query}
         onChange={e => handleInput(e.target.value)}
         onFocus={() => setOpen(true)}
-        placeholder="Cari nama siswa / sekolah..."
+        placeholder={isGeneral ? t('broadcast.searchPartnerPlaceholder') : t('broadcast.searchSchoolPlaceholder')}
         className="w-full pl-9 pr-16 py-2 bg-background border rounded-lg text-sm focus:border-primary outline-none"
       />
       {/* Tombol clear ✕ */}
@@ -355,7 +386,7 @@ function SchoolCombobox({
         onMouseDown={e => { e.preventDefault(); setOpen(o => !o); }}
         className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
         tabIndex={-1}
-        title="Lihat daftar sekolah"
+        title={isGeneral ? t('broadcast.viewPartnerListTooltip') : t('broadcast.viewSchoolListTooltip')}
       >
         {isLoading
           ? <Loader2 size={13} className="animate-spin" />
@@ -369,13 +400,17 @@ function SchoolCombobox({
           {/* Header */}
           <div className="px-3 py-1.5 bg-secondary/30 border-b flex items-center justify-between">
             <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-              <School size={12} />
-              {query ? `${filtered.length} sekolah ditemukan` : `${schools.length} sekolah tersedia`}
+              <SchoolIcon size={12} />
+              {query
+                ? `${filtered.length} ${isGeneral ? t('broadcast.partnersFound') : t('broadcast.schoolsFound')}`
+                : `${schools.length} ${isGeneral ? t('broadcast.partnersAvailable') : t('broadcast.schoolsAvailable')}`}
             </span>
           </div>
           <div className="max-h-52 overflow-y-auto">
             {filtered.length === 0 ? (
-              <p className="text-center py-5 text-xs text-muted-foreground">Tidak ada sekolah yang cocok</p>
+              <p className="text-center py-5 text-xs text-muted-foreground">
+                {isGeneral ? t('broadcast.noPartnersFound') : t('broadcast.noSchoolsFound')}
+              </p>
             ) : (
               filtered.map(s => (
                 <button
@@ -386,7 +421,7 @@ function SchoolCombobox({
                     query.toLowerCase() === s.name.toLowerCase() && 'bg-primary/5 text-primary font-medium'
                   )}
                 >
-                  <School size={12} className="text-muted-foreground shrink-0" />
+                  <SchoolIcon size={12} className="text-muted-foreground shrink-0" />
                   <span className="truncate">{s.name}</span>
                 </button>
               ))
@@ -398,6 +433,18 @@ function SchoolCombobox({
   );
 }
 
+// ── Canonical Lifecycle Options ──
+const LIFECYCLE_OPTIONS: { state: CanonicalState; icon: string }[] = [
+  { state: CANONICAL_STATES.AUDIENCE, icon: '⚫' },
+  { state: CANONICAL_STATES.KNOWN_PROFILE, icon: '⚪' },
+  { state: CANONICAL_STATES.LEAD, icon: '🟡' },
+  { state: CANONICAL_STATES.PROSPECT, icon: '🔵' },
+  { state: CANONICAL_STATES.OPPORTUNITY, icon: '🟣' },
+  { state: CANONICAL_STATES.REGISTERED, icon: '🟣' },
+  { state: CANONICAL_STATES.CUSTOMER, icon: '🟢' },
+  { state: CANONICAL_STATES.POST_CUSTOMER, icon: '🎓' },
+];
+
 // ==========================================
 // NEW BROADCAST WIZARD
 // ==========================================
@@ -406,12 +453,17 @@ function NewBroadcastWizard({
   onSuccess,
   isWaConnected = true,
   waStatus,
+  isGeneral = false,
 }: {
   onBack: () => void;
   onSuccess: (msg: string) => void;
   isWaConnected?: boolean;
   waStatus?: string;
+  isGeneral?: boolean;
 }) {
+  const { t, lang } = useTranslation();
+  const { getStateLabel } = useTenantVocabulary();
+
   // ── Audience state ──
   const [audience, setAudience]         = useState<AudienceItem[]>([]);
   const [audienceMeta, setAudienceMeta] = useState({ total: 0, totalPages: 1, page: 1 });
@@ -479,12 +531,12 @@ function NewBroadcastWizard({
         setSelectedIds(new Set((payload.data ?? []).map((a: AudienceItem) => a.id)));
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal memuat daftar audiens.';
+      const msg = err instanceof Error ? err.message : t('broadcast.failedLoadAudience');
       setAudienceError(msg);
     } finally {
       setIsLoadingAudience(false);
     }
-  }, []);
+  }, [t]);
 
   // ── Fetch schools untuk combobox ──
   const fetchSchools = useCallback(async () => {
@@ -516,8 +568,6 @@ function NewBroadcastWizard({
   useEffect(() => {
     fetchTemplates();
     fetchSchools();
-    // fetchAudience TIDAK dipanggil di sini.
-    // Audience baru di-load setelah user memilih sekolah.
     setIsLoadingAudience(false);
   }, [fetchTemplates, fetchSchools]);
 
@@ -571,7 +621,7 @@ function NewBroadcastWizard({
 
   const handleSend = async () => {
     if (isWaConnected === false) {
-      setAudienceError('Nomor WhatsApp Bisnis belum terhubung atau belum aktif. Hubungkan nomor di menu Pengaturan.');
+      setAudienceError(t('broadcast.waNotConnectedError'));
       return;
     }
     if (selectedIds.size === 0) return;
@@ -582,10 +632,9 @@ function NewBroadcastWizard({
         metaTemplateId: metaTemplate || null,
         namaCampaign: namaCampaign || undefined,
       });
-      onSuccess(`Broadcast ke ${selectedIds.size} audiens berhasil dimasukkan ke antrian!`);
+      onSuccess(t('broadcast.sendSuccessToast').replace('{count}', String(selectedIds.size)));
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal mengirim broadcast.';
-      // Tampilkan error inline
+      const msg = err instanceof Error ? err.message : t('broadcast.sendFailedError');
       setAudienceError(msg);
     } finally {
       setIsSending(false);
@@ -600,7 +649,7 @@ function NewBroadcastWizard({
         <div className="lg:col-span-3">
           <WhatsAppGatingBanner
             compact
-            featureName="Broadcast Pesan WhatsApp"
+            featureName={t('broadcast.featureName')}
             status={waStatus}
           />
         </div>
@@ -612,14 +661,14 @@ function NewBroadcastWizard({
         {/* Step 1: Nama Campaign (opsional tapi disarankan) */}
         <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b bg-secondary/30">
-            <h2 className="font-semibold text-foreground">1. Nama Campaign (Opsional)</h2>
+            <h2 className="font-semibold text-foreground">{t('broadcast.step1Title')}</h2>
           </div>
           <div className="p-4">
             <input
               type="text"
               value={namaCampaign}
               onChange={e => setNamaCampaign(e.target.value)}
-              placeholder={`Campaign ${new Date().toLocaleDateString('id-ID')}`}
+              placeholder={`${t('broadcast.campaignPlaceholder')} ${new Date().toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID')}`}
               className="w-full px-3 py-2.5 bg-background border rounded-lg text-sm focus:border-primary outline-none"
             />
           </div>
@@ -628,20 +677,21 @@ function NewBroadcastWizard({
         {/* Step 2: Target Audiens */}
         <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b bg-secondary/30 flex items-center justify-between">
-            <h2 className="font-semibold text-foreground">2. Pilih Audiens (Targeting)</h2>
+            <h2 className="font-semibold text-foreground">{t('broadcast.step2Title')}</h2>
             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md font-bold">
-              {selectedIds.size} Terpilih
+              {selectedIds.size} {t('broadcast.selectedBadge')}
             </span>
           </div>
 
           {/* Filter bar */}
           <div className="p-4 bg-secondary/10 flex flex-col sm:flex-row gap-3">
-            {/* Combobox: ketik + dropdown sekolah */}
+            {/* Combobox: ketik + dropdown sekolah / mitra */}
             <SchoolCombobox
               value={searchQuery}
               onChange={setSearchQuery}
               schools={schools}
               isLoading={isLoadingSchools}
+              isGeneral={isGeneral}
             />
             <div className="flex-1">
               <select
@@ -649,15 +699,12 @@ function NewBroadcastWizard({
                 onChange={e => setCommercialStateFilter(e.target.value)}
                 className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:border-primary outline-none text-muted-foreground"
               >
-                <option value="">-- Semua Lifecycle State --</option>
-                <option value="AUDIENCE">⚫ Siswa Dingin (Audience)</option>
-                <option value="KNOWN_PROFILE">⚪ Siswa Teridentifikasi (Known Profile)</option>
-                <option value="LEAD">🟡 Siswa Hangat (Lead)</option>
-                <option value="PROSPECT">🔵 Siswa Potensial (Prospect)</option>
-                <option value="OPPORTUNITY">🟣 Siswa Serius (Opportunity)</option>
-                <option value="REGISTERED">🟣 Siswa Terdaftar (Registered)</option>
-                <option value="CUSTOMER">🟢 Siswa / Peserta (Customer)</option>
-                <option value="POST_CUSTOMER">🎓 Alumni (Post-Customer)</option>
+                <option value="">{t('broadcast.allLifecycleStates')}</option>
+                {LIFECYCLE_OPTIONS.map(({ state, icon }) => (
+                  <option key={state} value={state}>
+                    {icon} {getStateLabel(state)} ({state.replace('_', ' ')})
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex gap-2">
@@ -665,16 +712,16 @@ function NewBroadcastWizard({
                 onClick={handleApplyFilter}
                 className="flex-1 sm:flex-none px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
               >
-                Terapkan
+                {t('broadcast.applyFilter')}
               </button>
               {hasActiveFilter && (
                 <button
                   onClick={handleReset}
-                  title="Reset semua filter"
+                  title={t('broadcast.resetTooltip')}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs text-muted-foreground hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/5 transition-all"
                 >
                   <RotateCcw size={13} />
-                  <span className="hidden sm:inline">Reset</span>
+                  <span className="hidden sm:inline">{t('broadcast.resetFilter')}</span>
                 </button>
               )}
             </div>
@@ -686,28 +733,32 @@ function NewBroadcastWizard({
             {!hasSchoolSelected && !isLoadingAudience ? (
               <div className="flex flex-col items-center justify-center py-14 gap-3 text-muted-foreground px-6 text-center">
                 <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                  <School size={22} className="opacity-40" />
+                  {isGeneral ? <Building2 size={22} className="opacity-40" /> : <School size={22} className="opacity-40" />}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground/70">Pilih sekolah terlebih dahulu</p>
-                  <p className="text-xs mt-1 text-muted-foreground">Ketik atau pilih nama sekolah dari dropdown di atas untuk menampilkan daftar siswa.</p>
+                  <p className="text-sm font-medium text-foreground/70">
+                    {isGeneral ? t('broadcast.selectPartnerFirst') : t('broadcast.selectSchoolFirst')}
+                  </p>
+                  <p className="text-xs mt-1 text-muted-foreground">
+                    {isGeneral ? t('broadcast.selectPartnerDesc') : t('broadcast.selectSchoolDesc')}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground/60">
                   <span className="w-5 h-px bg-border" />
-                  <span>Siswa yang menolak WhatsApp (Consent Withdrawn) otomatis disaring</span>
+                  <span>{isGeneral ? t('broadcast.consentWithdrawnNoteGeneral') : t('broadcast.consentWithdrawnNote')}</span>
                   <span className="w-5 h-px bg-border" />
                 </div>
               </div>
             ) : isLoadingAudience ? (
               <div className="flex items-center justify-center py-10 gap-2 text-muted-foreground">
                 <Loader2 size={16} className="animate-spin" />
-                <span className="text-sm">Memuat siswa...</span>
+                <span className="text-sm">{isGeneral ? t('broadcast.loadingContacts') : t('broadcast.loadingStudents')}</span>
               </div>
             ) : audienceError ? (
               <div className="flex flex-col items-center py-8 gap-2 text-rose-500">
                 <AlertCircle size={18} />
                 <p className="text-xs">{audienceError}</p>
-                <button onClick={() => fetchAudience(searchQuery, commercialStateFilter, audiencePage)} className="text-xs underline">Coba lagi</button>
+                <button onClick={() => fetchAudience(searchQuery, commercialStateFilter, audiencePage)} className="text-xs underline">{t('broadcast.tryAgain')}</button>
               </div>
             ) : (
               <>
@@ -723,11 +774,21 @@ function NewBroadcastWizard({
                           className="rounded border-border text-primary focus:ring-primary"
                         />
                       </th>
-                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Siswa</th>
-                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Sekolah</th>
-                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Status Komersial</th>
-                      <th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">Consent</th>
-                      <th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">SW</th>
+                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">
+                        {isGeneral ? t('broadcast.colContact') : t('broadcast.colStudent')}
+                      </th>
+                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">
+                        {isGeneral ? t('broadcast.colPartner') : t('broadcast.colSchool')}
+                      </th>
+                      <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">
+                        {t('broadcast.colCommercialStatus')}
+                      </th>
+                      <th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">
+                        {t('broadcast.colConsent')}
+                      </th>
+                      <th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">
+                        {t('broadcast.colSw')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -736,12 +797,16 @@ function NewBroadcastWizard({
                         <td colSpan={6} className="py-8 text-center">
                           <p className="text-sm text-muted-foreground">
                             {commercialStateFilter
-                              ? `Tidak ada siswa dengan status "${commercialStateFilter}" di sekolah ini.`
-                              : 'Tidak ada siswa ditemukan untuk sekolah ini.'}
+                              ? isGeneral
+                                ? `${t('broadcast.noContactsWithStatus')} "${getStateLabel(commercialStateFilter)}" ${t('broadcast.inThisPartner')}`
+                                : `${t('broadcast.noStudentsWithStatus')} "${getStateLabel(commercialStateFilter)}" ${t('broadcast.inThisSchool')}`
+                              : isGeneral
+                                ? t('broadcast.noContactsFound')
+                                : t('broadcast.noStudentsFound')}
                           </p>
                           {commercialStateFilter && (
                             <button onClick={() => { setCommercialStateFilter(''); fetchAudience(searchQuery, '', 1); }} className="text-xs text-primary underline mt-1">
-                              Hapus filter status
+                              {t('broadcast.clearStatusFilter')}
                             </button>
                           )}
                         </td>
@@ -767,12 +832,12 @@ function NewBroadcastWizard({
                           <td className="px-4 py-3 text-center">
                             <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-500">
                               <ShieldCheck size={12} />
-                              Aktif
+                              {t('broadcast.consentActive')}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={cn('text-xs px-2 py-1 rounded-full font-bold', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
-                              {a.isSwOpen ? 'Terbuka' : 'Tertutup'}
+                              {a.isSwOpen ? t('broadcast.swOpen') : t('broadcast.swClosed')}
                             </span>
                           </td>
                         </tr>
@@ -790,10 +855,10 @@ function NewBroadcastWizard({
                       onChange={e => handleSelectAll(e.target.checked)}
                       className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
                     />
-                    Pilih Semua ({audience.length})
+                    {t('broadcast.selectAll')} ({audience.length})
                   </label>
                   {audience.length === 0 ? (
-                    <p className="text-center py-6 text-xs text-muted-foreground">Tidak ada data yang cocok</p>
+                    <p className="text-center py-6 text-xs text-muted-foreground">{t('broadcast.noMatchingData')}</p>
                   ) : (
                     audience.map(a => (
                       <div
@@ -809,7 +874,7 @@ function NewBroadcastWizard({
                           <div className="flex items-center justify-between gap-2">
                             <h4 className="font-semibold text-sm text-foreground truncate">{a.nama}</h4>
                             <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold shrink-0', a.isSwOpen ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500')}>
-                              {a.isSwOpen ? 'SW Buka' : 'SW Tutup'}
+                              {a.isSwOpen ? t('broadcast.swOpenShort') : t('broadcast.swClosedShort')}
                             </span>
                           </div>
                           <p className="text-xs text-muted-foreground truncate mt-0.5">{a.sekolah} · {a.phone}</p>
@@ -817,7 +882,7 @@ function NewBroadcastWizard({
                             <CommercialStateBadge state={a.commercialState || a.statusPipeline || CANONICAL_STATES.LEAD} size="sm" />
                             <span className="inline-flex items-center gap-0.5 text-xs text-emerald-500 font-medium">
                               <ShieldCheck size={11} />
-                              Consent Aktif
+                              {t('broadcast.consentActive')}
                             </span>
                           </div>
                         </div>
@@ -833,26 +898,26 @@ function NewBroadcastWizard({
           <div className="px-4 py-2.5 bg-emerald-500/5 border-t flex items-center justify-between text-xs text-emerald-500">
             <span className="flex items-center gap-1.5">
               <ShieldCheck size={14} className="shrink-0 text-emerald-500" />
-              <span><strong>Consent Engine:</strong> Hanya siswa berstatus consent valid yang dimuat. Penolakan WhatsApp otomatis disaring.</span>
+              <span><strong>Consent Engine:</strong> {isGeneral ? t('broadcast.consentEngineNoticeGeneral') : t('broadcast.consentEngineNoticeLpk')}</span>
             </span>
           </div>
 
           {/* Pagination audiens */}
           {audienceMeta.totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-2 border-t bg-secondary/10 text-xs text-muted-foreground">
-              <span>Total: {audienceMeta.total} audiens</span>
+              <span>{t('broadcast.totalAudiences')} {audienceMeta.total} {t('broadcast.audiencesUnit')}</span>
               <div className="flex gap-2">
                 <button
                   disabled={audienceMeta.page <= 1}
                   onClick={() => { setAudiencePage(p => p - 1); fetchAudience(searchQuery, commercialStateFilter, audiencePage - 1); }}
                   className="px-2 py-1 rounded bg-secondary disabled:opacity-40"
-                >← Prev</button>
-                <span>Hal {audienceMeta.page} / {audienceMeta.totalPages}</span>
+                >{t('broadcast.prev')}</button>
+                <span>{t('broadcast.pageOf')} {audienceMeta.page} / {audienceMeta.totalPages}</span>
                 <button
                   disabled={audienceMeta.page >= audienceMeta.totalPages}
                   onClick={() => { setAudiencePage(p => p + 1); fetchAudience(searchQuery, commercialStateFilter, audiencePage + 1); }}
                   className="px-2 py-1 rounded bg-secondary disabled:opacity-40"
-                >Next →</button>
+                >{t('broadcast.next')}</button>
               </div>
             </div>
           )}
@@ -861,29 +926,29 @@ function NewBroadcastWizard({
         {/* Step 3: Template Selection */}
         <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b bg-secondary/30">
-            <h2 className="font-semibold text-foreground">3. Pilih Template Pesan</h2>
-            <p className="text-xs text-muted-foreground mt-1">Variabel otomatis diisi berdasarkan nama target (Smart Routing Meta/Interactive).</p>
+            <h2 className="font-semibold text-foreground">{t('broadcast.step3Title')}</h2>
+            <p className="text-xs text-muted-foreground mt-1">{t('broadcast.step3Desc')}</p>
           </div>
           <div className="p-5 space-y-5">
             {isLoadingTemplates ? (
               <div className="flex items-center gap-2 text-muted-foreground py-4">
                 <Loader2 size={14} className="animate-spin" />
-                <span className="text-xs">Memuat template...</span>
+                <span className="text-xs">{t('broadcast.loadingTemplates')}</span>
               </div>
             ) : (
               <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-semibold">Pilih Template Meta</label>
-                    <span className="text-xs text-muted-foreground">{metaTemplates.length} tersedia</span>
+                    <label className="text-sm font-semibold">{t('broadcast.selectMetaTemplate')}</label>
+                    <span className="text-xs text-muted-foreground">{metaTemplates.length} {t('broadcast.templatesAvailable')}</span>
                   </div>
                   <select
                     value={metaTemplate}
                     onChange={e => setMetaTemplate(e.target.value)}
                     className="w-full px-3 py-2.5 bg-background border rounded-lg text-sm focus:border-primary outline-none"
                   >
-                    <option value="">-- Pilih Template Meta --</option>
-                    {metaTemplates.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
+                    <option value="">{t('broadcast.selectTemplatePlaceholder')}</option>
+                    {metaTemplates.map(tMeta => (
+                      <option key={tMeta.id} value={tMeta.id}>{tMeta.name}</option>
                     ))}
                   </select>
 
@@ -897,7 +962,7 @@ function NewBroadcastWizard({
                       >
                         <span className="flex items-center gap-1.5">
                           <Eye size={13} />
-                          {showMobilePreview ? 'Sembunyikan Preview Pesan' : 'Lihat Preview Pesan WhatsApp'}
+                          {showMobilePreview ? t('broadcast.hidePreview') : t('broadcast.viewPreview')}
                         </span>
                         {showMobilePreview ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                       </button>
@@ -905,7 +970,7 @@ function NewBroadcastWizard({
                   )}
 
                   {(() => {
-                    const selectedMetaTmpl = metaTemplate ? metaTemplates.find(t => t.id === metaTemplate) : null;
+                    const selectedMetaTmpl = metaTemplate ? metaTemplates.find(tMeta => tMeta.id === metaTemplate) : null;
                     if (!selectedMetaTmpl || !selectedMetaTmpl.bodyText) return null;
 
                     let parsed: any = {};
@@ -947,12 +1012,12 @@ function NewBroadcastWizard({
                     const firstSelectedId = Array.from(selectedIds)[0];
                     const sampleTarget = audience.find(a => a.id === firstSelectedId) || audience[0];
                     const previewContext: Record<string, string> = sampleTarget ? {
-                      STUDENT_NAME: sampleTarget.nama || 'Siswa',
-                      SCHOOL_NAME: sampleTarget.sekolah || 'Sekolah',
+                      STUDENT_NAME: sampleTarget.nama || (isGeneral ? t('broadcast.sampleContact') : t('broadcast.sampleStudent')),
+                      SCHOOL_NAME: sampleTarget.sekolah || (isGeneral ? t('broadcast.samplePartner') : t('broadcast.sampleSchool')),
                       PHONE_NUMBER: sampleTarget.phone || '08xxx',
                     } : {
-                      STUDENT_NAME: 'Budi',
-                      SCHOOL_NAME: 'SMA N 1',
+                      STUDENT_NAME: isGeneral ? (lang === 'en' ? 'Alex' : 'Budi') : (lang === 'en' ? 'Alex' : 'Budi'),
+                      SCHOOL_NAME: isGeneral ? (lang === 'en' ? 'Acme Corp' : 'PT Maju Bersama') : (lang === 'en' ? 'High School 1' : 'SMA N 1'),
                       PHONE_NUMBER: '081234567890',
                     };
 
@@ -1016,19 +1081,19 @@ function NewBroadcastWizard({
       {/* ── KANAN: Summary Desktop ── */}
       <div className="lg:col-span-1 space-y-4">
         <div className="bg-card border rounded-xl p-4 shadow-xl lg:shadow-sm hidden lg:block">
-          <h3 className="font-bold mb-3">Ringkasan Eksekusi</h3>
+          <h3 className="font-bold mb-3">{t('broadcast.executionSummary')}</h3>
 
           <div className="mb-4 space-y-1.5">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Total Audiens</span>
+              <span className="text-muted-foreground">{t('broadcast.totalAudience')}</span>
               <span className="font-bold">{selectedIds.size}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-emerald-500">SW Terbuka (Otomatis Routing — Gratis)</span>
+              <span className="text-emerald-500">{t('broadcast.swOpenFree')}</span>
               <span className="font-bold">{swOpenCount}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-rose-500">SW Tertutup (Berbayar)</span>
+              <span className="text-rose-500">{t('broadcast.swClosedPaid')}</span>
               <span className="font-bold">{swClosedCount}</span>
             </div>
           </div>
@@ -1036,13 +1101,13 @@ function NewBroadcastWizard({
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <span className={cn('w-2 h-2 rounded-full shrink-0', metaTemplate ? 'bg-emerald-500' : 'bg-border')} />
-              <span>Template Meta: <span className={metaTemplate ? 'text-foreground font-medium' : ''}>{metaTemplate ? metaTemplates.find(t => t.id === metaTemplate)?.name : 'Belum dipilih'}</span></span>
+              <span>{t('broadcast.metaTemplateLabel')} <span className={metaTemplate ? 'text-foreground font-medium' : ''}>{metaTemplate ? metaTemplates.find(tMeta => tMeta.id === metaTemplate)?.name : t('broadcast.notSelected')}</span></span>
             </div>
           </div>
 
           <div className="mt-4 p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground flex items-start gap-2">
             <Info size={14} className="mt-0.5 text-primary shrink-0" />
-            <p>Pengiriman akan dimasukkan ke dalam <strong>Queue (Antrean)</strong> di latar belakang agar aman dari limitasi Meta API.</p>
+            <p dangerouslySetInnerHTML={{ __html: t('broadcast.queueNotice') }} />
           </div>
 
           <button
@@ -1051,8 +1116,8 @@ function NewBroadcastWizard({
             className="w-full mt-4 py-3 rounded-xl gradient-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSending
-              ? <><Loader2 size={18} className="animate-spin" /> Memproses...</>
-              : <><Send size={18} /> Kirim Broadcast Instan</>
+              ? <><Loader2 size={18} className="animate-spin" /> {t('broadcast.processing')}</>
+              : <><Send size={18} /> {t('broadcast.sendInstant')}</>
             }
           </button>
         </div>
@@ -1063,17 +1128,17 @@ function NewBroadcastWizard({
         <div className="px-4 py-3 space-y-2.5">
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1">
-              <span className="text-muted-foreground">Total:</span>
+              <span className="text-muted-foreground">{t('broadcast.totalShort')}</span>
               <span className="font-bold text-foreground">{selectedIds.size}</span>
             </div>
             <div className="h-3 w-px bg-border" />
             <div className="flex items-center gap-1">
-              <span className="text-emerald-500">Gratis:</span>
+              <span className="text-emerald-500">{t('broadcast.freeShort')}</span>
               <span className="font-bold">{swOpenCount}</span>
             </div>
             <div className="h-3 w-px bg-border" />
             <div className="flex items-center gap-1">
-              <span className="text-rose-500">Berbayar:</span>
+              <span className="text-rose-500">{t('broadcast.paidShort')}</span>
               <span className="font-bold">{swClosedCount}</span>
             </div>
           </div>
@@ -1083,8 +1148,8 @@ function NewBroadcastWizard({
             className="w-full py-3 rounded-xl gradient-primary text-white font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isSending
-              ? <><Loader2 size={16} className="animate-spin" /> Memproses...</>
-              : <><Send size={16} /> Kirim Broadcast ({selectedIds.size})</>
+              ? <><Loader2 size={16} className="animate-spin" /> {t('broadcast.processing')}</>
+              : <><Send size={16} /> {t('broadcast.sendCount')} ({selectedIds.size})</>
             }
           </button>
         </div>
