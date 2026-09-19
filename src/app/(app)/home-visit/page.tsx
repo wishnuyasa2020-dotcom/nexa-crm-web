@@ -12,6 +12,9 @@ import apiClient from '@/lib/apiClient';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 import { DecisionConsultationModal } from '@/components/home-visit/DecisionConsultationModal';
 
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
+
 interface DetailWali {
   nama_wali?: string;
   peran_wali?: string;
@@ -83,6 +86,9 @@ function SkeletonCard() {
 }
 
 export default function HomeVisitPage() {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
+
   const [data, setData] = useState<HomeVisitItem[]>([]);
   const [stats, setStats] = useState<HomeVisitStats>({
     total: 0,
@@ -126,14 +132,14 @@ export default function HomeVisitPage() {
           conversionRate: 0,
         });
       } else {
-        setError('Gagal memuat data konsultasi.');
+        setError(t('homeVisit.errorLoad'));
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Terjadi kesalahan saat memuat data konsultasi.');
+      setError(err.response?.data?.message || t('homeVisit.errorGeneric'));
     } finally {
       setLoading(false);
     }
-  }, [channelFilter, outcomeFilter, search]);
+  }, [channelFilter, outcomeFilter, search, t]);
 
   useEffect(() => {
     fetchData();
@@ -149,9 +155,11 @@ export default function HomeVisitPage() {
             <Home size={18} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-base font-bold text-foreground leading-tight">Home Visit & Konsultasi Ortu</h1>
+            <h1 className="text-base font-bold text-foreground leading-tight">
+              {isGeneral ? t('homeVisit.titleGeneral') : t('homeVisit.titleLpk')}
+            </h1>
             <p className="text-xs text-muted-foreground truncate">
-              Commitment Threshold: Validasi keputusan orang tua (Prospect ➔ Opportunity)
+              {isGeneral ? t('homeVisit.subtitleGeneral') : t('homeVisit.subtitleLpk')}
             </p>
           </div>
         </div>
@@ -161,10 +169,10 @@ export default function HomeVisitPage() {
           <button
             onClick={() => setIsModalOpen(true)}
             className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 sm:px-3.5 sm:py-2 rounded-lg gradient-primary text-white text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 cursor-pointer"
-            title="Catat Konsultasi Baru"
+            title={t('homeVisit.btnNewConsultationTitle')}
           >
             <Plus size={16} />
-            <span>Catat Konsultasi Baru</span>
+            <span>{t('homeVisit.btnNewConsultation')}</span>
           </button>
         </div>
       </div>
@@ -174,21 +182,21 @@ export default function HomeVisitPage() {
         {/* Total Konsultasi */}
         <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Konsultasi</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('homeVisit.kpiTotal')}</span>
             <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
               <Handshake size={14} />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
             <span className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</span>
-            <p className="text-xs text-muted-foreground mt-0.5">Tercatat di periode ini</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('homeVisit.kpiTotalSub')}</p>
           </div>
         </div>
 
         {/* Komitmen Disetujui */}
         <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Komitmen Disetujui</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('homeVisit.kpiCommitmentApproved')}</span>
             <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
               <CheckCircle2 size={14} />
             </div>
@@ -196,37 +204,39 @@ export default function HomeVisitPage() {
           <div className="mt-2 sm:mt-3">
             <div className="flex items-baseline gap-1.5 sm:gap-2">
               <span className="text-xl sm:text-2xl font-bold text-emerald-500">{stats.komitCount}</span>
-              <span className="text-xs font-bold text-violet-400">➔ Opp.</span>
+              <span className="text-xs font-bold text-violet-400">{t('homeVisit.kpiOppBadge')}</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Lolos Commitment Gate</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('homeVisit.kpiCommitmentSub')}</p>
           </div>
         </div>
 
         {/* Pertimbangan Ortu */}
         <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Pertimbangan Ortu</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              {isGeneral ? t('homeVisit.kpiConsiderationGeneral') : t('homeVisit.kpiConsiderationLpk')}
+            </span>
             <div className="w-7 h-7 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500">
               <Clock size={14} />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
             <span className="text-xl sm:text-2xl font-bold text-yellow-500">{stats.followUpCount}</span>
-            <p className="text-xs text-muted-foreground mt-0.5">Perlu Diskusi Lanjutan</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('homeVisit.kpiConsiderationSub')}</p>
           </div>
         </div>
 
         {/* Conversion Rate */}
         <div className="bg-card border rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Conversion Rate</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('homeVisit.kpiConversionRate')}</span>
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               <ArrowUpRight size={14} />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
             <span className="text-xl sm:text-2xl font-bold text-primary">{stats.conversionRate}%</span>
-            <p className="text-xs text-muted-foreground mt-0.5">Prospect ➔ Opportunity</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('homeVisit.kpiConversionSub')}</p>
           </div>
         </div>
       </div>
@@ -236,7 +246,7 @@ export default function HomeVisitPage() {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder="Cari nama siswa, sekolah, atau nama orang tua..."
+          placeholder={isGeneral ? t('homeVisit.searchPlaceholderGeneral') : t('homeVisit.searchPlaceholderLpk')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
@@ -251,10 +261,14 @@ export default function HomeVisitPage() {
           onChange={(e) => setChannelFilter(e.target.value)}
           className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
         >
-          <option value="ALL">Semua Lokasi / Channel</option>
-          <option value="Home Visit">🏠 Home Visit</option>
-          <option value="Kantor Derma">🏢 Kantor Derma</option>
-          <option value="Sekolah Siswa">🏫 Sekolah Siswa</option>
+          <option value="ALL">{t('homeVisit.filterAllChannels')}</option>
+          <option value="Home Visit">
+            {isGeneral ? t('homeVisit.channelHomeVisitGeneral') : t('homeVisit.channelHomeVisitLpk')}
+          </option>
+          <option value="Kantor Derma">{t('homeVisit.channelOffice')}</option>
+          <option value="Sekolah Siswa">
+            {isGeneral ? t('homeVisit.channelSchoolGeneral') : t('homeVisit.channelSchoolLpk')}
+          </option>
         </select>
 
         {/* Filter Outcome */}
@@ -263,10 +277,14 @@ export default function HomeVisitPage() {
           onChange={(e) => setOutcomeFilter(e.target.value)}
           className="flex-1 px-3 py-2.5 bg-card border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
         >
-          <option value="ALL">Semua Status Komitmen</option>
-          <option value="Disetujui">🟢 Komitmen Disetujui</option>
-          <option value="Pertimbangan">🟡 Pertimbangan Ortu</option>
-          <option value="Ditolak">🔴 Ditolak Ortu</option>
+          <option value="ALL">{t('homeVisit.filterAllOutcomes')}</option>
+          <option value="Disetujui">{t('homeVisit.outcomeApprovedFilter')}</option>
+          <option value="Pertimbangan">
+            {isGeneral ? t('homeVisit.outcomeConsiderationFilterGeneral') : t('homeVisit.outcomeConsiderationFilterLpk')}
+          </option>
+          <option value="Ditolak">
+            {isGeneral ? t('homeVisit.outcomeRejectedFilterGeneral') : t('homeVisit.outcomeRejectedFilterLpk')}
+          </option>
         </select>
       </div>
 
@@ -279,13 +297,17 @@ export default function HomeVisitPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-secondary/60 text-muted-foreground font-semibold border-b">
                 <tr>
-                  <th className="py-3.5 px-4">Tanggal & Lokasi</th>
-                  <th className="py-3.5 px-4">Siswa & Sekolah</th>
-                  <th className="py-3.5 px-4">Wali / Orang Tua (Veto)</th>
-                  <th className="py-3.5 px-4">Hasil Validasi Komitmen</th>
-                  <th className="py-3.5 px-4">Kesepakatan & Next Action</th>
-                  <th className="py-3.5 px-4">PJ CRO</th>
-                  <th className="py-3.5 px-4 text-right">Aksi</th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colDateLocation')}</th>
+                  <th className="py-3.5 px-4">
+                    {isGeneral ? t('homeVisit.colStudentSchoolGeneral') : t('homeVisit.colStudentSchoolLpk')}
+                  </th>
+                  <th className="py-3.5 px-4">
+                    {isGeneral ? t('homeVisit.colGuardianVetoGeneral') : t('homeVisit.colGuardianVetoLpk')}
+                  </th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colValidationResult')}</th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colAgreementNextAction')}</th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colPicCro')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('homeVisit.colAction')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -303,7 +325,7 @@ export default function HomeVisitPage() {
               onClick={fetchData}
               className="px-4 py-2 rounded-lg bg-secondary text-xs font-semibold text-foreground hover:bg-secondary/80 transition-all cursor-pointer"
             >
-              Muat Ulang
+              {t('homeVisit.btnRetry')}
             </button>
           </div>
         ) : data.length === 0 ? (
@@ -312,9 +334,9 @@ export default function HomeVisitPage() {
               <Home size={32} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground">Belum ada riwayat konsultasi keputusan</h3>
+              <h3 className="text-base font-bold text-foreground">{t('homeVisit.emptyTitleDesktop')}</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 leading-relaxed">
-                Catat interaksi tatap muka bersama orang tua (Home Visit, pertemuan kantor, atau sekolah) untuk memenuhi Commitment Threshold dan memindahkan siswa ke status Opportunity.
+                {isGeneral ? t('homeVisit.emptyDescDesktopGeneral') : t('homeVisit.emptyDescDesktopLpk')}
               </p>
             </div>
             <div>
@@ -323,7 +345,7 @@ export default function HomeVisitPage() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow hover:bg-primary/90 transition-all cursor-pointer"
               >
                 <Plus size={14} />
-                <span>Catat Konsultasi Pertama</span>
+                <span>{t('homeVisit.emptyBtnDesktop')}</span>
               </button>
             </div>
           </div>
@@ -332,13 +354,17 @@ export default function HomeVisitPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-secondary/60 text-muted-foreground font-semibold border-b">
                 <tr>
-                  <th className="py-3.5 px-4">Tanggal & Lokasi</th>
-                  <th className="py-3.5 px-4">Siswa & Sekolah</th>
-                  <th className="py-3.5 px-4">Wali / Orang Tua (Veto)</th>
-                  <th className="py-3.5 px-4">Hasil Validasi Komitmen</th>
-                  <th className="py-3.5 px-4">Kesepakatan & Next Action</th>
-                  <th className="py-3.5 px-4">PJ CRO</th>
-                  <th className="py-3.5 px-4 text-right">Aksi</th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colDateLocation')}</th>
+                  <th className="py-3.5 px-4">
+                    {isGeneral ? t('homeVisit.colStudentSchoolGeneral') : t('homeVisit.colStudentSchoolLpk')}
+                  </th>
+                  <th className="py-3.5 px-4">
+                    {isGeneral ? t('homeVisit.colGuardianVetoGeneral') : t('homeVisit.colGuardianVetoLpk')}
+                  </th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colValidationResult')}</th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colAgreementNextAction')}</th>
+                  <th className="py-3.5 px-4">{t('homeVisit.colPicCro')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('homeVisit.colAction')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -357,13 +383,25 @@ export default function HomeVisitPage() {
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                           {item.channel === 'Home Visit' ? (
-                            <Home size={12} className="text-pink-400" />
-                          ) : item.channel === 'Kantor Derma' ? (
-                            <Building2 size={12} className="text-blue-400" />
+                            <>
+                              <Home size={12} className="text-pink-400" />
+                              <span>
+                                {isGeneral ? t('homeVisit.channelLabelHomeVisitGeneral') : t('homeVisit.channelLabelHomeVisitLpk')}
+                              </span>
+                            </>
+                          ) : item.channel === 'Kantor Derma' || item.channel.includes('Kantor') ? (
+                            <>
+                              <Building2 size={12} className="text-blue-400" />
+                              <span>{t('homeVisit.channelLabelOffice')}</span>
+                            </>
                           ) : (
-                            <School size={12} className="text-emerald-400" />
+                            <>
+                              <School size={12} className="text-emerald-400" />
+                              <span>
+                                {isGeneral ? t('homeVisit.channelLabelSchoolGeneral') : t('homeVisit.channelLabelSchoolLpk')}
+                              </span>
+                            </>
                           )}
-                          <span>{item.channel}</span>
                         </div>
                       </td>
 
@@ -394,10 +432,10 @@ export default function HomeVisitPage() {
                       {/* Wali / Orang Tua */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span className="font-semibold text-foreground block">
-                          {item.detailWali.nama_wali || 'Orang Tua / Wali'}
+                          {item.detailWali.nama_wali || (isGeneral ? t('homeVisit.defaultGuardianNameGeneral') : t('homeVisit.defaultGuardianNameLpk'))}
                         </span>
                         <span className="text-xs text-muted-foreground block mt-0.5">
-                          Peran: {item.detailWali.peran_wali || 'Orang Tua'}
+                          {t('homeVisit.rolePrefix')} {item.detailWali.peran_wali || (isGeneral ? t('homeVisit.defaultRoleGeneral') : t('homeVisit.defaultRoleLpk'))}
                         </span>
                       </td>
 
@@ -407,17 +445,19 @@ export default function HomeVisitPage() {
                           {isKomit ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold text-xs">
                               <CheckCircle2 size={12} />
-                              <span>Komitmen Disetujui</span>
+                              <span>{t('homeVisit.badgeApprovedFull')}</span>
                             </span>
                           ) : isFollowUp ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-semibold text-xs">
                               <Clock size={12} />
-                              <span>Pertimbangan Ortu</span>
+                              <span>
+                                {isGeneral ? t('homeVisit.badgeConsiderationFullGeneral') : t('homeVisit.badgeConsiderationFullLpk')}
+                              </span>
                             </span>
                           ) : isReject ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 font-semibold text-xs">
                               <XCircle size={12} />
-                              <span>Ditolak / Keberatan</span>
+                              <span>{t('homeVisit.badgeRejectedFull')}</span>
                             </span>
                           ) : (
                             <span className="text-xs text-muted-foreground">{item.hasilAktivitas}</span>
@@ -439,7 +479,7 @@ export default function HomeVisitPage() {
                         )}
                         {item.nextAction && (
                           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                            <span className="font-semibold text-foreground/80">Next:</span> {item.nextAction}
+                            <span className="font-semibold text-foreground/80">{t('homeVisit.nextActionPrefix')}</span> {item.nextAction}
                             {item.dueDate ? ` (${item.dueDate})` : ''}
                           </p>
                         )}
@@ -456,7 +496,7 @@ export default function HomeVisitPage() {
                           href={`/siswa/${item.idSiswa}`}
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground font-semibold text-xs transition-colors"
                         >
-                          <span>Lihat Siswa</span>
+                          <span>{isGeneral ? t('homeVisit.btnViewStudentGeneral') : t('homeVisit.btnViewStudentLpk')}</span>
                           <ChevronRight size={13} />
                         </Link>
                       </td>
@@ -483,7 +523,7 @@ export default function HomeVisitPage() {
               onClick={fetchData}
               className="px-3.5 py-1.5 rounded-lg bg-secondary text-xs font-semibold text-foreground hover:bg-secondary/80 transition-all cursor-pointer"
             >
-              Muat Ulang
+              {t('homeVisit.btnRetry')}
             </button>
           </div>
         ) : data.length === 0 ? (
@@ -492,9 +532,9 @@ export default function HomeVisitPage() {
               <Home size={24} />
             </div>
             <div>
-              <p className="font-bold text-sm text-foreground">Belum ada riwayat konsultasi</p>
+              <p className="font-bold text-sm text-foreground">{t('homeVisit.emptyTitleMobile')}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Catat konsultasi ortu untuk memenuhi Commitment Threshold.
+                {isGeneral ? t('homeVisit.emptyDescMobileGeneral') : t('homeVisit.emptyDescMobileLpk')}
               </p>
             </div>
             <button
@@ -502,7 +542,7 @@ export default function HomeVisitPage() {
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg gradient-primary text-white text-xs font-semibold shadow hover:opacity-90 transition-all cursor-pointer"
             >
               <Plus size={14} />
-              <span>Catat Konsultasi Baru</span>
+              <span>{t('homeVisit.emptyBtnMobile')}</span>
             </button>
           </div>
         ) : (
@@ -529,17 +569,17 @@ export default function HomeVisitPage() {
                     {isKomit ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold text-xs shrink-0">
                         <CheckCircle2 size={11} />
-                        <span>Disetujui</span>
+                        <span>{t('homeVisit.badgeApprovedShort')}</span>
                       </span>
                     ) : isFollowUp ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 font-semibold text-xs shrink-0">
                         <Clock size={11} />
-                        <span>Pertimbangan</span>
+                        <span>{t('homeVisit.badgeConsiderationShort')}</span>
                       </span>
                     ) : isReject ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-500 font-semibold text-xs shrink-0">
                         <XCircle size={11} />
-                        <span>Ditolak</span>
+                        <span>{t('homeVisit.badgeRejectedShort')}</span>
                       </span>
                     ) : (
                       <span className="text-xs text-muted-foreground shrink-0">{item.hasilAktivitas}</span>
@@ -550,13 +590,25 @@ export default function HomeVisitPage() {
                   <div className="flex items-center text-xs">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/50 border border-border/40 text-muted-foreground">
                       {item.channel === 'Home Visit' ? (
-                        <Home size={11} className="text-pink-400 shrink-0" />
-                      ) : item.channel === 'Kantor Derma' ? (
-                        <Building2 size={11} className="text-blue-400 shrink-0" />
+                        <>
+                          <Home size={11} className="text-pink-400 shrink-0" />
+                          <span className="font-medium text-foreground/80">
+                            {isGeneral ? t('homeVisit.channelLabelHomeVisitGeneral') : t('homeVisit.channelLabelHomeVisitLpk')}
+                          </span>
+                        </>
+                      ) : item.channel === 'Kantor Derma' || item.channel.includes('Kantor') ? (
+                        <>
+                          <Building2 size={11} className="text-blue-400 shrink-0" />
+                          <span className="font-medium text-foreground/80">{t('homeVisit.channelLabelOffice')}</span>
+                        </>
                       ) : (
-                        <School size={11} className="text-emerald-400 shrink-0" />
+                        <>
+                          <School size={11} className="text-emerald-400 shrink-0" />
+                          <span className="font-medium text-foreground/80">
+                            {isGeneral ? t('homeVisit.channelLabelSchoolGeneral') : t('homeVisit.channelLabelSchoolLpk')}
+                          </span>
+                        </>
                       )}
-                      <span className="font-medium text-foreground/80">{item.channel}</span>
                     </span>
                   </div>
                 </div>
@@ -589,10 +641,10 @@ export default function HomeVisitPage() {
 
                   <div className="text-right shrink-0">
                     <p className="text-xs font-semibold text-foreground">
-                      {item.detailWali?.nama_wali || 'Orang Tua / Wali'}
+                      {item.detailWali?.nama_wali || (isGeneral ? t('homeVisit.defaultGuardianNameGeneral') : t('homeVisit.defaultGuardianNameLpk'))}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Peran: {item.detailWali?.peran_wali || 'Orang Tua'}
+                      {t('homeVisit.rolePrefix')} {item.detailWali?.peran_wali || (isGeneral ? t('homeVisit.defaultRoleGeneral') : t('homeVisit.defaultRoleLpk'))}
                     </p>
                     <div className="mt-1 flex justify-end">
                       <CommercialStateBadge state={item.commercialState} size="sm" />
@@ -605,12 +657,12 @@ export default function HomeVisitPage() {
                   <div className="bg-secondary/40 border border-border/40 rounded-lg p-2.5 text-xs space-y-1">
                     {item.detailWali?.kesepakatan && (
                       <p className="text-foreground leading-relaxed">
-                        <span className="font-semibold text-muted-foreground">Catatan:</span> {item.detailWali.kesepakatan}
+                        <span className="font-semibold text-muted-foreground">{t('homeVisit.notesPrefix')}</span> {item.detailWali.kesepakatan}
                       </p>
                     )}
                     {item.nextAction && (
                       <p className="text-muted-foreground flex items-center gap-1">
-                        <span className="font-semibold text-foreground/80">Next Action:</span> {item.nextAction}
+                        <span className="font-semibold text-foreground/80">{t('homeVisit.nextActionPrefixFull')}</span> {item.nextAction}
                         {item.dueDate ? ` (${item.dueDate})` : ''}
                       </p>
                     )}
@@ -620,13 +672,13 @@ export default function HomeVisitPage() {
                 {/* Footer: CRO & Aksi Lihat Siswa */}
                 <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40 text-muted-foreground">
                   <span>
-                    PJ CRO: <strong className="text-foreground font-medium">{item.pjCro || '—'}</strong>
+                    {t('homeVisit.pjCroPrefix')} <strong className="text-foreground font-medium">{item.pjCro || '—'}</strong>
                   </span>
                   <Link
                     href={`/siswa/${item.idSiswa}`}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground font-semibold text-xs transition-colors"
                   >
-                    <span>Detail Siswa</span>
+                    <span>{isGeneral ? t('homeVisit.btnDetailStudentGeneral') : t('homeVisit.btnDetailStudentLpk')}</span>
                     <ChevronRight size={13} />
                   </Link>
                 </div>
