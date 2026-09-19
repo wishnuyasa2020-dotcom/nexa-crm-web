@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import {
   FileText, Plus, Search, MessageSquare, Phone,
   RefreshCw, Loader2, ToggleLeft, ToggleRight, Pencil, Trash2,
-  ChevronDown, ExternalLink, Eye, X,
+  ChevronDown, ExternalLink, Eye, X, Copy, Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -13,27 +13,9 @@ import {
   fetchTemplates, syncTemplatesFromMeta, updateTemplate, deleteTemplate,
   WaTemplate, MetaStatus,
 } from '@/lib/chatApi';
+import { useTranslation } from '@/hooks/useTranslation';
 import { TemplateFormModal } from '@/components/templates/TemplateFormModal';
 import { TemplatePreviewBubble, PreviewButton, ButtonType, buildPreviewText } from '@/components/templates/TemplatePreviewBubble';
-
-// ── Konstanta ─────────────────────────────────────────────────────────────────
-const STATUS_TABS: { label: string; value: MetaStatus | '' }[] = [
-  { label: 'Semua',       value: '' },
-  { label: '✅ Approved', value: 'APPROVED' },
-  { label: '⏳ Pending',  value: 'PENDING' },
-  { label: '❌ Rejected', value: 'REJECTED' },
-  { label: '📋 Lokal',   value: 'LOCAL_ONLY' },
-];
-
-const PIPELINE_OPTIONS = [
-  { value: '',            label: 'Semua Pipeline' },
-  { value: 'PROBING',     label: '🔍 Probing' },
-  { value: 'HOT_LEAD',    label: '🔥 Hot Lead' },
-  { value: 'REGISTRASI',  label: '📝 Registrasi' },
-  { value: 'NURTURING',   label: '🌱 Nurturing' },
-  { value: 'SNOOZE',      label: '😴 Snooze' },
-  { value: 'ALUMNI',      label: '🎓 Alumni' },
-];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -57,16 +39,45 @@ function parseButtonsFromParams(parametersStr: string | null | undefined): Previ
 
 // ── Page Component ────────────────────────────────────────────────────────────
 export default function TemplatesPage() {
-  const [templates,    setTemplates]    = useState<WaTemplate[]>([]);
-  const [total,        setTotal]        = useState(0);
-  const [approvedTotal, setApprovedTotal] = useState<number | null>(null);
-  const [isLoading,    setIsLoading]    = useState(true);
-  const [isSyncing,    setIsSyncing]    = useState(false);
-  const [search,       setSearch]       = useState('');
-  const [activeTab,    setActiveTab]    = useState<MetaStatus | ''>('');
-  const [pipeline,     setPipeline]     = useState('');
-  const [showModal,    setShowModal]    = useState(false);
-  const [editTemplate, setEditTemplate] = useState<WaTemplate | undefined>();
+  const { t } = useTranslation();
+
+  const [templates,      setTemplates]      = useState<WaTemplate[]>([]);
+  const [total,          setTotal]          = useState(0);
+  const [approvedTotal,  setApprovedTotal]  = useState<number | null>(null);
+  const [isLoading,      setIsLoading]      = useState(true);
+  const [isSyncing,      setIsSyncing]      = useState(false);
+  const [search,         setSearch]         = useState('');
+  const [activeTab,      setActiveTab]      = useState<MetaStatus | ''>('');
+  const [pipeline,       setPipeline]       = useState('');
+  const [languageFilter, setLanguageFilter] = useState('');
+  const [showModal,      setShowModal]      = useState(false);
+  const [editTemplate,   setEditTemplate]   = useState<WaTemplate | undefined>();
+  const [duplicateData,  setDuplicateData]  = useState<Partial<WaTemplate> | undefined>();
+
+  // ── Konstanta Status Tabs ───────────────────────────────────────────────────
+  const statusTabs: { label: string; value: MetaStatus | '' }[] = [
+    { label: t('templates.tabAll'),      value: '' },
+    { label: `✅ ${t('templates.tabApproved')}`, value: 'APPROVED' },
+    { label: `⏳ ${t('templates.tabPending')}`,  value: 'PENDING' },
+    { label: `❌ ${t('templates.tabRejected')}`, value: 'REJECTED' },
+    { label: `📋 ${t('templates.tabLocal')}`,   value: 'LOCAL_ONLY' },
+  ];
+
+  const pipelineOptions = [
+    { value: '',           label: t('templates.allPipelines') },
+    { value: 'PROBING',    label: t('templates.pipelineProbing') },
+    { value: 'HOT_LEAD',   label: t('templates.pipelineHotLead') },
+    { value: 'REGISTRASI', label: t('templates.pipelineRegistrasi') },
+    { value: 'NURTURING',  label: t('templates.pipelineNurturing') },
+    { value: 'SNOOZE',     label: t('templates.pipelineSnooze') },
+    { value: 'ALUMNI',     label: t('templates.pipelineAlumni') },
+  ];
+
+  const languageOptions = [
+    { value: '',      label: t('templates.allLanguages') },
+    { value: 'id',    label: t('templates.langId') },
+    { value: 'en_US', label: t('templates.langEn') },
+  ];
 
   // ── Fetch jumlah APPROVED sekali saat mount (tidak ikut filter) ──────────────
   useEffect(() => {
@@ -87,11 +98,11 @@ export default function TemplatesPage() {
       setTemplates(result.data);
       setTotal(result.total);
     } catch {
-      toast.error('Gagal memuat template.');
+      toast.error(t('templates.toastLoadFailed'));
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, pipeline, search]);
+  }, [activeTab, pipeline, search, t]);
 
   useEffect(() => { loadTemplates(); }, [loadTemplates]);
 
@@ -100,49 +111,73 @@ export default function TemplatesPage() {
     setIsSyncing(true);
     try {
       const result = await syncTemplatesFromMeta();
-      toast.success(`Sinkronisasi selesai: ${result.synced} template diperbarui.`);
+      toast.success(t('templates.toastSyncSuccess').replace('{count}', String(result.synced)));
       loadTemplates();
     } catch {
-      toast.error('Gagal sinkronisasi dengan Meta.');
+      toast.error(t('templates.toastSyncFailed'));
     } finally {
       setIsSyncing(false);
     }
   };
 
   // ── Toggle Active/Inactive ──────────────────────────────────────────────────
-  const handleToggleActive = async (t: WaTemplate) => {
-    const newStatus = t.status_crm === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+  const handleToggleActive = async (tpl: WaTemplate) => {
+    const newStatus = tpl.status_crm === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
-      await updateTemplate(t.id_template, { status_crm: newStatus });
+      await updateTemplate(tpl.id_template, { status_crm: newStatus });
       setTemplates(prev => prev.map(x =>
-        x.id_template === t.id_template ? { ...x, status_crm: newStatus } : x
+        x.id_template === tpl.id_template ? { ...x, status_crm: newStatus } : x
       ));
     } catch {
-      toast.error('Gagal mengubah status template.');
+      toast.error(t('templates.toastStatusFailed'));
     }
   };
 
   // ── Soft Delete ─────────────────────────────────────────────────────────────
-  const handleDelete = async (t: WaTemplate) => {
-    if (!confirm(`Hapus template "${t.nama_template}"? Aksi ini tidak bisa dibatalkan.`)) return;
+  const handleDelete = async (tpl: WaTemplate) => {
+    const msg = t('templates.confirmDelete').replace('{name}', tpl.nama_template);
+    if (!confirm(msg)) return;
     try {
-      await deleteTemplate(t.id_template);
-      toast.success(`Template "${t.nama_template}" dihapus.`);
-      setTemplates(prev => prev.filter(x => x.id_template !== t.id_template));
+      await deleteTemplate(tpl.id_template);
+      toast.success(t('templates.toastDeleted').replace('{name}', tpl.nama_template));
+      setTemplates(prev => prev.filter(x => x.id_template !== tpl.id_template));
     } catch {
-      toast.error('Gagal menghapus template.');
+      toast.error(t('templates.toastDeleteFailed'));
     }
   };
 
   // ── Edit Modal ──────────────────────────────────────────────────────────────
-  const handleEdit = (t: WaTemplate) => {
-    setEditTemplate(t);
+  const handleEdit = (tpl: WaTemplate) => {
+    setDuplicateData(undefined);
+    setEditTemplate(tpl);
+    setShowModal(true);
+  };
+
+  // ── Duplicate (Bilingual Translation) ───────────────────────────────────────
+  const handleDuplicate = (tpl: WaTemplate) => {
+    const targetLang = tpl.language_code === 'en_US' ? 'id' : 'en_US';
+    const langSuffix = targetLang === 'en_US' ? ' (EN)' : ' (ID)';
+    setDuplicateData({
+      nama_template: `${tpl.nama_template}${langSuffix}`,
+      template_name_api: tpl.template_name_api, // API name SAMA persis sesuai aturan Meta untuk terjemahan
+      language_code: targetLang,
+      kategori: tpl.kategori,
+      pipeline: tpl.pipeline,
+      urutan: tpl.urutan,
+      header_type: tpl.header_type,
+      header_url: tpl.header_url,
+      header_filename: tpl.header_filename,
+      parameters: tpl.parameters,
+      body_text: tpl.body_text,
+    });
+    setEditTemplate(undefined);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditTemplate(undefined);
+    setDuplicateData(undefined);
   };
 
   const handleSaved = () => {
@@ -150,14 +185,19 @@ export default function TemplatesPage() {
     loadTemplates();
   };
 
-  // ── Filter lokal (backup filter di atas server filter) ─────────────────────
-  const filtered = templates.filter(t =>
-    t.nama_template.toLowerCase().includes(search.toLowerCase()) ||
-    t.body_text.toLowerCase().includes(search.toLowerCase())
+  // ── Filter lokal (termasuk filter bahasa) ───────────────────────────────────
+  let filtered = templates.filter(tpl =>
+    tpl.nama_template.toLowerCase().includes(search.toLowerCase()) ||
+    tpl.body_text.toLowerCase().includes(search.toLowerCase()) ||
+    tpl.template_name_api.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (languageFilter) {
+    filtered = filtered.filter(tpl => tpl.language_code === languageFilter);
+  }
+
   // ── Hitung badge ringkasan ─────────────────────────────────────────────────
-  const activePipelineLabel = PIPELINE_OPTIONS.find(p => p.value === pipeline)?.label || 'Semua Pipeline';
+  const activePipelineLabel = pipelineOptions.find(p => p.value === pipeline)?.label || t('templates.allPipelines');
 
   return (
     <div className="space-y-4 pb-20">
@@ -169,16 +209,16 @@ export default function TemplatesPage() {
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-foreground">Template Manager</h1>
+              <h1 className="text-xl font-bold text-foreground">{t('templates.title')}</h1>
               {approvedTotal !== null && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-                  {approvedTotal} Approved
+                  {t('templates.approvedBadge').replace('{count}', String(approvedTotal))}
                 </span>
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Kelola sinkronisasi Meta &amp; CRM template &mdash; {total} template terdaftar
+              {t('templates.subtitle').replace('{total}', String(total))}
             </p>
           </div>
         </div>
@@ -186,23 +226,23 @@ export default function TemplatesPage() {
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSyncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-            <span className="hidden sm:inline">Sync Meta</span>
+            <span className="hidden sm:inline">{t('templates.btnSync')}</span>
           </button>
           <button
-            onClick={() => { setEditTemplate(undefined); setShowModal(true); }}
+            onClick={() => { setEditTemplate(undefined); setDuplicateData(undefined); setShowModal(true); }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-white text-sm font-medium shadow-md shadow-primary/20 hover:opacity-90 transition-all"
           >
-            <Plus size={16} /> <span className="hidden sm:inline">Buat Template</span>
+            <Plus size={16} /> <span className="hidden sm:inline">{t('templates.btnCreate')}</span>
           </button>
         </div>
       </div>
 
       {/* Status Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {STATUS_TABS.map(tab => (
+        {statusTabs.map(tab => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
@@ -218,42 +258,66 @@ export default function TemplatesPage() {
         ))}
       </div>
 
-      {/* Search + Pipeline Filter */}
-      <div className="bg-card border p-4 rounded-xl">
-        <div className="flex gap-3">
+      {/* Search + Pipeline Filter + Language Filter */}
+      <div className="bg-card border p-4 rounded-xl space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Cari nama atau isi template..."
+              placeholder={t('templates.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
             />
           </div>
+
           {/* Pipeline Filter */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <select
               value={pipeline}
               onChange={e => setPipeline(e.target.value)}
               className={cn(
-                'appearance-none pl-3 pr-8 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none cursor-pointer transition-colors',
+                'appearance-none pl-3 pr-8 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none transition-colors w-full sm:w-auto',
                 pipeline
                   ? 'border-primary/50 text-foreground'
                   : 'border-border text-muted-foreground'
               )}
             >
-              {PIPELINE_OPTIONS.map(p => (
+              {pipelineOptions.map(p => (
                 <option key={p.value} value={p.value}>{p.label}</option>
               ))}
             </select>
             <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
+
+          {/* Language Filter */}
+          <div className="relative shrink-0">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+              <Globe size={13} />
+            </div>
+            <select
+              value={languageFilter}
+              onChange={e => setLanguageFilter(e.target.value)}
+              className={cn(
+                'appearance-none pl-8 pr-8 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none transition-colors w-full sm:w-auto',
+                languageFilter
+                  ? 'border-primary/50 text-foreground'
+                  : 'border-border text-muted-foreground'
+              )}
+            >
+              {languageOptions.map(l => (
+                <option key={l.value} value={l.value}>{l.label}</option>
+              ))}
+            </select>
+            <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          </div>
         </div>
+
         {/* Active filter pills */}
-        {(pipeline || activeTab) && (
-          <div className="flex gap-2 mt-2 flex-wrap">
+        {(pipeline || activeTab || languageFilter) && (
+          <div className="flex gap-2 pt-1 flex-wrap">
             {pipeline && (
               <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 flex items-center gap-1">
                 {activePipelineLabel}
@@ -262,8 +326,14 @@ export default function TemplatesPage() {
             )}
             {activeTab && (
               <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 flex items-center gap-1">
-                {STATUS_TABS.find(t => t.value === activeTab)?.label}
+                {statusTabs.find(st => st.value === activeTab)?.label}
                 <button onClick={() => setActiveTab('')} className="opacity-60 hover:opacity-100">×</button>
+              </span>
+            )}
+            {languageFilter && (
+              <span className="text-xs px-2 py-0.5 bg-sky-500/10 text-sky-400 rounded-full border border-sky-500/20 flex items-center gap-1">
+                {languageOptions.find(lo => lo.value === languageFilter)?.label}
+                <button onClick={() => setLanguageFilter('')} className="opacity-60 hover:opacity-100">×</button>
               </span>
             )}
           </div>
@@ -282,25 +352,27 @@ export default function TemplatesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.length === 0 && (
             <div className="col-span-3 text-center py-16 text-muted-foreground">
-              Tidak ada template yang ditemukan.
+              {t('templates.noTemplates')}
             </div>
           )}
-          {filtered.map(t => (
+          {filtered.map(tpl => (
             <TemplateCard
-              key={t.id_template}
-              template={t}
-              onToggleActive={() => handleToggleActive(t)}
-              onEdit={() => handleEdit(t)}
-              onDelete={() => handleDelete(t)}
+              key={tpl.id_template}
+              template={tpl}
+              onToggleActive={() => handleToggleActive(tpl)}
+              onEdit={() => handleEdit(tpl)}
+              onDuplicate={() => handleDuplicate(tpl)}
+              onDelete={() => handleDelete(tpl)}
             />
           ))}
         </div>
       )}
 
-      {/* Modal Create/Edit */}
+      {/* Modal Create/Edit/Duplicate */}
       {showModal && (
         <TemplateFormModal
           template={editTemplate}
+          initialData={duplicateData}
           onClose={handleCloseModal}
           onSaved={handleSaved}
         />
@@ -313,19 +385,22 @@ export default function TemplatesPage() {
 // TemplateCard
 // -----------------------------------------------------------------------------
 function TemplateCard({
-  template: t,
+  template: tpl,
   onToggleActive,
   onEdit,
+  onDuplicate,
   onDelete,
 }: {
   template: WaTemplate;
   onToggleActive: () => void;
   onEdit: () => void;
+  onDuplicate: () => void;
   onDelete: () => void;
 }) {
-  const isLocal    = !t.meta_template_id;
-  const isActive   = t.status_crm === 'ACTIVE';
-  const buttons    = parseButtonsFromParams(t.parameters);
+  const { t } = useTranslation();
+  const isLocal    = !tpl.meta_template_id;
+  const isActive   = tpl.status_crm === 'ACTIVE';
+  const buttons    = parseButtonsFromParams(tpl.parameters);
   const hasButtons = buttons.length > 0;
 
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -336,6 +411,8 @@ function TemplateCard({
     REJECTED:   'bg-rose-500/10 text-rose-500 border-rose-500/20',
     LOCAL_ONLY: 'bg-sky-500/10 text-sky-500 border-sky-500/20',
   };
+
+  const isEnglish = tpl.language_code === 'en_US' || tpl.language_code?.toLowerCase().startsWith('en');
 
   return (
     <>
@@ -351,31 +428,45 @@ function TemplateCard({
             {isLocal
               ? <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-md"><MessageSquare size={14} /></div>
               : <div className="p-1.5 bg-blue-500/10 text-blue-500 rounded-md"><Phone size={14} /></div>}
-            <h3 className="font-bold text-sm text-white truncate max-w-36">{t.nama_template}</h3>
+            <div className="min-w-0">
+              <h3 className="font-bold text-sm text-foreground truncate max-w-36">{tpl.nama_template}</h3>
+              <p className="text-xs text-muted-foreground font-mono truncate max-w-36">{tpl.template_name_api}</p>
+            </div>
           </div>
-          <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold uppercase border', statusColors[t.meta_status] || statusColors.LOCAL_ONLY)}>
-            {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
+          <span className={cn('text-xs px-2 py-0.5 rounded-full font-bold uppercase border', statusColors[tpl.meta_status] || statusColors.LOCAL_ONLY)}>
+            {tpl.meta_status === 'LOCAL_ONLY' ? t('templates.statusLocal') : tpl.meta_status}
           </span>
         </div>
 
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-1.5 mb-3">
-          <span className="text-xs px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.kategori}</span>
-          {t.pipeline && <span className="text-xs px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.pipeline}</span>}
-          {t.language_code && <span className="text-xs px-2 py-0.5 border border-white/20 text-white/80 rounded-full">{t.language_code.toUpperCase()}</span>}
-          {t.header_type && t.header_type !== 'none' && (
-            <span className="text-xs px-2 py-0.5 border border-amber-500/30 text-amber-500 rounded-full">header: {t.header_type}</span>
+          <span className="text-xs px-2 py-0.5 border border-border text-foreground/80 rounded-full">{tpl.kategori}</span>
+          {tpl.pipeline && <span className="text-xs px-2 py-0.5 border border-border text-foreground/80 rounded-full">{tpl.pipeline}</span>}
+          {tpl.language_code && (
+            <span className={cn(
+              'text-xs px-2 py-0.5 border rounded-full font-medium',
+              isEnglish
+                ? 'bg-purple-500/10 text-purple-400 border-purple-500/25'
+                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+            )}>
+              {isEnglish ? '🇬🇧 EN' : '🇮🇩 ID'}
+            </span>
+          )}
+          {tpl.header_type && tpl.header_type !== 'none' && (
+            <span className="text-xs px-2 py-0.5 border border-amber-500/30 text-amber-500 rounded-full">
+              {t('templates.tagHeader').replace('{type}', tpl.header_type)}
+            </span>
           )}
           {hasButtons && (
             <span className="text-xs px-2 py-0.5 border border-primary/30 text-primary rounded-full flex items-center gap-0.5">
-              <ExternalLink size={8} /> {buttons.length} btn
+              <ExternalLink size={8} /> {t('templates.tagButtons').replace('{count}', String(buttons.length))}
             </span>
           )}
         </div>
 
         {/* Body preview */}
-        <div className="flex-1 bg-white/5 rounded-lg p-3 text-xs text-white/75 line-clamp-3">
-          {t.body_text}
+        <div className="flex-1 bg-secondary/30 rounded-lg p-3 text-xs text-foreground/80 line-clamp-3 leading-relaxed">
+          {tpl.body_text}
         </div>
 
         {/* Footer */}
@@ -384,12 +475,12 @@ function TemplateCard({
             onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
             className={cn(
               'flex items-center gap-1.5 text-xs font-medium transition-colors',
-              isActive ? 'text-emerald-400' : 'text-white/50'
+              isActive ? 'text-emerald-400' : 'text-muted-foreground'
             )}
-            title={isActive ? 'Nonaktifkan' : 'Aktifkan'}
+            title={isActive ? t('templates.tooltipDeactivate') : t('templates.tooltipActivate')}
           >
-            {isActive ? <ToggleRight size={18} className="text-emerald-400" /> : <ToggleLeft size={18} className="text-white/40" />}
-            {isActive ? 'Aktif' : 'Nonaktif'}
+            {isActive ? <ToggleRight size={18} className="text-emerald-400" /> : <ToggleLeft size={18} className="text-muted-foreground" />}
+            {isActive ? t('templates.activeStatus') : t('templates.inactiveStatus')}
           </button>
 
           <div className="flex gap-2 items-center">
@@ -398,21 +489,29 @@ function TemplateCard({
               onClick={(e) => { e.stopPropagation(); setShowPreviewModal(true); }}
               className="flex items-center gap-1 text-sky-400 font-medium hover:text-sky-300 transition-colors"
             >
-              <Eye size={12} /> Preview
+              <Eye size={12} /> {t('templates.actionPreview')}
             </button>
-            {/* Edit & Hapus — visible on hover */}
+
+            {/* Actions visible on hover */}
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+                className="text-sky-400 font-medium hover:underline flex items-center gap-1"
+                title={t('templates.btnDuplicateTo').replace('{lang}', isEnglish ? 'ID' : 'EN')}
+              >
+                <Copy size={12} /> {t('templates.btnDuplicate')}
+              </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
                 className="text-primary font-medium hover:underline flex items-center gap-1"
               >
-                <Pencil size={12} /> Edit
+                <Pencil size={12} /> {t('templates.actionEdit')}
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 className="text-rose-500 font-medium hover:underline flex items-center gap-1"
               >
-                <Trash2 size={12} /> Hapus
+                <Trash2 size={12} /> {t('templates.actionDelete')}
               </button>
             </div>
           </div>
@@ -421,7 +520,7 @@ function TemplateCard({
 
       {showPreviewModal && (
         <TemplatePreviewModal
-          template={t}
+          template={tpl}
           buttons={buttons}
           onClose={() => setShowPreviewModal(false)}
         />
@@ -434,7 +533,7 @@ function TemplateCard({
 // TemplatePreviewModal
 // -----------------------------------------------------------------------------
 function TemplatePreviewModal({
-  template: t,
+  template: tpl,
   buttons,
   onClose,
 }: {
@@ -442,6 +541,8 @@ function TemplatePreviewModal({
   buttons: PreviewButton[];
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
+
   const statusColorText: Record<string, string> = {
     APPROVED:   'text-emerald-400',
     PENDING:    'text-amber-400',
@@ -470,47 +571,41 @@ function TemplatePreviewModal({
         {/* Header — sticky supaya tidak ikut scroll */}
         <div className="sticky top-0 z-10 bg-card rounded-t-2xl flex items-start justify-between p-5 border-b">
           <div>
-            <h2 className="font-bold text-base text-foreground">{t.nama_template}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 font-mono">{t.template_name_api}</p>
+            <h2 className="font-bold text-base text-foreground">{tpl.nama_template}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 font-mono">{tpl.template_name_api}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors ml-3 shrink-0"
+            className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors ml-3 shrink-0"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Meta info */}
-        {/* Body: 2 kolom — kiri info+params, kanan preview */}
         {(() => {
-          // Parse parameters sekali, dipakai kolom kiri & kanan
           let parsed: {
             header?:       { type?: string; params?: string[]; url?: string };
             body?:         string[];
             meta_buttons?: { type: string; index: number; text: string; url?: string }[];
           } = {};
-          try { parsed = JSON.parse(t.parameters || '{}'); } catch { parsed = {}; }
+          try { parsed = JSON.parse(tpl.parameters || '{}'); } catch { parsed = {}; }
 
           const pHeader   = parsed.header       || null;
           const bodyVars  = parsed.body          || [];
           const metaBtns  = parsed.meta_buttons  || [];
           const isEmpty   = !pHeader && bodyVars.length === 0 && metaBtns.length === 0;
 
-          // Resolve header untuk bubble preview
-          // Priority: parameters.header.url > t.header_url (kolom DB)
-          const bubbleHeaderType = (pHeader?.type || t.header_type || 'none') as 'text' | 'image' | 'video' | 'document' | 'none';
-          const bubbleHeaderValue = pHeader?.url || t.header_url || null;
+          const bubbleHeaderType = (pHeader?.type || tpl.header_type || 'none') as 'text' | 'image' | 'video' | 'document' | 'none';
+          const bubbleHeaderValue = pHeader?.url || tpl.header_url || null;
           const bubbleHeaderText  = pHeader?.params?.[0] || null;
 
-          // Buttons untuk bubble
           const bubbleButtons = metaBtns.map(b => ({
             type:  (b.type || 'QUICK_REPLY') as ButtonType,
             label: b.text,
           }));
 
-          // Substitute variabel body dengan nilai dummy agar preview lebih realistis
-          const bubbleBodyText = buildPreviewText(t.body_text || '', bodyVars);
+          const bubbleBodyText = buildPreviewText(tpl.body_text || '', bodyVars);
 
           return (
             <div className="flex flex-col md:flex-row gap-0 divide-y md:divide-y-0 md:divide-x divide-border">
@@ -520,41 +615,51 @@ function TemplatePreviewModal({
 
                 {/* Status pills */}
                 <div className="flex flex-wrap gap-2 text-xs">
-                  <span className={cn('font-semibold', statusColorText[t.meta_status] || 'text-sky-400')}>
-                    {t.meta_status === 'LOCAL_ONLY' ? 'Lokal' : t.meta_status}
+                  <span className={cn('font-semibold', statusColorText[tpl.meta_status] || 'text-sky-400')}>
+                    {tpl.meta_status === 'LOCAL_ONLY' ? t('templates.statusLocal') : tpl.meta_status}
                   </span>
-                  <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.kategori}</span>
-                  {t.pipeline && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.pipeline}</span>}
-                  {t.language_code && <span className="text-muted-foreground px-2 py-0.5 bg-white/5 rounded-full">{t.language_code.toUpperCase()}</span>}
+                  <span className="text-muted-foreground px-2 py-0.5 bg-secondary/50 rounded-full">{tpl.kategori}</span>
+                  {tpl.pipeline && <span className="text-muted-foreground px-2 py-0.5 bg-secondary/50 rounded-full">{tpl.pipeline}</span>}
+                  {tpl.language_code && (
+                    <span className="text-sky-400 px-2 py-0.5 bg-sky-500/10 rounded-full font-medium">
+                      {tpl.language_code === 'en_US' ? '🇬🇧 English (en_US)' : '🇮🇩 Indonesia (id)'}
+                    </span>
+                  )}
                   {bubbleHeaderType && bubbleHeaderType !== 'none' && (
-                    <span className="text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded-full">header: {bubbleHeaderType}</span>
+                    <span className="text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded-full">
+                      {t('templates.tagHeader').replace('{type}', bubbleHeaderType)}
+                    </span>
                   )}
                 </div>
 
                 {/* Body text lengkap */}
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Body Pesan</p>
-                  <div className="bg-white/5 rounded-lg p-3 text-xs text-white/80 whitespace-pre-wrap leading-relaxed">
-                    {t.body_text || <span className="opacity-40 italic">Tidak ada body</span>}
+                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
+                    {t('templates.previewBodyTitle')}
+                  </p>
+                  <div className="bg-secondary/30 rounded-lg p-3 text-xs text-foreground/85 whitespace-pre-wrap leading-relaxed">
+                    {tpl.body_text || <span className="opacity-40 italic">{t('templates.previewNoBody')}</span>}
                   </div>
                 </div>
 
                 {/* Header parameter */}
                 {pHeader && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">Header</p>
+                    <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
+                      {t('templates.previewHeaderTitle')}
+                    </p>
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center gap-2 text-xs">
                         <span className={cn(
                           'text-xs px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
                           pHeader.type === 'image' ? 'bg-amber-500/20 text-amber-400' :
                           pHeader.type === 'video' ? 'bg-purple-500/20 text-purple-400' :
-                                                     'bg-white/10 text-white/60'
+                                                     'bg-secondary text-foreground/70'
                         )}>
                           {pHeader.type || 'text'}
                         </span>
                         {pHeader.params && pHeader.params.length > 0 && (
-                          <span className="text-white/70">{pHeader.params.join(', ')}</span>
+                          <span className="text-foreground/75">{pHeader.params.join(', ')}</span>
                         )}
                       </div>
                       {pHeader.url && (
@@ -571,7 +676,7 @@ function TemplatePreviewModal({
                 {bodyVars.length > 0 && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                      Variabel Body ({bodyVars.length})
+                      {t('templates.previewVarsTitle').replace('{count}', String(bodyVars.length))}
                     </p>
                     <div className="flex flex-col gap-1">
                       {bodyVars.map((v: string, i: number) => (
@@ -579,7 +684,7 @@ function TemplatePreviewModal({
                           <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded font-mono shrink-0">
                             {`{{${i + 1}}}`}
                           </span>
-                          <span className="text-white/70">{v}</span>
+                          <span className="text-foreground/80">{v}</span>
                         </div>
                       ))}
                     </div>
@@ -590,11 +695,11 @@ function TemplatePreviewModal({
                 {metaBtns.length > 0 && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wider">
-                      Tombol ({metaBtns.length})
+                      {t('templates.previewBtnsTitle').replace('{count}', String(metaBtns.length))}
                     </p>
                     <div className="flex flex-col gap-1">
                       {metaBtns.map((btn: { type: string; index: number; text: string; url?: string }, i: number) => (
-                        <div key={i} className="flex flex-col gap-0.5 bg-white/5 rounded-lg px-3 py-1.5">
+                        <div key={i} className="flex flex-col gap-0.5 bg-secondary/30 rounded-lg px-3 py-1.5">
                           <div className="flex items-center gap-2 text-xs">
                             <span className={cn(
                               'text-xs px-1.5 py-0.5 rounded font-semibold uppercase shrink-0',
@@ -604,7 +709,7 @@ function TemplatePreviewModal({
                             )}>
                               {btn.type === 'QUICK_REPLY' ? 'Reply' : btn.type === 'URL' ? 'URL' : 'Phone'}
                             </span>
-                            <span className="text-white/80 truncate">{btn.text}</span>
+                            <span className="text-foreground/80 truncate">{btn.text}</span>
                           </div>
                           {btn.url && (
                             <a href={btn.url} target="_blank" rel="noopener noreferrer"
@@ -619,13 +724,15 @@ function TemplatePreviewModal({
                 )}
 
                 {isEmpty && (
-                  <p className="text-xs text-muted-foreground italic">Tidak ada variabel atau tombol.</p>
+                  <p className="text-xs text-muted-foreground italic">{t('templates.previewEmptyVars')}</p>
                 )}
               </div>
 
               {/* ── Kolom Kanan: WA Preview ────────────────────────── */}
               <div className="md:w-1/2 px-5 py-4">
-                <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">Preview WhatsApp</p>
+                <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">
+                  {t('templates.previewWaTitle')}
+                </p>
                 <div className="rounded-xl p-4 bg-zinc-950 min-h-48">
                   <TemplatePreviewBubble
                     bodyText={bubbleBodyText}
@@ -640,7 +747,6 @@ function TemplatePreviewModal({
             </div>
           );
         })()}
-
 
       </div>
     </div>,

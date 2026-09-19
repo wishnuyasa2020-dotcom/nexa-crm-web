@@ -2,7 +2,7 @@
 
 /**
  * TemplateFormModal.tsx
- * Modal terpadu untuk Create & Edit wa_template
+ * Modal terpadu untuk Create, Edit & Bilingual Duplicate wa_template
  *
  * SECTIONS:
  *  1. Info Dasar   — Nama internal, API Name (auto-slug), Kategori, Pipeline, Language, Urutan
@@ -12,12 +12,6 @@
  *  5. Live Preview — Real-time WA bubble dengan dummy context (kanan layar)
  *  6. JSON Schema  — Raw JSON output (collapsible debug panel)
  *  7. Footer       — "Simpan Lokal" | "Simpan & Daftarkan ke Meta"
- *
- * v2 — Upgrade:
- *  - Tambah Section Buttons/CTA (Gap 1)
- *  - Extend Variable Picker dengan 3 variabel baru (Gap 3)
- *  - Pass buttons ke TemplatePreviewBubble untuk preview lengkap (Gap 2)
- *  - Fix buildParametersJson — include buttons di JSON output (Gap 1)
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -28,7 +22,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { createTemplate, updateTemplate, WaTemplate, MetaStatus } from '@/lib/chatApi';
+import { createTemplate, updateTemplate, WaTemplate } from '@/lib/chatApi';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   TemplatePreviewBubble, buildPreviewText, PreviewButton, ButtonType,
 } from '@/components/templates/TemplatePreviewBubble';
@@ -51,30 +46,28 @@ const KNOWN_VARS = [
 type KnownVarKey = (typeof KNOWN_VARS)[number]['key'];
 
 const HEADER_TYPES = [
-  { value: 'none', label: 'Tidak Ada', icon: Minus },
-  { value: 'text', label: 'Teks', icon: Type },
-  { value: 'image', label: 'Gambar', icon: ImageIcon },
-  { value: 'video', label: 'Video', icon: Video },
-  { value: 'document', label: 'Dokumen', icon: FileText },
+  { value: 'none', labelKey: 'templates.headerNone', icon: Minus },
+  { value: 'text', labelKey: 'templates.headerText', icon: Type },
+  { value: 'image', labelKey: 'templates.headerImage', icon: ImageIcon },
+  { value: 'video', labelKey: 'templates.headerVideo', icon: Video },
+  { value: 'document', labelKey: 'templates.headerDocument', icon: FileText },
 ] as const;
 
-const BUTTON_TYPES: { value: ButtonType; label: string; icon: React.ElementType; description: string }[] = [
-  { value: 'QUICK_REPLY', label: 'Quick Reply', icon: MessageSquare, description: 'Tombol balas cepat (teks/payload)' },
-  { value: 'URL', label: 'URL', icon: ExternalLink, description: 'Buka link web (bisa dinamis)' },
-  { value: 'PHONE_NUMBER', label: 'Telepon', icon: Phone, description: 'Klik untuk menelepon' },
+const BUTTON_TYPES: { value: ButtonType; labelKey: 'templates.buttonQuickReply' | 'templates.buttonUrl' | 'templates.buttonPhone'; icon: React.ElementType }[] = [
+  { value: 'QUICK_REPLY', labelKey: 'templates.buttonQuickReply', icon: MessageSquare },
+  { value: 'URL', labelKey: 'templates.buttonUrl', icon: ExternalLink },
+  { value: 'PHONE_NUMBER', labelKey: 'templates.buttonPhone', icon: Phone },
 ];
 
 const KATEGORI_OPTIONS = ['MARKETING', 'UTILITY', 'AUTHENTICATION'];
 const PIPELINE_OPTIONS = ['', 'PROBING', 'HOT_LEAD', 'REGISTRASI', 'NURTURING', 'SNOOZE', 'ALUMNI'];
-const LANGUAGE_OPTIONS = [
-  { value: 'id', label: 'Indonesia (id)' },
-  { value: 'en_US', label: 'English (en_US)' },
-];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface TemplateFormModalProps {
   /** Jika diisi → mode Edit. Jika undefined → mode Create */
   template?: WaTemplate;
+  /** Data awal jika menduplikasi / membuat varian bahasa */
+  initialData?: Partial<WaTemplate>;
   onClose: () => void;
   onSaved: () => void;
 }
@@ -106,52 +99,90 @@ interface FormState {
 }
 
 // ── Init State ────────────────────────────────────────────────────────────────
-function getInitialState(tpl?: WaTemplate): FormState {
-  if (!tpl) {
+function getInitialState(tpl?: WaTemplate, initialData?: Partial<WaTemplate>): FormState {
+  if (tpl) {
+    // Mode Edit
+    let bodyVars: KnownVarKey[] = [];
+    let buttons: ButtonDef[] = [];
+    try {
+      const schema = JSON.parse(tpl.parameters || '{"body":[]}');
+      const knownKeys = KNOWN_VARS.map(v => v.key);
+      bodyVars = (schema.body || [])
+        .map((v: string) => v.toUpperCase() as KnownVarKey)
+        .filter((v: KnownVarKey) => knownKeys.includes(v));
+
+      if (Array.isArray(schema.buttons)) {
+        buttons = schema.buttons.map((b: Record<string, string>) => ({
+          type: (b.type?.toUpperCase() || 'QUICK_REPLY') as ButtonType,
+          label: b.label || b.text || '',
+          value: b.payload || b.url || b.phone_number || '',
+          urlSuffixVar: b.url_suffix_var || '',
+        }));
+      }
+    } catch { /* ignore */ }
+
     return {
-      nama_template: '', template_name_api: '', kategori: 'UTILITY',
-      pipeline: '', language_code: 'id', urutan: 99,
-      header_type: 'none', header_url: '', header_text: '', header_filename: '',
-      body_text: '', body_vars: [], buttons: [], submitToMeta: false,
+      nama_template: tpl.nama_template,
+      template_name_api: tpl.template_name_api,
+      kategori: tpl.kategori,
+      pipeline: tpl.pipeline || '',
+      language_code: tpl.language_code || 'id',
+      urutan: tpl.urutan,
+      header_type: tpl.header_type || 'none',
+      header_url: tpl.header_url || '',
+      header_text: '',
+      header_filename: tpl.header_filename || '',
+      body_text: tpl.body_text,
+      body_vars: bodyVars,
+      buttons,
+      submitToMeta: false,
     };
   }
 
-  // Parse schema untuk edit
-  let bodyVars: KnownVarKey[] = [];
-  let buttons: ButtonDef[] = [];
-  try {
-    const schema = JSON.parse(tpl.parameters || '{"body":[]}');
-    const knownKeys = KNOWN_VARS.map(v => v.key);
-    bodyVars = (schema.body || [])
-      .map((v: string) => v.toUpperCase() as KnownVarKey)
-      .filter((v: KnownVarKey) => knownKeys.includes(v));
+  if (initialData) {
+    // Mode Duplicate / Pre-filled Create
+    let bodyVars: KnownVarKey[] = [];
+    let buttons: ButtonDef[] = [];
+    try {
+      const schema = JSON.parse(initialData.parameters || '{"body":[]}');
+      const knownKeys = KNOWN_VARS.map(v => v.key);
+      bodyVars = (schema.body || [])
+        .map((v: string) => v.toUpperCase() as KnownVarKey)
+        .filter((v: KnownVarKey) => knownKeys.includes(v));
 
-    // Parse buttons dari schema
-    if (Array.isArray(schema.buttons)) {
-      buttons = schema.buttons.map((b: Record<string, string>) => ({
-        type: (b.type?.toUpperCase() || 'QUICK_REPLY') as ButtonType,
-        label: b.label || b.text || '',
-        value: b.payload || b.url || b.phone_number || '',
-        urlSuffixVar: b.url_suffix_var || '',
-      }));
-    }
-  } catch { /* ignore */ }
+      if (Array.isArray(schema.buttons)) {
+        buttons = schema.buttons.map((b: Record<string, string>) => ({
+          type: (b.type?.toUpperCase() || 'QUICK_REPLY') as ButtonType,
+          label: b.label || b.text || '',
+          value: b.payload || b.url || b.phone_number || '',
+          urlSuffixVar: b.url_suffix_var || '',
+        }));
+      }
+    } catch { /* ignore */ }
+
+    return {
+      nama_template: initialData.nama_template || '',
+      template_name_api: initialData.template_name_api || '',
+      kategori: initialData.kategori || 'UTILITY',
+      pipeline: initialData.pipeline || '',
+      language_code: initialData.language_code || 'en_US',
+      urutan: initialData.urutan ?? 99,
+      header_type: initialData.header_type || 'none',
+      header_url: initialData.header_url || '',
+      header_text: '',
+      header_filename: initialData.header_filename || '',
+      body_text: initialData.body_text || '',
+      body_vars: bodyVars,
+      buttons,
+      submitToMeta: false,
+    };
+  }
 
   return {
-    nama_template: tpl.nama_template,
-    template_name_api: tpl.template_name_api,
-    kategori: tpl.kategori,
-    pipeline: tpl.pipeline || '',
-    language_code: tpl.language_code || 'id',
-    urutan: tpl.urutan,
-    header_type: tpl.header_type || 'none',
-    header_url: tpl.header_url || '',
-    header_text: '',
-    header_filename: tpl.header_filename || '',
-    body_text: tpl.body_text,
-    body_vars: bodyVars,
-    buttons,
-    submitToMeta: false,
+    nama_template: '', template_name_api: '', kategori: 'UTILITY',
+    pipeline: '', language_code: 'id', urutan: 99,
+    header_type: 'none', header_url: '', header_text: '', header_filename: '',
+    body_text: '', body_vars: [], buttons: [], submitToMeta: false,
   };
 }
 
@@ -163,7 +194,6 @@ function buildParametersJson(state: FormState): string {
   if (state.header_type && state.header_type !== 'none') {
     const header: Record<string, unknown> = { type: state.header_type };
     if (state.header_type === 'text' && state.header_text) {
-      // header teks bisa pakai variabel pertama dari body
       header.params = state.body_vars.slice(0, 1);
     } else if (['image', 'video', 'document'].includes(state.header_type)) {
       header.url = state.header_url;
@@ -206,12 +236,15 @@ function toApiName(name: string): string {
 }
 
 // ── Komponen Utama ────────────────────────────────────────────────────────────
-export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateFormModalProps) {
+export function TemplateFormModal({ template: tpl, initialData, onClose, onSaved }: TemplateFormModalProps) {
+  const { t } = useTranslation();
   const isEdit = !!tpl;
-  const [form, setForm] = useState<FormState>(getInitialState(tpl));
+  const isDuplicate = !isEdit && !!initialData;
+
+  const [form, setForm] = useState<FormState>(() => getInitialState(tpl, initialData));
   const [isSaving, setIsSaving] = useState(false);
   const [showJson, setShowJson] = useState(false);
-  const [apiNameManual, setApiNameManual] = useState(isEdit);
+  const [apiNameManual, setApiNameManual] = useState(isEdit || isDuplicate);
 
   const paramsJson = buildParametersJson(form);
   const previewText = buildPreviewText(form.body_text, form.body_vars);
@@ -235,12 +268,12 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
   // ── Simpan ────────────────────────────────────────────────────────────────
   const handleSave = async (submitToMeta: boolean) => {
-    if (!form.nama_template.trim()) return toast.error('Nama template wajib diisi.');
-    if (!form.body_text.trim()) return toast.error('Body text wajib diisi.');
-    if (form.buttons.length > 3) return toast.error('Maksimal 3 buttons per template (batas Meta API).');
+    if (!form.nama_template.trim()) return toast.error(t('templates.errNameRequired'));
+    if (!form.body_text.trim()) return toast.error(t('templates.errBodyRequired'));
+    if (form.buttons.length > 3) return toast.error(t('templates.errMaxButtons'));
 
     const emptyBtn = form.buttons.find(b => !b.label.trim());
-    if (emptyBtn) return toast.error('Semua button harus memiliki label.');
+    if (emptyBtn) return toast.error(t('templates.errButtonLabelRequired'));
 
     setIsSaving(true);
     try {
@@ -261,15 +294,15 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
       if (isEdit) {
         await updateTemplate(tpl!.id_template, payload);
-        toast.success('Template berhasil diperbarui!');
+        toast.success(t('templates.successUpdated'));
       } else {
         await createTemplate({ ...payload, header_type: payload.header_type ?? undefined, submitToMeta });
-        toast.success(submitToMeta ? 'Template dibuat & dikirim ke Meta!' : 'Template disimpan secara lokal!');
+        toast.success(submitToMeta ? t('templates.successCreatedMeta') : t('templates.successCreatedLocal'));
       }
 
       onSaved();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Gagal menyimpan template.');
+      toast.error(err instanceof Error ? err.message : t('templates.errSaveFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -301,7 +334,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
   // ── Button CTA management ─────────────────────────────────────────────────
   const addButton = (type: ButtonType) => {
     if (form.buttons.length >= 3) {
-      toast.error('Maksimal 3 buttons per template.');
+      toast.error(t('templates.errMaxButtons'));
       return;
     }
     setForm(f => ({
@@ -321,6 +354,13 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
     }));
   };
 
+  // Modal Title
+  const modalTitle = isEdit
+    ? t('templates.modalEditTitle')
+    : isDuplicate
+      ? t('templates.modalDuplicateTitle')
+      : t('templates.modalCreateTitle');
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
@@ -332,8 +372,8 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
         {/* ── Header Modal ──────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <div>
-            <h2 className="text-base font-bold text-foreground">{isEdit ? 'Edit Template' : 'Buat Template Baru'}</h2>
-            <p className="text-xs text-muted-foreground">Format: Meta WhatsApp Cloud API</p>
+            <h2 className="text-base font-bold text-foreground">{modalTitle}</h2>
+            <p className="text-xs text-muted-foreground">{t('templates.modalSubtitle')}</p>
           </div>
           <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
             <X size={18} />
@@ -348,53 +388,87 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
             {/* 1. Info Dasar */}
             <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Info Dasar</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                {t('templates.sectionBasicInfo')}
+              </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-foreground mb-1">Nama Internal <span className="text-rose-500">*</span></label>
+                  <label className="block text-xs font-medium text-foreground mb-1">
+                    {t('templates.labelTemplateName')} <span className="text-rose-500">*</span>
+                  </label>
                   <input
-                    type="text" placeholder="cth: Follow Up Probing 1"
+                    type="text"
+                    placeholder={t('templates.placeholderTemplateName')}
                     value={form.nama_template}
                     onChange={e => setForm(f => ({ ...f, nama_template: e.target.value }))}
                     className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-foreground mb-1">API Name (Meta)</label>
+                  <label className="block text-xs font-medium text-foreground mb-1">
+                    {t('templates.labelApiName')}
+                  </label>
                   <input
-                    type="text" placeholder="follow_up_probing_1 (huruf kecil, underscore)"
+                    type="text"
+                    placeholder={t('templates.placeholderApiName')}
                     value={form.template_name_api}
                     onChange={e => { setApiNameManual(true); setForm(f => ({ ...f, template_name_api: e.target.value })); }}
                     className="w-full px-3 py-2 bg-background border rounded-lg text-sm font-mono focus:ring-1 focus:ring-primary/60 outline-none"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Auto-generate dari nama internal. Hanya huruf kecil, angka, dan underscore.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('templates.hintApiName')}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Kategori</label>
-                    <select value={form.kategori} onChange={e => setForm(f => ({ ...f, kategori: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      {t('templates.labelCategory')}
+                    </label>
+                    <select
+                      value={form.kategori}
+                      onChange={e => setForm(f => ({ ...f, kategori: e.target.value }))}
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                    >
                       {KATEGORI_OPTIONS.map(k => <option key={k} value={k}>{k}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Pipeline Tag</label>
-                    <select value={form.pipeline} onChange={e => setForm(f => ({ ...f, pipeline: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
-                      {PIPELINE_OPTIONS.map(p => <option key={p} value={p}>{p || '(tidak ada)'}</option>)}
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      {t('templates.labelPipeline')}
+                    </label>
+                    <select
+                      value={form.pipeline}
+                      onChange={e => setForm(f => ({ ...f, pipeline: e.target.value }))}
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                    >
+                      {PIPELINE_OPTIONS.map(p => (
+                        <option key={p} value={p}>{p || t('templates.pipelineNone')}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Bahasa</label>
-                    <select value={form.language_code} onChange={e => setForm(f => ({ ...f, language_code: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none">
-                      {LANGUAGE_OPTIONS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      {t('templates.labelLanguage')}
+                    </label>
+                    <select
+                      value={form.language_code}
+                      onChange={e => setForm(f => ({ ...f, language_code: e.target.value }))}
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                    >
+                      <option value="id">{t('templates.langId')}</option>
+                      <option value="en_US">{t('templates.langEn')}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Urutan</label>
-                    <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: parseInt(e.target.value) || 99 }))}
-                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      {t('templates.labelUrutan')}
+                    </label>
+                    <input
+                      type="number"
+                      value={form.urutan}
+                      onChange={e => setForm(f => ({ ...f, urutan: parseInt(e.target.value) || 99 }))}
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                    />
                   </div>
                 </div>
               </div>
@@ -402,9 +476,11 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
             {/* 2. Header */}
             <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Header (Opsional)</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                {t('templates.sectionHeader')}
+              </h3>
               <div className="flex gap-2 flex-wrap mb-3">
-                {HEADER_TYPES.map(({ value, label, icon: Icon }) => (
+                {HEADER_TYPES.map(({ value, labelKey, icon: Icon }) => (
                   <button
                     key={value}
                     onClick={() => setForm(f => ({ ...f, header_type: value }))}
@@ -415,27 +491,36 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                         : 'border-border text-muted-foreground hover:border-primary/50'
                     )}
                   >
-                    <Icon size={12} /> {label}
+                    <Icon size={12} /> {t(labelKey)}
                   </button>
                 ))}
               </div>
               {form.header_type === 'text' && (
-                <input type="text" placeholder="Teks header (bisa berisi {{1}} jika pakai variabel)"
+                <input
+                  type="text"
+                  placeholder={t('templates.placeholderHeaderText')}
                   value={form.header_text}
                   onChange={e => setForm(f => ({ ...f, header_text: e.target.value }))}
-                  className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                  className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                />
               )}
               {['image', 'video', 'document'].includes(form.header_type) && (
                 <div className="space-y-2">
-                  <input type="url" placeholder="URL media (https://...)"
+                  <input
+                    type="url"
+                    placeholder={t('templates.placeholderHeaderUrl')}
                     value={form.header_url}
                     onChange={e => setForm(f => ({ ...f, header_url: e.target.value }))}
-                    className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                    className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                  />
                   {form.header_type === 'document' && (
-                    <input type="text" placeholder="Nama file (cth: Panduan.pdf)"
+                    <input
+                      type="text"
+                      placeholder={t('templates.placeholderHeaderFilename')}
                       value={form.header_filename}
                       onChange={e => setForm(f => ({ ...f, header_filename: e.target.value }))}
-                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none" />
+                      className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none"
+                    />
                   )}
                 </div>
               )}
@@ -443,11 +528,15 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
             {/* 3. Body + Variabel Picker */}
             <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Body <span className="text-rose-500">*</span></h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                {t('templates.sectionBody')} <span className="text-rose-500">*</span>
+              </h3>
 
               {/* Var picker */}
               <div className="mb-2">
-                <p className="text-xs text-muted-foreground mb-1.5">Tambah variabel dinamis ke body:</p>
+                <p className="text-xs text-muted-foreground mb-1.5">
+                  {t('templates.bodyVarsHelper')}
+                </p>
                 <div className="flex gap-1.5 flex-wrap">
                   {KNOWN_VARS.map(v => {
                     const idx = form.body_vars.indexOf(v.key);
@@ -475,33 +564,38 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
               <textarea
                 rows={5}
-                placeholder="Tulis body pesan di sini. Klik variabel di atas untuk menambahkan {{1}}, {{2}}, dst..."
+                placeholder={t('templates.placeholderBody')}
                 value={form.body_text}
                 onChange={e => setForm(f => ({ ...f, body_text: e.target.value }))}
                 className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:ring-1 focus:ring-primary/60 outline-none resize-none leading-relaxed"
               />
-              <p className="text-xs text-muted-foreground mt-1">{form.body_text.length} karakter</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('templates.charCount').replace('{count}', String(form.body_text.length))}
+              </p>
             </section>
 
-            {/* 4. Buttons/CTA — Section Baru */}
+            {/* 4. Buttons/CTA */}
             <section>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Buttons / CTA</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Maks. 3 buttons — sesuai batas Meta API</p>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t('templates.sectionButtons')}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t('templates.buttonsMetaLimit')}
+                  </p>
                 </div>
-                {/* Add button dropdown */}
+                {/* Add button options */}
                 <div className="flex items-center gap-1.5">
                   {form.buttons.length < 3 && BUTTON_TYPES.map(bt => (
                     <button
                       key={bt.value}
                       onClick={() => addButton(bt.value)}
-                      title={bt.description}
                       className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed text-xs text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
                     >
                       <Plus size={10} />
                       <bt.icon size={10} />
-                      {bt.label}
+                      {t(bt.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -509,7 +603,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
               {form.buttons.length === 0 ? (
                 <div className="border border-dashed rounded-lg p-4 text-center text-xs text-muted-foreground">
-                  Belum ada button. Tambahkan Quick Reply, URL, atau Telepon di atas.
+                  {t('templates.emptyButtons')}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -525,7 +619,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                           {/* Label */}
                           <input
                             type="text"
-                            placeholder={`Label tombol (cth: ${btn.type === 'QUICK_REPLY' ? 'Ya, Saya Berminat' : btn.type === 'URL' ? 'Lihat Program' : '0812-xxxx-xxxx'})`}
+                            placeholder={t('templates.placeholderBtnLabel')}
                             value={btn.label}
                             onChange={e => updateButton(idx, { label: e.target.value })}
                             className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
@@ -534,7 +628,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                           {btn.type === 'QUICK_REPLY' && (
                             <input
                               type="text"
-                              placeholder="Payload (cth: INTERESTED_YES)"
+                              placeholder={t('templates.placeholderBtnPayload')}
                               value={btn.value}
                               onChange={e => updateButton(idx, { value: e.target.value })}
                               className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs font-mono focus:ring-1 focus:ring-primary/60 outline-none"
@@ -543,7 +637,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                           {btn.type === 'URL' && (
                             <input
                               type="url"
-                              placeholder="URL (cth: https://nexa.id/program)"
+                              placeholder={t('templates.placeholderBtnUrl')}
                               value={btn.value}
                               onChange={e => updateButton(idx, { value: e.target.value })}
                               className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
@@ -552,7 +646,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                           {btn.type === 'PHONE_NUMBER' && (
                             <input
                               type="tel"
-                              placeholder="Nomor telepon (cth: 628123456789)"
+                              placeholder={t('templates.placeholderBtnPhone')}
                               value={btn.value}
                               onChange={e => updateButton(idx, { value: e.target.value })}
                               className="w-full px-2.5 py-1.5 bg-background border rounded-md text-xs focus:ring-1 focus:ring-primary/60 outline-none"
@@ -579,7 +673,7 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Code2 size={12} />
-                {showJson ? 'Sembunyikan' : 'Lihat'} JSON Schema
+                {showJson ? t('templates.hideJsonSchema') : t('templates.showJsonSchema')}
                 {showJson ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
               {showJson && (
@@ -594,7 +688,9 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
           <div className="w-72 border-l bg-secondary/20 flex flex-col shrink-0">
             <div className="px-4 py-3 border-b flex items-center gap-2">
               <Eye size={14} className="text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">Live Preview</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                {t('templates.livePreviewTitle')}
+              </span>
               {previewButtonObjects.length > 0 && (
                 <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
                   {previewButtonObjects.length} btn
@@ -619,26 +715,29 @@ export function TemplateFormModal({ template: tpl, onClose, onSaved }: TemplateF
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
         <div className="px-6 py-4 border-t shrink-0 flex items-center justify-between gap-3">
-          <button onClick={handleClose} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground border rounded-lg hover:border-primary/50 transition-all">
-            Batal
+          <button
+            onClick={handleClose}
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground border rounded-lg hover:border-primary/50 transition-all"
+          >
+            {t('templates.btnCancel')}
           </button>
           <div className="flex gap-2">
             <button
               onClick={() => handleSave(false)}
               disabled={isSaving}
-              className="px-4 py-2 text-sm border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 text-sm border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSaving && <Loader2 size={14} className="animate-spin" />}
-              Simpan Lokal
+              {t('templates.btnSaveLocal')}
             </button>
             <button
               onClick={() => handleSave(true)}
               disabled={isSaving || isEdit}
               title={isEdit ? 'Daftarkan ke Meta hanya tersedia saat Create. Gunakan Meta Business Manager untuk update.' : ''}
-              className="px-4 py-2 text-sm gradient-primary text-white rounded-lg shadow-md shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-40 flex items-center gap-2"
+              className="px-4 py-2 text-sm gradient-primary text-white rounded-lg shadow-md shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSaving && <Loader2 size={14} className="animate-spin" />}
-              {isEdit ? 'Simpan' : 'Simpan & Daftarkan ke Meta'}
+              {isEdit ? t('templates.btnSave') : t('templates.btnSaveMeta')}
             </button>
           </div>
         </div>
