@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ interface DeleteUserModalProps {
 }
 
 export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUserModalProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -27,11 +29,11 @@ export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUser
     try {
       setLoading(true);
       await apiClient.delete(`/users/${user.id}`);
-      toast.success('Staf berhasil dinonaktifkan');
+      toast.success(t('team.deactivateSuccess'));
       if (onSuccess) onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Gagal menonaktifkan staf');
+      toast.error(err.response?.data?.message || t('team.deactivateFailed'));
     } finally {
       setLoading(false);
     }
@@ -42,24 +44,24 @@ export function DeleteUserModal({ isOpen, onClose, user, onSuccess }: DeleteUser
       <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-500">
-            <UserX size={20} /> Nonaktifkan Staf
+            <UserX size={20} /> {t('team.deactivateStaffTitle')}
           </DialogTitle>
           <DialogDescription className="pt-2">
-            Anda akan menonaktifkan akun staf <strong>{user?.nama}</strong>. Apakah Anda yakin?
+            {t('team.deactivateDescPrefix')} <strong>{user?.nama}</strong>. {t('team.deactivateDescSuffix')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 mt-2">
           <p className="text-xs text-rose-600 font-medium flex gap-2">
             <AlertTriangle size={16} className="shrink-0" /> 
-            <span>Akun yang dinonaktifkan tidak akan bisa login ke dalam NexaMOS lagi, namun riwayat datanya akan tetap tersimpan (*soft delete*).</span>
+            <span>{t('team.deactivateWarning')}</span>
           </p>
         </div>
 
         <DialogFooter className="mt-4 flex flex-row gap-2 justify-end sm:justify-end">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>{t('common.cancel')}</Button>
           <Button type="button" variant="destructive" onClick={handleConfirm} className="flex-1 sm:flex-none h-11" disabled={loading}>
-            {loading ? 'Memproses...' : 'Ya, Nonaktifkan'}
+            {loading ? t('team.processing') : t('team.confirmDeactivate')}
           </Button>
         </DialogFooter>
       </DialogContent>

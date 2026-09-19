@@ -1343,6 +1343,237 @@ const id = {
     errFailed:                    'Gagal mengubah password. Pastikan password lama sesuai.',
     toastSuccess:                 'Password berhasil diperbarui! Email notifikasi keamanan telah dikirim ke Admin.',
   },
+
+  // ── Manajemen Tim ─────────────────────────────────────────
+  team: {
+    // Header & Access
+    accessDenied:               'Akses Ditolak: Halaman ini hanya untuk Admin dan Manager.',
+    backToDashboard:            '← Kembali ke Dashboard',
+    title:                      'Manajemen Tim',
+    subtitle:                   'Kelola pengguna, hak akses, dan area tugas',
+    addStaffBtn:                'Tambah Staf Baru',
+
+    // Quota & Seat Capacity
+    seatCapacity:               'Kapasitas Kursi Staf',
+    tierPrefix:                 'Tier',
+    quotaWarning:               '⚠️ Beberapa role telah mencapai batas maksimal tier',
+    full:                       'Penuh',
+    available:                  'Tersedia:',
+    quotaLimitReached:          '⚠️ Batas Kuota Tercapai',
+
+    // Search & Filter
+    searchPlaceholder:          'Cari nama, username atau role...',
+    emptyStaff:                 'Tidak ada staf ditemukan.',
+
+    // Table & Card Columns / Labels
+    staffInfo:                  'Info Staf',
+    email:                      'Email',
+    role:                       'Role',
+    status:                     'Status',
+    subdistrictArea:            'Area Kecamatan',
+    actions:                    'Aksi',
+    supervisor:                 'Atasan:',
+    chiefSupervisorLabel:       'Chief:',
+    notAssigned:                'Belum diatur',
+    statusActive:               'Aktif',
+    statusInactive:             'Nonaktif',
+
+    // Actions & Tooltips
+    editStaff:                  'Edit Staf',
+    editProfile:                'Edit Profil',
+    assignArea:                 'Atur Area',
+    resetPassword:              'Reset Pass',
+    resetPasswordFull:          'Reset Password',
+    deactivate:                 'Nonaktifkan',
+    deletePermanently:          'Hapus Permanen',
+
+    // Add Staff Modal
+    addModalTitle:              'Tambah Staf Baru',
+    addModalDesc:               'Isi formulir di bawah ini untuk mendaftarkan akun staf baru ke dalam sistem.',
+    fullName:                   'Nama Lengkap',
+    fullNamePlaceholder:        'Ketik nama lengkap...',
+    emailAddress:               'Alamat Email',
+    emailPlaceholder:           'Ketik alamat email...',
+    username:                   'Username',
+    usernamePlaceholder:        'Ketik username...',
+    roleLabel:                  'Role / Hak Akses',
+    supervisorChief:            'Atasan (Chief CRO)',
+    noSupervisor:               '-- Tidak ada atasan --',
+    password:                   'Password',
+    passwordPlaceholder:        'Masukkan password',
+    saveData:                   'Simpan Data',
+    saving:                     'Menyimpan...',
+    addSuccess:                 'Staf baru berhasil ditambahkan',
+    addFailed:                  'Gagal menambahkan staf',
+    loadStaffFailed:            'Gagal memuat daftar staf',
+
+    // Edit Staff Modal
+    editModalTitle:             'Edit Data Staf',
+    editModalDesc:              'Ubah profil dasar atau hak akses staf di bawah ini.',
+    accountUsername:            'Username Akun',
+    securityAlertActive:        '🔒 Security Alert Aktif',
+    usernameNoSpacePlaceholder: 'Ketik username (tanpa spasi)...',
+    usernameSecurityNotice:     'Perubahan username akan mengirimkan notifikasi keamanan otomatis ke email Admin CRM.',
+    accountStatus:              'Status Akun',
+    accountStatusDesc:          'Aktifkan atau nonaktifkan akun staf ini.',
+    saveChanges:                'Simpan Perubahan',
+    editSuccess:                'Data staf berhasil diperbarui',
+    editFailed:                 'Gagal mengubah staf',
+
+    // Assign Subdistrict Modal
+    assignAreaTitle:            'Atur Area Kecamatan',
+    forChiefCro:                'Untuk Chief CRO:',
+    searchSubdistrictPlaceholder:'Cari kecamatan...',
+    subdistrictNotFound:        'Kecamatan tidak ditemukan.',
+    subdistrictsSelected:       'kecamatan dipilih',
+    saveArea:                   'Simpan Area',
+    assignAreaSuccess:          'Area kecamatan untuk {name} berhasil disimpan ({count} kecamatan)',
+
+    // Reset Password Modal
+    resetPasswordTitle:         'Reset Password',
+    resetPasswordDescPrefix:    'Anda akan melakukan reset password untuk staf atas nama',
+    newPassword:                'Password Baru',
+    newPasswordPlaceholder:     'Masukkan password baru...',
+    resetSecurityNotice:        '🛡️ Email konfirmasi peringatan keamanan akan dikirimkan otomatis ke Administrator CRM.',
+    resetPasswordBtn:           'Reset Password',
+    processing:                 'Memproses...',
+    resetPasswordSuccess:       'Password staf berhasil direset',
+    resetPasswordFailed:        'Gagal mereset password',
+
+    // Deactivate Modal
+    deactivateStaffTitle:       'Nonaktifkan Staf',
+    deactivateDescPrefix:       'Anda akan menonaktifkan akun staf',
+    deactivateDescSuffix:       'Apakah Anda yakin?',
+    deactivateWarning:          'Akun yang dinonaktifkan tidak akan bisa login ke dalam NexaMOS lagi, namun riwayat datanya akan tetap tersimpan (soft delete).',
+    confirmDeactivate:          'Ya, Nonaktifkan',
+    deactivateSuccess:          'Staf berhasil dinonaktifkan',
+    deactivateFailed:           'Gagal menonaktifkan staf',
+  },
+
+  // ── WhatsApp Gating Banner ────────────────────────────────
+  waGating: {
+    defaultFeature:             'Fitur Perpesanan WhatsApp',
+    compactNotConnectedTitle:   'WhatsApp Belum Terhubung:',
+    compactVerifying:           'Verifikasi nomor sedang berlangsung.',
+    compactActivatePrompt:      'Aktifkan nomor WABA untuk menggunakan {feature}.',
+    wabaSettingsBtn:            'Pengaturan WABA',
+    bannerTitleInactive:        'WhatsApp Bisnis Belum Aktif',
+    statusVerifying:            'Sedang Diverifikasi',
+    statusNotConnected:         'Belum Terhubung',
+    descPending:                'Nomor WhatsApp lembaga Anda sedang dalam proses verifikasi dan aktivasi oleh tim teknis Superadmin. Selama proses ini berlangsung, fitur {feature} belum dapat mengirim pesan baru.',
+    descNotConfigured:          'Fitur {feature} memerlukan nomor WhatsApp Business resmi yang terverifikasi dan aktif. Daftarkan dan aktifkan nomor lembaga Anda melalui pengaturan untuk mulai mengirim pesan.',
+    connectNowBtn:              'Hubungkan Nomor Sekarang',
+  },
+
+  // ── Manajemen Periode (Cohort) ────────────────────────────
+  period: {
+    // Access Denied
+    accessDenied:               'Akses Dibatasi',
+    accessDeniedDesc:           'Halaman Manajemen Periode / Cohort hanya dapat diakses oleh Administrator dan Manager.',
+    backToDashboard:            'Kembali ke Dashboard',
+
+    // Header & Actions
+    title:                      'Manajemen Periode (Cohort)',
+    subtitleLpk:                'Pusat kontrol siklus tahun ajaran komersial, status aktif, dan eksekusi Re-entry',
+    subtitleGeneral:            'Pusat kontrol siklus periode bisnis, status aktif, dan eksekusi Re-entry',
+    createCohortBtn:            'Buat Cohort Baru',
+    addShort:                   'Tambah',
+
+    // Active Cohort Banner
+    activeCohortTitle:          'Cohort Aktif: {name}',
+    activeOperationalBadge:     '🟢 Aktif Operasional',
+    activeDescLpk:              'Seluruh alur kerja CRM (Data Siswa, Sekolah, Task List, Weekly Planning) saat ini berjalan pada cohort ini.',
+    activeDescGeneral:          'Seluruh alur kerja CRM (Data Kontak, Mitra, Task List, Weekly Planning) saat ini berjalan pada periode ini.',
+    studentsUnitLpk:            '{count} Siswa',
+    studentsUnitGeneral:        '{count} Kontak',
+    schoolsUnitLpk:             '{count} Sekolah',
+    schoolsUnitGeneral:         '{count} Mitra',
+
+    // Table & List
+    tableTitle:                 'Daftar Periode / Cohort Tersedia',
+    totalPeriods:               'Total {count} Periode',
+    thCodeId:                   'Kode ID',
+    thCohortName:               'Nama Cohort',
+    thDateRange:                'Rentang Waktu',
+    thStatus:                   'Status',
+    thTotalData:                'Total Data',
+    thActions:                  'Aksi',
+    loadingCohorts:             'Memuat daftar Cohort...',
+    emptyCohorts:               'Belum ada data Cohort yang dibuat. Klik tombol "Buat Cohort Baru" di atas.',
+    dateNotSet:                 'Tidak ditentukan',
+    dateRangeSeparator:         's/d',
+    statusActive:               'Aktif',
+    statusDraft:                'Draft',
+    statusArchived:             'Arsip',
+
+    // Table Row Action Buttons & Tooltips
+    btnSetActive:               'Set Aktif',
+    titleSetActive:             'Jadikan Cohort Aktif',
+    btnReEntry:                 'Re-entry',
+    titleReEntry:               'Jalankan simulasi & eksekusi Re-entry',
+    btnArchive:                 'Arsipkan',
+    titleArchive:               'Arsipkan Cohort Ini',
+
+    // Notifications & Prompts (Page)
+    confirmSetActive:           'Aktifkan Cohort {name}? Cohort aktif saat ini akan otomatis diarsipkan.',
+    setActiveSuccess:           'Cohort {name} berhasil diaktifkan!',
+    setActiveFailed:            'Gagal mengaktifkan Cohort',
+    confirmArchive:             'Arsipkan Cohort {name}?',
+    archiveSuccess:             'Cohort {name} berhasil diarsipkan.',
+    archiveFailed:              'Gagal mengarsipkan Cohort',
+    createSuccess:              'Cohort baru berhasil dibuat!',
+
+    // Create Cohort Modal
+    createModalTitle:           'Buat Cohort Baru',
+    cohortNameLabel:            'Nama / Periode Cohort',
+    cohortNamePlaceholder:      'Contoh: 2027/2028 atau 2028/2029',
+    cohortDraftNotice:          'Cohort baru otomatis dibuat dengan status Draft.',
+    startDateLabel:             'Tanggal Mulai (Opsional)',
+    endDateLabel:               'Tanggal Selesai (Opsional)',
+    errNameRequired:            'Nama Cohort wajib diisi (contoh: 2027/2028).',
+    errCreateFailed:            'Gagal membuat Cohort baru',
+    cancelBtn:                  'Batal',
+    submitCreateBtn:            'Buat Cohort',
+
+    // Re-Entry Modal
+    reEntryModalTitle:          'Eksekusi Re-entry Massal',
+    targetPrefix:               'Target:',
+    sourceCohortLabelLpk:       'Bawa Siswa dari Cohort Sumber:',
+    sourceCohortLabelGeneral:   'Bawa Kontak dari Cohort Sumber:',
+    noSourceCohort:             'Tidak ada cohort sumber lain',
+    sourceOptionLpk:            '{name} ({status}) — {count} Siswa',
+    sourceOptionGeneral:        '{name} ({status}) — {count} Kontak',
+    eligibilityCriteria:        'Kriteria Kelayakan (Dynamic Filters):',
+    excludeCustomerLpk:         'Keluarkan siswa berstatus Customer & Alumni (Lunas DP / Selesai Pelatihan)',
+    excludeCustomerGeneral:     'Keluarkan kontak berstatus Pelanggan & Mantan Pelanggan (Lunas DP / Transaksi Selesai)',
+    excludeRegisteredLpk:       'Keluarkan siswa yang berstatus Siswa Terdaftar (REGISTERED)',
+    excludeRegisteredGeneral:   'Keluarkan kontak yang berstatus Kontak Terdaftar (REGISTERED)',
+    excludeDoNotContactLpk:     'Keluarkan siswa Do Not Contact / Disqualified',
+    excludeDoNotContactGeneral: 'Keluarkan kontak Do Not Contact / Disqualified',
+    btnSimulate:                'Hitung Simulasi Re-entry',
+    simulatingLpk:              'Mengkalkulasi Kelayakan Siswa...',
+    simulatingGeneral:          'Mengkalkulasi Kelayakan Kontak...',
+    simResultTitle:             'Hasil Simulasi',
+    sourceLabel:                'Sumber:',
+    eligibleStudentsLpk:        'Siswa Memenuhi Syarat',
+    eligibleStudentsGeneral:    'Kontak Memenuhi Syarat',
+    fromTotalSourceLpk:         'dari total {count} siswa sumber',
+    fromTotalSourceGeneral:     'dari total {count} kontak sumber',
+    schoolsInvolvedLpk:         'Sekolah Terlibat',
+    schoolsInvolvedGeneral:     'Mitra Terlibat',
+    willConnectToNew:           'akan dihubungkan ke cohort baru',
+    ontologyRulePrefix:         'Aturan Ontologi NexaMOS:',
+    ontologyRuleNoticeLpk:      'Siswa yang di-re-entry tidak menduplikasi data induk di master. Mereka akan didaftarkan sebagai Lead Baru di Cohort {cohort} dengan status PJ CRO dikosongkan (Unassigned) untuk didistribusikan ulang.',
+    ontologyRuleNoticeGeneral:  'Kontak yang di-re-entry tidak menduplikasi data induk di master. Mereka akan didaftarkan sebagai Lead Baru di Cohort {cohort} dengan status penanggung jawab dikosongkan (Unassigned) untuk didistribusikan ulang.',
+    errSelectSource:            'Pilih Cohort sumber terlebih dahulu.',
+    errSimulateFailed:          'Gagal menghitung simulasi Re-entry',
+    confirmExecute:             'Konfirmasi eksekusi Re-entry massal ke Cohort {name}? Aksi ini permanen.',
+    errExecuteFailed:           'Gagal mengeksekusi Re-entry',
+    executeSuccess:             'Eksekusi Re-entry berhasil!',
+    closeBtn:                   'Tutup',
+    executeBtn:                 'Mulai Eksekusi Re-entry',
+    executingBtn:               'Mengeksekusi...',
+  },
 } as const;
 
 export type TranslationKey = typeof id;

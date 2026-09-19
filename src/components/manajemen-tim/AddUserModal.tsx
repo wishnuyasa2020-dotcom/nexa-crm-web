@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ interface AddUserModalProps {
 }
 
 export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
+  const { t } = useTranslation();
   const [nama, setNama] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -53,7 +55,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
         password,
         supervisor_id: role === 'CRO' && supervisorId ? Number(supervisorId) : null
       });
-      toast.success('Staf baru berhasil ditambahkan');
+      toast.success(t('team.addSuccess'));
       if (onSuccess) onSuccess();
       onClose();
       // Reset
@@ -66,7 +68,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
       setQuotaErrorMsg(null);
     } catch (err: any) {
       const isQuota = err.response?.data?.isQuotaError || err.response?.status === 403;
-      const msg = err.response?.data?.message || 'Gagal menambahkan staf';
+      const msg = err.response?.data?.message || t('team.addFailed');
       if (isQuota) {
         setQuotaErrorMsg(msg);
       } else {
@@ -82,17 +84,17 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
       <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
         <DialogHeader className="sticky -top-4 bg-popover z-10 pt-4 pb-2 -mt-4 -mx-4 px-4 border-b border-border/50">
           <DialogTitle className="flex items-center gap-2">
-            <UserPlus size={20} className="text-primary" /> Tambah Staf Baru
+            <UserPlus size={20} className="text-primary" /> {t('team.addModalTitle')}
           </DialogTitle>
           <DialogDescription className="pt-2">
-            Isi formulir di bawah ini untuk mendaftarkan akun staf baru ke dalam sistem.
+            {t('team.addModalDesc')}
           </DialogDescription>
         </DialogHeader>
 
         {quotaErrorMsg && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs space-y-1 mt-2">
             <p className="font-bold text-amber-500 flex items-center gap-1.5">
-              ⚠️ Batas Kuota Tercapai
+              {t('team.quotaLimitReached')}
             </p>
             <p className="leading-relaxed text-muted-foreground">{quotaErrorMsg}</p>
           </div>
@@ -101,12 +103,12 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <User size={14} /> Nama Lengkap
+              <User size={14} /> {t('team.fullName')}
             </label>
             <input 
               required
               type="text" 
-              placeholder="Ketik nama lengkap..." 
+              placeholder={t('team.fullNamePlaceholder')} 
               value={nama}
               onChange={e => setNama(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -115,12 +117,12 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <User size={14} /> Alamat Email
+              <User size={14} /> {t('team.emailAddress')}
             </label>
             <input 
               required
               type="email" 
-              placeholder="Ketik alamat email..." 
+              placeholder={t('team.emailPlaceholder')} 
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -129,12 +131,12 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <User size={14} /> Username
+              <User size={14} /> {t('team.username')}
             </label>
             <input 
               required
               type="text" 
-              placeholder="Ketik username..." 
+              placeholder={t('team.usernamePlaceholder')} 
               value={username}
               onChange={e => setUsername(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -143,7 +145,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <Tag size={14} /> Role / Hak Akses
+              <Tag size={14} /> {t('team.roleLabel')}
             </label>
             <select 
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -160,14 +162,14 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
           {role === 'CRO' && (
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <User size={14} /> Atasan (Chief CRO)
+                <User size={14} /> {t('team.supervisorChief')}
               </label>
               <select 
                 className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
                 value={supervisorId}
                 onChange={e => setSupervisorId(e.target.value)}
               >
-                <option value="">-- Tidak ada atasan --</option>
+                <option value="">{t('team.noSupervisor')}</option>
                 {chiefCros.map(c => (
                   <option key={c.id} value={c.id}>{c.nama}</option>
                 ))}
@@ -177,13 +179,13 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <Lock size={14} /> Password
+              <Lock size={14} /> {t('team.password')}
             </label>
             <div className="relative">
               <input 
                 required
                 type={showPassword ? "text" : "password"} 
-                placeholder="Masukkan password" 
+                placeholder={t('team.passwordPlaceholder')} 
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="w-full px-3 pr-10 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -199,9 +201,9 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
           </div>
 
           <DialogFooter className="sticky -bottom-4 bg-popover z-10 pt-4 pb-4 -mb-4 -mx-4 px-4 border-t border-border/50 mt-4 flex flex-row gap-2 justify-end sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>{t('common.cancel')}</Button>
             <Button type="submit" className="flex-1 sm:flex-none h-11 gradient-primary text-white" disabled={loading}>
-              {loading ? 'Menyimpan...' : 'Simpan Data'}
+              {loading ? t('team.saving') : t('team.saveData')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ interface ResetPasswordModalProps {
 }
 
 export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPasswordModalProps) {
+  const { t } = useTranslation();
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -31,12 +33,12 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
     try {
       setLoading(true);
       await apiClient.patch(`/users/${user.id}/reset-password`, { new_password: newPassword });
-      toast.success('Password staf berhasil direset');
+      toast.success(t('team.resetPasswordSuccess'));
       if (onSuccess) onSuccess();
       onClose();
       setNewPassword(''); // clean up
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Gagal mereset password');
+      toast.error(err.response?.data?.message || t('team.resetPasswordFailed'));
     } finally {
       setLoading(false);
     }
@@ -47,23 +49,23 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
       <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-amber-500">
-            <KeyRound size={20} /> Reset Password
+            <KeyRound size={20} /> {t('team.resetPasswordTitle')}
           </DialogTitle>
           <DialogDescription className="pt-2">
-            Anda akan melakukan *reset password* untuk staf atas nama <strong>{user?.nama}</strong>.
+            {t('team.resetPasswordDescPrefix')} <strong>{user?.nama}</strong>.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <Lock size={14} /> Password Baru
+              <Lock size={14} /> {t('team.newPassword')}
             </label>
             <div className="relative">
               <input 
                 required
                 type={showPassword ? "text" : "password"} 
-                placeholder="Masukkan password baru..." 
+                placeholder={t('team.newPasswordPlaceholder')} 
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
                 className="w-full px-3 pr-10 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-amber-500"
@@ -77,14 +79,14 @@ export function ResetPasswordModal({ isOpen, onClose, user, onSuccess }: ResetPa
               </button>
             </div>
             <p className="text-xs text-muted-foreground">
-              🛡️ Email konfirmasi peringatan keamanan akan dikirimkan otomatis ke Administrator CRM.
+              {t('team.resetSecurityNotice')}
             </p>
           </div>
 
           <DialogFooter className="mt-4 flex flex-row gap-2 justify-end sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>{t('common.cancel')}</Button>
             <Button type="submit" className="flex-1 sm:flex-none h-11 bg-amber-500 hover:bg-amber-600 text-white" disabled={loading}>
-              {loading ? 'Memproses...' : 'Reset Password'}
+              {loading ? t('team.processing') : t('team.resetPasswordBtn')}
             </Button>
           </DialogFooter>
         </form>

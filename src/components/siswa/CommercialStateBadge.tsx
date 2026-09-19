@@ -11,6 +11,7 @@ import {
   type TenantType
 } from '@/lib/constants/lifecycle';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CommercialStateBadgeProps {
   state: CommercialState | string;
@@ -30,6 +31,7 @@ export function CommercialStateBadge({
   useTenantVocabulary = true
 }: CommercialStateBadgeProps) {
   const authTenantType = useAuthStore((s) => s.user?.tenant_type);
+  const { lang } = useTranslation();
   const effectiveTenantType: TenantType = 
     tenantTypeProp ?? (authTenantType === 'general' ? 'general' : 'lpk');
 
@@ -41,7 +43,7 @@ export function CommercialStateBadge({
   };
 
   const label = useTenantVocabulary 
-    ? getDisplayLabel(state, effectiveTenantType, channel)
+    ? getDisplayLabel(state, effectiveTenantType, channel, lang)
     : theme.defaultLabel;
 
   return (

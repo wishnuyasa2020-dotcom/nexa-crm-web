@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Calendar, Loader2, AlertCircle } from 'lucide-react';
 import { useCohortStore } from '@/store/useCohortStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CreateCohortModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CreateCohortModalProps {
 }
 
 export function CreateCohortModal({ isOpen, onClose, onSuccess }: CreateCohortModalProps) {
+  const { t } = useTranslation();
   const { createCohort } = useCohortStore();
   const [namaPeriod, setNamaPeriod] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -23,7 +25,7 @@ export function CreateCohortModal({ isOpen, onClose, onSuccess }: CreateCohortMo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaPeriod.trim()) {
-      setError('Nama Cohort wajib diisi (contoh: 2027/2028).');
+      setError(t('period.errNameRequired'));
       return;
     }
 
@@ -42,7 +44,7 @@ export function CreateCohortModal({ isOpen, onClose, onSuccess }: CreateCohortMo
       setStartDate('');
       setEndDate('');
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal membuat Cohort baru');
+      setError(err.response?.data?.message || err.message || t('period.errCreateFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -54,10 +56,11 @@ export function CreateCohortModal({ isOpen, onClose, onSuccess }: CreateCohortMo
         <div className="flex items-center justify-between px-5 h-14 border-b">
           <h3 className="font-semibold text-foreground text-sm sm:text-base flex items-center gap-2">
             <Calendar size={18} className="text-primary" />
-            Buat Cohort Baru
+            {t('period.createModalTitle')}
           </h3>
           <button
             onClick={onClose}
+            aria-label={t('period.cancelBtn')}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <X size={18} />
@@ -74,42 +77,42 @@ export function CreateCohortModal({ isOpen, onClose, onSuccess }: CreateCohortMo
 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-              Nama / Periode Cohort <span className="text-destructive">*</span>
+              {t('period.cohortNameLabel')} <span className="text-destructive">*</span>
             </label>
             <input
               type="text"
               required
               value={namaPeriod}
               onChange={(e) => setNamaPeriod(e.target.value)}
-              placeholder="Contoh: 2027/2028 atau 2028/2029"
-              className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+              placeholder={t('period.cohortNamePlaceholder')}
+              className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
             />
             <p className="text-xs text-muted-foreground mt-1.5">
-              Cohort baru otomatis dibuat dengan status <span className="font-semibold text-amber-500">Draft</span>.
+              {t('period.cohortDraftNotice')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Tanggal Mulai (Opsional)
+                {t('period.startDateLabel')}
               </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 h-10 bg-background border rounded-lg text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+                className="w-full px-3 h-10 bg-background border rounded-lg text-xs sm:text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Tanggal Selesai (Opsional)
+                {t('period.endDateLabel')}
               </label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 h-10 bg-background border rounded-lg text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+                className="w-full px-3 h-10 bg-background border rounded-lg text-xs sm:text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
               />
             </div>
           </div>
@@ -120,14 +123,14 @@ export function CreateCohortModal({ isOpen, onClose, onSuccess }: CreateCohortMo
               onClick={onClose}
               className="flex-1 h-10 border rounded-xl text-sm font-medium hover:bg-secondary transition-colors"
             >
-              Batal
+              {t('period.cancelBtn')}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Buat Cohort'}
+              {submitting ? <Loader2 size={16} className="animate-spin" /> : t('period.submitCreateBtn')}
             </button>
           </div>
         </form>

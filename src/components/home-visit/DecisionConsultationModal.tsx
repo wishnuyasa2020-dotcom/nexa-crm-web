@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { X, Home, Building2, School, Loader2, CheckCircle, AlertCircle, Calendar, User, Handshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
-import { getDisplayLabel } from '@/lib/constants/lifecycle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
@@ -37,7 +36,7 @@ export function DecisionConsultationModal({
   preselectedSiswaName,
 }: DecisionConsultationModalProps) {
   const { t } = useTranslation();
-  const { isGeneral } = useTenantVocabulary();
+  const { isGeneral, getStateLabel } = useTenantVocabulary();
 
   const [selectedSiswaId, setSelectedSiswaId] = useState(preselectedSiswaId || '');
   const [prospects, setProspects] = useState<ProspectItem[]>([]);
@@ -237,7 +236,7 @@ export function DecisionConsultationModal({
                   </option>
                   {prospects.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.nama} ({p.namaSekolah || (isGeneral ? t('homeVisit.noSchoolGeneral') : t('homeVisit.noSchoolLpk'))}) — {t('homeVisit.stateLabel')} {getDisplayLabel(p.commercialState, isGeneral ? 'general' : 'lpk')}
+                      {p.nama} ({p.namaSekolah || (isGeneral ? t('homeVisit.noSchoolGeneral') : t('homeVisit.noSchoolLpk'))}) — {t('homeVisit.stateLabel')} {getStateLabel(p.commercialState)}
                     </option>
                   ))}
                 </select>

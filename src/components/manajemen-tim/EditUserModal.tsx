@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ interface EditUserModalProps {
 }
 
 export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModalProps) {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [nama, setNama] = useState('');
   const [email, setEmail] = useState('');
@@ -65,12 +67,12 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
         status_aktif: status,
         supervisor_id: role === 'CRO' && supervisorId ? Number(supervisorId) : null 
       });
-      toast.success('Data staf berhasil diperbarui');
+      toast.success(t('team.editSuccess'));
       if (onSuccess) onSuccess();
       onClose();
     } catch (err: any) {
       const isQuota = err.response?.data?.isQuotaError || err.response?.status === 403;
-      const msg = err.response?.data?.message || 'Gagal mengubah staf';
+      const msg = err.response?.data?.message || t('team.editFailed');
       if (isQuota) {
         setQuotaErrorMsg(msg);
       } else {
@@ -86,17 +88,17 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
       <DialogContent className="sm:max-w-md rounded-2xl w-11/12">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Edit2 size={20} className="text-primary" /> Edit Data Staf
+            <Edit2 size={20} className="text-primary" /> {t('team.editModalTitle')}
           </DialogTitle>
           <DialogDescription className="pt-2">
-            Ubah profil dasar atau hak akses staf di bawah ini.
+            {t('team.editModalDesc')}
           </DialogDescription>
         </DialogHeader>
 
         {quotaErrorMsg && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs space-y-1 mt-2">
             <p className="font-bold text-amber-500 flex items-center gap-1.5">
-              ⚠️ Batas Kuota Tercapai
+              {t('team.quotaLimitReached')}
             </p>
             <p className="leading-relaxed text-muted-foreground">{quotaErrorMsg}</p>
           </div>
@@ -106,33 +108,33 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <AtSign size={14} /> Username Akun
+                <AtSign size={14} /> {t('team.accountUsername')}
               </label>
               <span className="text-xs text-amber-500 font-medium flex items-center gap-1">
-                🔒 Security Alert Aktif
+                {t('team.securityAlertActive')}
               </span>
             </div>
             <input 
               required
               type="text" 
-              placeholder="Ketik username (tanpa spasi)..." 
+              placeholder={t('team.usernameNoSpacePlaceholder')} 
               value={username}
               onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono"
             />
             <p className="text-xs text-muted-foreground">
-              Perubahan username akan mengirimkan notifikasi keamanan otomatis ke email Admin CRM.
+              {t('team.usernameSecurityNotice')}
             </p>
           </div>
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <User size={14} /> Nama Lengkap
+              <User size={14} /> {t('team.fullName')}
             </label>
             <input 
               required
               type="text" 
-              placeholder="Ketik nama lengkap..." 
+              placeholder={t('team.fullNamePlaceholder')} 
               value={nama}
               onChange={e => setNama(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -141,12 +143,12 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <User size={14} /> Alamat Email
+              <User size={14} /> {t('team.emailAddress')}
             </label>
             <input 
               required
               type="email" 
-              placeholder="Ketik alamat email..." 
+              placeholder={t('team.emailPlaceholder')} 
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -155,7 +157,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <Tag size={14} /> Role / Hak Akses
+              <Tag size={14} /> {t('team.roleLabel')}
             </label>
             <select 
               className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -172,14 +174,14 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
           {role === 'CRO' && (
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <User size={14} /> Atasan (Chief CRO)
+                <User size={14} /> {t('team.supervisorChief')}
               </label>
               <select 
                 className="w-full px-3 py-2 text-sm bg-background border rounded-lg outline-none focus:ring-1 focus:ring-primary"
                 value={supervisorId}
                 onChange={e => setSupervisorId(e.target.value)}
               >
-                <option value="">-- Tidak ada atasan --</option>
+                <option value="">{t('team.noSupervisor')}</option>
                 {chiefCros.map(c => (
                   <option key={c.id} value={c.id}>{c.nama}</option>
                 ))}
@@ -190,8 +192,8 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
           <div className="space-y-2 pt-2 border-t">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-foreground">Status Akun</label>
-                <p className="text-xs text-muted-foreground">Aktifkan atau nonaktifkan akun staf ini.</p>
+                <label className="text-sm font-medium text-foreground">{t('team.accountStatus')}</label>
+                <p className="text-xs text-muted-foreground">{t('team.accountStatusDesc')}</p>
               </div>
               <button
                 type="button"
@@ -204,9 +206,9 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
           </div>
 
           <DialogFooter className="mt-4 flex flex-row gap-2 justify-end sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>Batal</Button>
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none h-11" disabled={loading}>{t('common.cancel')}</Button>
             <Button type="submit" className="flex-1 sm:flex-none h-11 gradient-primary text-white" disabled={loading}>
-              {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
+              {loading ? t('team.saving') : t('team.saveChanges')}
             </Button>
           </DialogFooter>
         </form>

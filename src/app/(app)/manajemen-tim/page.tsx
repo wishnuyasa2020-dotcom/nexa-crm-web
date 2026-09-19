@@ -9,6 +9,7 @@ import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 import { AssignKecamatanModal } from '@/components/manajemen-tim/AssignKecamatanModal';
 import { AddUserModal } from '@/components/manajemen-tim/AddUserModal';
 import { EditUserModal } from '@/components/manajemen-tim/EditUserModal';
@@ -16,6 +17,7 @@ import { ResetPasswordModal } from '@/components/manajemen-tim/ResetPasswordModa
 import { DeleteUserModal } from '@/components/manajemen-tim/DeleteUserModal';
 
 export default function ManajemenTimPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -56,7 +58,7 @@ export default function ManajemenTimPage() {
       setUsers(res.data.data || []);
       fetchQuota();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Gagal memuat daftar staf');
+      toast.error(err.response?.data?.message || t('team.loadStaffFailed'));
     } finally {
       setLoading(false);
     }
@@ -71,9 +73,9 @@ export default function ManajemenTimPage() {
   if (!isFullAdmin) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
-        <p className="text-sm">Akses Ditolak: Halaman ini hanya untuk Admin dan Manager.</p>
+        <p className="text-sm">{t('team.accessDenied')}</p>
         <button onClick={() => router.push('/dashboard')} className="text-xs text-primary hover:underline">
-          ← Kembali ke Dashboard
+          {t('team.backToDashboard')}
         </button>
       </div>
     );
@@ -114,8 +116,8 @@ export default function ManajemenTimPage() {
             <Users size={20} />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-foreground">Manajemen Tim</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Kelola pengguna, hak akses, dan area tugas</p>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">{t('team.title')}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('team.subtitle')}</p>
           </div>
         </div>
 
@@ -124,7 +126,7 @@ export default function ManajemenTimPage() {
           onClick={() => setIsAddOpen(true)}
           className="w-full sm:w-auto gradient-primary text-white shadow-lg shadow-primary/20 h-11 sm:h-10 rounded-xl"
         >
-          <Plus size={18} className="mr-2" /> Tambah Staf Baru
+          <Plus size={18} className="mr-2" /> {t('team.addStaffBtn')}
         </Button>
       </div>
 
@@ -133,14 +135,14 @@ export default function ManajemenTimPage() {
         <div className="bg-card border rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Kapasitas Kursi Staf</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('team.seatCapacity')}</span>
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                Tier {quota.tier}
+                {t('team.tierPrefix')} {quota.tier}
               </span>
             </div>
             {Object.values(quota.roles).some(r => r.available === 0) && (
               <span className="text-xs text-amber-500 font-medium flex items-center gap-1">
-                ⚠️ Beberapa role telah mencapai batas maksimal tier
+                {t('team.quotaWarning')}
               </span>
             )}
           </div>
@@ -176,9 +178,9 @@ export default function ManajemenTimPage() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1.5 text-right">
                     {r.available === 0 ? (
-                      <span className="text-amber-500 font-medium">Penuh</span>
+                      <span className="text-amber-500 font-medium">{t('team.full')}</span>
                     ) : (
-                      <span>Tersedia: {r.available}</span>
+                      <span>{t('team.available')} {r.available}</span>
                     )}
                   </p>
                 </div>
@@ -194,7 +196,7 @@ export default function ManajemenTimPage() {
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
             type="text"
-            placeholder="Cari nama, username atau role..."
+            placeholder={t('team.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 sm:py-2 bg-card border rounded-xl sm:rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
@@ -205,7 +207,7 @@ export default function ManajemenTimPage() {
       {/* Mobile Card View (Hidden on sm and up) */}
       <div className="sm:hidden space-y-3 mt-2">
         {filteredUsers.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground text-sm">Tidak ada staf ditemukan.</div>
+          <div className="py-12 text-center text-muted-foreground text-sm">{t('team.emptyStaff')}</div>
         ) : (
           filteredUsers.map(u => (
             <div key={u.id} className="bg-card border rounded-xl p-4 flex gap-3 relative">
@@ -232,13 +234,13 @@ export default function ManajemenTimPage() {
                   </span>
                   <span className={`text-xs font-medium flex items-center gap-1 ${u.status === 'Aktif' ? 'text-emerald-500' : 'text-rose-500'}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'Aktif' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                    {u.status}
+                    {u.status === 'Aktif' ? t('team.statusActive') : t('team.statusInactive')}
                   </span>
                 </div>
 
                 {u.role === 'CRO' && u.supervisor_nama && (
                   <div className="text-xs text-muted-foreground mt-2 flex flex-wrap items-center gap-1 bg-secondary/40 px-2 py-1 rounded-md">
-                    <span>Atasan:</span>
+                    <span>{t('team.supervisor')}</span>
                     <span className="font-semibold text-foreground truncate max-w-40">{u.supervisor_nama}</span>
                     <span className="text-primary text-xs">(Chief CRO)</span>
                   </div>
@@ -246,9 +248,9 @@ export default function ManajemenTimPage() {
 
                 {u.role === 'Chief CRO' && (
                   <div className="text-xs text-muted-foreground mt-2 flex flex-col gap-0.5 bg-secondary/40 px-2 py-1 rounded-md">
-                    <span className="font-medium text-muted-foreground">Area Kecamatan:</span>
+                    <span className="font-medium text-muted-foreground">{t('team.subdistrictArea')}:</span>
                     <span className="text-foreground font-medium truncate">
-                      {u.kecamatan_list?.length ? u.kecamatan_list.join(', ') : <span className="text-amber-500 italic">Belum diatur</span>}
+                      {u.kecamatan_list?.length ? u.kecamatan_list.join(', ') : <span className="text-amber-500 italic">{t('team.notAssigned')}</span>}
                     </span>
                   </div>
                 )}
@@ -256,13 +258,13 @@ export default function ManajemenTimPage() {
                 {/* More Menu Dropdown for Mobile */}
                 {mobileMenuOpen === u.id && (
                   <div className="absolute right-4 top-12 bg-background border rounded-lg shadow-xl z-20 w-40 flex flex-col py-1 overflow-hidden">
-                    <button onClick={() => openAction('edit', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Edit2 size={14} /> Edit Staf</button>
+                    <button onClick={() => openAction('edit', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Edit2 size={14} /> {t('team.editStaff')}</button>
                     {u.role === 'Chief CRO' && (
-                      <button onClick={() => openAction('area', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Map size={14} /> Atur Area</button>
+                      <button onClick={() => openAction('area', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-secondary transition-colors"><Map size={14} /> {t('team.assignArea')}</button>
                     )}
-                    <button onClick={() => openAction('reset', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-amber-500 text-left hover:bg-amber-500/10 transition-colors"><KeyRound size={14} /> Reset Pass</button>
+                    <button onClick={() => openAction('reset', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-amber-500 text-left hover:bg-amber-500/10 transition-colors"><KeyRound size={14} /> {t('team.resetPassword')}</button>
                     <div className="h-px bg-border my-1" />
-                    <button onClick={() => openAction('delete', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-rose-500 text-left hover:bg-rose-500/10 transition-colors"><UserX size={14} /> {u.status === 'Aktif' ? 'Nonaktifkan' : 'Hapus Permanen'}</button>
+                    <button onClick={() => openAction('delete', u)} className="flex items-center gap-2 px-3 py-2 text-xs text-rose-500 text-left hover:bg-rose-500/10 transition-colors"><UserX size={14} /> {u.status === 'Aktif' ? t('team.deactivate') : t('team.deletePermanently')}</button>
                   </div>
                 )}
               </div>
@@ -277,18 +279,18 @@ export default function ManajemenTimPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Info Staf</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Email</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Role</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-48">Area Kecamatan</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Aksi</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('team.staffInfo')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('team.email')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('team.role')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t('team.status')}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-48">{t('team.subdistrictArea')}</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t('team.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">Tidak ada tim ditemukan.</td>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">{t('team.emptyStaff')}</td>
                 </tr>
               ) : (
                 filteredUsers.map(u => (
@@ -305,7 +307,7 @@ export default function ManajemenTimPage() {
                             {u.role === 'CRO' && u.supervisor_nama && (
                               <>
                                 <span>•</span>
-                                <span className="text-primary font-medium">Chief: {u.supervisor_nama}</span>
+                                <span className="text-primary font-medium">{t('team.chiefSupervisorLabel')} {u.supervisor_nama}</span>
                               </>
                             )}
                           </div>
@@ -321,24 +323,24 @@ export default function ManajemenTimPage() {
                     <td className="px-4 py-3">
                       <span className={`text-xs font-medium flex items-center gap-1.5 ${u.status === 'Aktif' ? 'text-emerald-500' : 'text-rose-500'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'Aktif' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                        {u.status}
+                        {u.status === 'Aktif' ? t('team.statusActive') : t('team.statusInactive')}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       {u.role === 'Chief CRO' ? (
                         <div className="text-xs text-muted-foreground truncate max-w-36">
-                          {u.kecamatan_list?.length ? u.kecamatan_list.join(', ') : <span className="text-amber-500 italic">Belum diatur</span>}
+                          {u.kecamatan_list?.length ? u.kecamatan_list.join(', ') : <span className="text-amber-500 italic">{t('team.notAssigned')}</span>}
                         </div>
                       ) : <span className="text-xs text-muted-foreground/30">—</span>}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {u.role === 'Chief CRO' && (
-                          <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('area', u)} title="Atur Area"><Map size={14} /></Button>
+                          <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('area', u)} title={t('team.assignArea')}><Map size={14} /></Button>
                         )}
-                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('edit', u)} title="Edit Profil"><Edit2 size={14} /></Button>
-                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-amber-500/20 text-amber-500 hover:bg-amber-500/10" onClick={() => openAction('reset', u)} title="Reset Password"><KeyRound size={14} /></Button>
-                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-rose-500/20 text-rose-500 hover:bg-rose-500/10" onClick={() => openAction('delete', u)} title="Nonaktifkan"><UserX size={14} /></Button>
+                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={() => openAction('edit', u)} title={t('team.editProfile')}><Edit2 size={14} /></Button>
+                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-amber-500/20 text-amber-500 hover:bg-amber-500/10" onClick={() => openAction('reset', u)} title={t('team.resetPasswordFull')}><KeyRound size={14} /></Button>
+                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs border-rose-500/20 text-rose-500 hover:bg-rose-500/10" onClick={() => openAction('delete', u)} title={u.status === 'Aktif' ? t('team.deactivate') : t('team.deletePermanently')}><UserX size={14} /></Button>
                       </div>
                     </td>
                   </tr>

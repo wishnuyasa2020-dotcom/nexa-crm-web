@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { X, RefreshCw, Loader2, AlertCircle, CheckCircle2, Users, School, ArrowRight, ShieldAlert } from 'lucide-react';
 import { Cohort } from '@/store/useCohortStore';
 import apiClient from '@/lib/apiClient';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 interface ReEntryModalProps {
   isOpen: boolean;
@@ -29,6 +31,9 @@ export function ReEntryModal({
   availableCohorts,
   onSuccess,
 }: ReEntryModalProps) {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
+
   // Source cohorts: exclude target cohort
   const sourceOptions = availableCohorts.filter(
     (c) => targetCohort && c.nama_period !== targetCohort.nama_period
@@ -58,7 +63,7 @@ export function ReEntryModal({
 
   const handleSimulate = async () => {
     if (!selectedSource) {
-      setError('Pilih Cohort sumber terlebih dahulu.');
+      setError(t('period.errSelectSource'));
       return;
     }
 
@@ -81,14 +86,15 @@ export function ReEntryModal({
         setSimResult(res.data.data);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal menghitung simulasi Re-entry');
+      setError(err.response?.data?.message || err.message || t('period.errSimulateFailed'));
     } finally {
       setSimulating(false);
     }
   };
 
   const handleExecute = async () => {
-    if (!confirm(`Konfirmasi eksekusi Re-entry massal ke Cohort ${targetCohort.nama_period}? Aksi ini permanen.`)) {
+    const confirmMsg = t('period.confirmExecute').replace('{name}', targetCohort.nama_period);
+    if (!confirm(confirmMsg)) {
       return;
     }
 
@@ -107,11 +113,11 @@ export function ReEntryModal({
         }
       );
       if (res.data?.status === 'ok') {
-        setSuccessMessage(res.data.message || 'Eksekusi Re-entry berhasil!');
+        setSuccessMessage(res.data.message || t('period.executeSuccess'));
         if (onSuccess) onSuccess();
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal mengeksekusi Re-entry');
+      setError(err.response?.data?.message || err.message || t('period.errExecuteFailed'));
     } finally {
       setExecuting(false);
     }
@@ -128,15 +134,16 @@ export function ReEntryModal({
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-sm sm:text-base leading-tight">
-                Eksekusi Re-entry Massal
+                {t('period.reEntryModalTitle')}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Target: <span className="font-bold text-foreground">{targetCohort.nama_period}</span>
+                {t('period.targetPrefix')} <span className="font-bold text-foreground">{targetCohort.nama_period}</span>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
+            aria-label={t('period.closeBtn')}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <X size={18} />
@@ -162,7 +169,7 @@ export function ReEntryModal({
           {/* Source Cohort Selection */}
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-              Bawa Siswa dari Cohort Sumber:
+              {isGeneral ? t('period.sourceCohortLabelGeneral') : t('period.sourceCohortLabelLpk')}
             </label>
             <select
               value={selectedSource}
@@ -170,14 +177,22 @@ export function ReEntryModal({
                 setSelectedSource(e.target.value);
                 setSimResult(null);
               }}
-              className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
+              className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
             >
               {sourceOptions.length === 0 ? (
-                <option value="">Tidak ada cohort sumber lain</option>
+                <option value="">{t('period.noSourceCohort')}</option>
               ) : (
                 sourceOptions.map((c) => (
                   <option key={c.id_period} value={c.nama_period}>
-                    {c.nama_period} ({c.status}) — {c.total_siswa} Siswa
+                    {isGeneral
+                      ? t('period.sourceOptionGeneral')
+                          .replace('{name}', c.nama_period)
+                          .replace('{status}', c.status)
+                          .replace('{count}', String(c.total_siswa))
+                      : t('period.sourceOptionLpk')
+                          .replace('{name}', c.nama_period)
+                          .replace('{status}', c.status)
+                          .replace('{count}', String(c.total_siswa))}
                   </option>
                 ))
               )}
@@ -187,7 +202,7 @@ export function ReEntryModal({
           {/* Dynamic Rule Filters */}
           <div className="space-y-2.5">
             <label className="block text-xs font-semibold text-foreground">
-              Kriteria Kelayakan (Dynamic Filters):
+              {t('period.eligibilityCriteria')}
             </label>
 
             <div className="p-3 rounded-xl border bg-secondary/20 space-y-2.5 text-xs text-foreground">
@@ -202,7 +217,7 @@ export function ReEntryModal({
                   className="rounded border text-primary focus:ring-primary/40 w-4 h-4"
                 />
                 <span>
-                  Keluarkan siswa berstatus <span className="font-semibold text-primary">Customer & Alumni (Lunas DP / Selesai Pelatihan)</span>
+                  {isGeneral ? t('period.excludeCustomerGeneral') : t('period.excludeCustomerLpk')}
                 </span>
               </label>
 
@@ -217,7 +232,7 @@ export function ReEntryModal({
                   className="rounded border text-primary focus:ring-primary/40 w-4 h-4"
                 />
                 <span>
-                  Keluarkan siswa yang berstatus <span className="font-semibold text-primary">Siswa Terdaftar (REGISTERED)</span>
+                  {isGeneral ? t('period.excludeRegisteredGeneral') : t('period.excludeRegisteredLpk')}
                 </span>
               </label>
 
@@ -232,7 +247,7 @@ export function ReEntryModal({
                   className="rounded border text-primary focus:ring-primary/40 w-4 h-4"
                 />
                 <span>
-                  Keluarkan siswa <span className="font-semibold text-destructive">Do Not Contact / Disqualified</span>
+                  {isGeneral ? t('period.excludeDoNotContactGeneral') : t('period.excludeDoNotContactLpk')}
                 </span>
               </label>
             </div>
@@ -244,17 +259,18 @@ export function ReEntryModal({
               type="button"
               onClick={handleSimulate}
               disabled={simulating || !selectedSource}
-              className="w-full h-10 border rounded-xl text-xs sm:text-sm font-semibold hover:bg-secondary transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="w-full h-10 border rounded-xl text-xs sm:text-sm font-semibold hover:bg-secondary transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={t('period.btnSimulate')}
             >
               {simulating ? (
                 <>
                   <Loader2 size={16} className="animate-spin text-primary" />
-                  Mengkalkulasi Kelayakan Siswa...
+                  {isGeneral ? t('period.simulatingGeneral') : t('period.simulatingLpk')}
                 </>
               ) : (
                 <>
                   <RefreshCw size={15} />
-                  Hitung Simulasi Re-entry
+                  {t('period.btnSimulate')}
                 </>
               )}
             </button>
@@ -265,35 +281,46 @@ export function ReEntryModal({
             <div className="p-4 rounded-xl border bg-card space-y-3 animate-in fade-in duration-150">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Hasil Simulasi
+                  {t('period.simResultTitle')}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  Sumber: <span className="font-medium text-foreground">{simResult.source_cohort}</span>
+                  {t('period.sourceLabel')}{' '}
+                  <span className="font-medium text-foreground">{simResult.source_cohort}</span>
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg bg-secondary/30 border">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                    <Users size={14} className="text-primary" /> Siswa Memenuhi Syarat
+                    <Users size={14} className="text-primary" />{' '}
+                    {isGeneral ? t('period.eligibleStudentsGeneral') : t('period.eligibleStudentsLpk')}
                   </div>
                   <div className="text-xl font-bold text-foreground">
                     {simResult.eligible_students.toLocaleString('id-ID')}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    dari total {simResult.total_source_students.toLocaleString('id-ID')} siswa sumber
+                    {isGeneral
+                      ? t('period.fromTotalSourceGeneral').replace(
+                          '{count}',
+                          simResult.total_source_students.toLocaleString('id-ID')
+                        )
+                      : t('period.fromTotalSourceLpk').replace(
+                          '{count}',
+                          simResult.total_source_students.toLocaleString('id-ID')
+                        )}
                   </div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-secondary/30 border">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                    <School size={14} className="text-primary" /> Sekolah Terlibat
+                    <School size={14} className="text-primary" />{' '}
+                    {isGeneral ? t('period.schoolsInvolvedGeneral') : t('period.schoolsInvolvedLpk')}
                   </div>
                   <div className="text-xl font-bold text-foreground">
                     {simResult.eligible_schools.toLocaleString('id-ID')}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    akan dihubungkan ke cohort baru
+                    {t('period.willConnectToNew')}
                   </div>
                 </div>
               </div>
@@ -304,7 +331,10 @@ export function ReEntryModal({
           <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 flex items-start gap-2.5 text-xs">
             <ShieldAlert size={16} className="shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <span className="font-semibold">Aturan Ontologi NexaMOS:</span> Siswa yang di-re-entry tidak menduplikasi data induk di master. Mereka akan didaftarkan sebagai <span className="font-semibold">Lead Baru</span> di Cohort <span className="font-semibold">{targetCohort.nama_period}</span> dengan status PJ CRO dikosongkan (Unassigned) untuk didistribusikan ulang.
+              <span className="font-semibold">{t('period.ontologyRulePrefix')}</span>{' '}
+              {isGeneral
+                ? t('period.ontologyRuleNoticeGeneral').replace('{cohort}', targetCohort.nama_period)
+                : t('period.ontologyRuleNoticeLpk').replace('{cohort}', targetCohort.nama_period)}
             </div>
           </div>
         </div>
@@ -316,22 +346,22 @@ export function ReEntryModal({
             onClick={onClose}
             className="px-4 h-10 border rounded-xl text-sm font-medium hover:bg-secondary transition-colors"
           >
-            Tutup
+            {t('period.closeBtn')}
           </button>
           <button
             type="button"
             onClick={handleExecute}
             disabled={executing || !simResult || simResult.eligible_students === 0}
-            className="px-5 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+            className="px-5 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {executing ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Mengeksekusi...
+                {t('period.executingBtn')}
               </>
             ) : (
               <>
-                Mulai Eksekusi Re-entry
+                {t('period.executeBtn')}
                 <ArrowRight size={15} />
               </>
             )}

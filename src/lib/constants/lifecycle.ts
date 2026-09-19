@@ -61,6 +61,48 @@ export const TENANT_VOCABULARIES: Record<TenantType, Record<CanonicalState, stri
 };
 
 /**
+ * Pemetaan Domain Vocabulary per Tipe Tenant (Bahasa Inggris / International):
+ * - LPK: Derma & vocational training institutions
+ * - General: General business, SaaS, B2B, retail
+ */
+export const TENANT_VOCABULARIES_EN: Record<TenantType, Record<CanonicalState, string>> = {
+  lpk: {
+    AUDIENCE:       'Cold Student',
+    KNOWN_PROFILE:  'Identified Student',
+    LEAD:           'Warm Student',
+    PROSPECT:       'Potential Student',
+    OPPORTUNITY:    'Serious Student',
+    REGISTERED:     'Registered Student',
+    CUSTOMER:       'Student / Participant',
+    POST_CUSTOMER:  'Alumni',
+  },
+  general: {
+    AUDIENCE:       'Cold Contact',
+    KNOWN_PROFILE:  'Identified Contact',
+    LEAD:           'Warm Contact',
+    PROSPECT:       'Potential Contact',
+    OPPORTUNITY:    'Serious Contact',
+    REGISTERED:     'Registered Contact',
+    CUSTOMER:       'Customer',
+    POST_CUSTOMER:  'Former Customer',
+  },
+};
+
+/**
+ * Pemetaan Domain Vocabulary untuk Tenant LPK Jalur Non-Sekolah (Bahasa Inggris):
+ */
+export const LPK_NON_SCHOOL_VOCABULARY_EN: Record<CanonicalState, string> = {
+  AUDIENCE:       'Cold Contact',
+  KNOWN_PROFILE:  'Identified Contact',
+  LEAD:           'Warm Contact',
+  PROSPECT:       'Potential Contact',
+  OPPORTUNITY:    'Serious Contact',
+  REGISTERED:     'Registered Contact',
+  CUSTOMER:       'Participant',
+  POST_CUSTOMER:  'Alumni',
+};
+
+/**
  * Pemetaan Domain Vocabulary untuk Tenant LPK Jalur Non-Sekolah (Digital, Relasi, Inbound):
  * Menghormati aturan ontologi di mana intake non-sekolah dilabeli 'Kontak'
  */
@@ -76,15 +118,20 @@ export const LPK_NON_SCHOOL_VOCABULARY: Record<CanonicalState, string> = {
 };
 
 /**
- * Mendapatkan label entitas baku ('Siswa' vs 'Kontak')
- * - Tenant General: Selalu 'Kontak'
- * - Tenant LPK: 'Siswa' jika jalur sekolah, 'Kontak' jika non-sekolah (digital, relasi, direct)
+ * Mendapatkan label entitas baku ('Siswa' vs 'Kontak' atau 'Student' vs 'Contact')
+ * - Tenant General: Selalu 'Kontak' / 'Contact'
+ * - Tenant LPK: 'Siswa' / 'Student' jika jalur sekolah, 'Kontak' / 'Contact' jika non-sekolah (digital, relasi, direct)
  */
-export function resolveEntityLabel(tenantType: TenantType = 'lpk', channel?: string | null): 'Siswa' | 'Kontak' {
-  if (tenantType === 'general') return 'Kontak';
-  if (!channel) return 'Siswa';
+export function resolveEntityLabel(
+  tenantType: TenantType = 'lpk', 
+  channel?: string | null,
+  lang: 'id' | 'en' = 'id'
+): string {
+  const isEn = lang === 'en';
+  if (tenantType === 'general') return isEn ? 'Contact' : 'Kontak';
+  if (!channel) return isEn ? 'Student' : 'Siswa';
   const clean = channel.trim().toLowerCase();
-  return clean === 'sekolah' ? 'Siswa' : 'Kontak';
+  return clean === 'sekolah' ? (isEn ? 'Student' : 'Siswa') : (isEn ? 'Contact' : 'Kontak');
 }
 
 /**
@@ -143,31 +190,36 @@ export function normalizeLifecycleState(input?: string | null): CanonicalState |
 }
 
 /**
- * Mendapatkan display label antarmuka sesuai tipe tenant & channel intake (default: 'lpk')
- * - Tenant General: Selalu menggunakan label 'Kontak ...' / 'Pelanggan'
- * - Tenant LPK Jalur Sekolah: 'Siswa Hangat', 'Siswa Potensial', dst.
- * - Tenant LPK Jalur Non-Sekolah: 'Kontak Hangat', 'Kontak Potensial', dst.
+ * Mendapatkan display label antarmuka sesuai tipe tenant & channel intake & active language (default: 'lpk', 'id')
+ * - Tenant General: Selalu menggunakan label 'Kontak ...' / 'Pelanggan' (atau '... Contact' / 'Customer' jika en)
+ * - Tenant LPK Jalur Sekolah: 'Siswa Hangat', 'Siswa Potensial', dst. (atau 'Warm Student', dst.)
+ * - Tenant LPK Jalur Non-Sekolah: 'Kontak Hangat', 'Kontak Potensial', dst. (atau 'Warm Contact', dst.)
  */
 export function getDisplayLabel(
   state?: string | null, 
   tenantType: TenantType = 'lpk',
-  channel?: string | null
+  channel?: string | null,
+  lang: 'id' | 'en' = 'id'
 ): string {
+  const isEn = lang === 'en';
   const norm = normalizeLifecycleState(state);
-  if (norm === 'Disqualified') return 'Tidak Lanjut / Disqualified';
+  if (norm === 'Disqualified') return isEn ? 'Disqualified' : 'Tidak Lanjut / Disqualified';
+
+  const vocabMap = isEn ? TENANT_VOCABULARIES_EN : TENANT_VOCABULARIES;
+  const lpkNonSchoolMap = isEn ? LPK_NON_SCHOOL_VOCABULARY_EN : LPK_NON_SCHOOL_VOCABULARY;
 
   if (tenantType === 'general') {
-    const vocab = TENANT_VOCABULARIES.general;
+    const vocab = vocabMap.general;
     return vocab[norm] || norm;
   }
 
   // Tenant LPK: Cek channel intake
-  const entity = resolveEntityLabel('lpk', channel);
-  if (entity === 'Kontak') {
-    return LPK_NON_SCHOOL_VOCABULARY[norm] || norm;
+  const entity = resolveEntityLabel('lpk', channel, lang);
+  if (entity === (isEn ? 'Contact' : 'Kontak')) {
+    return lpkNonSchoolMap[norm] || norm;
   }
 
-  const vocab = TENANT_VOCABULARIES.lpk;
+  const vocab = vocabMap.lpk;
   return vocab[norm] || norm;
 }
 

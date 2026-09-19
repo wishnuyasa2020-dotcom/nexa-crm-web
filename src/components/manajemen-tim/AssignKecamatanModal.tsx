@@ -5,6 +5,7 @@ import { X, Search, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AssignKecamatanModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface AssignKecamatanModalProps {
 }
 
 export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess }: AssignKecamatanModalProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
   const [kecamatanList, setKecamatanList] = useState<string[]>([]);
@@ -51,7 +53,11 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
     setSaving(true);
     await new Promise(r => setTimeout(r, 400));
     setSaving(false);
-    toast.success(`Area kecamatan untuk ${userToAssign.nama} berhasil disimpan (${selected.length} kecamatan)`);
+    toast.success(
+      t('team.assignAreaSuccess')
+        .replace('{name}', userToAssign.nama)
+        .replace('{count}', String(selected.length))
+    );
     onSuccess();
   };
 
@@ -66,8 +72,8 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
           <div>
-            <h2 className="text-lg font-bold text-foreground">Atur Area Kecamatan</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Untuk Chief CRO: {userToAssign.nama}</p>
+            <h2 className="text-lg font-bold text-foreground">{t('team.assignAreaTitle')}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('team.forChiefCro')} {userToAssign.nama}</p>
           </div>
           <button 
             onClick={onClose}
@@ -83,7 +89,7 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Cari kecamatan..."
+              placeholder={t('team.searchSubdistrictPlaceholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-secondary/50 border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
@@ -91,9 +97,13 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
           </div>
 
           <div className="border rounded-xl overflow-hidden max-h-60 overflow-y-auto scrollbar-thin">
-            {filteredList.length === 0 ? (
+            {loadingKecamatan ? (
+              <div className="p-6 flex items-center justify-center text-sm text-muted-foreground gap-2">
+                <Loader2 size={16} className="animate-spin text-primary" /> {t('common.loading')}
+              </div>
+            ) : filteredList.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                Kecamatan tidak ditemukan.
+                {t('team.subdistrictNotFound')}
               </div>
             ) : (
               <div className="divide-y divide-border/50">
@@ -125,7 +135,7 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
           </div>
           
           <div className="text-xs text-muted-foreground">
-            {selected.length} kecamatan dipilih
+            {selected.length} {t('team.subdistrictsSelected')}
           </div>
         </div>
 
@@ -136,14 +146,14 @@ export function AssignKecamatanModal({ isOpen, onClose, userToAssign, onSuccess 
             className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
             disabled={saving}
           >
-            Batal
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className="flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-medium text-white gradient-primary hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {saving ? 'Menyimpan...' : 'Simpan Area'}
+            {saving ? t('team.saving') : t('team.saveArea')}
           </button>
         </div>
       </div>

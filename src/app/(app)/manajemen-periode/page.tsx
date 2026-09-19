@@ -8,12 +8,16 @@ import {
 } from 'lucide-react';
 import { useCohortStore, Cohort } from '@/store/useCohortStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 import { CreateCohortModal } from '@/components/cohort/CreateCohortModal';
 import { ReEntryModal } from '@/components/cohort/ReEntryModal';
 import { cn } from '@/lib/utils';
 
 export default function ManajemenPeriodePage() {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const { cohorts, loading, error, fetchCohorts, setActiveCohort, archiveCohort } = useCohortStore();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -34,22 +38,23 @@ export default function ManajemenPeriodePage() {
         <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-4 shadow-xs">
           <ShieldAlert size={32} />
         </div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Akses Dibatasi</h2>
+        <h2 className="text-xl font-bold text-foreground mb-2">{t('period.accessDenied')}</h2>
         <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
-          Halaman Manajemen Periode / Cohort hanya dapat diakses oleh <span className="font-semibold text-foreground">Administrator</span> dan <span className="font-semibold text-foreground">Manager</span>.
+          {t('period.accessDeniedDesc')}
         </p>
         <Link 
           href="/dashboard" 
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20"
         >
-          <ArrowLeft size={16} /> Kembali ke Dashboard
+          <ArrowLeft size={16} /> {t('period.backToDashboard')}
         </Link>
       </div>
     );
   }
 
   const handleSetActive = async (cohort: Cohort) => {
-    if (!confirm(`Aktifkan Cohort ${cohort.nama_period}? Cohort aktif saat ini akan otomatis diarsipkan.`)) {
+    const confirmMsg = t('period.confirmSetActive').replace('{name}', cohort.nama_period);
+    if (!confirm(confirmMsg)) {
       return;
     }
     setActionLoadingId(cohort.id_period);
@@ -58,16 +63,17 @@ export default function ManajemenPeriodePage() {
 
     try {
       await setActiveCohort(cohort.id_period);
-      setActionSuccess(`Cohort ${cohort.nama_period} berhasil diaktifkan!`);
+      setActionSuccess(t('period.setActiveSuccess').replace('{name}', cohort.nama_period));
     } catch (err: any) {
-      setActionError(err.response?.data?.message || err.message || 'Gagal mengaktifkan Cohort');
+      setActionError(err.response?.data?.message || err.message || t('period.setActiveFailed'));
     } finally {
       setActionLoadingId(null);
     }
   };
 
   const handleArchive = async (cohort: Cohort) => {
-    if (!confirm(`Arsipkan Cohort ${cohort.nama_period}?`)) {
+    const confirmMsg = t('period.confirmArchive').replace('{name}', cohort.nama_period);
+    if (!confirm(confirmMsg)) {
       return;
     }
     setActionLoadingId(cohort.id_period);
@@ -76,9 +82,9 @@ export default function ManajemenPeriodePage() {
 
     try {
       await archiveCohort(cohort.id_period);
-      setActionSuccess(`Cohort ${cohort.nama_period} berhasil diarsipkan.`);
+      setActionSuccess(t('period.archiveSuccess').replace('{name}', cohort.nama_period));
     } catch (err: any) {
-      setActionError(err.response?.data?.message || err.message || 'Gagal mengarsipkan Cohort');
+      setActionError(err.response?.data?.message || err.message || t('period.archiveFailed'));
     } finally {
       setActionLoadingId(null);
     }
@@ -96,9 +102,11 @@ export default function ManajemenPeriodePage() {
             <CalendarDays className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-foreground leading-tight">Manajemen Periode (Cohort)</h1>
+            <h1 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+              {t('period.title')}
+            </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              Pusat kontrol siklus tahun ajaran komersial, status aktif, dan eksekusi Re-entry
+              {isGeneral ? t('period.subtitleGeneral') : t('period.subtitleLpk')}
             </p>
           </div>
         </div>
@@ -107,12 +115,12 @@ export default function ManajemenPeriodePage() {
         <div className="w-full sm:w-auto shrink-0">
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="w-full sm:w-auto h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all cursor-pointer"
-            title="Buat Cohort Baru"
+            className="w-full sm:w-auto h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all"
+            title={t('period.createCohortBtn')}
           >
             <Plus size={16} />
-            <span className="hidden sm:inline">Buat Cohort Baru</span>
-            <span className="sm:hidden">Tambah</span>
+            <span className="hidden sm:inline">{t('period.createCohortBtn')}</span>
+            <span className="sm:hidden">{t('period.addShort')}</span>
           </button>
         </div>
       </header>
@@ -129,14 +137,14 @@ export default function ManajemenPeriodePage() {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-base sm:text-lg font-bold text-foreground">
-                    Cohort Aktif: {activeCohort.nama_period}
+                    {t('period.activeCohortTitle').replace('{name}', activeCohort.nama_period)}
                   </h2>
                   <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/10 text-green-600 border border-green-500/20">
-                    🟢 Aktif Operasional
+                    {t('period.activeOperationalBadge')}
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Seluruh alur kerja CRM (Data Siswa, Sekolah, Task List, Weekly Planning) saat ini berjalan pada cohort ini.
+                  {isGeneral ? t('period.activeDescGeneral') : t('period.activeDescLpk')}
                 </p>
               </div>
             </div>
@@ -144,11 +152,19 @@ export default function ManajemenPeriodePage() {
             <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground shrink-0 w-full sm:w-auto justify-start sm:justify-end pt-2 sm:pt-0 border-t border-border/30 sm:border-0">
               <div className="flex items-center gap-1.5 font-medium text-foreground">
                 <Users size={15} className="text-primary" />
-                <span>{activeCohort.total_siswa.toLocaleString('id-ID')} Siswa</span>
+                <span>
+                  {isGeneral
+                    ? t('period.studentsUnitGeneral').replace('{count}', activeCohort.total_siswa.toLocaleString('id-ID'))
+                    : t('period.studentsUnitLpk').replace('{count}', activeCohort.total_siswa.toLocaleString('id-ID'))}
+                </span>
               </div>
               <div className="flex items-center gap-1.5 font-medium text-foreground">
                 <School size={15} className="text-primary" />
-                <span>{activeCohort.total_sekolah.toLocaleString('id-ID')} Sekolah</span>
+                <span>
+                  {isGeneral
+                    ? t('period.schoolsUnitGeneral').replace('{count}', activeCohort.total_sekolah.toLocaleString('id-ID'))
+                    : t('period.schoolsUnitLpk').replace('{count}', activeCohort.total_sekolah.toLocaleString('id-ID'))}
+                </span>
               </div>
             </div>
           </div>
@@ -180,10 +196,10 @@ export default function ManajemenPeriodePage() {
         <div className="space-y-3">
           <div className="flex flex-col gap-0.5">
             <h3 className="text-sm sm:text-base font-bold text-foreground">
-              Daftar Periode / Cohort Tersedia
+              {t('period.tableTitle')}
             </h3>
             <span className="text-xs text-muted-foreground">
-              Total {cohorts.length} Periode
+              {t('period.totalPeriods').replace('{count}', String(cohorts.length))}
             </span>
           </div>
 
@@ -192,12 +208,12 @@ export default function ManajemenPeriodePage() {
               <table className="w-full text-sm text-left">
                 <thead className="bg-secondary/40 border-b">
                   <tr>
-                    <th className="px-5 py-3 font-semibold text-muted-foreground">Kode ID</th>
-                    <th className="px-5 py-3 font-semibold text-muted-foreground">Nama Cohort</th>
-                    <th className="px-5 py-3 font-semibold text-muted-foreground">Rentang Waktu</th>
-                    <th className="px-5 py-3 font-semibold text-muted-foreground">Status</th>
-                    <th className="px-5 py-3 font-semibold text-muted-foreground">Total Data</th>
-                    <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-56">Aksi</th>
+                    <th className="px-5 py-3 font-semibold text-muted-foreground">{t('period.thCodeId')}</th>
+                    <th className="px-5 py-3 font-semibold text-muted-foreground">{t('period.thCohortName')}</th>
+                    <th className="px-5 py-3 font-semibold text-muted-foreground">{t('period.thDateRange')}</th>
+                    <th className="px-5 py-3 font-semibold text-muted-foreground">{t('period.thStatus')}</th>
+                    <th className="px-5 py-3 font-semibold text-muted-foreground">{t('period.thTotalData')}</th>
+                    <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-56">{t('period.thActions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
@@ -206,14 +222,14 @@ export default function ManajemenPeriodePage() {
                       <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground">
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 size={18} className="animate-spin text-primary" />
-                          <span>Memuat daftar Cohort...</span>
+                          <span>{t('period.loadingCohorts')}</span>
                         </div>
                       </td>
                     </tr>
                   ) : cohorts.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground text-sm">
-                        Belum ada data Cohort yang dibuat. Klik tombol "Buat Cohort Baru" di atas.
+                        {t('period.emptyCohorts')}
                       </td>
                     </tr>
                   ) : (
@@ -230,24 +246,24 @@ export default function ManajemenPeriodePage() {
                           </td>
                           <td className="px-5 py-3.5 text-xs text-muted-foreground">
                             {cohort.start_date || cohort.end_date
-                              ? `${cohort.start_date || '-'} s/d ${cohort.end_date || '-'}`
-                              : 'Tidak ditentukan'}
+                              ? `${cohort.start_date || '-'} ${t('period.dateRangeSeparator')} ${cohort.end_date || '-'}`
+                              : t('period.dateNotSet')}
                           </td>
                           <td className="px-5 py-3.5">
                             {cohort.status === 'aktif' ? (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-600 border border-green-500/20">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                Aktif
+                                {t('period.statusActive')}
                               </span>
                             ) : cohort.status === 'draft' ? (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                Draft
+                                {t('period.statusDraft')}
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary text-muted-foreground border">
                                 <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
-                                Arsip
+                                {t('period.statusArchived')}
                               </span>
                             )}
                           </td>
@@ -267,10 +283,10 @@ export default function ManajemenPeriodePage() {
                                 <button
                                   onClick={() => handleSetActive(cohort)}
                                   disabled={isRowLoading}
-                                  className="h-8 px-3 rounded-lg border text-xs font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors disabled:opacity-50 cursor-pointer"
-                                  title="Jadikan Cohort Aktif"
+                                  className="h-8 px-3 rounded-lg border text-xs font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title={t('period.titleSetActive')}
                                 >
-                                  {isRowLoading ? <Loader2 size={13} className="animate-spin" /> : 'Set Aktif'}
+                                  {isRowLoading ? <Loader2 size={13} className="animate-spin" /> : t('period.btnSetActive')}
                                 </button>
                               )}
 
@@ -278,11 +294,11 @@ export default function ManajemenPeriodePage() {
                                 <button
                                   onClick={() => setReEntryTarget(cohort)}
                                   disabled={isRowLoading}
-                                  className="h-8 px-3 rounded-lg border text-xs font-medium hover:bg-secondary transition-colors flex items-center gap-1.5 cursor-pointer"
-                                  title="Jalankan simulasi & eksekusi Re-entry"
+                                  className="h-8 px-3 rounded-lg border text-xs font-medium hover:bg-secondary transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title={t('period.titleReEntry')}
                                 >
                                   <RefreshCw size={12} className="text-primary" />
-                                  <span>Re-entry</span>
+                                  <span>{t('period.btnReEntry')}</span>
                                 </button>
                               )}
 
@@ -290,10 +306,10 @@ export default function ManajemenPeriodePage() {
                                 <button
                                   onClick={() => handleArchive(cohort)}
                                   disabled={isRowLoading}
-                                  className="h-8 px-3 rounded-lg border text-xs font-medium hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 flex items-center gap-1 cursor-pointer"
-                                  title="Arsipkan Cohort Ini"
+                                  className="h-8 px-3 rounded-lg border text-xs font-medium hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                  title={t('period.titleArchive')}
                                 >
-                                  {isRowLoading ? <Loader2 size={13} className="animate-spin" /> : <><Archive size={12} /><span>Arsipkan</span></>}
+                                  {isRowLoading ? <Loader2 size={13} className="animate-spin" /> : <><Archive size={12} /><span>{t('period.btnArchive')}</span></>}
                                 </button>
                               )}
                             </div>
@@ -314,7 +330,7 @@ export default function ManajemenPeriodePage() {
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onSuccess={() => {
-          setActionSuccess('Cohort baru berhasil dibuat!');
+          setActionSuccess(t('period.createSuccess'));
           fetchCohorts();
         }}
       />

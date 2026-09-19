@@ -1343,6 +1343,237 @@ const en = {
     errFailed:                    'Failed to change password. Make sure the current password is correct.',
     toastSuccess:                 'Password updated successfully! Security notification email has been sent to Admin.',
   },
+
+  // ── Team Management ───────────────────────────────────────
+  team: {
+    // Header & Access
+    accessDenied:               'Access Denied: This page is only accessible by Admin and Manager.',
+    backToDashboard:            '← Back to Dashboard',
+    title:                      'Team Management',
+    subtitle:                   'Manage users, access permissions, and assigned areas',
+    addStaffBtn:                'Add New Staff',
+
+    // Quota & Seat Capacity
+    seatCapacity:               'Staff Seat Capacity',
+    tierPrefix:                 'Tier',
+    quotaWarning:               '⚠️ Some roles have reached maximum tier limit',
+    full:                       'Full',
+    available:                  'Available:',
+    quotaLimitReached:          '⚠️ Quota Limit Reached',
+
+    // Search & Filter
+    searchPlaceholder:          'Search name, username, or role...',
+    emptyStaff:                 'No staff members found.',
+
+    // Table & Card Columns / Labels
+    staffInfo:                  'Staff Info',
+    email:                      'Email',
+    role:                       'Role',
+    status:                     'Status',
+    subdistrictArea:            'Subdistrict Area',
+    actions:                    'Actions',
+    supervisor:                 'Supervisor:',
+    chiefSupervisorLabel:       'Chief:',
+    notAssigned:                'Not assigned',
+    statusActive:               'Active',
+    statusInactive:             'Inactive',
+
+    // Actions & Tooltips
+    editStaff:                  'Edit Staff',
+    editProfile:                'Edit Profile',
+    assignArea:                 'Assign Area',
+    resetPassword:              'Reset Pass',
+    resetPasswordFull:          'Reset Password',
+    deactivate:                 'Deactivate',
+    deletePermanently:          'Delete Permanently',
+
+    // Add Staff Modal
+    addModalTitle:              'Add New Staff',
+    addModalDesc:               'Fill in the form below to register a new staff account into the system.',
+    fullName:                   'Full Name',
+    fullNamePlaceholder:        'Type full name...',
+    emailAddress:               'Email Address',
+    emailPlaceholder:           'Type email address...',
+    username:                   'Username',
+    usernamePlaceholder:        'Type username...',
+    roleLabel:                  'Role / Access Rights',
+    supervisorChief:            'Supervisor (Chief CRO)',
+    noSupervisor:               '-- No supervisor --',
+    password:                   'Password',
+    passwordPlaceholder:        'Enter password',
+    saveData:                   'Save Data',
+    saving:                     'Saving...',
+    addSuccess:                 'New staff successfully added',
+    addFailed:                  'Failed to add staff',
+    loadStaffFailed:            'Failed to load staff list',
+
+    // Edit Staff Modal
+    editModalTitle:             'Edit Staff Data',
+    editModalDesc:              'Modify basic profile or access permissions of this staff below.',
+    accountUsername:            'Account Username',
+    securityAlertActive:        '🔒 Active Security Alert',
+    usernameNoSpacePlaceholder: 'Type username (no spaces)...',
+    usernameSecurityNotice:     'Username changes will automatically send a security notification to the CRM Admin email.',
+    accountStatus:              'Account Status',
+    accountStatusDesc:          'Activate or deactivate this staff account.',
+    saveChanges:                'Save Changes',
+    editSuccess:                'Staff data successfully updated',
+    editFailed:                 'Failed to modify staff',
+
+    // Assign Subdistrict Modal
+    assignAreaTitle:            'Assign Subdistrict Area',
+    forChiefCro:                'For Chief CRO:',
+    searchSubdistrictPlaceholder:'Search subdistrict...',
+    subdistrictNotFound:        'Subdistrict not found.',
+    subdistrictsSelected:       'subdistricts selected',
+    saveArea:                   'Save Area',
+    assignAreaSuccess:          'Subdistrict area for {name} successfully saved ({count} subdistricts)',
+
+    // Reset Password Modal
+    resetPasswordTitle:         'Reset Password',
+    resetPasswordDescPrefix:    'You are about to reset the password for staff member',
+    newPassword:                'New Password',
+    newPasswordPlaceholder:     'Enter new password...',
+    resetSecurityNotice:        '🛡️ Security alert confirmation email will be sent automatically to CRM Administrator.',
+    resetPasswordBtn:           'Reset Password',
+    processing:                 'Processing...',
+    resetPasswordSuccess:       'Staff password successfully reset',
+    resetPasswordFailed:        'Failed to reset password',
+
+    // Deactivate Modal
+    deactivateStaffTitle:       'Deactivate Staff',
+    deactivateDescPrefix:       'You are about to deactivate staff account',
+    deactivateDescSuffix:       'Are you sure?',
+    deactivateWarning:          'Deactivated accounts will no longer be able to log in to NexaMOS, but their historical data will remain preserved (soft delete).',
+    confirmDeactivate:          'Yes, Deactivate',
+    deactivateSuccess:          'Staff successfully deactivated',
+    deactivateFailed:           'Failed to deactivate staff',
+  },
+
+  // ── WhatsApp Gating Banner ────────────────────────────────
+  waGating: {
+    defaultFeature:             'WhatsApp Messaging Feature',
+    compactNotConnectedTitle:   'WhatsApp Not Connected:',
+    compactVerifying:           'Phone number verification is in progress.',
+    compactActivatePrompt:      'Activate WABA number to use {feature}.',
+    wabaSettingsBtn:            'WABA Settings',
+    bannerTitleInactive:        'WhatsApp Business Not Active',
+    statusVerifying:            'Under Verification',
+    statusNotConnected:         'Not Connected',
+    descPending:                'Your organization\'s WhatsApp number is being verified and activated by the Superadmin technical team. During this process, {feature} cannot send new messages.',
+    descNotConfigured:          'The {feature} feature requires an official, verified, and active WhatsApp Business number. Register and activate your organization number via settings to start sending messages.',
+    connectNowBtn:              'Connect Number Now',
+  },
+
+  // ── Period (Cohort) Management ────────────────────────────
+  period: {
+    // Access Denied
+    accessDenied:               'Access Restricted',
+    accessDeniedDesc:           'The Period / Cohort Management page is only accessible to Administrators and Managers.',
+    backToDashboard:            'Back to Dashboard',
+
+    // Header & Actions
+    title:                      'Period Management (Cohort)',
+    subtitleLpk:                'Control center for commercial academic year cycles, active status, and Re-entry execution',
+    subtitleGeneral:            'Control center for business period cycles, active status, and Re-entry execution',
+    createCohortBtn:            'Create New Cohort',
+    addShort:                   'Add',
+
+    // Active Cohort Banner
+    activeCohortTitle:          'Active Cohort: {name}',
+    activeOperationalBadge:     '🟢 Operationally Active',
+    activeDescLpk:              'All CRM workflows (Student Data, School, Task List, Weekly Planning) currently run on this cohort.',
+    activeDescGeneral:          'All CRM workflows (Contact Data, Partners, Task List, Weekly Planning) currently run on this period.',
+    studentsUnitLpk:            '{count} Students',
+    studentsUnitGeneral:        '{count} Contacts',
+    schoolsUnitLpk:             '{count} Schools',
+    schoolsUnitGeneral:         '{count} Partners',
+
+    // Table & List
+    tableTitle:                 'Available Periods / Cohorts',
+    totalPeriods:               'Total {count} Periods',
+    thCodeId:                   'ID Code',
+    thCohortName:               'Cohort Name',
+    thDateRange:                'Date Range',
+    thStatus:                   'Status',
+    thTotalData:                'Total Data',
+    thActions:                  'Actions',
+    loadingCohorts:             'Loading Cohorts...',
+    emptyCohorts:               'No Cohorts created yet. Click the "Create New Cohort" button above.',
+    dateNotSet:                 'Not specified',
+    dateRangeSeparator:         'to',
+    statusActive:               'Active',
+    statusDraft:                'Draft',
+    statusArchived:             'Archived',
+
+    // Table Row Action Buttons & Tooltips
+    btnSetActive:               'Set Active',
+    titleSetActive:             'Set as Active Cohort',
+    btnReEntry:                 'Re-entry',
+    titleReEntry:               'Run Re-entry simulation & execution',
+    btnArchive:                 'Archive',
+    titleArchive:               'Archive This Cohort',
+
+    // Notifications & Prompts (Page)
+    confirmSetActive:           'Activate Cohort {name}? The currently active Cohort will automatically be archived.',
+    setActiveSuccess:           'Cohort {name} successfully activated!',
+    setActiveFailed:            'Failed to activate Cohort',
+    confirmArchive:             'Archive Cohort {name}?',
+    archiveSuccess:             'Cohort {name} successfully archived.',
+    archiveFailed:              'Failed to archive Cohort',
+    createSuccess:              'New Cohort successfully created!',
+
+    // Create Cohort Modal
+    createModalTitle:           'Create New Cohort',
+    cohortNameLabel:            'Cohort / Period Name',
+    cohortNamePlaceholder:      'Example: 2027/2028 or 2028/2029',
+    cohortDraftNotice:          'New Cohorts are automatically created with Draft status.',
+    startDateLabel:             'Start Date (Optional)',
+    endDateLabel:               'End Date (Optional)',
+    errNameRequired:            'Cohort name is required (example: 2027/2028).',
+    errCreateFailed:            'Failed to create new Cohort',
+    cancelBtn:                  'Cancel',
+    submitCreateBtn:            'Create Cohort',
+
+    // Re-Entry Modal
+    reEntryModalTitle:          'Bulk Re-entry Execution',
+    targetPrefix:               'Target:',
+    sourceCohortLabelLpk:       'Bring Students from Source Cohort:',
+    sourceCohortLabelGeneral:   'Bring Contacts from Source Cohort:',
+    noSourceCohort:             'No other source cohorts available',
+    sourceOptionLpk:            '{name} ({status}) — {count} Students',
+    sourceOptionGeneral:        '{name} ({status}) — {count} Contacts',
+    eligibilityCriteria:        'Eligibility Criteria (Dynamic Filters):',
+    excludeCustomerLpk:         'Exclude students with Customer & Alumni status (Paid DP / Training Completed)',
+    excludeCustomerGeneral:     'Exclude contacts with Customer & Former Customer status (Paid DP / Transaction Completed)',
+    excludeRegisteredLpk:       'Exclude students with Registered Student (REGISTERED) status',
+    excludeRegisteredGeneral:   'Exclude contacts with Registered Contact (REGISTERED) status',
+    excludeDoNotContactLpk:     'Exclude Do Not Contact / Disqualified students',
+    excludeDoNotContactGeneral: 'Exclude Do Not Contact / Disqualified contacts',
+    btnSimulate:                'Calculate Re-entry Simulation',
+    simulatingLpk:              'Calculating Student Eligibility...',
+    simulatingGeneral:          'Calculating Contact Eligibility...',
+    simResultTitle:             'Simulation Results',
+    sourceLabel:                'Source:',
+    eligibleStudentsLpk:        'Eligible Students',
+    eligibleStudentsGeneral:    'Eligible Contacts',
+    fromTotalSourceLpk:         'from a total of {count} source students',
+    fromTotalSourceGeneral:     'from a total of {count} source contacts',
+    schoolsInvolvedLpk:         'Schools Involved',
+    schoolsInvolvedGeneral:     'Partners Involved',
+    willConnectToNew:           'will be linked to the new cohort',
+    ontologyRulePrefix:         'NexaMOS Ontology Rule:',
+    ontologyRuleNoticeLpk:      'Re-entered students do not duplicate master records. They will be enrolled as New Leads in Cohort {cohort} with PIC CRO cleared (Unassigned) for re-distribution.',
+    ontologyRuleNoticeGeneral:  'Re-entered contacts do not duplicate master records. They will be enrolled as New Leads in Cohort {cohort} with PIC cleared (Unassigned) for re-distribution.',
+    errSelectSource:            'Please select a source Cohort first.',
+    errSimulateFailed:          'Failed to calculate Re-entry simulation',
+    confirmExecute:             'Confirm bulk Re-entry execution to Cohort {name}? This action is permanent.',
+    errExecuteFailed:           'Failed to execute Re-entry',
+    executeSuccess:             'Re-entry execution succeeded!',
+    closeBtn:                   'Close',
+    executeBtn:                 'Start Re-entry Execution',
+    executingBtn:               'Executing...',
+  },
 } as const;
 
 export default en;

@@ -14,7 +14,7 @@ export interface UseTenantVocabularyReturn {
   tenantType: TenantType;
   isLpk: boolean;
   isGeneral: boolean;
-  getEntityLabel: (channel?: string | null) => 'Siswa' | 'Kontak';
+  getEntityLabel: (channel?: string | null) => string;
   getStateLabel: (state?: string | null, channel?: string | null) => string;
   navLabels: {
     studentMenu: string;
@@ -47,17 +47,17 @@ export function useTenantVocabulary(): UseTenantVocabularyReturn {
   const isGeneral = tenantType === 'general';
 
   /**
-   * Mendapatkan label entitas (Siswa vs Kontak) berdasarkan channel intake
+   * Mendapatkan label entitas (Siswa vs Kontak atau Student vs Contact) berdasarkan channel intake
    */
-  const getEntityLabel = (channel?: string | null): 'Siswa' | 'Kontak' => {
-    return resolveEntityLabel(tenantType, channel);
+  const getEntityLabel = (channel?: string | null): string => {
+    return resolveEntityLabel(tenantType, channel, lang);
   };
 
   /**
-   * Mendapatkan display label untuk canonical state berdasar tenantType & channel
+   * Mendapatkan display label untuk canonical state berdasar tenantType & channel & active lang
    */
   const getStateLabel = (state?: string | null, channel?: string | null): string => {
-    return getDisplayLabel(state, tenantType, channel);
+    return getDisplayLabel(state, tenantType, channel, lang);
   };
 
   const navLabels = {
