@@ -382,60 +382,104 @@ export default function PaymentVerificationTab() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 w-full min-w-0">
+        {/* Status Filter Tabs: 4 Rows on Mobile (1 button per row), 1 Row on Desktop */}
+        <div className="w-full sm:w-auto p-1 rounded-xl bg-muted/60 border flex flex-col sm:flex-row gap-1 sm:gap-1.5 min-w-0">
+          {/* 1. Pending */}
           <button
+            type="button"
             onClick={() => setStatusFilter('pending')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5',
+              'w-full sm:w-auto px-3.5 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center justify-between sm:justify-start gap-2 min-w-0',
               statusFilter === 'pending'
                 ? 'bg-card text-foreground shadow-xs font-semibold'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <Clock size={13} className="text-amber-500" />
-            <span>{t('settings.filterPending')} ({summary.total_pending})</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <Clock size={14} className="text-amber-500 shrink-0" />
+              <span className="truncate">{t('settings.filterPending')}</span>
+            </div>
+            <span className={cn(
+              'px-2 py-0.5 rounded-md text-xs font-bold leading-none shrink-0',
+              statusFilter === 'pending' ? 'bg-amber-500/15 text-amber-600' : 'bg-muted-foreground/10 text-muted-foreground'
+            )}>
+              {summary.total_pending}
+            </span>
           </button>
+
+          {/* 2. Paid / Verified */}
           <button
+            type="button"
             onClick={() => setStatusFilter('paid')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5',
+              'w-full sm:w-auto px-3.5 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center justify-between sm:justify-start gap-2 min-w-0',
               statusFilter === 'paid'
                 ? 'bg-card text-foreground shadow-xs font-semibold'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <CheckCircle2 size={13} className="text-emerald-500" />
-            <span>{t('settings.filterPaid')} ({summary.total_paid})</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+              <span className="truncate">{t('settings.filterPaid')}</span>
+            </div>
+            <span className={cn(
+              'px-2 py-0.5 rounded-md text-xs font-bold leading-none shrink-0',
+              statusFilter === 'paid' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-muted-foreground/10 text-muted-foreground'
+            )}>
+              {summary.total_paid}
+            </span>
           </button>
+
+          {/* 3. Expired */}
           <button
+            type="button"
             onClick={() => setStatusFilter('expired')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5',
+              'w-full sm:w-auto px-3.5 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center justify-between sm:justify-start gap-2 min-w-0',
               statusFilter === 'expired'
                 ? 'bg-card text-foreground shadow-xs font-semibold'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <X size={13} className="text-rose-500" />
-            <span>{t('settings.filterExpired')} ({summary.total_expired})</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <X size={14} className="text-rose-500 shrink-0" />
+              <span className="truncate">{t('settings.filterExpired')}</span>
+            </div>
+            <span className={cn(
+              'px-2 py-0.5 rounded-md text-xs font-bold leading-none shrink-0',
+              statusFilter === 'expired' ? 'bg-rose-500/15 text-rose-600' : 'bg-muted-foreground/10 text-muted-foreground'
+            )}>
+              {summary.total_expired}
+            </span>
           </button>
+
+          {/* 4. All Statuses */}
           <button
+            type="button"
             onClick={() => setStatusFilter('all')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5',
+              'w-full sm:w-auto px-3.5 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center justify-between sm:justify-start gap-2 min-w-0',
               statusFilter === 'all'
                 ? 'bg-card text-foreground shadow-xs font-semibold'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <span>{t('settings.filterAllStatus')} ({summary.total_all})</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <Filter size={14} className={cn('shrink-0', statusFilter === 'all' ? 'text-primary' : 'text-muted-foreground')} />
+              <span className="truncate">{t('settings.filterAllStatus')}</span>
+            </div>
+            <span className={cn(
+              'px-2 py-0.5 rounded-md text-xs font-bold leading-none shrink-0',
+              statusFilter === 'all' ? 'bg-primary/15 text-primary' : 'bg-muted-foreground/10 text-muted-foreground'
+            )}>
+              {summary.total_all}
+            </span>
           </button>
         </div>
 
         {/* Search Input */}
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative w-full sm:w-auto sm:max-w-xs sm:flex-1 min-w-0">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
