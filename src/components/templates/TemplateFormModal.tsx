@@ -367,7 +367,7 @@ export function TemplateFormModal({ template: tpl, initialData, onClose, onSaved
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
-      <div className="bg-card border rounded-2xl shadow-2xl w-full max-w-3xl max-h-dvh flex flex-col overflow-hidden">
+      <div className="bg-card border rounded-2xl shadow-2xl w-full max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-dvh flex flex-col overflow-hidden">
 
         {/* ── Header Modal ──────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
@@ -419,7 +419,7 @@ export function TemplateFormModal({ template: tpl, initialData, onClose, onSaved
                     {t('templates.hintApiName')}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">
                       {t('templates.labelCategory')}
@@ -685,7 +685,7 @@ export function TemplateFormModal({ template: tpl, initialData, onClose, onSaved
           </div>
 
           {/* ─ Kolom Kanan: Preview ─────────────────────────────────────── */}
-          <div className="w-72 border-l bg-secondary/20 flex flex-col shrink-0">
+          <div className="w-72 lg:w-80 border-l bg-secondary/20 flex flex-col shrink-0">
             <div className="px-4 py-3 border-b flex items-center gap-2">
               <Eye size={14} className="text-muted-foreground" />
               <span className="text-xs font-medium text-muted-foreground">

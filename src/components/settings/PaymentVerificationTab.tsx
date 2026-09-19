@@ -302,33 +302,33 @@ export default function PaymentVerificationTab() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-2xl border bg-card p-5 sm:p-6 shadow-xs">
+      <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 shadow-xs">
-              <CheckCircle2 size={24} />
+          <div className="flex items-start gap-3 sm:gap-3.5">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 shadow-xs">
+              <CheckCircle2 className="size-5 sm:size-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-foreground">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
                   {isGeneral ? t('settings.pvHeaderTitleGeneral') : t('settings.pvHeaderTitleLpk')}
                 </h2>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold shrink-0">
                   NexaMOS Evidence Layer
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+              <p className="text-xs text-muted-foreground mt-1 sm:mt-1.5 max-w-2xl leading-relaxed">
                 {isGeneral ? t('settings.pvHeaderDescGeneral') : t('settings.pvHeaderDescLpk')}
               </p>
             </div>
           </div>
 
           {/* Action Button: Manual Verify */}
-          <div className="shrink-0 flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 pt-0.5 sm:pt-0">
             <button
               onClick={fetchVerifications}
               disabled={loading}
-              className="p-2.5 rounded-xl border border-muted-foreground/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50"
+              className="p-2.5 rounded-xl border border-muted-foreground/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50 shrink-0"
               title={t('settings.pvRefreshDataTooltip')}
             >
               <RefreshCw size={16} className={cn(loading && 'animate-spin')} />
@@ -339,16 +339,16 @@ export default function PaymentVerificationTab() {
                 setSelectedStudentForManual(null);
                 setSearchStudentInput('');
               }}
-              className="px-4 py-2.5 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-95 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-2 cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-95 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer"
             >
-              <UserCheck size={15} />
-              <span>{isGeneral ? t('settings.manualVerifyModalBtnGeneral') : t('settings.manualVerifyModalBtnLpk')}</span>
+              <UserCheck size={15} className="shrink-0" />
+              <span className="truncate">{isGeneral ? t('settings.manualVerifyModalBtnGeneral') : t('settings.manualVerifyModalBtnLpk')}</span>
             </button>
           </div>
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-6 pt-6 border-t">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-5 sm:mt-6 pt-5 sm:pt-6 border-t">
           <div className="rounded-xl border bg-background p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground">{t('settings.statTotalPending')}</p>
