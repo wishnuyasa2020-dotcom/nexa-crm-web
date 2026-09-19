@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  CreditCard, Zap, CheckCircle2, Clock, AlertTriangle, 
+  Zap, Clock, AlertTriangle, 
   Users, School, ShieldCheck, RefreshCw, FileText, ArrowUpRight 
 } from 'lucide-react';
 import { subscriptionApi, BillingOverviewData } from '@/lib/subscriptionApi';
@@ -10,8 +10,12 @@ import UpgradeTierModal from '@/components/subscription/UpgradeTierModal';
 import WhatsAppCreditCard from './WhatsAppCreditCard';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 export default function BillingTab() {
+  const { t, lang } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [data, setData] = useState<BillingOverviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -24,11 +28,11 @@ export default function BillingTab() {
       setData(res);
     } catch (err) {
       console.error('Failed to load billing overview:', err);
-      toast.error('Gagal memuat data langganan & faktur.');
+      toast.error(t('settings.billingLoadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadBillingData();
@@ -39,13 +43,13 @@ export default function BillingTab() {
       setCheckingInvoiceId(invoiceId);
       const res = await subscriptionApi.checkStatus(invoiceId);
       if (res.isPaid) {
-        toast.success('Pembayaran terkonfirmasi lunas! Kuota telah diperbarui.');
+        toast.success(t('settings.invoicePaidSuccess'));
         loadBillingData();
       } else {
-        toast.info(`Status faktur: ${res.transactionStatus}`);
+        toast.info(t('settings.invoiceStatusNotice').replace('{status}', res.transactionStatus));
       }
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'Gagal memeriksa status transaksi.';
+      const errorMsg = err instanceof Error ? err.message : t('settings.invoiceCheckFailed');
       toast.error(errorMsg);
     } finally {
       setCheckingInvoiceId(null);
@@ -56,7 +60,7 @@ export default function BillingTab() {
     return (
       <div className="p-12 flex flex-col items-center justify-center text-center">
         <RefreshCw className="w-8 h-8 text-primary animate-spin mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">Memuat informasi langganan & faktur...</p>
+        <p className="text-sm font-medium text-muted-foreground">{t('settings.billingLoading')}</p>
       </div>
     );
   }
@@ -65,12 +69,12 @@ export default function BillingTab() {
     return (
       <div className="p-8 text-center bg-card border rounded-2xl">
         <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-        <p className="text-sm font-semibold text-foreground">Gagal memuat data langganan.</p>
+        <p className="text-sm font-semibold text-foreground">{t('settings.billingLoadFailedTitle')}</p>
         <button
           onClick={loadBillingData}
-          className="mt-4 px-4 py-2 rounded-xl bg-secondary text-xs font-semibold hover:bg-secondary/80 transition-colors"
+          className="mt-4 px-4 py-2 rounded-xl bg-secondary text-xs font-semibold hover:bg-secondary/80 transition-colors cursor-pointer"
         >
-          Coba Lagi
+          {t('settings.retryBtn')}
         </button>
       </div>
     );
@@ -96,7 +100,7 @@ export default function BillingTab() {
                 sub.tier.toUpperCase() === 'BUSINESS' ? 'bg-violet-500/10 text-violet-500 border-violet-500/20' :
                 'bg-amber-500/10 text-amber-600 border-amber-500/20'
               )}>
-                Tier {sub.tier}
+                {t('settings.tierPrefix')} {sub.tier}
               </span>
               <span className="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
@@ -105,19 +109,23 @@ export default function BillingTab() {
               {!isFree && sub.daysRemaining > 0 && (
                 <span className="text-xs text-muted-foreground bg-secondary px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1">
                   <Clock size={12} className="text-primary" />
-                  Sisa {sub.daysRemaining} hari lagi
+                  {t('settings.daysRemainingText').replace('{days}', String(sub.daysRemaining))}
                 </span>
               )}
             </div>
 
             <h2 className="text-xl font-bold text-foreground">
-              Langganan {sub.brandName} ({sub.billingCycle.toLowerCase()})
+              {sub.brandName} ({sub.billingCycle.toLowerCase()})
             </h2>
             <p className="text-xs text-muted-foreground mt-1">
               {sub.currentPeriodStart && sub.currentPeriodEnd ? (
-                <>Periode tagihan: <strong>{new Date(sub.currentPeriodStart).toLocaleDateString('id-ID')}</strong> s/d <strong>{new Date(sub.currentPeriodEnd).toLocaleDateString('id-ID')}</strong></>
+                <>
+                  {t('settings.billingPeriodLabel')}{' '}
+                  <strong>{new Date(sub.currentPeriodStart).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID')}</strong> s/d{' '}
+                  <strong>{new Date(sub.currentPeriodEnd).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID')}</strong>
+                </>
               ) : (
-                'Paket gratis tanpa batas waktu (kuota di-reset setiap 3 bulan).'
+                t('settings.freeTierNotice')
               )}
             </p>
           </div>
@@ -127,20 +135,21 @@ export default function BillingTab() {
             className="px-5 py-2.5 rounded-xl gradient-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-md shadow-primary/20 flex items-center gap-2 self-start md:self-auto cursor-pointer"
           >
             <Zap size={14} />
-            <span>Tingkatkan / Ubah Paket</span>
+            <span>{t('settings.upgradeTierBtn')}</span>
           </button>
         </div>
 
         {/* Quota Progress Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t">
-          {/* Siswa */}
+          {/* Siswa / Kontak */}
           <div className="p-4 rounded-xl bg-secondary/40 border">
             <div className="flex items-center justify-between text-xs mb-2">
               <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                <Users size={14} className="text-violet-500" /> Siswa Baru
+                <Users size={14} className="text-violet-500" />
+                {isGeneral ? t('settings.quotaNewStudentsGeneral') : t('settings.quotaNewStudentsLpk')}
               </span>
               <span className="text-muted-foreground">
-                {sub.limits.siswa.used.toLocaleString('id-ID')} / {sub.limits.siswa.limit.toLocaleString('id-ID')}
+                {sub.limits.siswa.used.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} / {sub.limits.siswa.limit.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')}
               </span>
             </div>
             <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
@@ -151,14 +160,15 @@ export default function BillingTab() {
             </div>
           </div>
 
-          {/* Sekolah */}
+          {/* Sekolah / Mitra */}
           <div className="p-4 rounded-xl bg-secondary/40 border">
             <div className="flex items-center justify-between text-xs mb-2">
               <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                <School size={14} className="text-blue-500" /> Sekolah Baru
+                <School size={14} className="text-blue-500" />
+                {isGeneral ? t('settings.quotaNewSchoolsGeneral') : t('settings.quotaNewSchoolsLpk')}
               </span>
               <span className="text-muted-foreground">
-                {sub.limits.sekolah.used.toLocaleString('id-ID')} / {sub.limits.sekolah.limit.toLocaleString('id-ID')}
+                {sub.limits.sekolah.used.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')} / {sub.limits.sekolah.limit.toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')}
               </span>
             </div>
             <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
@@ -169,14 +179,14 @@ export default function BillingTab() {
             </div>
           </div>
 
-          {/* User CRO */}
+          {/* User CRO / Tim */}
           <div className="p-4 rounded-xl bg-secondary/40 border">
             <div className="flex items-center justify-between text-xs mb-2">
               <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                <ShieldCheck size={14} className="text-pink-500" /> Akun Tim
+                <ShieldCheck size={14} className="text-pink-500" /> {t('settings.quotaTeamAccounts')}
               </span>
               <span className="text-muted-foreground">
-                {sub.limits.users.used} / {sub.limits.users.limit} user
+                {sub.limits.users.used} / {sub.limits.users.limit} {t('settings.userUnit')}
               </span>
             </div>
             <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
@@ -198,16 +208,16 @@ export default function BillingTab() {
           <div>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <FileText size={16} className="text-primary" />
-              Riwayat Faktur & Pembayaran
+              {t('settings.invoicesHistoryTitle')}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Daftar seluruh transaksi pembaruan kuota dan upgrade tier tenant
+              {t('settings.invoicesHistorySubtitle')}
             </p>
           </div>
           <button
             onClick={loadBillingData}
             className="p-1.5 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            title="Muat ulang riwayat"
+            title={t('settings.reloadHistoryTooltip')}
           >
             <RefreshCw size={14} />
           </button>
@@ -215,20 +225,20 @@ export default function BillingTab() {
 
         {data.invoices.length === 0 ? (
           <div className="text-center py-10 text-muted-foreground text-xs">
-            Belum ada riwayat faktur tagihan tercatat.
+            {t('settings.emptyInvoices')}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
               <thead>
                 <tr className="border-b text-muted-foreground">
-                  <th className="pb-3 font-semibold">Nomor Faktur</th>
-                  <th className="pb-3 font-semibold">Paket</th>
-                  <th className="pb-3 font-semibold">Tanggal</th>
-                  <th className="pb-3 font-semibold">Nominal</th>
-                  <th className="pb-3 font-semibold">Metode</th>
-                  <th className="pb-3 font-semibold">Status</th>
-                  <th className="pb-3 font-semibold text-right">Aksi</th>
+                  <th className="pb-3 font-semibold">{t('settings.thInvoiceNumber')}</th>
+                  <th className="pb-3 font-semibold">{t('settings.thPlan')}</th>
+                  <th className="pb-3 font-semibold">{t('settings.thDate')}</th>
+                  <th className="pb-3 font-semibold">{t('settings.thAmount')}</th>
+                  <th className="pb-3 font-semibold">{t('settings.thMethod')}</th>
+                  <th className="pb-3 font-semibold">{t('settings.thStatus')}</th>
+                  <th className="pb-3 font-semibold text-right">{t('settings.thActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -246,10 +256,10 @@ export default function BillingTab() {
                         {inv.plan_tier || 'FREE'} ({inv.billing_cycle || 'MONTHLY'})
                       </td>
                       <td className="py-3 text-muted-foreground">
-                        {new Date(inv.created_at).toLocaleDateString('id-ID')}
+                        {new Date(inv.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID')}
                       </td>
                       <td className="py-3 font-semibold text-foreground">
-                        Rp {Number(inv.amount).toLocaleString('id-ID')}
+                        Rp {Number(inv.amount).toLocaleString(lang === 'en' ? 'en-US' : 'id-ID')}
                       </td>
                       <td className="py-3 uppercase text-muted-foreground font-mono">
                         {inv.payment_type || '-'}
@@ -272,7 +282,7 @@ export default function BillingTab() {
                             className="px-2.5 py-1 rounded-lg bg-secondary text-primary font-semibold hover:bg-secondary/80 transition-colors cursor-pointer inline-flex items-center gap-1 disabled:opacity-50"
                           >
                             <RefreshCw size={12} className={cn(checkingInvoiceId === inv.invoice_id && 'animate-spin')} />
-                            <span>Cek Status</span>
+                            <span>{t('settings.checkStatusBtn')}</span>
                           </button>
                         ) : inv.invoice_url ? (
                           <a
@@ -281,7 +291,7 @@ export default function BillingTab() {
                             rel="noopener noreferrer"
                             className="text-primary hover:underline inline-flex items-center gap-1 font-medium"
                           >
-                            <span>Lihat</span>
+                            <span>{t('settings.viewInvoiceLink')}</span>
                             <ArrowUpRight size={12} />
                           </a>
                         ) : (

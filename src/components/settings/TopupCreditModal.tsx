@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X, Copy, Check, Info, ShieldCheck, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { creditBillingApi, CreditBalanceData } from '@/lib/creditBillingApi';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface TopupCreditModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface TopupCreditModalProps {
 }
 
 export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceData }: TopupCreditModalProps) {
+  const { t } = useTranslation();
   const isFirstTopup = balanceData ? balanceData.is_first_topup : true;
   const minAmount = isFirstTopup ? 500000 : 200000;
 
@@ -28,7 +30,7 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
   const handleCopyAccount = () => {
     navigator.clipboard.writeText('5005414521810767');
     setCopied(true);
-    toast.success('Nomor rekening ATMB PLUS berhasil disalin!');
+    toast.success(t('settings.accountCopiedToast'));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -40,12 +42,16 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
     e.preventDefault();
 
     if (!amount || amount < minAmount) {
-      toast.error(`Nominal top-up minimal Rp ${minAmount.toLocaleString('id-ID')} untuk ${isFirstTopup ? 'top-up pertama' : 'top-up berikutnya'}.`);
+      toast.error(
+        t('settings.topupMinAmountToast')
+          .replace('{min}', `Rp ${minAmount.toLocaleString('id-ID')}`)
+          .replace('{type}', isFirstTopup ? t('settings.firstTopupType') : t('settings.nextTopupType'))
+      );
       return;
     }
 
     if (!transferRef.trim()) {
-      toast.error('Mohon masukkan nama pengirim atau referensi transfer.');
+      toast.error(t('settings.senderRefRequiredToast'));
       return;
     }
 
@@ -58,11 +64,11 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
         notes: notes.trim() || undefined,
       });
 
-      toast.success('Permohonan top-up berhasil dikirim! Admin NexaMOS akan segera memverifikasi.');
+      toast.success(t('settings.topupSuccessToast'));
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal mengirim permohonan top-up.';
+      const msg = err instanceof Error ? err.message : t('settings.topupFailedToast');
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -80,8 +86,8 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
               💰
             </div>
             <div>
-              <h3 className="font-bold text-foreground text-base">Top-Up Kredit Pesan WhatsApp</h3>
-              <p className="text-xs text-muted-foreground">Isi saldo kredit pengiriman template Meta API NexaMOS</p>
+              <h3 className="font-bold text-foreground text-base">{t('settings.topupModalTitle')}</h3>
+              <p className="text-xs text-muted-foreground">{t('settings.topupModalSubtitle')}</p>
             </div>
           </div>
           <button
@@ -97,15 +103,15 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
           {/* Card Rekening Tujuan */}
           <div className="p-4 rounded-xl border bg-secondary/30 space-y-3">
             <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-              <span>REKENING TUJUAN TRANSFER</span>
-              <span className="text-primary font-bold">Resmi NexaMOS</span>
+              <span>{t('settings.destAccountSectionTitle')}</span>
+              <span className="text-primary font-bold">{t('settings.destAccountOfficialBadge')}</span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-card border">
               <div>
-                <div className="text-xs font-semibold text-muted-foreground">Bank Tujuan</div>
+                <div className="text-xs font-semibold text-muted-foreground">{t('settings.bankDestLabel')}</div>
                 <div className="font-bold text-foreground text-sm">ATMB PLUS</div>
-                <div className="text-xs text-muted-foreground mt-0.5">a/n HONEST/WISHNU AKHMAD</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{t('settings.accountHolderOfficial')}</div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -116,7 +122,7 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
                   type="button"
                   onClick={handleCopyAccount}
                   className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
-                  title="Salin Nomor Rekening"
+                  title={t('settings.copyAccountTooltip')}
                 >
                   {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                 </button>
@@ -126,7 +132,7 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
             <div className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
               <Info size={14} className="text-primary shrink-0 mt-0.5" />
               <span>
-                Pastikan mentransfer sesuai nominal yang Anda pilih. Setelah transfer, isi data formulir di bawah ini untuk verifikasi admin.
+                {t('settings.topupInstructionNotice')}
               </span>
             </div>
           </div>
@@ -134,9 +140,9 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
           {/* Nominal Pilihan */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-foreground flex items-center justify-between">
-              <span>Nominal Top-Up (Rp)</span>
+              <span>{t('settings.topupAmountLabel')}</span>
               <span className="text-xs text-muted-foreground font-normal">
-                Min: Rp {minAmount.toLocaleString('id-ID')}
+                {t('settings.minPrefix')} Rp {minAmount.toLocaleString('id-ID')}
               </span>
             </label>
 
@@ -177,7 +183,7 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
               <p className="text-xs text-amber-500 flex items-center gap-1 mt-1">
                 <AlertCircle size={12} className="shrink-0" />
                 <span>
-                  Top-up pertama minimal Rp 500.000 (Rp 350.000 buffer jaminan limit Meta + Rp 150.000 kredit aktif).
+                  {t('settings.firstTopupNotice')}
                 </span>
               </p>
             )}
@@ -186,49 +192,49 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
           {/* Referensi / Nama Pengirim */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-foreground">
-              Nama Rekening Pengirim / Nomor Referensi Transfer <span className="text-rose-500">*</span>
+              {t('settings.senderRefLabel')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               value={transferRef}
               onChange={(e) => setTransferRef(e.target.value)}
               className="w-full px-3 py-2 text-xs bg-background border rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary text-foreground"
-              placeholder="Contoh: BCA a/n PT LPK Berkah Jaya / No Ref 84920481"
+              placeholder={t('settings.senderRefPlaceholder')}
               required
             />
             <p className="text-xs text-muted-foreground">
-              Tuliskan nama pemilik rekening bank pengirim atau nomor referensi struk transfer.
+              {t('settings.senderRefHelp')}
             </p>
           </div>
 
           {/* Link / Bukti Transfer */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-foreground">
-              Link / URL Foto Bukti Transfer <span className="text-muted-foreground font-normal">(Opsional)</span>
+              {t('settings.transferProofUrlLabel')} <span className="text-muted-foreground font-normal">{t('settings.optionalBadge')}</span>
             </label>
             <input
               type="url"
               value={transferProof}
               onChange={(e) => setTransferProof(e.target.value)}
               className="w-full px-3 py-2 text-xs bg-background border rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary text-foreground"
-              placeholder="Contoh: https://drive.google.com/file/... atau link gambar"
+              placeholder={t('settings.transferProofPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              Bisa berupa link Google Drive, Imgur, atau link bukti transfer yang dapat diakses admin.
+              {t('settings.transferProofHelp')}
             </p>
           </div>
 
           {/* Catatan Tambahan */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-foreground">
-              Catatan Tambahan <span className="text-muted-foreground font-normal">(Opsional)</span>
+              {t('settings.notesLabel')} <span className="text-muted-foreground font-normal">{t('settings.optionalBadge')}</span>
             </label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3 py-2 text-xs bg-background border rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary text-foreground resize-none"
-              placeholder="Tulis pesan atau keterangan tambahan jika diperlukan..."
+              placeholder={t('settings.notesPlaceholder')}
             />
           </div>
 
@@ -236,8 +242,8 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
           <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2.5 text-xs text-emerald-600">
             <ShieldCheck size={16} className="shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <strong className="block font-semibold">Virtual Ledger Isolation NexaMOS:</strong>
-              Saldo kredit pesan ini 100% terisolasi untuk lembaga Anda. Tidak akan bercampur atau digunakan oleh tenant lain.
+              <strong className="block font-semibold">{t('settings.ledgerIsolationTitle')}</strong>
+              {t('settings.ledgerIsolationDesc')}
             </div>
           </div>
 
@@ -248,7 +254,7 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-lg transition-colors"
             >
-              Batal
+              {t('settings.cancelBtn')}
             </button>
             <button
               type="submit"
@@ -258,11 +264,11 @@ export default function TopupCreditModal({ isOpen, onClose, onSuccess, balanceDa
               {isSubmitting ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
-                  <span>Memproses...</span>
+                  <span>{t('settings.processingBtn')}</span>
                 </>
               ) : (
                 <>
-                  <span>Kirim Konfirmasi Top-Up</span>
+                  <span>{t('settings.submitTopupBtn')}</span>
                   <ArrowRight size={14} />
                 </>
               )}

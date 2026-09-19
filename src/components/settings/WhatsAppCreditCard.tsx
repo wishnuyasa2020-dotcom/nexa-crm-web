@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function WhatsAppCreditCard() {
+  const { t } = useTranslation();
   const [balance, setBalance] = useState<CreditBalanceData | null>(null);
   const [topups, setTopups] = useState<TopupRequestItem[]>([]);
   const [transactions, setTransactions] = useState<CreditTransactionItem[]>([]);
@@ -44,11 +46,11 @@ export default function WhatsAppCreditCard() {
       }
     } catch (err) {
       console.error('Error loading credit data:', err);
-      toast.error('Gagal memuat status saldo kredit WhatsApp.');
+      toast.error(t('settings.loadCreditFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadCreditData();
@@ -73,7 +75,7 @@ export default function WhatsAppCreditCard() {
     return (
       <div className="bg-card border rounded-2xl p-6 shadow-xs flex items-center justify-center py-12">
         <RefreshCw className="w-6 h-6 text-primary animate-spin mr-3" />
-        <span className="text-xs font-medium text-muted-foreground">Memuat data kredit WhatsApp...</span>
+        <span className="text-xs font-medium text-muted-foreground">{t('settings.loadingCredit')}</span>
       </div>
     );
   }
@@ -96,7 +98,7 @@ export default function WhatsAppCreditCard() {
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-bold text-base text-foreground">Kredit Pesan WhatsApp (Meta API)</h3>
+              <h3 className="font-bold text-base text-foreground">{t('settings.creditTitle')}</h3>
               <span
                 className={cn(
                   'px-2.5 py-0.5 rounded-full text-xs font-bold border',
@@ -107,11 +109,11 @@ export default function WhatsAppCreditCard() {
                     : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
                 )}
               >
-                {statusLabel === 'OK' ? '✓ Saldo Aman' : statusLabel === 'WARNING' ? '⚠ Saldo Rendah' : '🚫 Terblokir'}
+                {statusLabel === 'OK' ? t('settings.statusSafe') : statusLabel === 'WARNING' ? t('settings.statusLow') : t('settings.statusBlocked')}
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Saldo prabayar terisolasi untuk biaya pengiriman pesan template resmi Meta di NexaMOS
+              {t('settings.creditSubtitle')}
             </p>
           </div>
         </div>
@@ -120,7 +122,7 @@ export default function WhatsAppCreditCard() {
           <button
             onClick={loadCreditData}
             className="p-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-            title="Refresh Data Saldo"
+            title={t('settings.refreshCreditTooltip')}
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
@@ -129,7 +131,7 @@ export default function WhatsAppCreditCard() {
             className="px-4 py-2.5 rounded-xl gradient-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
           >
             <Plus size={14} />
-            <span>Top-Up Saldo</span>
+            <span>{t('settings.topupBtn')}</span>
           </button>
         </div>
       </div>
@@ -138,18 +140,18 @@ export default function WhatsAppCreditCard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         {/* Total Saldo */}
         <div className="p-4 rounded-xl bg-secondary/30 border space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground block">Total Saldo di NexaMOS</span>
+          <span className="text-xs font-semibold text-muted-foreground block">{t('settings.totalBalanceLabel')}</span>
           <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
             {fmtRp(totalBalance)}
           </div>
           <span className="text-xs text-muted-foreground block">
-            Termasuk dana cadangan jaminan
+            {t('settings.totalBalanceHelp')}
           </span>
         </div>
 
         {/* Saldo Aktif Dapat Dipakai */}
         <div className="p-4 rounded-xl bg-secondary/30 border space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground block">Saldo Efektif Kirim Pesan</span>
+          <span className="text-xs font-semibold text-muted-foreground block">{t('settings.usableBalanceLabel')}</span>
           <div
             className={cn(
               'text-xl sm:text-2xl font-bold font-mono',
@@ -159,18 +161,18 @@ export default function WhatsAppCreditCard() {
             {fmtRp(usableBalance)}
           </div>
           <span className="text-xs text-muted-foreground block">
-            {usableBalance > 0 ? 'Dapat dipakai mengirim pesan' : 'Kredit pesan habis, segera top-up'}
+            {usableBalance > 0 ? t('settings.usableBalanceActive') : t('settings.usableBalanceEmpty')}
           </span>
         </div>
 
         {/* Buffer Limit Threshold */}
         <div className="p-4 rounded-xl bg-secondary/30 border space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground block">Threshold Buffer Proteksi</span>
+          <span className="text-xs font-semibold text-muted-foreground block">{t('settings.thresholdLabel')}</span>
           <div className="text-xl sm:text-2xl font-bold font-mono text-muted-foreground">
             {fmtRp(threshold)}
           </div>
           <span className="text-xs text-muted-foreground block">
-            Batas penghentian otomatis Meta
+            {t('settings.thresholdHelp')}
           </span>
         </div>
       </div>
@@ -180,9 +182,9 @@ export default function WhatsAppCreditCard() {
         <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 text-xs text-rose-600">
           <AlertTriangle size={18} className="shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <strong className="font-semibold block">Pengiriman Pesan Outbound Dinonaktifkan Sementara</strong>
+            <strong className="font-semibold block">{t('settings.blockedAlertTitle')}</strong>
             <p className="text-muted-foreground">
-              Saldo efektif Anda telah menyentuh batas minimum threshold (Rp {threshold.toLocaleString('id-ID')}). Silakan lakukan top-up kredit minimal Rp 200.000 untuk mengaktifkan kembali pengiriman pesan template.
+              {t('settings.blockedAlertDesc').replace('{threshold}', fmtRp(threshold))}
             </p>
           </div>
         </div>
@@ -193,22 +195,22 @@ export default function WhatsAppCreditCard() {
         <div className="flex items-center justify-between text-xs font-bold text-foreground">
           <span className="flex items-center gap-1.5">
             <MessageSquare size={14} className="text-primary" />
-            Struktur Tarif Pengiriman Pesan WhatsApp (Meta Per-Message):
+            {t('settings.metaRatesTitle')}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
           <div className="p-2.5 rounded-lg bg-card border flex items-center justify-between">
-            <span className="text-muted-foreground">Marketing (Broadcast):</span>
-            <span className="font-bold text-foreground font-mono">Rp 1.250 / pesan</span>
+            <span className="text-muted-foreground">{t('settings.rateMarketing')}</span>
+            <span className="font-bold text-foreground font-mono">{t('settings.rateMarketingPrice')}</span>
           </div>
           <div className="p-2.5 rounded-lg bg-card border flex items-center justify-between">
-            <span className="text-muted-foreground">Utility &amp; Notifikasi:</span>
-            <span className="font-bold text-foreground font-mono">Rp 600 / pesan</span>
+            <span className="text-muted-foreground">{t('settings.rateUtility')}</span>
+            <span className="font-bold text-foreground font-mono">{t('settings.rateUtilityPrice')}</span>
           </div>
           <div className="p-2.5 rounded-lg bg-card border flex items-center justify-between">
-            <span className="text-muted-foreground">Service Window (24 Jam):</span>
-            <span className="font-bold text-emerald-600 font-mono">GRATIS (Rp 0)</span>
+            <span className="text-muted-foreground">{t('settings.rateServiceWindow')}</span>
+            <span className="font-bold text-emerald-600 font-mono">{t('settings.rateServiceWindowPrice')}</span>
           </div>
         </div>
       </div>
@@ -225,7 +227,7 @@ export default function WhatsAppCreditCard() {
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            Antrean Pengajuan Top-Up ({topups.length})
+            {t('settings.subtabRequests').replace('{count}', String(topups.length))}
           </button>
           <button
             onClick={() => setActiveSubTab('history')}
@@ -236,7 +238,7 @@ export default function WhatsAppCreditCard() {
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            Mutasi Pemotongan Pesan Terakhir
+            {t('settings.subtabHistory')}
           </button>
         </div>
 
@@ -245,17 +247,17 @@ export default function WhatsAppCreditCard() {
           <div className="overflow-x-auto">
             {topups.length === 0 ? (
               <div className="text-center py-6 text-xs text-muted-foreground">
-                Belum ada pengajuan top-up yang tercatat.
+                {t('settings.emptyTopupRequests')}
               </div>
             ) : (
               <table className="w-full text-xs text-left">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="pb-2 font-semibold">Waktu Request</th>
-                    <th className="pb-2 font-semibold">Nominal</th>
-                    <th className="pb-2 font-semibold">Referensi Bank</th>
-                    <th className="pb-2 font-semibold">Status</th>
-                    <th className="pb-2 font-semibold text-right">Catatan Admin</th>
+                    <th className="pb-2 font-semibold">{t('settings.thRequestTime')}</th>
+                    <th className="pb-2 font-semibold">{t('settings.thAmount')}</th>
+                    <th className="pb-2 font-semibold">{t('settings.thBankRef')}</th>
+                    <th className="pb-2 font-semibold">{t('settings.thStatus')}</th>
+                    <th className="pb-2 font-semibold text-right">{t('settings.thAdminNote')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
@@ -278,7 +280,7 @@ export default function WhatsAppCreditCard() {
                           {r.status === 'approved' && <CheckCircle2 size={11} />}
                           {r.status === 'rejected' && <XCircle size={11} />}
                           {r.status === 'pending' && <Clock size={11} />}
-                          {r.status === 'approved' ? 'Disetujui' : r.status === 'rejected' ? 'Ditolak' : 'Menunggu'}
+                          {r.status === 'approved' ? t('settings.statusApproved') : r.status === 'rejected' ? t('settings.statusRejected') : t('settings.statusPending')}
                         </span>
                       </td>
                       <td className="py-2.5 text-right text-muted-foreground">
@@ -297,17 +299,17 @@ export default function WhatsAppCreditCard() {
           <div className="overflow-x-auto">
             {transactions.length === 0 ? (
               <div className="text-center py-6 text-xs text-muted-foreground">
-                Belum ada mutasi pemotongan pesan tercatat.
+                {t('settings.emptyTransactions')}
               </div>
             ) : (
               <table className="w-full text-xs text-left">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="pb-2 font-semibold">Waktu</th>
-                    <th className="pb-2 font-semibold">Tipe</th>
-                    <th className="pb-2 font-semibold">Jumlah</th>
-                    <th className="pb-2 font-semibold">Sisa Saldo</th>
-                    <th className="pb-2 font-semibold text-right">Keterangan / Tujuan</th>
+                    <th className="pb-2 font-semibold">{t('settings.thTime')}</th>
+                    <th className="pb-2 font-semibold">{t('settings.thType')}</th>
+                    <th className="pb-2 font-semibold">{t('settings.thAmount')}</th>
+                    <th className="pb-2 font-semibold">{t('settings.thRemainingBalance')}</th>
+                    <th className="pb-2 font-semibold text-right">{t('settings.thDescOrDest')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
@@ -328,7 +330,7 @@ export default function WhatsAppCreditCard() {
                       </td>
                       <td className="py-2.5 font-mono text-muted-foreground">{fmtRp(tx.balance_after)}</td>
                       <td className="py-2.5 text-right text-muted-foreground">
-                        {tx.recipient_phone ? `Ke: ${tx.recipient_phone}` : tx.note || tx.reference || '—'}
+                        {tx.recipient_phone ? `${t('settings.destPrefix')} ${tx.recipient_phone}` : tx.note || tx.reference || '—'}
                       </td>
                     </tr>
                   ))}

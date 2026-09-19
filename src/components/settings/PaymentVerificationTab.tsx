@@ -12,6 +12,8 @@ import {
 import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 import { cn } from '@/lib/utils';
 import { CommercialStateBadge } from '@/components/siswa/CommercialStateBadge';
 
@@ -80,6 +82,8 @@ function formatDate(dateStr: string | null | undefined): string {
 }
 
 export default function PaymentVerificationTab() {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const { user } = useAuthStore();
   const tenantSlug = user?.tenant_id || 'derma-indonesia';
 
@@ -153,11 +157,11 @@ export default function PaymentVerificationTab() {
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } }; message?: string };
       console.error('Fetch verifications error:', error);
-      toast.error(error.response?.data?.message || error.message || 'Gagal memuat data verifikasi.');
+      toast.error(error.response?.data?.message || error.message || t('settings.pvLoadFailedToast'));
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, debouncedSearch]);
+  }, [statusFilter, debouncedSearch, t]);
 
   useEffect(() => {
     fetchVerifications();
@@ -177,14 +181,14 @@ export default function PaymentVerificationTab() {
         }
       );
       if (res.data?.status === 'ok') {
-        toast.success(res.data.message || 'Pembayaran berhasil diverifikasi!');
+        toast.success(res.data.message || t('settings.verifyRegSuccessToast'));
         setSelectedItemForVerify(null);
         setVerifyNotes('');
         fetchVerifications();
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(error.response?.data?.message || error.message || 'Gagal memverifikasi pembayaran.');
+      toast.error(error.response?.data?.message || error.message || t('settings.verifyRegFailedToast'));
     } finally {
       setIsVerifying(false);
     }
@@ -202,14 +206,14 @@ export default function PaymentVerificationTab() {
         }
       );
       if (res.data?.status === 'ok') {
-        toast.success('Pendaftaran/token berhasil dibatalkan.');
+        toast.success(t('settings.rejectProofSuccessToast'));
         setSelectedItemForReject(null);
         setRejectReason('');
         fetchVerifications();
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(error.response?.data?.message || error.message || 'Gagal membatalkan token.');
+      toast.error(error.response?.data?.message || error.message || t('settings.rejectProofFailedToast'));
     } finally {
       setIsRejecting(false);
     }
@@ -255,7 +259,7 @@ export default function PaymentVerificationTab() {
           transaction_ref: manualRef || undefined
         });
         if (res.data?.status === 'ok') {
-          toast.success(res.data.message || 'DP Pelatihan siswa berhasil diverifikasi! Status resmi naik ke Siswa / Peserta (CUSTOMER).');
+          toast.success(res.data.message || t('settings.pvManualCoreDepositSuccess'));
           setIsManualModalOpen(false);
           setSelectedStudentForManual(null);
           setSearchStudentInput('');
@@ -271,7 +275,7 @@ export default function PaymentVerificationTab() {
           notes: manualNotes
         });
         if (res.data?.status === 'ok') {
-          toast.success(res.data.message || 'Pembayaran formulir siswa berhasil dicatat! Status resmi naik ke Siswa Terdaftar (REGISTERED).');
+          toast.success(res.data.message || t('settings.pvManualFormFeeSuccess'));
           setIsManualModalOpen(false);
           setSelectedStudentForManual(null);
           setSearchStudentInput('');
@@ -282,7 +286,7 @@ export default function PaymentVerificationTab() {
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(error.response?.data?.message || error.message || 'Gagal menyimpan verifikasi manual.');
+      toast.error(error.response?.data?.message || error.message || t('settings.manualVerifyFailedToast'));
     } finally {
       setIsSavingManual(false);
     }
@@ -291,7 +295,7 @@ export default function PaymentVerificationTab() {
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedToken(id);
-    toast.success('Token disalin ke clipboard');
+    toast.success(t('settings.pvTokenCopiedToast'));
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
@@ -306,13 +310,15 @@ export default function PaymentVerificationTab() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-foreground">Verifikasi Pembayaran Pendaftaran & DP Pelatihan</h2>
+                <h2 className="text-lg font-bold text-foreground">
+                  {isGeneral ? t('settings.pvHeaderTitleGeneral') : t('settings.pvHeaderTitleLpk')}
+                </h2>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
                   NexaMOS Evidence Layer
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                Modul otorisasi keuangan bagi Admin & Manager untuk memvalidasi pembayaran formulir pendaftaran (Rp 500.000) menuju status <strong className="text-foreground">Siswa Terdaftar (REGISTERED)</strong> dan verifikasi DP Pelatihan sah (Rp 1.500.000) menuju status <strong className="text-foreground">Siswa / Peserta (CUSTOMER)</strong> dengan audit trail immutable.
+                {isGeneral ? t('settings.pvHeaderDescGeneral') : t('settings.pvHeaderDescLpk')}
               </p>
             </div>
           </div>
@@ -323,7 +329,7 @@ export default function PaymentVerificationTab() {
               onClick={fetchVerifications}
               disabled={loading}
               className="p-2.5 rounded-xl border border-muted-foreground/20 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50"
-              title="Segarkan Data"
+              title={t('settings.pvRefreshDataTooltip')}
             >
               <RefreshCw size={16} className={cn(loading && 'animate-spin')} />
             </button>
@@ -336,7 +342,7 @@ export default function PaymentVerificationTab() {
               className="px-4 py-2.5 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-95 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-2 cursor-pointer"
             >
               <UserCheck size={15} />
-              <span>Verifikasi Pembayaran Manual</span>
+              <span>{isGeneral ? t('settings.manualVerifyModalBtnGeneral') : t('settings.manualVerifyModalBtnLpk')}</span>
             </button>
           </div>
         </div>
@@ -345,7 +351,7 @@ export default function PaymentVerificationTab() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-6 pt-6 border-t">
           <div className="rounded-xl border bg-background p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Menunggu Verifikasi</p>
+              <p className="text-xs font-medium text-muted-foreground">{t('settings.statTotalPending')}</p>
               <p className="text-2xl font-bold text-amber-500 mt-0.5">{summary.total_pending}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
@@ -355,7 +361,7 @@ export default function PaymentVerificationTab() {
 
           <div className="rounded-xl border bg-background p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Terverifikasi Lunas</p>
+              <p className="text-xs font-medium text-muted-foreground">{t('settings.statTotalPaid')}</p>
               <p className="text-2xl font-bold text-emerald-500 mt-0.5">{summary.total_paid}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
@@ -365,7 +371,7 @@ export default function PaymentVerificationTab() {
 
           <div className="rounded-xl border bg-background p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Total Dana Masuk Pendaftaran</p>
+              <p className="text-xs font-medium text-muted-foreground">{t('settings.pvTotalRevenue')}</p>
               <p className="text-2xl font-bold text-foreground mt-0.5">{formatRupiah(summary.total_paid * 500000)}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -389,7 +395,7 @@ export default function PaymentVerificationTab() {
             )}
           >
             <Clock size={13} className="text-amber-500" />
-            <span>Menunggu ({summary.total_pending})</span>
+            <span>{t('settings.filterPending')} ({summary.total_pending})</span>
           </button>
           <button
             onClick={() => setStatusFilter('paid')}
@@ -401,7 +407,7 @@ export default function PaymentVerificationTab() {
             )}
           >
             <CheckCircle2 size={13} className="text-emerald-500" />
-            <span>Lunas ({summary.total_paid})</span>
+            <span>{t('settings.filterPaid')} ({summary.total_paid})</span>
           </button>
           <button
             onClick={() => setStatusFilter('expired')}
@@ -413,7 +419,7 @@ export default function PaymentVerificationTab() {
             )}
           >
             <X size={13} className="text-rose-500" />
-            <span>Batal/Expired ({summary.total_expired})</span>
+            <span>{t('settings.filterExpired')} ({summary.total_expired})</span>
           </button>
           <button
             onClick={() => setStatusFilter('all')}
@@ -424,7 +430,7 @@ export default function PaymentVerificationTab() {
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <span>Semua ({summary.total_all})</span>
+            <span>{t('settings.filterAllStatus')} ({summary.total_all})</span>
           </button>
         </div>
 
@@ -433,7 +439,7 @@ export default function PaymentVerificationTab() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Cari siswa, no. WA, ortu..."
+            placeholder={isGeneral ? t('settings.searchVerificationPlaceholderGeneral') : t('settings.searchVerificationPlaceholderLpk')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -454,18 +460,18 @@ export default function PaymentVerificationTab() {
         {loading ? (
           <div className="py-16 text-center">
             <RefreshCw size={24} className="animate-spin text-primary mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">Memuat antrean verifikasi pembayaran...</p>
+            <p className="text-xs text-muted-foreground">{t('settings.pvLoading')}</p>
           </div>
         ) : items.length === 0 ? (
           <div className="py-16 text-center px-4">
             <div className="w-12 h-12 rounded-2xl bg-muted/50 text-muted-foreground flex items-center justify-center mx-auto mb-3">
               <Receipt size={24} />
             </div>
-            <p className="text-sm font-semibold text-foreground">Tidak Ada Data Verifikasi</p>
+            <p className="text-sm font-semibold text-foreground">{t('settings.pvEmptyTitle')}</p>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
               {statusFilter === 'pending'
-                ? 'Saat ini belum ada antrean formulir pendaftaran yang menunggu verifikasi pembayaran.'
-                : 'Tidak ditemukan transaksi pendaftaran yang sesuai dengan filter pencarian.'}
+                ? t('settings.pvEmptyPending')
+                : t('settings.pvEmptyFiltered')}
             </p>
           </div>
         ) : (
@@ -491,17 +497,17 @@ export default function PaymentVerificationTab() {
                       {/* Status Badge */}
                       {isPending && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                          <Clock size={11} /> Menunggu Verifikasi
+                          <Clock size={11} /> {t('settings.pvStatusPending')}
                         </span>
                       )}
                       {isPaid && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                          <CheckCircle2 size={11} /> Lunas Terverifikasi
+                          <CheckCircle2 size={11} /> {t('settings.pvStatusPaid')}
                         </span>
                       )}
                       {isExpired && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border">
-                          <X size={11} /> Batal / Expired
+                          <X size={11} /> {t('settings.pvStatusCancelled')}
                         </span>
                       )}
 
@@ -521,10 +527,10 @@ export default function PaymentVerificationTab() {
 
                     {/* Metadata Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
-                      {/* WA Siswa */}
+                      {/* WA Siswa / Kontak */}
                       <div className="flex items-center gap-1.5">
                         <Phone size={13} className="text-muted-foreground shrink-0" />
-                        <span>Siswa: </span>
+                        <span>{isGeneral ? t('settings.pvContactPrefix') : t('settings.pvStudentPrefix')}</span>
                         <a 
                           href={`https://wa.me/${item.no_wa.replace(/\D/g, '')}`} 
                           target="_blank" 
@@ -538,7 +544,7 @@ export default function PaymentVerificationTab() {
                       {/* Asal Sekolah */}
                       <div className="flex items-center gap-1.5">
                         <School size={13} className="text-muted-foreground shrink-0" />
-                        <span className="truncate">{item.nama_sekolah || 'Channel Umum'}</span>
+                        <span className="truncate">{item.nama_sekolah || t('settings.pvGeneralChannel')}</span>
                       </div>
 
                       {/* CRO Assignee */}
@@ -551,7 +557,7 @@ export default function PaymentVerificationTab() {
                       {item.nama_ortu && (
                         <div className="flex items-center gap-1.5">
                           <UserCheck size={13} className="text-muted-foreground shrink-0" />
-                          <span>Ortu: <strong className="text-foreground">{item.nama_ortu}</strong></span>
+                          <span>{t('settings.pvParentPrefix')}<strong className="text-foreground">{item.nama_ortu}</strong></span>
                           {item.wa_ortu && (
                             <a 
                               href={`https://wa.me/${item.wa_ortu.replace(/\D/g, '')}`} 
@@ -569,7 +575,7 @@ export default function PaymentVerificationTab() {
                       {/* Tanggal Terbit */}
                       <div className="flex items-center gap-1.5">
                         <Calendar size={13} className="text-muted-foreground shrink-0" />
-                        <span>Submit: {formatDate(item.created_at)}</span>
+                        <span>{t('settings.pvSubmitDatePrefix')}{formatDate(item.created_at)}</span>
                       </div>
 
                       {/* Token Preview with Copy */}
@@ -590,7 +596,7 @@ export default function PaymentVerificationTab() {
                   {/* Pricing & Actions */}
                   <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0">
                     <div className="text-left md:text-right">
-                      <p className="text-xs text-muted-foreground font-medium">Biaya Formulir</p>
+                      <p className="text-xs text-muted-foreground font-medium">{t('settings.pvFormFeeLabel')}</p>
                       <p className="text-base font-bold text-emerald-500">{formatRupiah(item.registration_fee || 500000)}</p>
                     </div>
 
@@ -601,7 +607,7 @@ export default function PaymentVerificationTab() {
                         target="_blank"
                         rel="noreferrer"
                         className="px-2.5 py-1.5 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1"
-                        title="Lihat Formulir Publik"
+                        title={t('settings.pvViewPublicFormTooltip')}
                       >
                         <ExternalLink size={12} />
                         <span className="hidden sm:inline">Form</span>
@@ -611,10 +617,10 @@ export default function PaymentVerificationTab() {
                       <Link
                         href={`/siswa/${item.id_siswa}`}
                         className="px-2.5 py-1.5 rounded-lg border text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1"
-                        title="Buka Halaman Siswa"
+                        title={isGeneral ? t('settings.viewDetailTooltipGeneral') : t('settings.viewDetailTooltip')}
                       >
                         <User size={12} />
-                        <span className="hidden sm:inline">Siswa</span>
+                        <span className="hidden sm:inline">{isGeneral ? 'Kontak' : 'Siswa'}</span>
                       </Link>
 
                       {/* Actions for Pending Tokens */}
@@ -626,7 +632,7 @@ export default function PaymentVerificationTab() {
                               setRejectReason('');
                             }}
                             className="px-2.5 py-1.5 rounded-lg border border-destructive/20 text-xs text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                            title="Batalkan / Expire Pendaftaran"
+                            title={t('settings.pvCancelRegTooltip')}
                           >
                             <X size={13} />
                           </button>
@@ -641,7 +647,7 @@ export default function PaymentVerificationTab() {
                             className="px-3.5 py-1.5 rounded-lg gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                           >
                             <CheckCircle2 size={13} />
-                            <span>Verifikasi Lunas</span>
+                            <span>{t('settings.verifyActionBtn')}</span>
                           </button>
                         </>
                       )}
@@ -664,7 +670,9 @@ export default function PaymentVerificationTab() {
                   <CheckCircle2 size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Verifikasi Pembayaran Siswa</h3>
+                  <h3 className="text-base font-bold text-foreground">
+                    {isGeneral ? t('settings.pvVerifyModalTitleGeneral') : t('settings.pvVerifyModalTitleLpk')}
+                  </h3>
                   <p className="text-xs text-muted-foreground">NexaMOS Financial Evidence</p>
                 </div>
               </div>
@@ -676,10 +684,10 @@ export default function PaymentVerificationTab() {
               </button>
             </div>
 
-            {/* Info Siswa */}
+            {/* Info Siswa / Kontak */}
             <div className="p-3.5 rounded-xl bg-muted/40 border space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Nama Siswa:</span>
+                <span className="text-muted-foreground">{isGeneral ? t('settings.studentNameLabelGeneral') : t('settings.studentNameLabelLpk')}</span>
                 <span className="font-bold text-foreground">{selectedItemForVerify.nama_siswa}</span>
               </div>
               <div className="flex justify-between">
@@ -687,18 +695,18 @@ export default function PaymentVerificationTab() {
                 <span className="font-medium text-foreground">+{selectedItemForVerify.no_wa}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Asal Sekolah:</span>
+                <span className="text-muted-foreground">{isGeneral ? t('settings.pvInstPrefix') : t('settings.pvSchoolPrefix')}</span>
                 <span className="text-foreground">{selectedItemForVerify.nama_sekolah || '-'}</span>
               </div>
               {selectedItemForVerify.nama_program && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Program:</span>
+                  <span className="text-muted-foreground">{t('settings.thProgram')}:</span>
                   <span className="font-semibold text-primary">{selectedItemForVerify.nama_program}</span>
                 </div>
               )}
               {selectedItemForVerify.nama_ortu && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Orang Tua / Wali:</span>
+                  <span className="text-muted-foreground">{t('settings.pvParentPrefix')}</span>
                   <span className="text-foreground">{selectedItemForVerify.nama_ortu} ({selectedItemForVerify.wa_ortu || '-'})</span>
                 </div>
               )}
@@ -708,7 +716,7 @@ export default function PaymentVerificationTab() {
             <div className="space-y-3 pt-1">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
-                  Nominal Diterima (Rp)
+                  {t('settings.pvNominalReceived')}
                 </label>
                 <input
                   type="number"
@@ -720,26 +728,26 @@ export default function PaymentVerificationTab() {
 
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
-                  Metode Pembayaran
+                  {t('settings.pvPaymentMethod')}
                 </label>
                 <select
                   value={verifyMethod}
                   onChange={(e) => setVerifyMethod(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border bg-background text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 >
-                  <option value="Transfer Bank">Transfer Bank (BCA / Mandiri / BRI / BNI / Lainnya)</option>
-                  <option value="QRIS">QRIS Statis / Dinamis</option>
-                  <option value="Tunai / Cash">Tunai / Cash di Kantor</option>
+                  <option value="Transfer Bank">{t('settings.pvMethodBankTransfer')}</option>
+                  <option value="QRIS">{t('settings.pvMethodQris')}</option>
+                  <option value="Tunai / Cash">{t('settings.pvMethodCash')}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
-                  Catatan / No. Referensi Mutasi Bank (Opsional)
+                  {t('settings.pvNotesOrRef')}
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: Mutasi BCA tgl 14/09 an. Sayuti Ref #9281"
+                  placeholder={t('settings.pvNotesPlaceholder')}
                   value={verifyNotes}
                   onChange={(e) => setVerifyNotes(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -750,7 +758,7 @@ export default function PaymentVerificationTab() {
             <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground flex items-start gap-2">
               <ShieldCheck size={16} className="text-primary shrink-0 mt-0.5" />
               <span>
-                Dengan menekan tombol di bawah, status siswa akan resmi bertransisi menjadi <strong className="text-foreground">Registered Opportunity</strong> dan tercatat ke audit trail event log.
+                {isGeneral ? t('settings.confirmVerifyNoticeGeneral') : t('settings.confirmVerifyNoticeLpk')}
               </span>
             </div>
 
@@ -761,23 +769,23 @@ export default function PaymentVerificationTab() {
                 onClick={() => setSelectedItemForVerify(null)}
                 className="px-4 py-2 rounded-xl border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
               >
-                Batal
+                {t('settings.cancelBtn')}
               </button>
               <button
                 type="button"
                 onClick={handleVerify}
                 disabled={isVerifying}
-                className="px-5 py-2 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isVerifying ? (
                   <>
                     <RefreshCw size={13} className="animate-spin" />
-                    <span>Memproses...</span>
+                    <span>{t('settings.verifyingDepositBtn')}</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 size={14} />
-                    <span>Konfirmasi Lunas</span>
+                    <span>{t('settings.confirmVerifyPaymentBtn')}</span>
                   </>
                 )}
               </button>
@@ -796,7 +804,7 @@ export default function PaymentVerificationTab() {
                   <AlertTriangle size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Batalkan Pendaftaran / Token</h3>
+                  <h3 className="text-base font-bold text-foreground">{t('settings.rejectDialogTitle')}</h3>
                   <p className="text-xs text-muted-foreground">{selectedItemForReject.nama_siswa}</p>
                 </div>
               </div>
@@ -809,16 +817,16 @@ export default function PaymentVerificationTab() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Apakah Anda yakin ingin membatalkan atau menandai token invoice pendaftaran ini sebagai expired? Tindakan ini akan dicatat ke event log.
+              {t('settings.pvRejectConfirmDesc')}
             </p>
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1">
-                Alasan Pembatalan (Opsional)
+                {t('settings.rejectReasonLabel')}
               </label>
               <textarea
                 rows={2}
-                placeholder="Misal: Salah input nominal, ganti jalur pendaftaran, atau permintaan wali siswa"
+                placeholder={t('settings.rejectReasonPlaceholder')}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-destructive/20 focus:border-destructive"
@@ -831,15 +839,15 @@ export default function PaymentVerificationTab() {
                 onClick={() => setSelectedItemForReject(null)}
                 className="px-4 py-2 rounded-xl border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
               >
-                Kembali
+                {t('settings.cancelBtn')}
               </button>
               <button
                 type="button"
                 onClick={handleReject}
                 disabled={isRejecting}
-                className="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-md shadow-destructive/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-md shadow-destructive/20 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isRejecting ? 'Membatalkan...' : 'Ya, Batalkan Token'}
+                {isRejecting ? t('settings.pvRejectingBtn') : t('settings.confirmRejectBtn')}
               </button>
             </div>
           </div>
@@ -856,8 +864,12 @@ export default function PaymentVerificationTab() {
                   <UserCheck size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Verifikasi Pembayaran Manual</h3>
-                  <p className="text-xs text-muted-foreground">Catat bukti transfer pendaftaran langsung / tunai</p>
+                  <h3 className="text-base font-bold text-foreground">
+                    {isGeneral ? t('settings.manualVerifyModalTitleGeneral') : t('settings.manualVerifyModalTitleLpk')}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {isGeneral ? t('settings.pvManualModalSubGeneral') : t('settings.pvManualModalSubLpk')}
+                  </p>
                 </div>
               </div>
               <button 
@@ -873,13 +885,13 @@ export default function PaymentVerificationTab() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">
-                    Cari Calon Siswa (Ketik Nama, No. WhatsApp, atau ID Siswa)
+                    {isGeneral ? t('settings.searchStudentHelpGeneral') : t('settings.searchStudentHelpLpk')}
                   </label>
                   <div className="relative">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="text"
-                      placeholder="Contoh: Wahyu / 0856... / STD-000180"
+                      placeholder={isGeneral ? t('settings.searchStudentPlaceholderGeneral') : t('settings.searchStudentPlaceholderLpk')}
                       value={searchStudentInput}
                       onChange={(e) => setSearchStudentInput(e.target.value)}
                       className="w-full pl-9 pr-4 py-2.5 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -896,8 +908,8 @@ export default function PaymentVerificationTab() {
                   {studentSearchResults.length === 0 ? (
                     <div className="py-8 text-center text-xs text-muted-foreground">
                       {searchStudentInput.length < 2
-                        ? 'Ketik minimal 2 karakter untuk mencari calon siswa...'
-                        : 'Tidak ditemukan siswa yang cocok.'}
+                        ? (isGeneral ? t('settings.pvSearchStudentMinCharsGeneral') : t('settings.pvSearchStudentMinCharsLpk'))
+                        : (isGeneral ? t('settings.pvSearchStudentNoResultsGeneral') : t('settings.pvSearchStudentNoResultsLpk'))}
                     </div>
                   ) : (
                     studentSearchResults.map((s) => (
@@ -910,7 +922,7 @@ export default function PaymentVerificationTab() {
                         <div className="truncate">
                           <p className="text-xs font-bold text-foreground">{s.nama_lengkap}</p>
                           <p className="text-xs text-muted-foreground truncate">
-                            +{s.no_wa} · {s.nama_sekolah || 'Channel Umum'} · CRO: {s.cro || '-'}
+                            +{s.no_wa} · {s.nama_sekolah || t('settings.pvGeneralChannel')} · CRO: {s.cro || '-'}
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
@@ -919,7 +931,7 @@ export default function PaymentVerificationTab() {
                             size="sm" 
                           />
                           <p className="text-xs text-primary font-semibold mt-1 flex items-center justify-end gap-1">
-                            Pilih <ArrowRight size={11} />
+                            {t('settings.pvPickStudent')} <ArrowRight size={11} />
                           </p>
                         </div>
                       </button>
@@ -933,10 +945,12 @@ export default function PaymentVerificationTab() {
                 {/* Selected Student Banner */}
                 <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground">Siswa Terpilih:</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isGeneral ? t('settings.selectedStudentLabelGeneral') : t('settings.selectedStudentLabelLpk')}
+                    </p>
                     <p className="text-sm font-bold text-foreground">{selectedStudentForManual.nama_lengkap}</p>
                     <p className="text-xs text-muted-foreground">
-                      +{selectedStudentForManual.no_wa} · {selectedStudentForManual.nama_sekolah || 'Channel Umum'}
+                      +{selectedStudentForManual.no_wa} · {selectedStudentForManual.nama_sekolah || t('settings.pvGeneralChannel')}
                     </p>
                   </div>
                   <button
@@ -944,14 +958,14 @@ export default function PaymentVerificationTab() {
                     onClick={() => setSelectedStudentForManual(null)}
                     className="text-xs text-primary hover:underline cursor-pointer"
                   >
-                    Ganti Siswa
+                    {t('settings.pvChangeStudent')}
                   </button>
                 </div>
 
                 {/* Jenis Konversi & Pembayaran */}
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1.5">
-                    Jenis Konversi & Pembayaran
+                    {t('settings.pvConversionType')}
                   </label>
                   <div className="grid grid-cols-2 gap-2 p-1 bg-secondary/30 border rounded-xl">
                     <button
@@ -967,8 +981,10 @@ export default function PaymentVerificationTab() {
                           : "border-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <p className="font-bold">🟣 Biaya Formulir</p>
-                      <p className="text-2xs opacity-80 mt-0.5 font-normal">➔ Siswa Terdaftar (REGISTERED)</p>
+                      <p className="font-bold">{isGeneral ? t('settings.pvTypeFormFeeGeneral') : t('settings.pvTypeFormFeeLpk')}</p>
+                      <p className="text-2xs opacity-80 mt-0.5 font-normal">
+                        {isGeneral ? t('settings.pvTypeFormFeeDescGeneral') : t('settings.pvTypeFormFeeDescLpk')}
+                      </p>
                     </button>
                     <button
                       type="button"
@@ -983,15 +999,17 @@ export default function PaymentVerificationTab() {
                           : "border-transparent text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <p className="font-bold">🟢 DP Pelatihan Sah</p>
-                      <p className="text-2xs opacity-80 mt-0.5 font-normal">➔ Siswa / Peserta (CUSTOMER)</p>
+                      <p className="font-bold">{isGeneral ? t('settings.pvTypeCoreDepositGeneral') : t('settings.pvTypeCoreDepositLpk')}</p>
+                      <p className="text-2xs opacity-80 mt-0.5 font-normal">
+                        {isGeneral ? t('settings.pvTypeCoreDepositDescGeneral') : t('settings.pvTypeCoreDepositDescLpk')}
+                      </p>
                     </button>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">
-                    Nominal Pembayaran (Rp)
+                    {isGeneral ? t('settings.depositAmountLabelGeneral') : t('settings.depositAmountLabelLpk')}
                   </label>
                   <input
                     type="number"
@@ -1004,7 +1022,7 @@ export default function PaymentVerificationTab() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-foreground mb-1">
-                      Metode Pembayaran
+                      {t('settings.pvPaymentMethod')}
                     </label>
                     <select
                       value={manualMethod}
@@ -1019,11 +1037,11 @@ export default function PaymentVerificationTab() {
 
                   <div>
                     <label className="block text-xs font-semibold text-foreground mb-1">
-                      Nama Bank / Kas Tujuan
+                      {t('settings.pvTargetBank')}
                     </label>
                     <input
                       type="text"
-                      placeholder="Contoh: BCA / Mandiri / Kas Kantor"
+                      placeholder={t('settings.pvTargetBankPlaceholder')}
                       value={manualBank}
                       onChange={(e) => setManualBank(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -1033,11 +1051,11 @@ export default function PaymentVerificationTab() {
 
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">
-                    Catatan / No. Referensi Transfer
+                    {t('settings.pvTransferNotes')}
                   </label>
                   <input
                     type="text"
-                    placeholder="Contoh: Bukti slip transfer BCA dikirim lewat WA ortu / Ref: TRX-9921"
+                    placeholder={t('settings.pvTransferNotesPlaceholder')}
                     value={manualNotes}
                     onChange={(e) => setManualNotes(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border bg-background text-xs placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -1051,23 +1069,27 @@ export default function PaymentVerificationTab() {
                     onClick={() => setSelectedStudentForManual(null)}
                     className="px-4 py-2 rounded-xl border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
                   >
-                    Kembali
+                    {t('settings.cancelBtn')}
                   </button>
                   <button
                     type="button"
                     onClick={handleSaveManualVerification}
                     disabled={isSavingManual}
-                    className="px-5 py-2 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="px-5 py-2 rounded-xl gradient-primary text-white text-xs font-semibold hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSavingManual ? (
                       <>
                         <RefreshCw size={13} className="animate-spin" />
-                        <span>Menyimpan...</span>
+                        <span>{t('settings.verifyingDepositBtn')}</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 size={14} />
-                        <span>{manualPaymentType === 'core_deposit' ? 'Verifikasi DP & Jadikan Customer' : 'Verifikasi Pendaftaran (Registered)'}</span>
+                        <span>
+                          {manualPaymentType === 'core_deposit' 
+                            ? t('settings.confirmVerifyDepositBtn') 
+                            : t('settings.pvConfirmRegBtn')}
+                        </span>
                       </>
                     )}
                   </button>

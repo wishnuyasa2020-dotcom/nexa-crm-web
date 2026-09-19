@@ -10,6 +10,8 @@ import {
 import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 interface PaymentConfigData {
   id?: number;
@@ -51,6 +53,8 @@ function formatRupiah(num: number): string {
 }
 
 export default function PaymentConfigTab() {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -104,7 +108,7 @@ export default function PaymentConfigTab() {
       }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } }; message?: string };
-      setError(e.response?.data?.message || e.message || 'Gagal memuat konfigurasi pembayaran');
+      setError(e.response?.data?.message || e.message || t('settings.paymentConfigLoadFailed'));
     } finally {
       setLoading(false);
     }
@@ -151,7 +155,7 @@ export default function PaymentConfigTab() {
     if (!formData.bankAccountNumber) return;
     navigator.clipboard.writeText(formData.bankAccountNumber);
     setCopied(true);
-    toast.success('Nomor rekening berhasil disalin!');
+    toast.success(t('settings.copiedNorekToast'));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -159,18 +163,18 @@ export default function PaymentConfigTab() {
     if (!formData.bankAccountHolder) return;
     navigator.clipboard.writeText(formData.bankAccountHolder);
     setCopiedHolder(true);
-    toast.success('Nama pemilik rekening berhasil disalin!');
+    toast.success(t('settings.copiedHolderToast'));
     setTimeout(() => setCopiedHolder(false), 2000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.bankAccountNumber.trim()) {
-      toast.error('Nomor rekening bank wajib diisi.');
+      toast.error(t('settings.norekRequiredToast'));
       return;
     }
     if (!formData.bankAccountHolder.trim()) {
-      toast.error('Nama pemilik rekening (A.N.) wajib diisi.');
+      toast.error(t('settings.holderRequiredToast'));
       return;
     }
 
@@ -178,7 +182,7 @@ export default function PaymentConfigTab() {
       setSaving(true);
       const res = await apiClient.put('/api/v1/settings/payment-config', formData);
       if (res.data?.status === 'ok') {
-        toast.success(res.data.message || 'Konfigurasi pembayaran berhasil disimpan!');
+        toast.success(res.data.message || t('settings.savePaymentConfigSuccess'));
         const updated = res.data.data || formData;
         setFormData(updated);
         setSavedData(updated);
@@ -187,7 +191,7 @@ export default function PaymentConfigTab() {
       }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(e.response?.data?.message || e.message || 'Gagal menyimpan konfigurasi');
+      toast.error(e.response?.data?.message || e.message || t('settings.savePaymentConfigFailed'));
     } finally {
       setSaving(false);
     }
@@ -197,7 +201,7 @@ export default function PaymentConfigTab() {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
         <Loader2 className="w-7 h-7 animate-spin text-primary" />
-        <p className="text-sm">Memuat pengaturan rekening & biaya...</p>
+        <p className="text-sm">{t('settings.paymentConfigLoading')}</p>
       </div>
     );
   }
@@ -226,10 +230,10 @@ export default function PaymentConfigTab() {
                     <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 shrink-0">
                       <Building2 size={16} />
                     </div>
-                    <h2 className="text-sm font-semibold text-foreground">Rekening Bank Resmi Tenant</h2>
+                    <h2 className="text-sm font-semibold text-foreground">{t('settings.bankAccountCardTitle')}</h2>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 pl-8">
-                    Tujuan transfer bank untuk calon siswa &amp; wali
+                    {isGeneral ? t('settings.bankAccountCardDescGeneral') : t('settings.bankAccountCardDescLpk')}
                   </p>
                 </div>
                 <button
@@ -247,10 +251,10 @@ export default function PaymentConfigTab() {
                       ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
                       : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
                   )}
-                  title={isEditingBank ? "Batal ubah data rekening" : "Klik untuk mengubah rekening bank"}
+                  title={isEditingBank ? t('settings.cancelEditBankTooltip') : t('settings.startEditBankTooltip')}
                 >
                   <Pencil size={12} className={isEditingBank ? "text-amber-500" : "text-blue-500"} />
-                  <span>{isEditingBank ? 'Batal' : 'Edit'}</span>
+                  <span>{isEditingBank ? t('settings.cancelEditBtn') : t('settings.editBtn')}</span>
                 </button>
               </div>
 
@@ -261,8 +265,8 @@ export default function PaymentConfigTab() {
                     <Building2 size={18} />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">Rekening Bank Resmi Tenant</h2>
-                    <p className="text-xs text-muted-foreground">Tujuan transfer bank untuk calon siswa &amp; wali</p>
+                    <h2 className="text-sm font-semibold text-foreground">{t('settings.bankAccountCardTitle')}</h2>
+                    <p className="text-xs text-muted-foreground">{isGeneral ? t('settings.bankAccountCardDescGeneral') : t('settings.bankAccountCardDescLpk')}</p>
                   </div>
                 </div>
 
@@ -282,10 +286,10 @@ export default function PaymentConfigTab() {
                       ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
                       : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
                   )}
-                  title={isEditingBank ? "Batal ubah data rekening" : "Klik untuk mengubah rekening bank"}
+                  title={isEditingBank ? t('settings.cancelEditBankTooltip') : t('settings.startEditBankTooltip')}
                 >
                   <Pencil size={13} className={isEditingBank ? "text-amber-500" : "text-blue-500"} />
-                  <span>{isEditingBank ? 'Batal' : 'Edit'}</span>
+                  <span>{isEditingBank ? t('settings.cancelEditBtn') : t('settings.editBtn')}</span>
                 </button>
               </div>
             </div>
@@ -293,7 +297,7 @@ export default function PaymentConfigTab() {
             <div className="space-y-4 pt-1">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  Nama Bank <span className="text-destructive">*</span>
+                  {t('settings.bankNameLabel')} <span className="text-destructive">*</span>
                 </label>
                 <select
                   value={formData.bankName}
@@ -314,17 +318,17 @@ export default function PaymentConfigTab() {
                 {/* Row 1 di Mobile: Label di kiri, Tombol Salin di kanan */}
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-semibold text-foreground">
-                    Nomor Rekening Bank <span className="text-destructive">*</span>
+                    {t('settings.bankAccountNumberLabel')} <span className="text-destructive">*</span>
                   </label>
                   {formData.bankAccountNumber && (
                     <button
                       type="button"
                       onClick={handleCopyNorek}
                       className="sm:hidden text-xs px-2 py-0.5 rounded-md bg-secondary text-muted-foreground hover:text-foreground border border-border/50 transition-colors flex items-center gap-1 cursor-pointer"
-                      title="Salin Nomor Rekening"
+                      title={t('settings.copyNorekTooltip')}
                     >
                       <Copy size={11} />
-                      <span>{copied ? 'Tersalin' : 'Salin'}</span>
+                      <span>{copied ? t('settings.copiedBadge') : t('settings.copyBadge')}</span>
                     </button>
                   )}
                 </div>
@@ -335,7 +339,7 @@ export default function PaymentConfigTab() {
                     type="text"
                     value={formData.bankAccountNumber}
                     onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value.replace(/\D/g, '') })}
-                    placeholder="Contoh: 8830123456"
+                    placeholder={t('settings.bankAccountNumberPlaceholder')}
                     disabled={!isEditingBank}
                     className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed sm:pr-20"
                     required
@@ -346,10 +350,10 @@ export default function PaymentConfigTab() {
                       type="button"
                       onClick={handleCopyNorek}
                       className="hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors items-center gap-1 cursor-pointer"
-                      title="Salin Nomor Rekening"
+                      title={t('settings.copyNorekTooltip')}
                     >
                       <Copy size={12} />
-                      <span>{copied ? 'Tersalin' : 'Salin'}</span>
+                      <span>{copied ? t('settings.copiedBadge') : t('settings.copyBadge')}</span>
                     </button>
                   )}
                 </div>
@@ -359,17 +363,17 @@ export default function PaymentConfigTab() {
                 {/* Row 1 di Mobile: Label di kiri, Tombol Salin di kanan */}
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-semibold text-foreground">
-                    Atas Nama Pemilik Rekening (A.N.) <span className="text-destructive">*</span>
+                    {t('settings.bankAccountHolderLabel')} <span className="text-destructive">*</span>
                   </label>
                   {formData.bankAccountHolder && (
                     <button
                       type="button"
                       onClick={handleCopyHolder}
                       className="sm:hidden text-xs px-2 py-0.5 rounded-md bg-secondary text-muted-foreground hover:text-foreground border border-border/50 transition-colors flex items-center gap-1 cursor-pointer"
-                      title="Salin Nama Pemilik Rekening"
+                      title={t('settings.copyHolderTooltip')}
                     >
                       <Copy size={11} />
-                      <span>{copiedHolder ? 'Tersalin' : 'Salin'}</span>
+                      <span>{copiedHolder ? t('settings.copiedBadge') : t('settings.copyBadge')}</span>
                     </button>
                   )}
                 </div>
@@ -380,7 +384,7 @@ export default function PaymentConfigTab() {
                     type="text"
                     value={formData.bankAccountHolder}
                     onChange={(e) => setFormData({ ...formData, bankAccountHolder: e.target.value })}
-                    placeholder="Contoh: PT DERMA INDONESIA MAJU / LPK DERMA"
+                    placeholder={t('settings.bankAccountHolderPlaceholder')}
                     disabled={!isEditingBank}
                     className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed sm:pr-20"
                     required
@@ -391,27 +395,27 @@ export default function PaymentConfigTab() {
                       type="button"
                       onClick={handleCopyHolder}
                       className="hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors items-center gap-1 cursor-pointer"
-                      title="Salin Nama Pemilik Rekening"
+                      title={t('settings.copyHolderTooltip')}
                     >
                       <Copy size={12} />
-                      <span>{copiedHolder ? 'Tersalin' : 'Salin'}</span>
+                      <span>{copiedHolder ? t('settings.copiedBadge') : t('settings.copyBadge')}</span>
                     </button>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Harus persis sama dengan nama yang muncul di layar ATM / m-Banking agar tidak dicurigai siswa.
+                  {t('settings.bankAccountHolderNotice')}
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  Instruksi / Catatan Berita Transfer
+                  {isGeneral ? t('settings.bankNotesLabelGeneral') : t('settings.bankNotesLabelLpk')}
                 </label>
                 <textarea
                   rows={3}
                   value={formData.bankNotes}
                   onChange={(e) => setFormData({ ...formData, bankNotes: e.target.value })}
-                  placeholder="Contoh: Mohon sertakan nama lengkap siswa pada berita acara transfer."
+                  placeholder={t('settings.bankNotesPlaceholder')}
                   disabled={!isEditingBank}
                   className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none disabled:opacity-60 disabled:cursor-not-allowed min-h-24 sm:min-h-16"
                 />
@@ -420,14 +424,14 @@ export default function PaymentConfigTab() {
               {/* Interactive Bank Card Preview */}
               <div className="mt-4 p-3.5 sm:p-4 rounded-xl gradient-primary text-white space-y-2 shadow-md overflow-hidden">
                 <div className="flex items-center justify-between text-xs opacity-80">
-                  <span className="font-semibold uppercase tracking-wider">Kartu Rekening Resmi</span>
+                  <span className="font-semibold uppercase tracking-wider">{t('settings.officialCardTitle')}</span>
                   <span className="font-bold">{formData.bankName || 'BANK'}</span>
                 </div>
                 <p className="text-base sm:text-lg font-mono font-bold tracking-wide sm:tracking-widest py-1 break-all select-all">
                   {formData.bankAccountNumber || '•••• •••• •••• ••••'}
                 </p>
                 <div className="flex items-center justify-between text-xs pt-1.5 border-t border-white/20 gap-2">
-                  <span className="opacity-80 truncate">A.N. {formData.bankAccountHolder || 'NAMA LEMBAGA RESMI'}</span>
+                  <span className="opacity-80 truncate">{t('settings.holderPrefix')} {formData.bankAccountHolder || 'NAMA LEMBAGA RESMI'}</span>
                   <ShieldCheck size={16} className="opacity-90 shrink-0" />
                 </div>
               </div>
@@ -446,10 +450,12 @@ export default function PaymentConfigTab() {
                     <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
                       <Banknote size={16} />
                     </div>
-                    <h2 className="text-sm font-semibold text-foreground">Standarisasi Biaya Program</h2>
+                    <h2 className="text-sm font-semibold text-foreground">
+                      {isGeneral ? t('settings.pricingCardTitleGeneral') : t('settings.pricingCardTitleLpk')}
+                    </h2>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 pl-8">
-                    Kustomisasi tahapan konversi komersial tenant
+                    {isGeneral ? t('settings.pricingCardDescGeneral') : t('settings.pricingCardDescLpk')}
                   </p>
                 </div>
                 <button
@@ -467,10 +473,10 @@ export default function PaymentConfigTab() {
                       ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
                       : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
                   )}
-                  title={isEditingPricing ? "Batal ubah nominal biaya" : "Klik untuk mengubah standardisasi biaya"}
+                  title={isEditingPricing ? t('settings.cancelEditPricingTooltip') : t('settings.startEditPricingTooltip')}
                 >
                   <Pencil size={12} className={isEditingPricing ? "text-amber-500" : "text-emerald-500"} />
-                  <span>{isEditingPricing ? 'Batal' : 'Edit'}</span>
+                  <span>{isEditingPricing ? t('settings.cancelEditBtn') : t('settings.editBtn')}</span>
                 </button>
               </div>
 
@@ -481,8 +487,12 @@ export default function PaymentConfigTab() {
                     <Banknote size={18} />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">Standarisasi Nominal Biaya Program</h2>
-                    <p className="text-xs text-muted-foreground">Kustomisasi tahapan konversi komersial tenant</p>
+                    <h2 className="text-sm font-semibold text-foreground">
+                      {isGeneral ? t('settings.pricingCardTitleGeneral') : t('settings.pricingCardTitleLpk')}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {isGeneral ? t('settings.pricingCardDescGeneral') : t('settings.pricingCardDescLpk')}
+                    </p>
                   </div>
                 </div>
 
@@ -502,10 +512,10 @@ export default function PaymentConfigTab() {
                       ? "bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
                       : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border"
                   )}
-                  title={isEditingPricing ? "Batal ubah nominal biaya" : "Klik untuk mengubah standardisasi biaya"}
+                  title={isEditingPricing ? t('settings.cancelEditPricingTooltip') : t('settings.startEditPricingTooltip')}
                 >
                   <Pencil size={13} className={isEditingPricing ? "text-amber-500" : "text-emerald-500"} />
-                  <span>{isEditingPricing ? 'Batal' : 'Edit'}</span>
+                  <span>{isEditingPricing ? t('settings.cancelEditBtn') : t('settings.editBtn')}</span>
                 </button>
               </div>
             </div>
@@ -516,7 +526,7 @@ export default function PaymentConfigTab() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <span className="hidden sm:inline-block w-2 h-2 rounded-full bg-purple-500" />
-                    Biaya Formulir Pendaftaran (Registration Fee)
+                    {isGeneral ? t('settings.regFeeLabelGeneral') : t('settings.regFeeLabelLpk')}
                   </label>
                   <div>
                     <span className="inline-block text-xs font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
@@ -540,7 +550,7 @@ export default function PaymentConfigTab() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Siswa yang memvalidasi pembayaran ini akan otomatis naik ke status <span className="font-semibold text-purple-400">Registered Opportunity</span>.
+                  {isGeneral ? t('settings.regFeeHelpGeneral') : t('settings.regFeeHelpLpk')}
                 </p>
               </div>
 
@@ -549,7 +559,7 @@ export default function PaymentConfigTab() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <span className="hidden sm:inline-block w-2 h-2 rounded-full bg-emerald-500" />
-                    Nominal DP Pelatihan (Core Deposit)
+                    {isGeneral ? t('settings.coreDepositLabelGeneral') : t('settings.coreDepositLabelLpk')}
                   </label>
                   <div>
                     <span className="inline-block text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
@@ -573,7 +583,7 @@ export default function PaymentConfigTab() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Validasi pembayaran DP ini secara sah mengubah status siswa menjadi <span className="font-semibold text-emerald-400">Customer (Closing)</span>.
+                  {isGeneral ? t('settings.coreDepositHelpGeneral') : t('settings.coreDepositHelpLpk')}
                 </p>
               </div>
 
@@ -582,7 +592,7 @@ export default function PaymentConfigTab() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <CreditCard size={14} className="hidden sm:inline-block text-muted-foreground" />
-                    Total Biaya Pelatihan / Program Penuh
+                    {isGeneral ? t('settings.totalFeeLabelGeneral') : t('settings.totalFeeLabelLpk')}
                   </label>
                   <div>
                     <span className="inline-block text-xs text-muted-foreground">
@@ -606,7 +616,7 @@ export default function PaymentConfigTab() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Dicantumkan pada ringkasan biaya program agar siswa mengetahui sisa tagihan setelah dipotong DP.
+                  {isGeneral ? t('settings.totalFeeHelpGeneral') : t('settings.totalFeeHelpLpk')}
                 </p>
               </div>
 
@@ -615,7 +625,7 @@ export default function PaymentConfigTab() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <Building2 size={13} className="hidden sm:inline-block text-primary" />
-                    4. Pilihan Nama Program Pelatihan (Opsional)
+                    {t('settings.programsIncludedLabel')}
                   </label>
                   <span className="inline-block text-xs text-muted-foreground">
                     Dropdown Form Pendaftaran
@@ -626,7 +636,7 @@ export default function PaymentConfigTab() {
                   value={formData.programNames || ''}
                   onChange={(e) => setFormData({ ...formData, programNames: e.target.value })}
                   disabled={!isEditingPricing}
-                  placeholder="Contoh: Kaigo / Caregiver, Food Processing, Pertanian, Konstruksi (pisahkan dengan koma atau baris baru)"
+                  placeholder={t('settings.programsIncludedPlaceholder')}
                   className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed resize-y"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -652,7 +662,7 @@ export default function PaymentConfigTab() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <Tag size={13} className="hidden sm:inline-block text-rose-500" />
-                    Diskon Program (Opsional)
+                    {t('settings.discountTitle')}
                   </label>
                   {formData.discountAmount > 0 && (
                     <div>
@@ -666,13 +676,13 @@ export default function PaymentConfigTab() {
                 {/* Judul / Label Promo */}
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
-                    Judul Program Diskon
+                    {t('settings.discountLabelText')}
                   </label>
                   <input
                     type="text"
                     value={formData.discountLabel}
                     onChange={(e) => setFormData({ ...formData, discountLabel: e.target.value })}
-                    placeholder="Contoh: Early Bird Batch 3, Promo Lebaran, Diskon Alumni..."
+                    placeholder={t('settings.discountLabelPlaceholder')}
                     disabled={!isEditingPricing}
                     className="w-full px-3.5 py-2.5 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />
@@ -684,7 +694,7 @@ export default function PaymentConfigTab() {
                 {/* Nominal Diskon */}
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
-                    Nominal Potongan Harga
+                    {t('settings.discountAmountLabel')}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
@@ -706,7 +716,7 @@ export default function PaymentConfigTab() {
                 {/* Tanggal Akhir Berlaku */}
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
-                    Berlaku Sampai (Tanggal Akhir)
+                    {t('settings.discountEndDateLabel')}
                   </label>
                   <input
                     type="date"
@@ -726,27 +736,27 @@ export default function PaymentConfigTab() {
                     <div className="font-bold text-foreground flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5">
                       <span className="flex items-center gap-1.5 text-rose-500">
                         <Sparkles size={12} />
-                        <span className="text-foreground">Simulasi</span>
+                        <span className="text-foreground">{t('settings.simulationTitle')}</span>
                       </span>
-                      <span>Harga Program:</span>
+                      <span>{t('settings.programPrice')}</span>
                     </div>
                     <div className="space-y-2 sm:space-y-1 border-t border-rose-500/10 pt-2">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-muted-foreground gap-0.5 sm:gap-2">
-                        <span>Harga Normal</span>
+                        <span>{t('settings.normalPrice')}</span>
                         <span className="font-semibold line-through">{formatRupiah(formData.totalProgramFee)}</span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-rose-500 font-semibold gap-0.5 sm:gap-2">
-                        <span className="wrap-break-word">Potongan "{formData.discountLabel || 'Promo'}"</span>
+                        <span className="wrap-break-word">{t('settings.discountCut')} "{formData.discountLabel || 'Promo'}"</span>
                         <span>- {formatRupiah(formData.discountAmount)}</span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-emerald-500 font-bold border-t border-rose-500/10 pt-1.5 sm:pt-1 gap-0.5 sm:gap-2">
-                        <span>Harga Setelah Diskon</span>
+                        <span>{t('settings.discountedPrice')}</span>
                         <span>{formatRupiah(Math.max(0, formData.totalProgramFee - formData.discountAmount))}</span>
                       </div>
                     </div>
                     {formData.discountEndDate && (
                       <p className="text-muted-foreground pt-1">
-                        ⏰ Berlaku s.d. <span className="font-semibold text-foreground">{new Date(formData.discountEndDate + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        ⏰ {t('settings.validUntilText')} <span className="font-semibold text-foreground">{new Date(formData.discountEndDate + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                       </p>
                     )}
                   </div>
@@ -757,7 +767,7 @@ export default function PaymentConfigTab() {
               {/* Ringkasan Skema Konversi Ontologi */}
               <div className="p-3 rounded-lg border bg-background/50 space-y-1.5 text-xs text-muted-foreground">
                 <p className="font-semibold text-foreground flex items-center gap-1">
-                  <HelpCircle size={13} className="text-primary hidden sm:inline-block" /> Rantai Konversi Komersial Tenant:
+                  <HelpCircle size={13} className="text-primary hidden sm:inline-block" /> {t('settings.conversionChainTitle')}
                 </p>
                 <div className="flex items-center gap-1.5 flex-wrap font-medium">
                   <span className="text-foreground">Opportunity</span>
@@ -768,9 +778,9 @@ export default function PaymentConfigTab() {
                   <span>➔</span>
                   <span className="text-emerald-400">{formatRupiah(formData.coreDepositAmount)} (DP)</span>
                   <span>➔</span>
-                  <span className="text-emerald-500 font-bold">🎯 Customer</span>
+                  <span className="text-emerald-500 font-bold">{isGeneral ? '🎯 Customer (Pelanggan)' : '🎯 Customer (Siswa/Peserta)'}</span>
                   <span>➔</span>
-                  <span className="text-teal-500 font-semibold">🎓 Post-Customer (Alumni)</span>
+                  <span className="text-teal-500 font-semibold">{isGeneral ? '🎓 Post-Customer (Mantan Pelanggan)' : '🎓 Post-Customer (Alumni)'}</span>
                 </div>
               </div>
 
@@ -784,12 +794,12 @@ export default function PaymentConfigTab() {
           <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-muted-foreground w-full sm:w-auto">
             {isEditingAny && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 font-semibold border border-amber-500/20">
-                <Pencil size={12} /> Mode Edit Aktif
+                <Pencil size={12} /> {t('settings.editModeActiveBadge')}
               </span>
             )}
             <span className="hidden sm:inline">
-              Terakhir diupdate: <span className="font-medium text-foreground">{formData.updatedAt ? new Date(formData.updatedAt).toLocaleString('id-ID') : 'Belum pernah'}</span>
-              {formData.updatedBy && <span> oleh <span className="font-medium text-foreground">{formData.updatedBy}</span></span>}
+              {t('settings.lastUpdatedPrefix')} <span className="font-medium text-foreground">{formData.updatedAt ? new Date(formData.updatedAt).toLocaleString('id-ID') : t('settings.neverUpdatedText')}</span>
+              {formData.updatedBy && <span> {t('settings.byAuthorPrefix')} <span className="font-medium text-foreground">{formData.updatedBy}</span></span>}
             </span>
             {formData.updatedAt && (
               <span className="sm:hidden text-muted-foreground">
@@ -807,7 +817,7 @@ export default function PaymentConfigTab() {
                   disabled={saving}
                   className="px-4 py-2 rounded-xl border bg-secondary/80 hover:bg-secondary text-foreground text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Batal Semua
+                  {t('settings.cancelAllBtn')}
                 </button>
                 <button
                   type="submit"
@@ -817,12 +827,12 @@ export default function PaymentConfigTab() {
                   {saving ? (
                     <>
                       <Loader2 size={15} className="animate-spin" />
-                      <span>Menyimpan...</span>
+                      <span>{t('settings.savingConfigBtn')}</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 size={15} className="hidden sm:inline-block" />
-                      <span>Simpan Konfigurasi</span>
+                      <span>{t('settings.saveConfigBtn')}</span>
                     </>
                   )}
                 </button>
@@ -837,7 +847,7 @@ export default function PaymentConfigTab() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border bg-primary/10 hover:bg-primary/15 text-primary border-primary/25 text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
               >
                 <Pencil size={14} />
-                <span>Ubah Konfigurasi<span className="hidden sm:inline"> (Klik untuk Edit)</span></span>
+                <span>{t('settings.editConfigBtn')}<span className="hidden sm:inline"> (Klik untuk Edit)</span></span>
               </button>
             )}
           </div>

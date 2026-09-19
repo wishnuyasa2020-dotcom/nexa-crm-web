@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Loader2, X, BookOpen, AlertCircle } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface KelasMappingItem {
   id: number;
@@ -10,6 +11,7 @@ interface KelasMappingItem {
 }
 
 export default function KelasMapping() {
+  const { t } = useTranslation();
   const [mappings, setMappings] = useState<KelasMappingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,7 +35,7 @@ export default function KelasMapping() {
         setMappings(res.data.data || []);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal memuat data master kelas');
+      setError(err.response?.data?.message || err.message || t('settings.kelasLoadFailed'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export default function KelasMapping() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.kelas.trim()) {
-      setFormError('Nama kelas wajib diisi.');
+      setFormError(t('settings.kelasNameRequired'));
       return;
     }
 
@@ -76,19 +78,19 @@ export default function KelasMapping() {
       await fetchMappings();
       handleCloseForm();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Gagal menyimpan data kelas');
+      setFormError(err.response?.data?.message || err.message || t('settings.kelasSaveFailed'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus kelas ini dari master data?')) return;
+    if (!confirm(t('settings.kelasDeleteConfirm'))) return;
     try {
       await apiClient.delete(`/api/v1/settings/kelas-mapping/${id}`);
       await fetchMappings();
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal menghapus kelas');
+      setError(err.response?.data?.message || err.message || t('settings.kelasDeleteFailed'));
     }
   };
 
@@ -106,10 +108,10 @@ export default function KelasMapping() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-            <BookOpen size={18} className="text-primary" /> Master Kelas
+            <BookOpen size={18} className="text-primary" /> {t('settings.kelasTitle')}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Daftar kelas standar yang akan muncul sebagai opsi pilihan di formulir pendaftaran siswa dan QR Code.
+            {t('settings.kelasSubtitle')}
           </p>
         </div>
         <button
@@ -117,7 +119,7 @@ export default function KelasMapping() {
           className="w-full sm:w-auto h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all shrink-0 cursor-pointer"
         >
           <Plus size={16} />
-          Tambah Kelas
+          {t('settings.addKelasBtn')}
         </button>
       </div>
 
@@ -134,15 +136,15 @@ export default function KelasMapping() {
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b">
               <tr>
-                <th className="px-5 py-3 font-semibold text-muted-foreground">Nama Kelas</th>
-                <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-32">Aksi</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground">{t('settings.thKelasName')}</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-32">{t('settings.thActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {mappings.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="px-5 py-10 text-center text-muted-foreground text-sm">
-                    Belum ada data master kelas yang ditambahkan.
+                    {t('settings.emptyKelas')}
                   </td>
                 </tr>
               ) : (
@@ -154,14 +156,14 @@ export default function KelasMapping() {
                         <button
                           onClick={() => handleOpenForm(m)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                          title="Edit Kelas"
+                          title={t('settings.editKelasTooltip')}
                         >
                           <Edit2 size={15} />
                         </button>
                         <button
                           onClick={() => handleDelete(m.id)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Hapus Kelas"
+                          title={t('settings.deleteKelasTooltip')}
                         >
                           <Trash2 size={15} />
                         </button>
@@ -181,7 +183,7 @@ export default function KelasMapping() {
           <div className="bg-card border w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between px-5 h-14 border-b">
               <h3 className="font-semibold text-foreground text-sm sm:text-base">
-                {editingId ? 'Edit Master Kelas' : 'Tambah Master Kelas Baru'}
+                {editingId ? t('settings.editKelasModalTitle') : t('settings.addKelasModalTitle')}
               </h3>
               <button
                 onClick={handleCloseForm}
@@ -200,18 +202,18 @@ export default function KelasMapping() {
 
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  Nama Kelas <span className="text-destructive">*</span>
+                  {t('settings.kelasNameLabel')} <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.kelas}
                   onChange={(e) => setFormData({ ...formData, kelas: e.target.value })}
-                  placeholder="Contoh: 12 IPA 1, 11 IPS 2"
+                  placeholder={t('settings.kelasNamePlaceholder')}
                   className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
                 />
                 <p className="text-xs text-muted-foreground mt-1.5">
-                  Format nama ini akan distandarisasi untuk dropdown kelas form siswa.
+                  {t('settings.kelasNameHelp')}
                 </p>
               </div>
 
@@ -221,14 +223,14 @@ export default function KelasMapping() {
                   onClick={handleCloseForm}
                   className="flex-1 h-10 border rounded-xl text-sm font-medium hover:bg-secondary transition-colors"
                 >
-                  Batal
+                  {t('settings.cancelBtn')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="flex-1 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Simpan Data'}
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : t('settings.saveConfigBtn')}
                 </button>
               </div>
             </form>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Loader2, X, Building2, AlertCircle } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface KotaMappingItem {
   id: number;
@@ -10,6 +11,7 @@ interface KotaMappingItem {
 }
 
 export default function KotaMapping() {
+  const { t } = useTranslation();
   const [mappings, setMappings] = useState<KotaMappingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,7 +35,7 @@ export default function KotaMapping() {
         setMappings(res.data.data || []);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal memuat data master kota');
+      setError(err.response?.data?.message || err.message || t('settings.kotaLoadFailed'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export default function KotaMapping() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.kota.trim()) {
-      setFormError('Nama kota/kabupaten wajib diisi.');
+      setFormError(t('settings.kotaNameRequired'));
       return;
     }
 
@@ -76,19 +78,19 @@ export default function KotaMapping() {
       await fetchMappings();
       handleCloseForm();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Gagal menyimpan data kota');
+      setFormError(err.response?.data?.message || err.message || t('settings.kotaSaveFailed'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus kota ini dari master data? Kecamatan terkait akan terdampak.')) return;
+    if (!confirm(t('settings.kotaDeleteConfirm'))) return;
     try {
       await apiClient.delete(`/api/v1/settings/kota/${id}`);
       await fetchMappings();
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal menghapus kota');
+      setError(err.response?.data?.message || err.message || t('settings.kotaDeleteFailed'));
     }
   };
 
@@ -106,10 +108,10 @@ export default function KotaMapping() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-            <Building2 size={18} className="text-primary" /> Master Kota / Kabupaten
+            <Building2 size={18} className="text-primary" /> {t('settings.kotaTitle')}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Daftar kota induk wilayah yang digunakan untuk mengelompokkan data kecamatan dan domisili siswa.
+            {t('settings.kotaSubtitle')}
           </p>
         </div>
         <button
@@ -117,7 +119,7 @@ export default function KotaMapping() {
           className="w-full sm:w-auto h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all shrink-0 cursor-pointer"
         >
           <Plus size={16} />
-          Tambah Kota
+          {t('settings.addKotaBtn')}
         </button>
       </div>
 
@@ -134,15 +136,15 @@ export default function KotaMapping() {
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b">
               <tr>
-                <th className="px-5 py-3 font-semibold text-muted-foreground">Nama Kota / Kabupaten</th>
-                <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-32">Aksi</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground">{t('settings.thKotaName')}</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-32">{t('settings.thActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {mappings.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="px-5 py-10 text-center text-muted-foreground text-sm">
-                    Belum ada data master kota yang ditambahkan.
+                    {t('settings.emptyKota')}
                   </td>
                 </tr>
               ) : (
@@ -154,14 +156,14 @@ export default function KotaMapping() {
                         <button
                           onClick={() => handleOpenForm(m)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                          title="Edit Kota"
+                          title={t('settings.editKotaTooltip')}
                         >
                           <Edit2 size={15} />
                         </button>
                         <button
                           onClick={() => handleDelete(m.id)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Hapus Kota"
+                          title={t('settings.deleteKotaTooltip')}
                         >
                           <Trash2 size={15} />
                         </button>
@@ -181,7 +183,7 @@ export default function KotaMapping() {
           <div className="bg-card border w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between px-5 h-14 border-b">
               <h3 className="font-semibold text-foreground text-sm sm:text-base">
-                {editingId ? 'Edit Master Kota' : 'Tambah Master Kota Baru'}
+                {editingId ? t('settings.editKotaModalTitle') : t('settings.addKotaModalTitle')}
               </h3>
               <button
                 onClick={handleCloseForm}
@@ -200,18 +202,18 @@ export default function KotaMapping() {
 
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  Nama Kota / Kabupaten <span className="text-destructive">*</span>
+                  {t('settings.kotaNameLabel')} <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.kota}
                   onChange={(e) => setFormData({ ...formData, kota: e.target.value })}
-                  placeholder="Contoh: Kabupaten Tabanan, Kota Denpasar"
+                  placeholder={t('settings.kotaNamePlaceholder')}
                   className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
                 />
                 <p className="text-xs text-muted-foreground mt-1.5">
-                  Nama kota harus unik dan tidak boleh duplikat.
+                  {t('settings.kotaNameHelp')}
                 </p>
               </div>
 
@@ -221,14 +223,14 @@ export default function KotaMapping() {
                   onClick={handleCloseForm}
                   className="flex-1 h-10 border rounded-xl text-sm font-medium hover:bg-secondary transition-colors"
                 >
-                  Batal
+                  {t('settings.cancelBtn')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="flex-1 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Simpan Data'}
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : t('settings.saveConfigBtn')}
                 </button>
               </div>
             </form>

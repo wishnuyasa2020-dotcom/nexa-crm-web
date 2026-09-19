@@ -9,6 +9,8 @@ import {
 import apiClient from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTenantVocabulary } from '@/hooks/useTenantVocabulary';
 
 export interface WhatsAppConfigData {
   tenantId: string;
@@ -25,6 +27,8 @@ export interface WhatsAppConfigData {
 }
 
 export default function WhatsAppTab() {
+  const { t } = useTranslation();
+  const { isGeneral } = useTenantVocabulary();
   const [data, setData] = useState<WhatsAppConfigData | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -52,11 +56,11 @@ export default function WhatsAppTab() {
       }
     } catch (err: unknown) {
       console.error('Failed to load whatsapp config:', err);
-      toast.error('Gagal memuat status integrasi WhatsApp.');
+      toast.error(t('settings.waLoadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadWhatsappStatus();
@@ -66,19 +70,19 @@ export default function WhatsAppTab() {
     e.preventDefault();
 
     if (!checkFreshNumber) {
-      toast.error('Anda wajib menyetujui pernyataan penggunaan nomor baru.');
+      toast.error(t('settings.agreeFreshNumberToast'));
       return;
     }
     if (!checkDisplayNameCompliance) {
-      toast.error('Anda wajib menyetujui pernyataan kesesuaian Display Name Meta.');
+      toast.error(t('settings.agreeDisplayNameToast'));
       return;
     }
     if (!whatsappNumber.trim()) {
-      toast.error('Nomor WhatsApp wajib diisi.');
+      toast.error(t('settings.waNumberRequiredToast'));
       return;
     }
     if (!displayName.trim()) {
-      toast.error('Nama tampilan brand wajib diisi.');
+      toast.error(t('settings.displayNameRequiredToast'));
       return;
     }
 
@@ -94,11 +98,11 @@ export default function WhatsAppTab() {
 
       const res = await apiClient.post('/api/v1/settings/whatsapp/register', payload);
       if (res.data?.status === 'ok') {
-        toast.success(res.data.message || 'Pengajuan nomor WhatsApp berhasil dikirim!');
+        toast.success(res.data.message || t('settings.waRegisterSuccessToast'));
         setData(res.data.data);
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Gagal mengajukan nomor WhatsApp.';
+      const msg = err.response?.data?.message || err.message || t('settings.waRegisterFailedToast');
       toast.error(msg);
     } finally {
       setSubmitting(false);
@@ -107,7 +111,7 @@ export default function WhatsAppTab() {
 
   async function handleDisconnect() {
     const confirm = window.confirm(
-      'Apakah Anda yakin ingin memutuskan integrasi WhatsApp ini? Fitur Live Chat dan Broadcast tidak akan dapat mengirim pesan hingga nomor baru terhubung.'
+      t('settings.disconnectWaConfirm')
     );
     if (!confirm) return;
 
@@ -115,13 +119,13 @@ export default function WhatsAppTab() {
       setDisconnecting(true);
       const res = await apiClient.delete('/api/v1/settings/whatsapp/disconnect');
       if (res.data?.status === 'ok') {
-        toast.success('Integrasi WhatsApp berhasil diputuskan.');
+        toast.success(t('settings.disconnectSuccessToast'));
         setData(res.data.data);
         setCheckFreshNumber(false);
         setCheckDisplayNameCompliance(false);
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Gagal memutuskan integrasi.';
+      const msg = err.response?.data?.message || err.message || t('settings.disconnectFailedToast');
       toast.error(msg);
     } finally {
       setDisconnecting(false);
@@ -132,7 +136,7 @@ export default function WhatsAppTab() {
     return (
       <div className="p-12 flex flex-col items-center justify-center text-center">
         <RefreshCw className="w-8 h-8 text-primary animate-spin mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">Memuat status integrasi WhatsApp Bisnis...</p>
+        <p className="text-sm font-medium text-muted-foreground">{t('settings.waTabLoading')}</p>
       </div>
     );
   }
@@ -150,45 +154,45 @@ export default function WhatsAppTab() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">Integrasi WhatsApp Bisnis</h2>
+                <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">{t('settings.waTabTitle')}</h2>
                 {status === 'CONNECTED' && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                    Terhubung (Active)
+                    {t('settings.waStatusConnected')}
                   </span>
                 )}
                 {status === 'PENDING_PROVISIONING' && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20">
                     <Clock size={12} />
-                    Menunggu Aktivasi
+                    {t('settings.waStatusPending')}
                   </span>
                 )}
                 {status === 'REJECTED' && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20">
                     <XCircle size={12} />
-                    Pengajuan Ditolak
+                    {t('settings.waStatusRejected')}
                   </span>
                 )}
                 {status === 'NOT_CONFIGURED' && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border">
-                    Belum Dikonfigurasi
+                    {t('settings.waStatusNotConfigured')}
                   </span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1 sm:mt-0.5 leading-relaxed">
-                Koneksi nomor resmi WhatsApp Business Platform (Cloud API) untuk Live Chat & Broadcast massal
+                {t('settings.waTabSubtitle')}
               </p>
             </div>
           </div>
 
           <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-border/50">
-            <span className="text-xs text-muted-foreground sm:hidden">Sinkronisasi status</span>
+            <span className="text-xs text-muted-foreground sm:hidden">{t('settings.syncStatusLabel')}</span>
             <button
               onClick={loadWhatsappStatus}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border rounded-lg hover:bg-muted/50 transition-colors shrink-0"
             >
               <RefreshCw size={13} />
-              <span>Segarkan</span>
+              <span>{t('settings.refreshBtn')}</span>
             </button>
           </div>
         </div>
@@ -199,11 +203,11 @@ export default function WhatsAppTab() {
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 flex items-start gap-3">
           <ShieldAlert className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
-            <p className="font-semibold text-destructive">Permohonan Registrasi Nomor Ditolak</p>
+            <p className="font-semibold text-destructive">{t('settings.waRejectedTitle')}</p>
             <p className="text-muted-foreground leading-relaxed">
-              Catatan Tim Superadmin: <span className="text-foreground font-medium">{data?.whatsappNotes || 'Data tidak sesuai atau nomor tidak valid.'}</span>
+              {t('settings.waRejectedAdminNotes')} <span className="text-foreground font-medium">{data?.whatsappNotes || t('settings.waRejectedDefaultNotes')}</span>
             </p>
-            <p className="text-muted-foreground">Silakan periksa kembali dan ajukan ulang formulir di bawah ini.</p>
+            <p className="text-muted-foreground">{t('settings.waRejectedRecheckPrompt')}</p>
           </div>
         </div>
       )}
@@ -214,37 +218,37 @@ export default function WhatsAppTab() {
           <div className="border-0 sm:border bg-transparent sm:bg-card p-0 sm:p-6 shadow-none sm:shadow-sm rounded-none sm:rounded-2xl space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
-                <span className="text-xs font-medium text-muted-foreground">Nomor WhatsApp Resmi</span>
+                <span className="text-xs font-medium text-muted-foreground">{t('settings.officialWaNumberLabel')}</span>
                 <p className="text-base font-bold text-foreground font-mono">
-                  {data?.whatsappNumber ? `+${data.whatsappNumber}` : 'Nomor Terdaftar'}
+                  {data?.whatsappNumber ? `+${data.whatsappNumber}` : t('settings.registeredNumberPlaceholder')}
                 </p>
-                <p className="text-xs text-muted-foreground">Nomor aktif pengiriman pesan Cloud API</p>
+                <p className="text-xs text-muted-foreground">{t('settings.officialWaNumberHelp')}</p>
               </div>
 
               <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
-                <span className="text-xs font-medium text-muted-foreground">Nama Tampilan (Display Name)</span>
+                <span className="text-xs font-medium text-muted-foreground">{t('settings.displayNameLabel')}</span>
                 <p className="text-base font-bold text-foreground">
                   {data?.whatsappDisplayName || data?.brandName}
                 </p>
-                <p className="text-xs text-muted-foreground">Nama profil verified yang muncul di WA penerima</p>
+                <p className="text-xs text-muted-foreground">{t('settings.displayNameHelp')}</p>
               </div>
 
               <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
-                <span className="text-xs font-medium text-muted-foreground">WhatsApp Phone ID (Meta)</span>
+                <span className="text-xs font-medium text-muted-foreground">{t('settings.metaPhoneIdLabel')}</span>
                 <p className="text-xs font-mono text-emerald-600 font-semibold truncate">
                   {data?.whatsappPhoneId || '-'}
                 </p>
-                <p className="text-xs text-muted-foreground">Identitas unik saluran perpesanan Meta</p>
+                <p className="text-xs text-muted-foreground">{t('settings.metaPhoneIdHelp')}</p>
               </div>
 
               <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-1">
-                <span className="text-xs font-medium text-muted-foreground">Tanggal Terhubung</span>
+                <span className="text-xs font-medium text-muted-foreground">{t('settings.connectedDateLabel')}</span>
                 <p className="text-xs font-medium text-foreground">
                   {data?.whatsappConnectedAt ? new Date(data.whatsappConnectedAt).toLocaleDateString('id-ID', {
                     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                   }) : 'Aktif'}
                 </p>
-                <p className="text-xs text-emerald-600 font-medium">Quality Rating: HIGH (Sehat)</p>
+                <p className="text-xs text-emerald-600 font-medium">{t('settings.qualityRatingNotice')}</p>
               </div>
             </div>
 
@@ -255,9 +259,9 @@ export default function WhatsAppTab() {
                   <CheckCircle2 size={20} />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground">Modul WhatsApp Siap Digunakan</h4>
+                  <h4 className="text-sm font-semibold text-foreground">{t('settings.waModulesReadyTitle')}</h4>
                   <p className="text-xs text-muted-foreground">
-                    Live Chat Shared Inbox, Template Meta, dan Automated Nurturing sudah aktif sepenuhnya.
+                    {t('settings.waModulesReadyDesc')}
                   </p>
                 </div>
               </div>
@@ -267,25 +271,25 @@ export default function WhatsAppTab() {
             <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/30 flex items-start gap-3">
               <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Dukungan Meta BSUID Aktif:</strong> Sesuai kebijakan Meta terbaru, jika siswa baru yang menghubungi bisnis menyembunyikan nomor telepon mereka, sistem NexaMOS akan otomatis mengidentifikasi siswa tersebut melalui <em>Business-Scoped User ID (BSUID)</em> secara transparan.
+                <strong className="text-foreground">{t('settings.bsuidNoticeTitle')}</strong> {isGeneral ? t('settings.bsuidNoticeDescGeneral') : t('settings.bsuidNoticeDescLpk')}
               </p>
             </div>
 
             {/* Danger Zone: Disconnect */}
             <div className="p-3.5 sm:p-4 rounded-xl border border-destructive/20 bg-destructive/5 sm:border-0 sm:border-t sm:rounded-none sm:bg-transparent sm:pt-4 sm:p-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div>
-                <p className="text-xs font-semibold text-foreground">Putuskan Integrasi WhatsApp</p>
+                <p className="text-xs font-semibold text-foreground">{t('settings.disconnectWaTitle')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Hanya lakukan ini jika Anda ingin mengganti nomor WhatsApp resmi tenant.
+                  {t('settings.disconnectWaDesc')}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleDisconnect}
                 disabled={disconnecting}
-                className="w-full sm:w-auto px-3.5 py-2 rounded-lg border border-destructive/30 bg-card sm:bg-transparent text-destructive hover:bg-destructive/10 text-xs font-semibold transition-colors disabled:opacity-50 shrink-0 cursor-pointer text-center"
+                className="w-full sm:w-auto px-3.5 py-2 rounded-lg border border-destructive/30 bg-card sm:bg-transparent text-destructive hover:bg-destructive/10 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 text-center"
               >
-                {disconnecting ? 'Memutuskan...' : 'Putuskan Nomor'}
+                {disconnecting ? t('settings.disconnectingBtn') : t('settings.disconnectWaBtn')}
               </button>
             </div>
           </div>
@@ -300,9 +304,9 @@ export default function WhatsAppTab() {
               <Clock size={20} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-foreground">Permohonan Sedang Diproses Tim Superadmin</h3>
+              <h3 className="text-sm font-bold text-foreground">{t('settings.pendingReviewTitle')}</h3>
               <p className="text-xs text-muted-foreground">
-                Nomor Anda sedang didaftarkan ke Meta Business Manager / WhatsApp Cloud API.
+                {t('settings.pendingReviewDesc')}
               </p>
             </div>
           </div>
@@ -311,47 +315,47 @@ export default function WhatsAppTab() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div className="p-3.5 rounded-xl border bg-emerald-500/5 border-emerald-500/20 space-y-1">
               <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                <CheckCircle2 size={14} /> Langkah 1
+                <CheckCircle2 size={14} /> {t('settings.step1Title')}
               </span>
-              <p className="text-xs font-medium text-foreground">Formulir Dikirim</p>
-              <p className="text-xs text-muted-foreground">Data pengajuan tersimpan</p>
+              <p className="text-xs font-medium text-foreground">{t('settings.step1Name')}</p>
+              <p className="text-xs text-muted-foreground">{t('settings.step1Desc')}</p>
             </div>
 
             <div className="p-3.5 rounded-xl border bg-amber-500/10 border-amber-500/30 space-y-1">
               <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">
-                <RefreshCw size={14} className="animate-spin" /> Langkah 2
+                <RefreshCw size={14} className="animate-spin" /> {t('settings.step2Title')}
               </span>
-              <p className="text-xs font-medium text-foreground">Registrasi Meta</p>
-              <p className="text-xs text-muted-foreground">Proses pendaftaran WABA</p>
+              <p className="text-xs font-medium text-foreground">{t('settings.step2Name')}</p>
+              <p className="text-xs text-muted-foreground">{t('settings.step2Desc')}</p>
             </div>
 
             <div className="p-3.5 rounded-xl border bg-card sm:bg-muted/40 space-y-1">
-              <span className="text-xs font-semibold text-muted-foreground">Langkah 3</span>
-              <p className="text-xs font-medium text-muted-foreground">Verifikasi SMS OTP</p>
-              <p className="text-xs text-muted-foreground">Kode 6 digit ke HP Anda</p>
+              <span className="text-xs font-semibold text-muted-foreground">{t('settings.step3Title')}</span>
+              <p className="text-xs font-medium text-muted-foreground">{t('settings.step3Name')}</p>
+              <p className="text-xs text-muted-foreground">{t('settings.step3Desc')}</p>
             </div>
 
             <div className="p-3.5 rounded-xl border bg-card sm:bg-muted/40 space-y-1">
-              <span className="text-xs font-semibold text-muted-foreground">Langkah 4</span>
-              <p className="text-xs font-medium text-muted-foreground">Siap Digunakan</p>
-              <p className="text-xs text-muted-foreground">Sinkronisasi Live Chat</p>
+              <span className="text-xs font-semibold text-muted-foreground">{t('settings.step4Title')}</span>
+              <p className="text-xs font-medium text-muted-foreground">{t('settings.step4Name')}</p>
+              <p className="text-xs text-muted-foreground">{t('settings.step4Desc')}</p>
             </div>
           </div>
 
           {/* Submitted Summary */}
           <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/20 space-y-2">
-            <h4 className="text-xs font-semibold text-foreground">Ringkasan Pengajuan:</h4>
+            <h4 className="text-xs font-semibold text-foreground">{t('settings.submissionSummaryTitle')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div>
-                <span className="text-muted-foreground block">Nomor WhatsApp:</span>
+                <span className="text-muted-foreground block">{t('settings.summaryWaNumber')}</span>
                 <span className="font-semibold text-foreground font-mono">+{data?.whatsappNumber}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block">Display Name Brand:</span>
+                <span className="text-muted-foreground block">{t('settings.summaryDisplayName')}</span>
                 <span className="font-semibold text-foreground">{data?.whatsappDisplayName}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block">Kategori Industri:</span>
+                <span className="text-muted-foreground block">{t('settings.summaryIndustry')}</span>
                 <span className="font-semibold text-foreground">{data?.whatsappBusinessCategory || '-'}</span>
               </div>
             </div>
@@ -361,9 +365,9 @@ export default function WhatsAppTab() {
           <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex items-start gap-3">
             <Smartphone className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs space-y-1">
-              <p className="font-semibold text-foreground">Penting: Siapkan Ponsel Penerima SMS OTP</p>
+              <p className="font-semibold text-foreground">{t('settings.otpAlertTitle')}</p>
               <p className="text-muted-foreground leading-relaxed">
-                Pastikan kartu SIM dari nomor di atas aktif di ponsel biasa dan dapat menerima SMS. Saat tim teknis Nexa mendaftarkan nomor Anda ke Meta, Meta akan mengirimkan <strong>6 Digit Kode OTP</strong> via SMS. Tim teknis/Superadmin kami akan menghubungi Anda untuk meminta kode tersebut.
+                {t('settings.otpAlertDesc')}
               </p>
             </div>
           </div>
@@ -373,9 +377,9 @@ export default function WhatsAppTab() {
               type="button"
               onClick={handleDisconnect}
               disabled={disconnecting}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer text-center"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-center"
             >
-              {disconnecting ? 'Membatalkan...' : 'Batalkan Pengajuan'}
+              {disconnecting ? t('settings.cancelingBtn') : t('settings.cancelSubmissionBtn')}
             </button>
           </div>
         </div>
@@ -386,24 +390,24 @@ export default function WhatsAppTab() {
         <form onSubmit={handleSubmitRegister} className="border-0 sm:border bg-transparent sm:bg-card p-0 sm:p-6 shadow-none sm:shadow-sm rounded-none sm:rounded-2xl space-y-4 sm:space-y-6">
           <div className="p-3.5 sm:p-0 rounded-xl border sm:border-0 bg-card sm:bg-transparent flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h3 className="text-base font-bold text-foreground">Formulir Pendaftaran Nomor WhatsApp Bisnis</h3>
+            <h3 className="text-base font-bold text-foreground">{t('settings.waRegFormTitle')}</h3>
           </div>
 
           {/* ── CALLOUT 1: REKOMENDASI MUTLAK NOMOR BARU (FRESH SIM) ── */}
           <div className="p-3.5 sm:p-4.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
             <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs">
               <Smartphone size={16} />
-              <span>SANGAT DIREKOMENDASIKAN: GUNAKAN NOMOR PERDANA / BARU (FRESH SIM)</span>
+              <span>{t('settings.calloutFreshSimTitle')}</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              WhatsApp Business Cloud API mensyaratkan nomor telepon yang didaftarkan <strong>tidak boleh terhubung ke aplikasi WhatsApp Messenger biasa maupun WhatsApp Business di ponsel</strong>.
+              {t('settings.calloutFreshSimDesc')}
             </p>
             <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
               <li>
-                <strong className="text-foreground">Keuntungan Nomor Baru:</strong> Tingkat keberhasilan pendaftaran 100% instan, SMS OTP lancar, dan tidak ada risiko penolakan sesi atau penundaan hapus akun Meta.
+                <strong className="text-foreground">{t('settings.calloutFreshSimBenefitTitle')}</strong> {t('settings.calloutFreshSimBenefitText')}
               </li>
               <li>
-                <strong className="text-foreground">Jika Menggunakan Nomor Lama:</strong> Anda <em>WAJIB</em> membuka aplikasi WhatsApp di ponsel terlebih dahulu, lalu pilih menu <em>Setelan ➔ Akun ➔ Hapus Akun Saya (Delete My Account)</em> secara permanen sebelum nomor diajukan ke sini.
+                <strong className="text-foreground">{t('settings.calloutOldSimTitle')}</strong> {t('settings.calloutOldSimText')}
               </li>
             </ul>
           </div>
@@ -412,10 +416,10 @@ export default function WhatsAppTab() {
           <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
             <div className="flex items-center gap-2 text-amber-600 font-bold text-xs">
               <Building size={16} />
-              <span>KETENTUAN DISPLAY NAME (NAMA BRAND RESMI META)</span>
+              <span>{t('settings.calloutDisplayNameTitle')}</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Meta menerapkan verifikasi nama yang sangat ketat. Nama yang Anda daftarkan harus mencerminkan identitas bisnis atau lembaga resmi Anda (contoh: <span className="font-semibold text-foreground">"LPK Derma Indonesia"</span>). Jangan menggunakan nama acak, promosi, atau nama barang (contoh yang <strong>DITOLAK META</strong>: <span className="text-destructive font-medium">"Jual Obat Murah"</span> atau <span className="text-destructive font-medium">"Diskon Kursus Jepang"</span>).
+              {t('settings.calloutDisplayNameDesc')}
             </p>
           </div>
 
@@ -423,7 +427,7 @@ export default function WhatsAppTab() {
           <div className="p-3.5 sm:p-4 rounded-xl border bg-card sm:bg-muted/30 flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Arsitektur Kesiapan Meta BSUID 2026:</strong> Sistem NexaMOS telah terintegrasi dengan standar privasi <em>Business-Scoped User ID (BSUID)</em>. Pesan masuk dari audiens/siswa yang menyembunyikan nomor ponselnya tetap akan terarsip rapi di ruang Live Chat Anda.
+              <strong className="text-foreground">{t('settings.calloutBsuidTitle')}</strong> {isGeneral ? t('settings.calloutBsuidDescGeneral') : t('settings.calloutBsuidDescLpk')}
             </p>
           </div>
 
@@ -431,7 +435,7 @@ export default function WhatsAppTab() {
           <div className="p-3.5 sm:p-0 rounded-xl border sm:border-0 bg-card sm:bg-transparent grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
-                Nama Tampilan Brand (Display Name) <span className="text-destructive">*</span>
+                {t('settings.formDisplayNameLabel')} <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -441,12 +445,12 @@ export default function WhatsAppTab() {
                 placeholder="Contoh: LPK Derma Indonesia"
                 className="w-full px-3.5 py-2.5 rounded-xl border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
-              <p className="text-xs text-muted-foreground">Nama resmi yang akan diajukan ke Meta</p>
+              <p className="text-xs text-muted-foreground">{t('settings.formDisplayNameHelp')}</p>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
-                Nomor WhatsApp Baru <span className="text-destructive">*</span>
+                {t('settings.formWaNumberLabel')} <span className="text-destructive">*</span>
               </label>
               <div className="relative flex items-center">
                 <span className="absolute left-3.5 text-sm font-semibold text-muted-foreground select-none">
@@ -461,22 +465,22 @@ export default function WhatsAppTab() {
                   className="w-full pl-12 pr-3.5 py-2.5 rounded-xl border bg-background text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Masukkan angka setelah kode negara (tanpa awalan 0)</p>
+              <p className="text-xs text-muted-foreground">{t('settings.formWaNumberHelp')}</p>
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
-              <label className="text-xs font-semibold text-foreground">Kategori Industri / Bisnis</label>
+              <label className="text-xs font-semibold text-foreground">{t('settings.formIndustryCategoryLabel')}</label>
               <select
                 value={businessCategory}
                 onChange={(e) => setBusinessCategory(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <option value="Lembaga Pelatihan Kerja (LPK)">Lembaga Pelatihan Kerja (LPK)</option>
-                <option value="Sekolah / Perguruan Tinggi">Sekolah / Perguruan Tinggi / Bimbel</option>
-                <option value="Klinik & Kesehatan Estetika">Klinik & Kesehatan Estetika</option>
-                <option value="Konsultan & Jasa Profesional">Konsultan & Jasa Profesional</option>
-                <option value="Perdagangan & Retail">Perdagangan & Retail</option>
-                <option value="Lainnya">Lainnya</option>
+                <option value="Lembaga Pelatihan Kerja (LPK)">{t('settings.categoryLpk')}</option>
+                <option value="Sekolah / Perguruan Tinggi">{t('settings.categorySchool')}</option>
+                <option value="Klinik & Kesehatan Estetika">{t('settings.categoryClinic')}</option>
+                <option value="Konsultan & Jasa Profesional">{t('settings.categoryConsultant')}</option>
+                <option value="Perdagangan & Retail">{t('settings.categoryRetail')}</option>
+                <option value="Lainnya">{t('settings.categoryOther')}</option>
               </select>
             </div>
           </div>
@@ -492,7 +496,7 @@ export default function WhatsAppTab() {
                 className="mt-1 w-4 h-4 rounded border text-primary focus:ring-primary"
               />
               <span className="text-xs text-foreground leading-relaxed">
-                <strong className="text-emerald-600 font-semibold">[WAJIB]</strong> Saya mengonfirmasi bahwa nomor di atas adalah <strong>nomor baru (Fresh SIM)</strong> atau nomor yang telah saya hapus akun WhatsApp-nya secara permanen dari ponsel, dan siap menerima SMS verifikasi OTP Meta.
+                <strong className="text-emerald-600 font-semibold">{t('settings.requiredDeclarationBadge')}</strong> {t('settings.declarationFreshSim')}
               </span>
             </label>
 
@@ -505,7 +509,7 @@ export default function WhatsAppTab() {
                 className="mt-1 w-4 h-4 rounded border text-primary focus:ring-primary"
               />
               <span className="text-xs text-foreground leading-relaxed">
-                <strong className="text-amber-600 font-semibold">[WAJIB]</strong> Saya memahami bahwa nama tampilan (Display Name) harus sesuai dengan brand resmi usaha saya dan tidak mengandung kata-kata promosi acak agar tidak ditolak oleh Meta.
+                <strong className="text-amber-600 font-semibold">{t('settings.requiredDeclarationBadge')}</strong> {t('settings.declarationDisplayName')}
               </span>
             </label>
           </div>
@@ -519,12 +523,12 @@ export default function WhatsAppTab() {
               {submitting ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Mengirim Pengajuan...
+                  {t('settings.submittingWaRegBtn')}
                 </>
               ) : (
                 <>
                   <ArrowRight size={16} />
-                  Ajukan Pendaftaran Nomor
+                  {t('settings.submitWaRegBtn')}
                 </>
               )}
             </button>

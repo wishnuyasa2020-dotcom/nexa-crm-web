@@ -12,9 +12,11 @@ import PaymentConfigTab from '@/components/settings/PaymentConfigTab';
 import PaymentVerificationTab from '@/components/settings/PaymentVerificationTab';
 import { Settings as SettingsIcon, BookOpen, MapPin, Building2, Calendar, CreditCard, ShieldAlert, ArrowLeft, MessageSquare, Banknote, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'kelas' | 'kota' | 'kecamatan' | 'payment' | 'verification' | 'whatsapp' | 'calendar' | 'billing'>('kelas');
   const { user } = useAuthStore();
 
@@ -38,29 +40,29 @@ export default function SettingsPage() {
         <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-4 shadow-sm">
           <ShieldAlert size={32} />
         </div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Akses Dibatasi</h2>
+        <h2 className="text-xl font-bold text-foreground mb-2">{t('settings.accessDenied')}</h2>
         <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
-          Halaman Pengaturan Master Data hanya dapat diakses oleh <span className="font-semibold text-foreground">Administrator</span> dan <span className="font-semibold text-foreground">Manager</span>.
+          {t('settings.accessDeniedDesc')}
         </p>
         <Link 
           href="/dashboard" 
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20"
         >
-          <ArrowLeft size={16} /> Kembali ke Dashboard
+          <ArrowLeft size={16} /> {t('settings.backToDashboard')}
         </Link>
       </div>
     );
   }
 
   const tabs = [
-    { id: 'kelas', label: 'Master Kelas', icon: BookOpen },
-    { id: 'kota', label: 'Master Kota', icon: Building2 },
-    { id: 'kecamatan', label: 'Master Kecamatan', icon: MapPin },
-    { id: 'payment', label: 'Rekening & Biaya', icon: Banknote },
-    { id: 'verification', label: 'Verifikasi Pembayaran', icon: CheckCircle2 },
-    { id: 'whatsapp', label: 'WhatsApp Bisnis', icon: MessageSquare },
-    { id: 'calendar', label: 'Integrasi Kalender', icon: Calendar },
-    { id: 'billing', label: 'Langganan & Billing', icon: CreditCard },
+    { id: 'kelas', label: t('settings.tabKelas'), icon: BookOpen },
+    { id: 'kota', label: t('settings.tabKota'), icon: Building2 },
+    { id: 'kecamatan', label: t('settings.tabKecamatan'), icon: MapPin },
+    { id: 'payment', label: t('settings.tabPayment'), icon: Banknote },
+    { id: 'verification', label: t('settings.tabVerification'), icon: CheckCircle2 },
+    { id: 'whatsapp', label: t('settings.tabWhatsapp'), icon: MessageSquare },
+    { id: 'calendar', label: t('settings.tabCalendar'), icon: Calendar },
+    { id: 'billing', label: t('settings.tabBilling'), icon: CreditCard },
   ] as const;
 
   return (
@@ -72,9 +74,9 @@ export default function SettingsPage() {
             <SettingsIcon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-foreground">Settings & Master Data</h1>
+            <h1 className="text-lg font-bold text-foreground">{t('settings.title')}</h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              Pusat standardisasi data referensi formulir pendaftaran, operasional & langganan
+              {t('settings.subtitle')}
             </p>
           </div>
         </div>
@@ -86,13 +88,13 @@ export default function SettingsPage() {
 
           {/* Tab Navigation */}
           <div className="flex border-b overflow-x-auto whitespace-nowrap gap-1 pb-px scrollbar-thin">
-            {tabs.map(t => {
-              const Icon = t.icon;
-              const isActive = activeTab === t.id;
+            {tabs.map(tTab => {
+              const Icon = tTab.icon;
+              const isActive = activeTab === tTab.id;
               return (
                 <button
-                  key={t.id}
-                  onClick={() => setActiveTab(t.id)}
+                  key={tTab.id}
+                  onClick={() => setActiveTab(tTab.id)}
                   className={cn(
                     'flex items-center gap-2 px-4 py-2.5 font-medium text-sm border-b-2 transition-all shrink-0 cursor-pointer',
                     isActive
@@ -101,7 +103,7 @@ export default function SettingsPage() {
                   )}
                 >
                   <Icon size={16} className={cn(isActive ? 'text-primary' : 'text-muted-foreground')} />
-                  {t.label}
+                  {tTab.label}
                 </button>
               );
             })}

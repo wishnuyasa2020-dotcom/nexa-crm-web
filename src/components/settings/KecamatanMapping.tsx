@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Trash2, Edit2, Loader2, X, MapPin, Building2, AlertCircle, Search, Filter } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface KecamatanMappingItem {
   id: number;
@@ -17,6 +18,7 @@ interface KotaMappingItem {
 }
 
 export default function KecamatanMapping() {
+  const { t } = useTranslation();
   const [mappings, setMappings] = useState<KecamatanMappingItem[]>([]);
   const [kotaList, setKotaList] = useState<KotaMappingItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function KecamatanMapping() {
         setKotaList(resKota.data.data || []);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal memuat data master kecamatan');
+      setError(err.response?.data?.message || err.message || t('settings.kecamatanLoadFailed'));
     } finally {
       setLoading(false);
     }
@@ -82,11 +84,11 @@ export default function KecamatanMapping() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.kota_id) {
-      setFormError('Pilih kota/kabupaten terlebih dahulu.');
+      setFormError(t('settings.parentKotaRequired'));
       return;
     }
     if (!formData.kecamatan.trim()) {
-      setFormError('Nama kecamatan wajib diisi.');
+      setFormError(t('settings.kecamatanNameRequired'));
       return;
     }
 
@@ -107,19 +109,19 @@ export default function KecamatanMapping() {
       await fetchData();
       handleCloseForm();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Gagal menyimpan data kecamatan');
+      setFormError(err.response?.data?.message || err.message || t('settings.kecamatanSaveFailed'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus kecamatan ini dari master data?')) return;
+    if (!confirm(t('settings.kecamatanDeleteConfirm'))) return;
     try {
       await apiClient.delete(`/api/v1/settings/kecamatan/${id}`);
       await fetchData();
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Gagal menghapus kecamatan');
+      setError(err.response?.data?.message || err.message || t('settings.kecamatanDeleteFailed'));
     }
   };
 
@@ -147,10 +149,10 @@ export default function KecamatanMapping() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-            <MapPin size={18} className="text-primary" /> Master Kecamatan
+            <MapPin size={18} className="text-primary" /> {t('settings.kecamatanTitle')}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Daftar kecamatan hierarkis yang terikat pada kota/kabupaten induk untuk formulir publik dan filter domisili.
+            {t('settings.kecamatanSubtitle')}
           </p>
         </div>
         <button
@@ -158,7 +160,7 @@ export default function KecamatanMapping() {
           className="w-full sm:w-auto h-10 px-4 gradient-primary text-white rounded-xl hover:opacity-90 flex items-center justify-center gap-2 text-sm font-semibold shadow-md shadow-primary/20 transition-all shrink-0 cursor-pointer"
         >
           <Plus size={16} />
-          Tambah Kecamatan
+          {t('settings.addKecamatanBtn')}
         </button>
       </div>
 
@@ -177,7 +179,7 @@ export default function KecamatanMapping() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama kecamatan..."
+            placeholder={t('settings.searchKecamatanPlaceholder')}
             className="w-full pl-9 pr-3.5 h-10 bg-card border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
           />
         </div>
@@ -190,7 +192,7 @@ export default function KecamatanMapping() {
               onChange={(e) => setSelectedKotaFilter(e.target.value)}
               className="w-full pl-8.5 pr-8 h-10 bg-card border rounded-xl text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors appearance-none cursor-pointer"
             >
-              <option value="all">Semua Kota/Kabupaten</option>
+              <option value="all">{t('settings.allKotaFilter')}</option>
               {kotaList.map(kota => (
                 <option key={kota.id} value={kota.id.toString()}>{kota.kota}</option>
               ))}
@@ -205,9 +207,9 @@ export default function KecamatanMapping() {
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b">
               <tr>
-                <th className="px-5 py-3 font-semibold text-muted-foreground">Kota / Kabupaten</th>
-                <th className="px-5 py-3 font-semibold text-muted-foreground">Nama Kecamatan</th>
-                <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-32">Aksi</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground">{t('settings.thParentKota')}</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground">{t('settings.thKecamatanName')}</th>
+                <th className="px-5 py-3 font-semibold text-muted-foreground text-right w-32">{t('settings.thActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
@@ -215,8 +217,8 @@ export default function KecamatanMapping() {
                 <tr>
                   <td colSpan={3} className="px-5 py-10 text-center text-muted-foreground text-sm">
                     {searchQuery || selectedKotaFilter !== 'all'
-                      ? 'Tidak ada data kecamatan yang sesuai dengan filter.'
-                      : 'Belum ada data master kecamatan yang ditambahkan.'}
+                      ? t('settings.emptyKecamatanFilter')
+                      : t('settings.emptyKecamatan')}
                   </td>
                 </tr>
               ) : (
@@ -232,14 +234,14 @@ export default function KecamatanMapping() {
                         <button
                           onClick={() => handleOpenForm(m)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                          title="Edit Kecamatan"
+                          title={t('settings.editKecamatanTooltip')}
                         >
                           <Edit2 size={15} />
                         </button>
                         <button
                           onClick={() => handleDelete(m.id)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Hapus Kecamatan"
+                          title={t('settings.deleteKecamatanTooltip')}
                         >
                           <Trash2 size={15} />
                         </button>
@@ -260,7 +262,7 @@ export default function KecamatanMapping() {
             <div className="flex items-center justify-between px-5 h-14 border-b">
               <h3 className="font-semibold text-foreground text-sm sm:text-base flex items-center gap-2">
                 <MapPin size={16} className="text-primary" />
-                {editingId ? 'Edit Master Kecamatan' : 'Tambah Master Kecamatan'}
+                {editingId ? t('settings.editKecamatanModalTitle') : t('settings.addKecamatanModalTitle')}
               </h3>
               <button
                 onClick={handleCloseForm}
@@ -279,7 +281,7 @@ export default function KecamatanMapping() {
 
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  Kota/Kabupaten Induk <span className="text-destructive">*</span>
+                  {t('settings.parentKotaLabel')} <span className="text-destructive">*</span>
                 </label>
                 <select
                   required
@@ -287,7 +289,7 @@ export default function KecamatanMapping() {
                   onChange={(e) => setFormData({ ...formData, kota_id: e.target.value })}
                   className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors cursor-pointer"
                 >
-                  <option value="" disabled>Pilih Kota/Kabupaten</option>
+                  <option value="" disabled>{t('settings.selectParentKota')}</option>
                   {kotaList.map(kota => (
                     <option key={kota.id} value={kota.id.toString()}>{kota.kota}</option>
                   ))}
@@ -296,18 +298,18 @@ export default function KecamatanMapping() {
 
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  Nama Kecamatan <span className="text-destructive">*</span>
+                  {t('settings.kecamatanNameLabel')} <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.kecamatan}
                   onChange={(e) => setFormData({ ...formData, kecamatan: e.target.value })}
-                  placeholder="Contoh: Mengwi, Sukawati, Kebayoran Baru"
+                  placeholder={t('settings.kecamatanNamePlaceholder')}
                   className="w-full px-3 h-10 bg-background border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
                 />
                 <p className="text-xs text-muted-foreground mt-1.5">
-                  Nama kecamatan ini akan muncul sebagai opsi pada form publik pendaftaran.
+                  {t('settings.kecamatanNameHelp')}
                 </p>
               </div>
 
@@ -317,14 +319,14 @@ export default function KecamatanMapping() {
                   onClick={handleCloseForm}
                   className="flex-1 h-10 border rounded-xl text-sm font-medium hover:bg-secondary transition-colors"
                 >
-                  Batal
+                  {t('settings.cancelBtn')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="flex-1 h-10 gradient-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Simpan Data'}
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : t('settings.saveConfigBtn')}
                 </button>
               </div>
             </form>
